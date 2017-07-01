@@ -1,0 +1,1 @@
+[{"inputs":[{"name":"ens","type":"address"},{"name":"node","type":"bytes32"}],"payable":false,"type":"constructor"}]

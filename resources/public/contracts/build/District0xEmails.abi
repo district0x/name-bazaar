@@ -1,0 +1,1 @@
+[{"constant":false,"inputs":[{"name":"_encryptedEmail","type":"string"}],"name":"setEmail","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"emails","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"}]
