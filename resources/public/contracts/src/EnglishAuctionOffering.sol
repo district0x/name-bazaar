@@ -25,6 +25,17 @@ contract EnglishAuctionOffering is Offering {
     mapping(address => Bid) public bids;
 
     event onBid(address indexed bidder, uint amount, uint endTime, uint datetime);
+    event onSettingsChanged(uint startPrice, uint endTime, uint extensionDuration, uint extensionTriggerDuration, uint minBidIncrease);
+
+    modifier noBids() {
+        require(highestBidder == 0x0);
+        _;
+    }
+
+    modifier notFinished() {
+        require(now < endTime);
+        _;
+    }
 
     function EnglishAuctionOffering(
         address _ens,
@@ -95,10 +106,36 @@ contract EnglishAuctionOffering is Offering {
     function cancel()
         onlyOriginalOwner
         contractOwnsNode
+        noBids
+        notFinished
     {
-        require(now < endTime);
-        require(highestBidder == 0x0);
         ens.setOwner(node, originalOwner);
         onCancel(now);
+    }
+
+    function setSettings(
+        uint _startPrice,
+        uint _endTime,
+        uint _extensionDuration,
+        uint _extensionTriggerDuration,
+        uint _minBidIncrease
+    )
+        onlyOriginalOwner
+        contractOwnsNode
+        noBids
+        notFinished
+    {
+        startPrice = _startPrice;
+        endTime = _endTime;
+        extensionDuration = _extensionDuration;
+        extensionTriggerDuration = _extensionTriggerDuration;
+        minBidIncrease = _minBidIncrease;
+        onSettingsChanged(_startPrice, _endTime, _extensionDuration, _extensionTriggerDuration, _minBidIncrease);
+    }
+
+    function()
+        payable
+    {
+        bid();
     }
 }

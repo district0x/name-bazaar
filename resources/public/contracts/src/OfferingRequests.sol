@@ -1,28 +1,26 @@
 pragma solidity ^0.4.11;
 
 import "UsedByFactories.sol";
-import "ENSNodeNames.sol";
+import "OfferingRequestsAbstract.sol";
+import "strings.sol";
 
-contract OfferingRequests is UsedByFactories {
+contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
+    using strings for *;
 
     struct Requests {
+        string name;
         address[] requesters;
         mapping(address => bool) hasRequested;
     }
 
     mapping(bytes32 => Requests) requests;
 
-    ENSNodeNames public ensNodeNames;
-
     event onRequestAdded(bytes32 indexed node, address indexed requester, uint requestsCount);
     event onRequestsCleared(bytes32 indexed node, uint datetime);
 
-    function OfferingRequests(address _ensNodeNames) {
-        ensNodeNames = ENSNodeNames(_ensNodeNames);
-    }
-
     function addRequest(string name) {
-        bytes32 node = ensNodeNames.setNodeName(name);
+        var node = namehash(name);
+        requests[node].name = name;
         if (!requests[node].hasRequested[msg.sender]) {
             requests[node].hasRequested[msg.sender] = true;
             requests[node].requesters.push(msg.sender);
@@ -33,8 +31,21 @@ contract OfferingRequests is UsedByFactories {
     function clearRequests(bytes32 node)
         onlyFactory
     {
-        address[] memory requesters;
-        requests[node] = Requests(requesters);
-        onRequestsCleared(node, now);
+        if (requests[node].requesters.length > 0) {
+            address[] memory requesters;
+            requests[node] = Requests(requests[node].name, requesters);
+            onRequestsCleared(node, now);
+        }
+    }
+
+    function namehash(string name) internal returns(bytes32) {
+        var nameSlice = name.toSlice();
+
+        if (nameSlice.len() == 0) {
+            return bytes32(0);
+        }
+
+        var label = nameSlice.split(".".toSlice()).toString();
+        return sha3(namehash(nameSlice.toString()), sha3(label));
     }
 }

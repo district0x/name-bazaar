@@ -51,7 +51,7 @@
   :fifs-registrar-deployed
   (constantly nil))
 
-(reg-event-fx
+#_ (reg-event-fx
   :deploy-ens-node-names
   interceptors
   (fn [{:keys [db]} [{:keys [:address-index]}]]
@@ -59,7 +59,7 @@
                                              :contract-key :ens-node-names
                                              :on-success [:ens-node-names-deployed]}]}))
 
-(reg-event-fx
+#_ (reg-event-fx
   :ens-node-names-deployed
   (constantly nil))
 
@@ -81,7 +81,6 @@
   (fn [{:keys [db]} [{:keys [:address-index]}]]
     {:dispatch [:district0x/deploy-contract {:address-index address-index
                                              :contract-key :offering-requests
-                                             :args [(:address (get-contract db :ens-node-names))]
                                              :on-success [:offering-requests-deployed]}]}))
 (reg-event-fx
   :offering-requests-deployed
@@ -162,11 +161,11 @@
                              :events [:district0x/smart-contracts-loaded]
                              :dispatch-n [[:deploy-ens]
                                           [:deploy-offering-registry]
-                                          [:deploy-ens-node-names]]}
+                                          [:deploy-offering-requests]]}
                             #_{:when :seen?
                                :events [:ens-deployed]
                                :dispatch [:deploy-fifs-registrar]}
-                            {:when :seen?
+                            #_ {:when :seen?
                              :events [:ens-node-names-deployed]
                              :dispatch [:deploy-offering-requests]}
                             {:when :seen?
@@ -182,10 +181,10 @@
 (reg-event-fx
   :ens/set-owner
   interceptors
-  (fn [{:keys [:db]} {:keys [:name :owner]}]
+  (fn [{:keys [:db]} [{:keys [:ens/name :ens/owner :ens/node]}]]
     {:dispatch [:district0x.contract/state-fn-call {:contract-key :ens
                                                     :contract-method :set-owner
-                                                    :args [(namehash name) owner]
+                                                    :args [(if name (namehash name) node) owner]
                                                     :transaction-opts {:gas 100000}}]}))
 
 
@@ -196,6 +195,5 @@
   (fn [{:keys [:db]} args]
     (let [{:keys [:my-addresses]} db]
       (.clear js/console)
-      {:dispatch [:district0x/clear-smart-contracts]
-       })))
-
+      {:async-flow {:first-dispatch [:district0x/load-smart-contracts]
+                    :rules []}})))

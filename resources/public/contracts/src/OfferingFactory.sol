@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 
 import "ens/ENS.sol";
 import "OfferingRegistry.sol";
-import "OfferingRequests.sol";
+import "OfferingRequestsAbstract.sol";
 import "strings.sol";
 
 contract OfferingFactory {
@@ -10,7 +10,7 @@ contract OfferingFactory {
 
     ENS public ens;
     OfferingRegistry public offeringRegistry;
-    OfferingRequests public offeringRequests;
+    OfferingRequestsAbstract public offeringRequests;
 
     function OfferingFactory(
         address _ens,
@@ -19,14 +19,14 @@ contract OfferingFactory {
     ) {
         ens = ENS(_ens);
         offeringRegistry = OfferingRegistry(_offeringRegistry);
-        offeringRequests = OfferingRequests(_offeringRequests);
+        offeringRequests = OfferingRequestsAbstract(_offeringRequests);
     }
 
     function registerOffering(bytes32 node, address newOffering)
         internal
     {
-        ens.setOwner(node, newOffering);
-        offeringRegistry.addOffering(newOffering);
+        require(ens.owner(node) == msg.sender);
+        offeringRegistry.addOffering(newOffering, node, msg.sender);
         offeringRequests.clearRequests(node);
     }
 

@@ -7,6 +7,8 @@ contract InstantBuyOffering is Offering {
     uint8 public offeringType = 1;
     uint public price;
 
+    event onSettingsChanged(uint price);
+
     function InstantBuyOffering(
         address _ens,
         bytes32 _node,
@@ -37,5 +39,19 @@ contract InstantBuyOffering is Offering {
     {
         ens.setOwner(node, originalOwner);
         onCancel(now);
+    }
+
+    function setSettings(uint _price)
+        onlyOriginalOwner
+        contractOwnsNode
+    {
+        price = _price;
+        onSettingsChanged(_price);
+    }
+
+    function()
+        payable
+    {
+        buy();
     }
 }
