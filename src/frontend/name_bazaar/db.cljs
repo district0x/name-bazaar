@@ -9,7 +9,7 @@
     [district0x.utils :as u]
     [re-frame.core :refer [dispatch]]))
 
-(s/def :offering/node u/address?)
+(s/def :offering/node u/sha3?)
 (s/def :offering/name string?)
 (s/def :offering/original-owner u/address?)
 (s/def :offering/new-owner u/address?)
@@ -65,11 +65,20 @@
                                :node/name
                                :node/offerings]))
 
-(s/def :ens/nodes (s/map-of u/address? :ens/node))
+(s/def :ens/nodes (s/map-of u/sha3? :ens/node))
 
-(s/def :form.instant-buy-offering-factory/create-offering ::district0x.db/submit-form)
-(s/def :form.english-auction-offering-factory/create-offering ::district0x.db/submit-form)
-(s/def :form.ens/set-owner ::district0x.db/submit-form)
+(defn pred-or-default-kw [pred]
+  (fn [x]
+    (or (pred x) (= x :default))))
+
+(s/def :form.instant-buy-offering-factory/create-offering (s/map-of :district0x.db/only-default-kw
+                                                                    :district0x.db/submit-form))
+
+(s/def :form.english-auction-offering-factory/create-offering (s/map-of :district0x.db/only-default-kw
+                                                                        :district0x.db/submit-form))
+
+(s/def :form.ens/set-owner (s/map-of (s/or :node u/sha3? :default :district0x.db/only-default-kw)
+                                     :district0x.db/submit-form))
 
 (def default-db
   (merge
@@ -86,28 +95,25 @@
                        ;:fifs-registrar {:name "FIFSRegistrar" :dev-only? true :address "0x0000000000000000000000000000000000000000"}
                        }
 
-     :form.ens/set-owner
-     {:loading? false
-      :gas-limit 100000
-      :data {:ens/node ""
-             :ens/owner}
-      :errors #{}}
+     :form.ens/set-owner {:default {:loading? false
+                                    :gas-limit 100000
+                                    :data {}
+                                    :errors #{}}}
 
-     :form.instant-buy-offering-factory/create-offering
-     {:loading? false
-      :gas-limit 4500000
-      :data {:instant-buy-offering-factory/name ""
-             :instant-buy-offering-factory/price 0.01}
-      :errors #{}}
+     :form.instant-buy-offering-factory/create-offering {:default {:loading? false
+                                                                   :gas-limit 4500000
+                                                                   :data {:instant-buy-offering-factory/name ""
+                                                                          :instant-buy-offering-factory/price 0.01}
+                                                                   :errors #{}}}
 
      :form.english-auction-offering-factory/create-offering
-     {:loading? false
-      :gas-limit 2000000
-      :data {:english-auction-offering-factory/name ""
-             :english-auction-offering-factory/start-price 0.01
-             :english-auction-offering-factory/start-time (to-epoch (t/now))
-             :english-auction-offering-factory/end-time (to-epoch (t/plus (t/now) (t/weeks 1)))
-             :english-auction-offering-factory/extension-duration (t/in-seconds (t/hours 1))
-             :english-auction-offering-factory/extension-trigger-duration (t/in-seconds (t/hours 1))
-             :english-auction-offering-factory/min-bid-increase 0.01}
-      :errors #{}}}))
+     {:default {:loading? false
+                :gas-limit 2000000
+                :data {:english-auction-offering-factory/name ""
+                       :english-auction-offering-factory/start-price 0.01
+                       :english-auction-offering-factory/start-time (to-epoch (t/now))
+                       :english-auction-offering-factory/end-time (to-epoch (t/plus (t/now) (t/weeks 1)))
+                       :english-auction-offering-factory/extension-duration (t/in-seconds (t/hours 1))
+                       :english-auction-offering-factory/extension-trigger-duration (t/in-seconds (t/hours 1))
+                       :english-auction-offering-factory/min-bid-increase 0.01}
+                :errors #{}}}}))

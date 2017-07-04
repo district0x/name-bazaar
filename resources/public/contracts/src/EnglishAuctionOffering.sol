@@ -7,6 +7,7 @@ contract EnglishAuctionOffering is Offering {
     using SafeMath for uint;
 
     uint8 public offeringType = 2;
+    uint16 public contractVersion = 1;
 
     uint public startPrice;
     uint public startTime;

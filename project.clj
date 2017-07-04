@@ -30,7 +30,7 @@
 
   :min-lein-version "2.5.3"
 
-  :source-paths ["src/cljs"]
+  :source-paths []
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
@@ -57,7 +57,7 @@
               :source-paths []
               :resource-paths ["resources"]
               :cljsbuild {:builds [{:id "dev"
-                                    :source-paths ["src/cljs"]
+                                    :source-paths ["src/frontend"]
                                     :figwheel {:on-jsload "name-bazaar.core/mount-root"}
                                     :compiler {:main "name-bazaar.core"
                                                :output-to "resources/public/js/compiled/app.js"
@@ -67,6 +67,15 @@
                                                :preloads [print.foo.preloads.devtools]
                                                :closure-defines {goog.DEBUG true}
                                                :external-config {:devtools/config {:features-to-install :all}}}}
+                                   {:id "dev-backend"
+                                    :source-paths ["src/backend"]
+                                    :figwheel true
+                                    :compiler {:main "name-bazaar.server"
+                                               :output-to "dev-backend/name-bazaar.js",
+                                               :output-dir "dev-backend",
+                                               :target :nodejs,
+                                               :optimizations :none,
+                                               :source-map true}}
                                    {:id "min"
                                     :source-paths ["src/cljs"]
                                     :compiler {:main "name-bazaar.core"

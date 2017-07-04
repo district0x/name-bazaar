@@ -13,6 +13,7 @@
     [name-bazaar.db]
     [name-bazaar.events]
     [name-bazaar.subs]
+    [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
     [reagent.core :as r]))
 

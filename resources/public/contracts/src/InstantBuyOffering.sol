@@ -5,6 +5,8 @@ import "Offering.sol";
 contract InstantBuyOffering is Offering {
 
     uint8 public offeringType = 1;
+    uint16 public contractVersion = 1;
+
     uint public price;
 
     event onSettingsChanged(uint price);

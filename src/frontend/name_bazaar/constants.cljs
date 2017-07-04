@@ -11,7 +11,8 @@
                                                       :english-auction-offering-factory/end-time
                                                       :english-auction-offering-factory/extension-duration
                                                       :english-auction-offering-factory/extension-trigger-duration
-                                                      :english-auction-offering-factory/min-bid-increase]})
+                                                      :english-auction-offering-factory/min-bid-increase]
+   :ens/set-owner [:ens/node :ens/owner]})
 
 (def contracts-method-wei-args #{:instant-buy-offering-factory/price
                                  :english-auction-offering-factory/start-price
