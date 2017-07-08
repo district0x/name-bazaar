@@ -11,15 +11,18 @@ contract OfferingFactory {
     ENS public ens;
     OfferingRegistry public offeringRegistry;
     OfferingRequestsAbstract public offeringRequests;
+    address public emergencyMultisig;
 
     function OfferingFactory(
         address _ens,
         address _offeringRegistry,
-        address _offeringRequests
+        address _offeringRequests,
+        address _emergencyMultisig
     ) {
         ens = ENS(_ens);
         offeringRegistry = OfferingRegistry(_offeringRegistry);
         offeringRequests = OfferingRequestsAbstract(_offeringRequests);
+        emergencyMultisig = _emergencyMultisig;
     }
 
     function registerOffering(bytes32 node, address newOffering)

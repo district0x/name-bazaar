@@ -17,3 +17,8 @@
 (def contracts-method-wei-args #{:instant-buy-offering-factory/price
                                  :english-auction-offering-factory/start-price
                                  :english-auction-offering-factory/min-bid-increase})
+
+(def library-placeholders
+  {:offering-library "__OfferingLibrary.sol:OfferingLibrary___"
+   :instant-buy-offering-library "__instant_buy/InstantBuyOfferingLibrar__"
+   :english-auction-offering-library "__english_auction/EnglishAuctionOfferi__"})

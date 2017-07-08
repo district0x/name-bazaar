@@ -67,10 +67,6 @@
 
 (s/def :ens/nodes (s/map-of u/sha3? :ens/node))
 
-(defn pred-or-default-kw [pred]
-  (fn [x]
-    (or (pred x) (= x :default))))
-
 (s/def :form.instant-buy-offering-factory/create-offering (s/map-of :district0x.db/only-default-kw
                                                                     :district0x.db/submit-form))
 
@@ -86,10 +82,13 @@
     {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
      :smart-contracts {:offering-registry {:name "OfferingRegistry" :address "0x0000000000000000000000000000000000000000"}
                        :offering-requests {:name "OfferingRequests" :address "0x0000000000000000000000000000000000000000"}
+                       :offering-library {:name "OfferingLibrary" :address "0x0000000000000000000000000000000000000000"}
                        :instant-buy-offering-factory {:name "InstantBuyOfferingFactory" :address "0x0000000000000000000000000000000000000000"}
                        :instant-buy-offering {:name "InstantBuyOffering" :address "0x0000000000000000000000000000000000000000"}
+                       :instant-buy-offering-library {:name "InstantBuyOfferingLibrary" :address "0x0000000000000000000000000000000000000000"}
                        :english-auction-offering-factory {:name "EnglishAuctionOfferingFactory" :address "0x0000000000000000000000000000000000000000"}
                        :english-auction-offering {:name "EnglishAuctionOffering" :address "0x0000000000000000000000000000000000000000"}
+                       :english-auction-offering-library {:name "EnglishAuctionOfferingLibrary" :address "0x0000000000000000000000000000000000000000"}
                        ;:ens-node-names {:name "ENSNodeNames" :dev-only? true :address "0x0000000000000000000000000000000000000000"}
                        :ens {:name "ENS" :dev-only? true :address "0x0000000000000000000000000000000000000000"}
                        ;:fifs-registrar {:name "FIFSRegistrar" :dev-only? true :address "0x0000000000000000000000000000000000000000"}
@@ -108,7 +107,7 @@
 
      :form.english-auction-offering-factory/create-offering
      {:default {:loading? false
-                :gas-limit 2000000
+                :gas-limit 4700000
                 :data {:english-auction-offering-factory/name ""
                        :english-auction-offering-factory/start-price 0.01
                        :english-auction-offering-factory/start-time (to-epoch (t/now))

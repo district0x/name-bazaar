@@ -2,7 +2,7 @@
   (:require
     [ajax.core :as ajax]
     [akiroz.re-frame.storage :as re-frame-storage]
-    [cljs-time.coerce :as time-coerce]
+    [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
@@ -22,7 +22,8 @@
     [medley.core :as medley]
     [name-bazaar.constants :as constants]
     [name-bazaar.utils :refer [namehash sha3]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch]]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch]]
+    [clojure.string :as str]))
 
 (def interceptors district0x.events/interceptors)
 
@@ -82,23 +83,82 @@
 (reg-event-fx
   :deploy-instant-buy-offering-factory
   interceptors
-  (fn [{:keys [db]} [{:keys [:address-index]}]]
+  (fn [{:keys [db]} [{:keys [:address-index :offering-factory/emergency-multisig]}]]
     {:dispatch [:district0x/deploy-contract {:address-index address-index
                                              :contract-key :instant-buy-offering-factory
-                                             :args (map (comp :address (partial get-contract db))
-                                                        [:ens :offering-registry :offering-requests])
+                                             :args (-> (mapv (comp :address (partial get-contract db))
+                                                             [:ens :offering-registry :offering-requests])
+                                                     (conj emergency-multisig))
                                              :on-success [:instant-buy-offering-factory-deployed]}]}))
 
 (reg-empty-event-fx :instant-buy-offering-factory-deployed)
 
 (reg-event-fx
-  :deploy-english-auction-offering-factory
+  :deploy-offering-library
   interceptors
   (fn [{:keys [db]} [{:keys [:address-index]}]]
     {:dispatch [:district0x/deploy-contract {:address-index address-index
+                                             :contract-key :offering-library
+                                             :on-success [:offering-library-deployed]}]}))
+
+(defn- link-contract-library [db contract-key library-contract-key]
+  (let [library-address (:address (get-contract db library-contract-key))
+        placeholder (constants/library-placeholders library-contract-key)]
+    (update-in db [:smart-contracts contract-key :bin]
+               (fn [bin]
+                 (str/replace bin placeholder (subs library-address 2))))))
+
+(reg-event-fx
+  :offering-library-deployed
+  interceptors
+  (fn [{:keys [db]}]
+    (let [library-address (:address (get-contract db :offering-library))]
+      {:db (-> db
+             (link-contract-library :instant-buy-offering-factory :offering-library)
+             (link-contract-library :english-auction-offering-factory :offering-library)
+             (link-contract-library :english-auction-offering-library :offering-library)
+             (link-contract-library :instant-buy-offering-library :offering-library))})))
+
+
+(reg-event-fx
+  :deploy-instant-buy-offering-library
+  interceptors
+  (fn [{:keys [db]} [{:keys [:address-index]}]]
+    {:dispatch [:district0x/deploy-contract {:address-index address-index
+                                             :contract-key :instant-buy-offering-library
+                                             :on-success [:instant-buy-offering-library-deployed]}]}))
+
+(reg-event-fx
+  :instant-buy-offering-library-deployed
+  interceptors
+  (fn [{:keys [db]}]
+    (let [library-address (:address (get-contract db :instant-buy-offering-library))]
+      {:db (link-contract-library db :instant-buy-offering-factory :instant-buy-offering-library)})))
+
+(reg-event-fx
+  :deploy-english-auction-offering-library
+  interceptors
+  (fn [{:keys [db]} [{:keys [:address-index]}]]
+    {:dispatch [:district0x/deploy-contract {:address-index address-index
+                                             :contract-key :english-auction-offering-library
+                                             :on-success [:english-auction-offering-library-deployed]}]}))
+
+(reg-event-fx
+  :english-auction-offering-library-deployed
+  interceptors
+  (fn [{:keys [db]}]
+    (let [library-address (:address (get-contract db :english-auction-offering-library))]
+      {:db (link-contract-library db :english-auction-offering-factory :english-auction-offering-library)})))
+
+(reg-event-fx
+  :deploy-english-auction-offering-factory
+  interceptors
+  (fn [{:keys [db]} [{:keys [:address-index :offering-factory/emergency-multisig]}]]
+    {:dispatch [:district0x/deploy-contract {:address-index address-index
                                              :contract-key :english-auction-offering-factory
-                                             :args (map (comp :address (partial get-contract db))
-                                                        [:ens :offering-registry :offering-requests])
+                                             :args (-> (mapv (comp :address (partial get-contract db))
+                                                             [:ens :offering-registry :offering-requests])
+                                                     (conj emergency-multisig))
                                              :on-success [:english-auction-offering-factory-deployed]}]}))
 
 (reg-empty-event-fx :english-auction-offering-factory-deployed)
@@ -134,7 +194,7 @@
     {:dispatch [:district0x.form/submit
                 {:form-data form-data
                  :address address
-                 :fn-key :instant-buy-offering-factory/create-offering
+                 :fn-key :english-auction-offering-factory/create-offering
                  :fn-args (constants/contracts-method-args :english-auction-offering-factory/create-offering)
                  :wei-args constants/contracts-method-wei-args
                  :form-key :form.english-auction-offering-factory/create-offering}]}))
@@ -181,7 +241,7 @@
 (reg-event-fx
   :offering-registry/on-offering-added
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering :owner :node] :as a}]]
+  (fn [{:keys [:db]} [{:keys [:offering :owner :node]} event]]
     {:db (-> db
            (update-in [:offering-registry/offerings offering] merge {:offering/node node
                                                                      :offering/original-owner owner})
@@ -203,7 +263,7 @@
   :reinitialize
   interceptors
   (fn [{:keys [:db]} args]
-    (let [{:keys [:my-addresses]} db]
+    (let [{:keys [:my-addresses :active-address]} db]
       (reg-empty-event-fx :offering-registry-factories-set)
       (reg-empty-event-fx :offering-requests-factories-set)
       (reg-empty-event-fx :reinitialize-success)
@@ -214,7 +274,8 @@
                              :events [:district0x/smart-contracts-loaded]
                              :dispatch-n [[:deploy-ens]
                                           [:deploy-offering-registry]
-                                          [:deploy-offering-requests]]}
+                                          [:deploy-offering-requests]
+                                          [:deploy-offering-library]]}
                             #_{:when :seen?
                                :events [:ens-deployed]
                                :dispatch [:deploy-fifs-registrar]}
@@ -222,9 +283,19 @@
                                :events [:ens-node-names-deployed]
                                :dispatch [:deploy-offering-requests]}
                             {:when :seen?
-                             :events [:ens-deployed :offering-registry-deployed :offering-requests-deployed]
-                             :dispatch-n [[:deploy-instant-buy-offering-factory]
-                                          [:deploy-english-auction-offering-factory]]}
+                             :events [:offering-library-deployed]
+                             :dispatch-n [[:deploy-instant-buy-offering-library]
+                                          [:deploy-english-auction-offering-library]]}
+                            {:when :seen?
+                             :events [:ens-deployed
+                                      :offering-registry-deployed
+                                      :offering-requests-deployed
+                                      :instant-buy-offering-library-deployed
+                                      :english-auction-offering-library-deployed]
+                             :dispatch-n [[:deploy-instant-buy-offering-factory
+                                           {:offering-factory/emergency-multisig active-address}]
+                                          [:deploy-english-auction-offering-factory
+                                           {:offering-factory/emergency-multisig active-address}]]}
                             {:when :seen?
                              :events [:instant-buy-offering-factory-deployed :english-auction-offering-factory-deployed]
                              :dispatch-n [[:used-by-factories/set-factories
@@ -254,11 +325,20 @@
                              :dispatch-n [[:watch-offering-added]
                                           [:instant-buy-offering-factory/create-offering
                                            {:instant-buy-offering-factory/name "eth"
-                                            :instant-buy-offering/price 0.1}]]}
-                            {:when :seen?
-                             :events [:offering-registry/on-offering-added]
-                             :dispatch-n [[:transfer-node-owner-to-latest-offering {:ens/name "eth"}]
-                                          [:district0x/set-ui-disabled false]]
-                             :halt? true}]}})))
+                                            :instant-buy-offering/price 0.1}]
+                                          [:english-auction-offering-factory/create-offering
+                                           {:english-auction-offering-factory/name "eth"
+                                            :english-auction-offering-factory/start-price 0.01
+                                            :english-auction-offering-factory/start-time 1 #_(to-epoch (t/now))
+                                            :english-auction-offering-factory/end-time (to-epoch (t/plus (t/now) (t/years 1)))
+                                            :english-auction-offering-factory/extension-duration (t/in-seconds (t/hours 1))
+                                            :english-auction-offering-factory/extension-trigger-duration (t/in-seconds (t/hours 1))
+                                            :english-auction-offering-factory/min-bid-increase 0.01}]]
+                             :halt? true}
+                            #_{:when :seen?
+                               :events [:offering-registry/on-offering-added]
+                               :dispatch-n [[:transfer-node-owner-to-latest-offering {:ens/name "eth"}]
+                                            [:district0x/set-ui-disabled false]]
+                               :halt? true}]}})))
 
 

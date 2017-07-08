@@ -1,38 +1,41 @@
 pragma solidity ^0.4.11;
 
-import "ens/ENS.sol";
+import "ens/AbstractENS.sol";
+import "OfferingLibrary.sol";
 
 contract Offering {
+    using OfferingLibrary for OfferingLibrary.Offering;
 
-    ENS public ens;
-    bytes32 public node;
-    string public name;
-    address public originalOwner;
-    address public newOwner;
-    uint8 public offeringType;
-    uint public createdOn;
-    uint public transferredOn;
+    OfferingLibrary.Offering public offering;
 
-    event onCancel(uint datetime);
+    event onReclaim(uint datetime, bool isEmergency);
     event onTransfer(address newOwner, uint price, uint datetime);
 
-    modifier onlyOriginalOwner() {
-        require(msg.sender == originalOwner);
-        _;
+    function Offering(
+        address _ens,
+        bytes32 _node,
+        string _name,
+        address _originalOwner,
+        address _emergencyMultisig,
+        uint _offeringType,
+        uint _contractVersion
+    ) {
+        offering.construct(
+            _ens,
+            _node,
+            _name,
+            _originalOwner,
+            _emergencyMultisig,
+            _offeringType,
+            _contractVersion
+        );
     }
 
-    modifier contractOwnsNode() {
-        require(ens.owner(node) == address(this));
-        _;
+    function reclaim() {
+        offering.reclaim();
     }
 
-    function Offering(address _ens, bytes32 _node, string _name, address _originalOwner) {
-        ens = ENS(_ens);
-        node = _node;
-        name = _name;
-        originalOwner = _originalOwner;
-        createdOn = now;
+    function claim(bytes32 node, address claimer) {
+        offering.claim(node, claimer);
     }
-
-    function cancel();
 }
