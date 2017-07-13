@@ -10,35 +10,31 @@ contract EnglishAuctionOffering is Offering {
     EnglishAuctionOfferingLibrary.EnglishAuctionOffering public englishAuctionOffering;
 
     event onBid(address indexed bidder, uint amount, uint endTime, uint datetime);
-    event onSettingsChanged(uint startPrice, uint endTime, uint extensionDuration, uint extensionTriggerDuration, uint minBidIncrease);
 
     function EnglishAuctionOffering(
+        address _offeringRegistry,
         address _ens,
         bytes32 _node,
         string _name,
         address _originalOwner,
         address _emergencyMultisig,
         uint _startPrice,
-        uint _startTime,
         uint _endTime,
         uint _extensionDuration,
-        uint _extensionTriggerDuration,
         uint _minBidIncrease
     )
-        Offering(_ens, _node, _name, _originalOwner, _emergencyMultisig, 2, 1)
+        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 100000)
     {
         englishAuctionOffering.construct(
             _startPrice,
-            _startTime,
             _endTime,
             _extensionDuration,
-            _extensionTriggerDuration,
             _minBidIncrease
         );
     }
 
     function bid() payable {
-        englishAuctionOffering.bid();
+        englishAuctionOffering.bid(offering);
     }
 
     function finalize() {
@@ -49,7 +45,6 @@ contract EnglishAuctionOffering is Offering {
         uint _startPrice,
         uint _endTime,
         uint _extensionDuration,
-        uint _extensionTriggerDuration,
         uint _minBidIncrease
     ) {
         englishAuctionOffering.setSettings(
@@ -57,7 +52,6 @@ contract EnglishAuctionOffering is Offering {
             _startPrice,
             _endTime,
             _extensionDuration,
-            _extensionTriggerDuration,
             _minBidIncrease);
     }
 

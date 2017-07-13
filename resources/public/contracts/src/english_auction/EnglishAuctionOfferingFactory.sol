@@ -19,28 +19,25 @@ contract EnglishAuctionOfferingFactory is OfferingFactory {
     function createOffering(
         string name,
         uint startPrice,
-        uint startTime,
         uint endTime,
         uint extensionDuration,
-        uint extensionTriggerDuration,
         uint minBidIncrease
     ) {
         var node = namehash(name);
         address newOffering = new EnglishAuctionOffering(
+            offeringRegistry,
             ens,
             node,
             name,
             msg.sender,
             emergencyMultisig,
             startPrice,
-            startTime,
             endTime,
             extensionDuration,
-            extensionTriggerDuration,
             minBidIncrease
         );
 
-        registerOffering(node, newOffering);
+        registerOffering(node, newOffering, 100000);
     }
 }
 

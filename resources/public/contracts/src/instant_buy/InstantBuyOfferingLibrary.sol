@@ -9,14 +9,13 @@ library InstantBuyOfferingLibrary {
         uint price;
     }
 
-    event onSettingsChanged(uint price);
-
     function buy(
         InstantBuyOffering storage self,
         OfferingLibrary.Offering storage offering
     ) {
         require(msg.value == self.price);
         offering.finalize(msg.sender, msg.value);
+        offering.setChanged();
     }
 
     function setSettings(
@@ -27,6 +26,6 @@ library InstantBuyOfferingLibrary {
         require(offering.isSenderOriginalOwner());
         require(!offering.isFinalized());
         self.price = _price;
-        onSettingsChanged(_price);
+        offering.setChanged();
     }
 }

@@ -3,7 +3,7 @@
     [cljs-time.core :as t]
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-web3.core :as web3]
-    [cljs.spec :as s]
+    [cljs.spec.alpha :as s]
     [name-bazaar.constants :as constants]
     [district0x.db]
     [district0x.utils :as u]

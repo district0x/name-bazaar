@@ -24,6 +24,7 @@ contract InstantBuyOfferingFactory is OfferingFactory {
     ) {
         bytes32 node = namehash(name);
         address newOffering = new InstantBuyOffering(
+            offeringRegistry,
             ens,
             node,
             name,
@@ -31,7 +32,7 @@ contract InstantBuyOfferingFactory is OfferingFactory {
             emergencyMultisig,
             price
         );
-        registerOffering(node, newOffering);
+        registerOffering(node, newOffering, 1);
     }
 }
 

@@ -17,3 +17,5 @@ pom.xml.asc
 /resources/public/js/compiled/
 /figwheel_server.log
 /resources/public/contracts/build/*.bin
+/dev-backend/
+/dev-tests/

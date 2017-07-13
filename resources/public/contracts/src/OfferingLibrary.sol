@@ -1,40 +1,40 @@
 pragma solidity ^0.4.11;
 
 import "ens/AbstractENS.sol";
+import "OfferingRegistry.sol";
 
 library OfferingLibrary {
 
     struct Offering {
+        OfferingRegistry offeringRegistry;
         AbstractENS ens;
         bytes32 node;
         string name;
         address originalOwner;
         address emergencyMultisig;
         uint offeringType;
-        uint contractVersion;
         address newOwner;
     }
 
-    event onReclaim(uint datetime, bool isEmergency);
     event onTransfer(address newOwner, uint price, uint datetime);
 
     function construct(
         Offering storage self,
+        address _offeringRegistry,
         address _ens, 
         bytes32 _node, 
         string _name, 
         address _originalOwner,
         address _emergencyMultisig,
-        uint _offeringType,
-        uint _contractVersion
+        uint _offeringType
     ) {
+        self.offeringRegistry = OfferingRegistry(_offeringRegistry);
         self.ens = AbstractENS(_ens);
         self.node = _node;
         self.name = _name;
         self.originalOwner = _originalOwner;
         self.emergencyMultisig = _emergencyMultisig;
         self.offeringType = _offeringType;
-        self.contractVersion = _contractVersion;
     }
 
     function reclaim(OfferingLibrary.Offering storage self) {
@@ -43,15 +43,16 @@ library OfferingLibrary {
 
         if (isContractNodeOwner(self)) {
             self.ens.setOwner(self.node, self.originalOwner);
-            onReclaim(now, isEmergency);
         }
         if (isEmergency) {
             // New owner is not really this address, but it's the way to recogize it
             // was disabled in emergency without having separate var for it, which is costly
             self.newOwner = 0xdead;
         }
+        setChanged(self);
     }
 
+    // Security method in case user transfers other name to this contract than it's supposed to be
     function claim(Offering storage self, bytes32 node, address claimer) {
         require(isSenderEmergencyMultisig(self));
         require(self.node != node);
@@ -65,6 +66,16 @@ library OfferingLibrary {
         self.ens.setOwner(self.node, _newOwner);
         self.originalOwner.transfer(_price);
         onTransfer(_newOwner, _price, now);
+        setChanged(self);
+    }
+
+    function setChanged(Offering storage self) {
+        self.offeringRegistry.setOfferingChanged();
+    }
+
+    function setOfferingRegistry(Offering storage self, address _offeringRegistry) {
+        require(isSenderEmergencyMultisig(self));
+        self.offeringRegistry = OfferingRegistry(_offeringRegistry);
     }
 
     function isContractNodeOwner(Offering storage self) returns(bool) {

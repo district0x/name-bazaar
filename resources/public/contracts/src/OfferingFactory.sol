@@ -25,11 +25,11 @@ contract OfferingFactory {
         emergencyMultisig = _emergencyMultisig;
     }
 
-    function registerOffering(bytes32 node, address newOffering)
+    function registerOffering(bytes32 node, address newOffering, uint offeringType)
         internal
     {
         require(ens.owner(node) == msg.sender);
-        offeringRegistry.addOffering(newOffering, node, msg.sender);
+        offeringRegistry.addOffering(newOffering, node, msg.sender, offeringType);
         offeringRequests.clearRequests(node);
     }
 

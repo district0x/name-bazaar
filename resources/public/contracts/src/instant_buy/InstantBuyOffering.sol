@@ -11,6 +11,7 @@ contract InstantBuyOffering is Offering {
     event onSettingsChanged(uint price);
 
     function InstantBuyOffering(
+        address _offeringRegistry,
         address _ens,
         bytes32 _node,
         string _name,
@@ -18,7 +19,7 @@ contract InstantBuyOffering is Offering {
         address _emergencyMultisig,
         uint _price
     )
-        Offering(_ens, _node, _name, _originalOwner, _emergencyMultisig, 1, 1)
+        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 1)
     {
         instantBuyOffering.price = _price;
     }
