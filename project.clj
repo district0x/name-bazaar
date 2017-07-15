@@ -15,6 +15,7 @@
                  [org.clojure/clojurescript "1.9.671"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4" :exclusions [reagent]]
+                 [honeysql "0.9.0"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
@@ -43,6 +44,7 @@
                        [ethereumjs-testrpc "3.0.3"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]
+                       [sqlite3 "3.1.8"]
                        [web3 "0.19.0"]
                        [ws "2.0.1"]]}
 

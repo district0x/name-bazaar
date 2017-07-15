@@ -21,6 +21,7 @@
     [goog.string.format]
     [medley.core :as medley]
     [name-bazaar.constants :as constants]
+    [honeysql.core :as sql]
     [name-bazaar.utils :refer [namehash sha3]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch]]
     [clojure.string :as str]))

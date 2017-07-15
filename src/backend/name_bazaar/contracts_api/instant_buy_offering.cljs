@@ -9,7 +9,7 @@
 (defn buy! [server-state {:keys [:contract-address :value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth/contract-at (state/web3 server-state)
-                                                       (:abi (state/contract :instant-buy-offering))
+                                                       (:abi (state/contract server-state :instant-buy-offering))
                                                        contract-address)
                                  :buy
                                  (merge {:gas 300000

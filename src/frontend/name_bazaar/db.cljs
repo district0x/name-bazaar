@@ -13,7 +13,7 @@
 (s/def :offering/name string?)
 (s/def :offering/original-owner u/address?)
 (s/def :offering/new-owner u/address?)
-(s/def :offering/offering-type int?)
+(s/def :offering/type int?)
 (s/def :offering/created-on u/date?)
 (s/def :offering/transferred-on u/date?)
 (s/def :instant-buy-offering/price u/not-neg?)
@@ -34,7 +34,7 @@
                                                  :offering/name
                                                  :offering/original-owner
                                                  :offering/new-owner
-                                                 :offering/offering-type
+                                                 :offering/type
                                                  :offering/created-on
                                                  :offering/transferred-on
                                                  :instant-buy-offering/price

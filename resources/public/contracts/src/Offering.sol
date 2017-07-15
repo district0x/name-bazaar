@@ -18,7 +18,8 @@ contract Offering {
         string _name,
         address _originalOwner,
         address _emergencyMultisig,
-        uint _offeringType
+        uint _offeringType,
+        uint _price
     ) {
         offering.construct(
             _offeringRegistry,
@@ -27,7 +28,8 @@ contract Offering {
             _name,
             _originalOwner,
             _emergencyMultisig,
-            _offeringType
+            _offeringType,
+            _price
         );
     }
 

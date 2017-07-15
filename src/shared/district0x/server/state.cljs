@@ -8,48 +8,48 @@
 
 (defn web3
   ([]
-    (web3 *server-state*))
+    (web3 @*server-state*))
   ([server-state]
-   (:web3 @server-state)))
+   (:web3 server-state)))
 
 (defn db
   ([]
-   (db *server-state*))
+   (db @*server-state*))
   ([server-state]
-   (:db @server-state)))
+   (:db server-state)))
 
 (defn active-address
   ([]
-   (active-address *server-state*))
+   (active-address @*server-state*))
   ([server-state]
-   (:active-address @server-state)))
+   (:active-address server-state)))
 
 (defn my-address
   ([i]
-   (active-address *server-state*))
+   (active-address @*server-state*))
   ([server-state i]
-   (nth (:my-addresses @server-state) i)))
+   (nth (:my-addresses server-state) i)))
 
 (defn instance
   ([contract-key]
-    (instance *server-state* contract-key))
+    (instance @*server-state* contract-key))
   ([server-state contract-key]
-   (get-in @server-state [:smart-contracts contract-key :instance])))
+   (get-in server-state [:smart-contracts contract-key :instance])))
 
 (defn contract-address
   ([contract-key]
-   (contract-address *server-state* contract-key))
+   (contract-address @*server-state* contract-key))
   ([server-state contract-key]
-   (get-in @server-state [:smart-contracts contract-key :address])))
+   (get-in server-state [:smart-contracts contract-key :address])))
 
 (defn contract
   ([contract-key]
-   (contract *server-state* contract-key))
+   (contract @*server-state* contract-key))
   ([server-state contract-key]
-   (get-in @server-state [:smart-contracts contract-key])))
+   (get-in server-state [:smart-contracts contract-key])))
 
 (defn my-addresses
   ([]
-   (my-addresses *server-state*))
+   (my-addresses @*server-state*))
   ([server-state]
-   (:my-addresses @server-state)))
+   (:my-addresses server-state)))

@@ -23,10 +23,9 @@ contract EnglishAuctionOffering is Offering {
         uint _extensionDuration,
         uint _minBidIncrease
     )
-        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 100000)
+        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 100000, _startPrice)
     {
         englishAuctionOffering.construct(
-            _startPrice,
             _endTime,
             _extensionDuration,
             _minBidIncrease

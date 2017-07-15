@@ -13,17 +13,19 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         mapping(address => bool) hasRequested;
     }
 
-    mapping(bytes32 => Requests) requests;
+    mapping(bytes32 => address[]) requesters;
+    mapping(bytes32 => mapping(address => bool)) hasRequested;
 
     event onRequestAdded(bytes32 indexed node, address indexed requester, uint requestsCount);
-    event onRequestsCleared(bytes32 indexed node, uint datetime);
+    event onRequestsCleared(bytes32 indexed node);
 
     function addRequest(string name) {
         var node = namehash(name);
         requests[node].name = name;
         if (!requests[node].hasRequested[msg.sender]) {
             requests[node].hasRequested[msg.sender] = true;
-            requests[node].requesters.push(msg.sender);
+//            requests[node].requesters[0] = msg.sender;
+//            requests[node].requesters.push(msg.sender);
             onRequestAdded(node, msg.sender, requests[node].requesters.length);
         }
     }
@@ -34,7 +36,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         if (requests[node].requesters.length > 0) {
             address[] memory requesters;
             requests[node] = Requests(requests[node].name, requesters);
-            onRequestsCleared(node, now);
+            onRequestsCleared(node);
         }
     }
 

@@ -4,11 +4,6 @@ import "Offering.sol";
 import "./InstantBuyOfferingLibrary.sol";
 
 contract InstantBuyOffering is Offering {
-    using InstantBuyOfferingLibrary for InstantBuyOfferingLibrary.InstantBuyOffering;
-
-    InstantBuyOfferingLibrary.InstantBuyOffering public instantBuyOffering;
-
-    event onSettingsChanged(uint price);
 
     function InstantBuyOffering(
         address _offeringRegistry,
@@ -19,17 +14,16 @@ contract InstantBuyOffering is Offering {
         address _emergencyMultisig,
         uint _price
     )
-        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 1)
+        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 1, _price)
     {
-        instantBuyOffering.price = _price;
     }
 
     function buy() payable {
-        instantBuyOffering.buy(offering);
+        InstantBuyOfferingLibrary.buy(offering);
     }
 
     function setSettings(uint _price) {
-        instantBuyOffering.setSettings(offering, _price);
+        InstantBuyOfferingLibrary.setSettings(offering, _price);
     }
 
     function() payable {

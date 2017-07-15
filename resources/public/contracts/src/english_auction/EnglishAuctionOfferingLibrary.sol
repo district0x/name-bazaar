@@ -8,7 +8,6 @@ library EnglishAuctionOfferingLibrary {
     using OfferingLibrary for OfferingLibrary.Offering;
 
     struct EnglishAuctionOffering {
-        uint  price;
         uint  endTime;
         uint  extensionDuration;
         uint  minBidIncrease;
@@ -19,12 +18,10 @@ library EnglishAuctionOfferingLibrary {
 
     function construct(
         EnglishAuctionOffering storage self,
-        uint _startPrice,
         uint _endTime,
         uint _extensionDuration,
         uint _minBidIncrease
     ) {
-        self.price = _startPrice;
         require(_endTime > now);
         self.endTime = _endTime;
         self.extensionDuration = _extensionDuration;
@@ -39,20 +36,20 @@ library EnglishAuctionOfferingLibrary {
         require(now < self.endTime);
 
         if (self.winningBidder == 0x0) {
-            require(msg.value >= self.price);
+            require(msg.value >= offering.price);
         } else {
-            require(msg.value >= self.price.add(self.minBidIncrease));
-            self.winningBidder.transfer(self.price);
+            require(msg.value >= offering.price.add(self.minBidIncrease));
+            self.winningBidder.transfer(offering.price);
         }
 
         self.winningBidder = msg.sender;
-        self.price = msg.value;
+        offering.price = msg.value;
 
         if ((self.endTime - self.extensionDuration) <= now) {
             self.endTime = now.add(self.extensionDuration);
         }
 
-        onBid(msg.sender, self.price, self.endTime, now);
+        onBid(msg.sender, offering.price, self.endTime, now);
         offering.setChanged();
     }
 
@@ -62,7 +59,7 @@ library EnglishAuctionOfferingLibrary {
     ) {
         require(now > self.endTime);
         require(self.winningBidder != 0x0);
-        offering.finalize(self.winningBidder, self.price);
+        offering.finalize(self.winningBidder, offering.price);
     }
 
     function reclaim(
@@ -71,7 +68,7 @@ library EnglishAuctionOfferingLibrary {
     ) {
         if (offering.isSenderEmergencyMultisig()) {
             if (!hasNoBids(self) && !offering.isEmergencyDisabled()) {
-                self.winningBidder.transfer(self.price);
+                self.winningBidder.transfer(offering.price);
             }
         } else {
             require(hasNoBids(self));
@@ -89,10 +86,10 @@ library EnglishAuctionOfferingLibrary {
     ) {
         require(offering.isSenderOriginalOwner());
         require(hasNoBids(self));
+        offering.price = _startPrice;
 
         construct(
             self,
-            _startPrice,
             _endTime,
             _extensionDuration,
             _minBidIncrease

@@ -5,7 +5,7 @@ import "UsedByFactories.sol";
 contract OfferingRegistry is UsedByFactories {
 
     event onOfferingAdded(address offering, bytes32 indexed node, address indexed owner, uint offeringType);
-    event onOfferingChanged(address offering);
+    event onOfferingChanged(address offering, uint offeringType);
 
     mapping(address => bool) isOffering;
 
@@ -16,8 +16,8 @@ contract OfferingRegistry is UsedByFactories {
         onOfferingAdded(_offering, node, owner, offeringType);
     }
 
-    function setOfferingChanged() {
+    function setOfferingChanged(uint offeringType) {
         require(isOffering[msg.sender]);
-        onOfferingChanged(msg.sender);
+        onOfferingChanged(msg.sender, offeringType);
     }
 }

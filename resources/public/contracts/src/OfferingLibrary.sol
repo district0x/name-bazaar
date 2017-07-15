@@ -13,7 +13,9 @@ library OfferingLibrary {
         address originalOwner;
         address emergencyMultisig;
         uint offeringType;
+        uint createdOn;
         address newOwner;
+        uint price;
     }
 
     event onTransfer(address newOwner, uint price, uint datetime);
@@ -26,7 +28,8 @@ library OfferingLibrary {
         string _name, 
         address _originalOwner,
         address _emergencyMultisig,
-        uint _offeringType
+        uint _offeringType,
+        uint _price
     ) {
         self.offeringRegistry = OfferingRegistry(_offeringRegistry);
         self.ens = AbstractENS(_ens);
@@ -35,6 +38,8 @@ library OfferingLibrary {
         self.originalOwner = _originalOwner;
         self.emergencyMultisig = _emergencyMultisig;
         self.offeringType = _offeringType;
+        self.createdOn = now;
+        self.price = _price;
     }
 
     function reclaim(OfferingLibrary.Offering storage self) {
@@ -70,7 +75,7 @@ library OfferingLibrary {
     }
 
     function setChanged(Offering storage self) {
-        self.offeringRegistry.setOfferingChanged();
+        self.offeringRegistry.setOfferingChanged(self.offeringType);
     }
 
     function setOfferingRegistry(Offering storage self, address _offeringRegistry) {

@@ -1,7 +1,9 @@
 (ns district0x.big-number
   (:refer-clojure :exclude [pos? neg? abs int? zero? - + * / mod])
-  (:require [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
-            [cljs-time.core :as t :refer [date-time to-default-time-zone]]))
+  (:require
+    [goog.date.Date]
+    [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
+    [cljs-time.core :as t :refer [date-time to-default-time-zone]]))
 
 (defn big-number? [x]
   (and x (aget x "toNumber")))
