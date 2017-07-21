@@ -1,15 +1,18 @@
 (ns name-bazaar.server.db
+  (:refer-clojure :exclude [run!])
   (:require
     [honeysql.core :as sql]
     [honeysql.helpers :as sql-helpers]
-    [district0x.server.state :as state]
-    ))
+    [district0x.server.state :as state]))
 
 (defn log-error [err]
   (when err
     (println err)))
 
 ; node CHAR(66) NOT NULL,
+
+(defn run! [db query keys m]
+  (.run db query (clj->js ((apply juxt keys) m)) log-error))
 
 (defn create-tables! [db]
   (.serialize db (fn []
@@ -32,26 +35,31 @@
 
                    (.run db "CREATE TABLE offeringRequests (
                           node CHAR(66) PRIMARY KEY NOT NULL,
-                          blockNumber UNSIGNED INTEGER NOT NULL,
                           requestsCount UNSIGNED INTEGER NOT NULL DEFAULT 0
                           )" log-error)
 
                    (.run db "CREATE INDEX requestsCountIndex ON offeringRequests (requestsCount)" log-error))))
 
-(comment
-  )
-
 (defn upsert-offering! [db values]
-  (.run db "INSERT OR REPLACE INTO offerings
+  (run! db "INSERT OR REPLACE INTO offerings
               (address, createdOn, name, originalOwner, offeringType, price, endTime, isNodeOwner)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
               "
-        (clj->js ((juxt :offering/address
-                        :offering/created-on
-                        :offering/name
-                        :offering/original-owner
-                        :offering/type
-                        :offering/price
-                        :english-auction-offering/end-time
-                        :offering/node-owner?
-                        ) values)) log-error))
+        [:offering/address
+         :offering/created-on
+         :offering/name
+         :offering/original-owner
+         :offering/type
+         :offering/price
+         :english-auction-offering/end-time
+         :offering/node-owner?]
+        values))
+
+(defn upsert-offering-requests! [db values]
+  (run! db "INSERT OR REPLACE INTO offeringRequests
+              (node, requestsCount)
+              VALUES (?, ?)
+              "
+        [:offering-requests/node
+         :offering-requests/count]
+        values))

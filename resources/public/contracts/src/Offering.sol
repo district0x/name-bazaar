@@ -8,7 +8,6 @@ contract Offering {
 
     OfferingLibrary.Offering public offering;
 
-    event onReclaim(uint datetime, bool isEmergency);
     event onTransfer(address newOwner, uint price, uint datetime);
 
     function Offering(
@@ -33,13 +32,13 @@ contract Offering {
         );
     }
 
-    function reclaim() {
-        offering.reclaim();
+    function reclaimOwnership() {
+        offering.reclaimOwnership();
     }
 
     // Security method in case user transfers other name to this contract than it's supposed to be
-    function claim(bytes32 node, address claimer) {
-        offering.claim(node, claimer);
+    function claimOwnership(bytes32 node, address _address) {
+        offering.claimOwnership(node, _address);
     }
 
 //    function setOfferingRegistry(address _offeringRegistry) {

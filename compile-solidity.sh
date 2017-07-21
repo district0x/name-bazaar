@@ -7,7 +7,8 @@ solc --overwrite --optimize --bin --abi english_auction/EnglishAuctionOfferingFa
 solc --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
 solc --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
 solc --overwrite --optimize --bin --abi ens/ENS.sol -o ../build/
-#solc --overwrite --optimize --bin --abi Test.sol -o ../build/
+
+solc --overwrite --optimize --bin --abi Test.sol -o ../build/
 
 
 cd ../build
@@ -20,5 +21,6 @@ wc -c EnglishAuctionOffering.bin | awk '{print "EnglishAuctionOffering: " $1}'
 wc -c EnglishAuctionOfferingLibrary.bin | awk '{print "EnglishAuctionOfferingLibrary: " $1}'
 wc -c OfferingRequests.bin | awk '{print "OfferingRequests: " $1}'
 wc -c ENS.bin | awk '{print "ENS: " $1}'
+
 #wc -c Test.bin | awk '{print "Test: " $1}'
 

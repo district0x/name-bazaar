@@ -9,7 +9,7 @@ contract EnglishAuctionOffering is Offering {
 
     EnglishAuctionOfferingLibrary.EnglishAuctionOffering public englishAuctionOffering;
 
-    event onBid(address indexed bidder, uint amount, uint endTime, uint datetime);
+    event onBid(address indexed bidder, uint amount, uint endTime);
 
     function EnglishAuctionOffering(
         address _offeringRegistry,
@@ -36,8 +36,12 @@ contract EnglishAuctionOffering is Offering {
         englishAuctionOffering.bid(offering);
     }
 
-    function finalize() {
-        englishAuctionOffering.finalize(offering);
+    function finalize(bool transferPrice) {
+        englishAuctionOffering.finalize(offering, transferPrice);
+    }
+
+    function withdraw(address _address) {
+        englishAuctionOffering.withdraw(offering, _address);
     }
 
     function setSettings(
@@ -54,8 +58,8 @@ contract EnglishAuctionOffering is Offering {
             _minBidIncrease);
     }
 
-    function reclaim() {
-        englishAuctionOffering.reclaim(offering);
+    function reclaimOwnership() {
+        englishAuctionOffering.reclaimOwnership(offering);
     }
 
     function() payable {

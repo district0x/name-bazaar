@@ -4,14 +4,16 @@
     [cljs.core.async :refer [<! >! chan]]
     [district0x.server.state :as state]
     [name-bazaar.contracts-api.english-auction-offering :as english-auction-offering]
+    [name-bazaar.contracts-api.ens :as ens]
     [name-bazaar.contracts-api.offering :as offering]
     [name-bazaar.contracts-api.offering-registry :as offering-registry]
+    [name-bazaar.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-type->kw]]
-    [name-bazaar.contracts-api.ens :as ens])
+    [district0x.big-number :as bn])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(def event-filters (atom {}))
+(defonce event-filters (atom {}))
 
 (defn on-offering-added [server-state err {:keys [:args]}]
   (go
@@ -44,6 +46,16 @@
     (when filter
       (web3-eth/stop-watching! filter (fn [])))))
 
+(defn on-new-requests [server-state err {{:keys [:node]} :args}]
+  (go
+    (let [requests-count (second (<! (offering-requests/requests-count server-state {:offering-requests/node node})))]
+      (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node node
+                                                             :offering-requests/count requests-count}))))
+
+(defn on-request-added [server-state err {{:keys [:node :requests-count]} :args}]
+  (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node (print.foo/look node)
+                                                         :offering-requests/count (bn/->number requests-count)}))
+
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))
   (stop-watching-filters!)
@@ -57,7 +69,15 @@
           :on-offering-added (offering-registry/on-offering-added server-state
                                                                   {}
                                                                   {:from-block 0 :to-block "latest"}
-                                                                  (partial on-offering-added server-state))}))
+                                                                  (partial on-offering-added server-state))
+          :on-new-requests (offering-requests/on-new-requests server-state
+                                                              {}
+                                                              {:from-block 0 :to-block "latest"}
+                                                              (partial on-new-requests server-state))
+          :on-request-added (offering-requests/on-request-added server-state
+                                                                {}
+                                                                "latest"
+                                                                (partial on-request-added server-state))}))
 
 (defn stop-syncing! []
   (stop-watching-filters!)

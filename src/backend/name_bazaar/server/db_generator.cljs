@@ -42,7 +42,7 @@
                                        :ens/owner owner}
                                       {:from (state/active-address server-state)}))
 
-          (print.foo/look (<! (offering-requests/add-request! server-state {:offering-request/name request-name} {:form owner})))
+          (<! (offering-requests/add-request! server-state {:offering-request/name request-name} {:form owner}))
 
           (if (= offering-type :instant-buy-offering)
             (<! (instant-buy-offering-factory/create-offering! server-state

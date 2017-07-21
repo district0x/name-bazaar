@@ -13,19 +13,22 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         mapping(address => bool) hasRequested;
     }
 
-    mapping(bytes32 => address[]) requesters;
-    mapping(bytes32 => mapping(address => bool)) hasRequested;
+    mapping(bytes32 => Requests) public requests;
 
-    event onRequestAdded(bytes32 indexed node, address indexed requester, uint requestsCount);
-    event onRequestsCleared(bytes32 indexed node);
+    event onNewRequests(bytes32 node);
+    event onRequestAdded(bytes32 node, address requester, uint requestsCount);
+    event onRequestsCleared(bytes32 node);
 
     function addRequest(string name) {
+        require(bytes(name).length > 0);
         var node = namehash(name);
+        if (bytes(requests[node].name).length == 0) {
+            onNewRequests(node);
+        }
         requests[node].name = name;
         if (!requests[node].hasRequested[msg.sender]) {
             requests[node].hasRequested[msg.sender] = true;
-//            requests[node].requesters[0] = msg.sender;
-//            requests[node].requesters.push(msg.sender);
+            requests[node].requesters.push(msg.sender);
             onRequestAdded(node, msg.sender, requests[node].requesters.length);
         }
     }
@@ -38,6 +41,10 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
             requests[node] = Requests(requests[node].name, requesters);
             onRequestsCleared(node);
         }
+    }
+
+    function requestsCount(bytes32 node) constant returns(uint) {
+        return requests[node].requesters.length;
     }
 
     function namehash(string name) internal returns(bytes32) {

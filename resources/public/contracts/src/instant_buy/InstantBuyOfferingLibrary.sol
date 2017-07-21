@@ -9,7 +9,8 @@ library InstantBuyOfferingLibrary {
         OfferingLibrary.Offering storage offering
     ) {
         require(msg.value == offering.price);
-        offering.finalize(msg.sender, msg.value);
+        offering.originalOwner.transfer(offering.price);
+        offering.transferOwnership(msg.sender, msg.value);
     }
 
     function setSettings(
@@ -17,7 +18,7 @@ library InstantBuyOfferingLibrary {
         uint _price
     ) {
         require(offering.isSenderOriginalOwner());
-        require(!offering.isFinalized());
+        require(!offering.wasOwnershipTransferred());
         offering.price = _price;
         offering.setChanged();
     }
