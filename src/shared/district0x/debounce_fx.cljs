@@ -26,7 +26,7 @@
 (reg-fx
   :dispatch-debounce
   (fn dispatch-debounce [debounce]
-    (when (= :cljs.spec/invalid (s/conform ::dispatch-debounce debounce))
+    (when (= ::s/invalid (s/conform ::dispatch-debounce debounce))
       (console :error (s/explain-str ::dispatch-debounce debounce)))
     (let [ts (now)]
       (swap! registered-keys assoc (:key debounce) ts)

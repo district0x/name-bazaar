@@ -1,30 +1,33 @@
 (ns name-bazaar.server.dev
   (:require
+    [cljs-http.client :as http]
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as t]
     [cljs-web3.async.eth :as web3-eth-async]
-    [cljs-web3.eth :as web3-eth]
     [cljs-web3.async.evm :as web3-evm-async]
     [cljs-web3.core :as web3]
+    [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
+    [cljs.spec.alpha :as s]
     [district0x.server.effects :as d0x-effects]
+    [district0x.server.rest-server :as rest-server]
     [district0x.server.state :as state :refer [*server-state*]]
-    [district0x.server.utils :as u]
-    [district0x.server.utils :refer [watch-event-once]]
+    [district0x.server.utils :as u :refer [watch-event-once]]
     [goog.date.Date]
+    [honeysql.core :as sql]
+    [honeysql.helpers :as sql-helpers]
     [name-bazaar.contracts-api.english-auction-offering :as english-auction-offering]
     [name-bazaar.contracts-api.english-auction-offering-factory :as english-auction-offering-factory]
     [name-bazaar.contracts-api.ens :as ens]
-    [honeysql.core :as sql]
     [name-bazaar.contracts-api.instant-buy-offering :as instant-buy-offering]
     [name-bazaar.contracts-api.instant-buy-offering-factory :as instant-buy-offering-factory]
     [name-bazaar.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.contracts-api.used-by-factories :as used-by-factories]
+    [name-bazaar.server.api]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
-    [honeysql.helpers :as sql-helpers]
     [name-bazaar.server.db-sync :as db-sync]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
@@ -32,23 +35,28 @@
     )
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+
+(set! js/XMLHttpRequest (nodejs/require "xhr2"))
+
 (nodejs/enable-util-print!)
 
-(def namehash (aget (js/require "eth-ens-namehash") "hash"))
-(def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
-(def Web3 (js/require "web3"))
+(def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
+(def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
+(def Web3 (nodejs/require "web3"))
 (set! js/Web3 Web3)
 
-(def total-accounts 20)
+(def total-accounts 5)
+(def port 6200)
 
 (defn on-jsload []
-  (println "on-jsload"))
+  (rest-server/start! port))
 
 (defn -main [& _]
-  (d0x-effects/create-db! *server-state*)
-  (d0x-effects/create-testrpc-web3! *server-state* {:total_accounts total-accounts})
-  (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
   (go
+    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts :port 8549}))
+    (d0x-effects/create-db! *server-state*)
+    (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
+    (rest-server/start! port)
     (<! (d0x-effects/load-my-addresses! *server-state*))))
 
 (set! *main-cli-fn* -main)
@@ -64,9 +72,7 @@
     ))
 
 
-(comment
-  (.all (state/db) "SELECT * FROM offerings WHERE name LIKE '%.e%'" println)
-  (.all (state/db) "SELECT * FROM offeringRequests" println))
+(comment)
 
 (comment
 
@@ -114,7 +120,6 @@
   (namehash "eth")
   (state/active-address)
   *server-state*
-  (d0x-effects/create-testrpc-web3! *server-state* {:total_accounts total-accounts})
   (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
   (deploy-smart-contracts! *server-state*)
   (state/web3)
@@ -131,4 +136,39 @@
   (state/my-addresses)
   (go
     (print.foo/look (<! (web3-eth-async/accounts (state/web3)))))
+
+  (go
+    (print.foo/look (<! (db/offering-exists? (state/db) "0xc8a98f49833b2db209182acc764bd2515e335a82"))))
+
+  (.run (state/db) "CREATE TABLE test (abc BOOLEAN NOT NULL DEFAULT FALSE)" println)
+  (.run (state/db) "CREATE TABLE test1 (abc INTEGER DEFAULT NULL)" println)
+
+  (.all (state/db) "SELECT * FROM test" println)
+  (.all (state/db) "SELECT * FROM test1" println)
+  (.run (state/db) "INSERT INTO test (abc) VALUES (?)" (clj->js true) println)
+  (.run (state/db) "INSERT INTO test1 (abc) VALUES (NULL)" println)
+
+  (.get (state/db) "SELECT 1 FROM offerings WHERE address = '0'" println)
+
+  (go (print.foo/look (<! (db/search-offerings (state/db) {}))))
+  (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/original-owner "0x5d434a053b4cfc35a65aeb77126717228ca7dcbf"}))))
+  (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/max-price (web3/to-wei 2 :ether)}))))
+  (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/offering-type :english-auction-offering
+                                                           :order-by [[:price :asc]]}))))
+
+  (go (print.foo/look (<! (db/search-offering-requests (state/db) {:order-by [[:requests-count :desc]]}))))
+
+  (go (print.foo/look (<! (http/get "http://localhost:6200/offerings"
+                                    {:query-params {:name "%.eth"
+                                                    :max-end-time "aasdasd"
+                                                    :node-owner? true
+                                                    :order-by-columns [:price]
+                                                    :order-by-dirs [:asc]}}))))
+
+  (go (print.foo/look (<! (http/get "http://localhost:6200/offering-requests"
+                                    {:query-params {:order-by-columns [:requests-count]
+                                                    :order-by-dirs [:desc]}}))))
+
+  (.all (state/db) "SELECT * FROM offering_requests" #(print.foo/look (js->clj %2)))
+
   )

@@ -15,6 +15,9 @@
 (def fs (js/require "fs"))
 (def sqlite3 (.verbose (js/require "sqlite3")))
 
+(comment
+  )
+
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts
     (medley/map-vals (fn [{:keys [:name :address] :as contract}]
@@ -77,14 +80,20 @@
   (let [web3 (web3/create-web3 Web3 (if url
                                       url
                                       (str "http://localhost:" port)))]
-    (swap! server-state-atom update :web3 web3)
+    (swap! server-state-atom assoc :web3 web3)
     web3))
 
-(defn create-testrpc-web3! [server-state-atom & [testrpc-opts]]
-  (let [web3 (new Web3)]
-    (.setProvider web3 (.provider TestRPC (clj->js (merge {:locked false}
-                                                          testrpc-opts))))
-    (swap! server-state-atom assoc :web3 web3)))
+(defn start-testrpc! [server-state-atom & [{:keys [:port] :as testrpc-opts}]]
+  (let [ch (chan)]
+    (let [server (.server TestRPC testrpc-opts)]
+      (.listen server port (fn [err]
+                             (if err
+                               (println err)
+                               (go
+                                 (println "TestRPC started at port" port)
+                                 (>! ch (create-web3! server-state-atom {:port port}))))))
+      (swap! server-state-atom assoc :testrpc-server server))
+    ch))
 
 (defn create-db! [server-state]
   (when-let [db (:db @server-state)]

@@ -27,18 +27,47 @@
 (s/def ::smart-contracts (s/map-of keyword? (s/keys :req-un [::name] :opt-un [::setter? ::address ::bin ::abi])))
 (s/def ::my-addresses (s/coll-of string?))
 (s/def ::active-address (s/nilable string?))
+(s/def ::active-address ::sender)
 (s/def ::conversion-rates (s/map-of number? number?))
 (s/def ::load-conversion-rates-interval (s/nilable int?))
 (s/def ::blockchain-connection-error? boolean?)
 (s/def ::balances (s/map-of u/address? (s/map-of keyword? u/not-neg?)))
 (s/def ::ui-disabled? boolean?)
 
-(s/def ::gas-limit pos?)
+(s/def ::contract-address u/address?)
 (s/def ::errors (s/coll-of keyword?))
-(s/def ::data (s/keys))
-(s/def ::submit-form (s/keys :req-un [::loading?]
-                             :opt-un [::errors ::data ::gas-limit]))
-(s/def ::only-default-kw (partial = :default))
+(s/def ::data map?)
+(s/def ::contract-address-form-id (s/keys :req-un [::contract-address]))
+(s/def ::nil-form-id nil?)
+(s/def ::form-key keyword?)
+(s/def ::form (s/keys :opt-un [::errors ::data]))
+(s/def ::form-id (s/nilable map?))
+
+
+(s/def ::forms-by-contract-address (s/map-of ::contract-address-form-id ::form))
+
+(s/def ::transaction-id u/sha3?)
+(s/def ::transaction-id-list (s/coll-of ::transaction-id :kind list?))
+(s/def ::transactions (s/map-of ::transaction-id map?))
+(s/def ::transactions-latest ::transaction-id-list)
+(s/def ::transactions-by-form (s/map-of ::form-key
+                                        (s/map-of ::sender
+                                                  (s/map-of ::form-id ::transaction-id-list))))
+
+(s/def ::order-by-dir (partial contains? #{:asc :desc}))
+(s/def ::order-by (s/map-of any? ::order-by-dir))
+(s/def ::offset integer?)
+(s/def ::limit integer?)
+(s/def ::infinite-scroll (s/keys [::offset ::limit]))
+(s/def ::list (s/keys :req-un [::ids ::loading?]
+                      :opt-un [::infinite-scroll]))
+
+(s/def ::items (s/coll-of any?))
+
+(s/def ::contract-method-args-order (s/map-of ::form-key vector?))
+(s/def ::contract-method-wei-args set?)
+(s/def ::form-default-params (s/map-of ::form-key (s/map-of keyword? any?)))
+(s/def ::form-tx-opts (s/map-of ::form-key (s/map-of keyword? any?)))
 
 (s/def ::db (s/keys :req-un [::active-address
                              ::blockchain-connection-error?
@@ -49,7 +78,14 @@
                              ::smart-contracts
                              ::snackbar
                              ::web3
-                             ::ui-disabled?]
+                             ::ui-disabled?
+                             ::transactions
+                             ::transactions-latest
+                             ::transactions-by-form
+                             ::contract-method-args-order
+                             ::contract-method-wei-args
+                             ::form-default-params
+                             ::form-tx-opts]
                     :opt-un [::active-page
                              ::balances
                              ::conversion-rates
@@ -76,7 +112,14 @@
    :active-address nil
    :blockchain-connection-error? false
    :conversion-rates {}
-   :balances {}})
+   :balances {}
+   :transactions {}
+   :transactions-latest '()
+   :transactions-by-form {}
+   :contract-method-args-order {}
+   :contract-method-wei-args #{}
+   :form-default-params {}
+   :form-tx-opts {}})
 
 
 

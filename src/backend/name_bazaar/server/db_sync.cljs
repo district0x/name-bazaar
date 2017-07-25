@@ -13,7 +13,7 @@
     [district0x.big-number :as bn])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(defonce event-filters (atom {}))
+(defonce event-filters (atom []))
 
 (defn on-offering-added [server-state err {:keys [:args]}]
   (go
@@ -42,7 +42,7 @@
       (db/upsert-offering! (state/db server-state) offering-data))))
 
 (defn stop-watching-filters! []
-  (doseq [filter (vals @event-filters)]
+  (doseq [filter @event-filters]
     (when filter
       (web3-eth/stop-watching! filter (fn [])))))
 
@@ -50,35 +50,45 @@
   (go
     (let [requests-count (second (<! (offering-requests/requests-count server-state {:offering-requests/node node})))]
       (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node node
-                                                             :offering-requests/count requests-count}))))
+                                                             :offering-requests/requests-count requests-count}))))
 
 (defn on-request-added [server-state err {{:keys [:node :requests-count]} :args}]
   (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node (print.foo/look node)
-                                                         :offering-requests/count (bn/->number requests-count)}))
+                                                         :offering-requests/requests-count (bn/->number requests-count)}))
+
+(defn on-ens-transfer [server-state err {{:keys [:node :owner]} :args}]
+  (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
+                                                         :offering/node-owner? true}))
 
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))
   (stop-watching-filters!)
-  (swap! event-filters
-         merge
-         {:on-offering-changed (offering-registry/on-offering-changed server-state
-                                                                      {}
-                                                                      "latest"
-                                                                      (partial on-offering-changed server-state))
+  (reset! event-filters
+          [(offering-registry/on-offering-changed server-state
+                                                  {}
+                                                  "latest"
+                                                  (partial on-offering-changed server-state))
 
-          :on-offering-added (offering-registry/on-offering-added server-state
-                                                                  {}
-                                                                  {:from-block 0 :to-block "latest"}
-                                                                  (partial on-offering-added server-state))
-          :on-new-requests (offering-requests/on-new-requests server-state
-                                                              {}
-                                                              {:from-block 0 :to-block "latest"}
-                                                              (partial on-new-requests server-state))
-          :on-request-added (offering-requests/on-request-added server-state
-                                                                {}
-                                                                "latest"
-                                                                (partial on-request-added server-state))}))
+           (offering-requests/on-request-added server-state
+                                               {}
+                                               "latest"
+                                               (partial on-request-added server-state))
+
+           (ens/on-transfer server-state
+                            {}
+                            "latest"
+                            (partial on-ens-transfer server-state))
+
+           (offering-registry/on-offering-added server-state
+                                                {}
+                                                {:from-block 0 :to-block "latest"}
+                                                (partial on-offering-added server-state))
+
+           (offering-requests/on-new-requests server-state
+                                              {}
+                                              {:from-block 0 :to-block "latest"}
+                                              (partial on-new-requests server-state))]))
 
 (defn stop-syncing! []
   (stop-watching-filters!)
-  (reset! event-filters {}))
+  (reset! event-filters []))

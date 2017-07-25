@@ -326,89 +326,110 @@
            (assoc :active-address address))
      :localstorage (assoc localstorage :active-address address)}))
 
-(reg-event-db
+(s/def :district0x.form/set-value (s/cat :form-key :district0x.db/form-key
+                                         :form-id (s/? ::form-id)
+                                         :field-key keyword?
+                                         :value any?
+                                         :validator (s/? (s/or :validator-fn fn?
+                                                               :valid? boolean?))))
+
+(reg-event-fx
   :district0x.form/set-value
   interceptors
-  (fn [db [form-key form-id field-key value & [validator]]]
-    (let [validator (cond
-                      (fn? validator) validator
-                      (boolean? validator) (constantly validator)
-                      :else validator)]
-      (cond-> db
-        true (assoc-in [form-key form-id :data field-key] value)
+  (fn [db args]
+    (let [args (s/conform :district0x.form/set-value args)]
+      (if-not (= args ::s/invalid)
+        (let [{:keys [:form-key :form-id :field-key :value :validator]} args
+              validator (u/resolve-conformed-spec-or {:valid? constantly} validator)]
+          {:db
+           (cond-> db
+             true (assoc-in [form-key form-id :data field-key] value)
 
-        (or (and validator (validator value))
-            (nil? validator))
-        (update-in [form-key form-id :errors] (comp set (partial remove #{field-key})))
+             (or (and validator (validator value))
+                 (nil? validator))
+             (update-in [form-key form-id :errors] (comp set (partial remove #{field-key})))
 
-        (and validator (not (validator value)))
-        (update-in [form-key form-id :errors] conj field-key)))))
+             (and validator (not (validator value)))
+             (update-in [form-key form-id :errors] conj field-key))})
+        (do (console :error (s/explain-str :district0x.form/set-value args))
+            nil)))))
 
 (reg-event-fx
   :district0x.form/submit
   interceptors
-  (fn [{:keys [db]} [{:keys [:form-key :fn-key :fn-args :form-data :value :address :wei-args :form-id] :as props
-                      :or {form-id :default}}]]
-    (let [form (merge (get-in db [form-key :default])
-                      (get-in db [form-key form-id]))
-          {:keys [:web3 :active-address]} db
-          {:keys [:gas-limit]} form]
+  (fn [{:keys [db]} [{:keys [:form-key :form-data :form-id :tx-opts :contract-key :contract-method] :as props}]]
+    (let [{:keys [:web3 :active-address :contract-method-args-order :contract-method-wei-args :form-tx-opts]} db
+          contract-key (or contract-key (keyword (namespace form-key)))
+          tx-opts (merge
+                    {:from active-address}
+                    (get form-tx-opts form-key)
+                    tx-opts)]
       {:web3-fx.contract/state-fns
        {:web3 web3
         :db-path [:contract/state-fns]
-        :fns [{:instance (get-instance db (keyword (namespace fn-key)))
-               :method fn-key
-               :args (-> (u/map-vals-selected-keys u/eth->wei wei-args form-data)
-                       (u/map->vec fn-args))
-               :tx-opts (merge
-                          {:gas gas-limit
-                           :from (or address active-address)}
-                          (when value
-                            {:value (js/parseInt value)}))
-               :on-success [:district0x.form/start-loading form-key form-id]
-               :on-error [:district0x.log/error :district0x.form/submit fn-key form-data value address]
-               :on-tx-receipt [:district0x.form/receipt-loaded gas-limit props]}]}})))
+        :fns [{:instance (if-let [contract-address (:contract-address form-data)]
+                           (web3-eth/contract-at web3 (:abi (get-contract db contract-key)) contract-address)
+                           (get-instance db contract-key))
+               :method (or contract-method (name form-key))
+               :args (-> (u/map-selected-keys-vals u/eth->wei contract-method-wei-args form-data)
+                       (u/map->vec (contract-method-args-order form-key)))
+               :tx-opts tx-opts
+               :on-success [:district0x.transactions/add props]
+               :on-error [:district0x.log/error :district0x.form/submit form-key form-data tx-opts]
+               :on-tx-receipt [:district0x.form/tx-receipt-loaded (:gas tx-opts) props]}]}})))
 
 (reg-event-fx
-  :district0x.form/receipt-loaded
+  :district0x.form/tx-receipt-loaded
   [interceptors log-used-gas]
-  (fn [{:keys [db]} [{:keys [:on-tx-receipt :on-tx-receipt-n :form-data :form-key :form-id :on-error]
-                      :or {on-error [:district0x.snackbar/show-transaction-error]
-                           form-id :default}}
-                     {:keys [success?]}]]
+  (fn [{:keys [db]} [{:keys [:on-tx-receipt :on-tx-receipt-n :form-data :on-error]
+                      :or {on-error [:district0x.snackbar/show-transaction-error]}}
+                     {:keys [:success? :transaction-hash] :as tx-receipt}]]
     (merge
-      (when form-key
-        {:district0x/dispatch [:district0x.form/stop-loading form-key form-id]})
+      {:db (update-in [:transactions transaction-hash] merge (select-keys tx-receipt [:success?
+                                                                                      :block-hash
+                                                                                      :gas-used]))}
       (when (and success? on-tx-receipt)
-        {:dispatch (conj on-tx-receipt form-data)})
+        {:dispatch (concat on-tx-receipt [form-data tx-receipt])})
       (when (and success? on-tx-receipt-n)
-        {:dispatch-n (map #(conj % form-data) on-tx-receipt-n)})
-      (when-not success?
-        {:dispatch :on-error}))))
+        {:dispatch-n (map #(concat % [form-data tx-receipt]) on-tx-receipt-n)})
+      (when-not (and success? on-error)
+        {:dispatch (concat on-tx-receipt [form-data tx-receipt])}))))
 
 (reg-event-db
-  :district0x.form/start-loading
+  :district0x.transactions/add
   interceptors
-  (fn [db [form-key form-id]]
-    (assoc-in db [form-key (or form-id :default) :loading?] true)))
+  (fn [db [{:keys [:form-key :tx-opts :form-id] :as props} tx-hash]]
+    {:db (-> db
+           (assoc-in [:transactions tx-hash] (merge (select-keys props [:form-key :form-data :form-id :tx-opts])
+                                                    {:created-on (t/now)}))
+           (update :transactions-latest conj tx-hash)
+           (update-in [:transactions-by-form form-key (:from tx-opts) form-id] tx-hash))}))
 
-(reg-event-db
-  :district0x.form/stop-loading
-  interceptors
-  (fn [db [form-key form-id]]
-    (assoc-in db [form-key (or form-id :default) :loading?] false)))
+(s/def :district0x.form/add-error (s/cat :form-key :district0x.db/form-key
+                                         :form-id (s/? ::form-id)
+                                         :error keyword?))
 
-(reg-event-db
+(reg-event-fx
   :district0x.form/add-error
   interceptors
-  (fn [db [form-key form-id error]]
-    (update-in db [form-key form-id :errors] conj error)))
+  (fn [db args]
+    (let [args (s/conform :district0x.form/add-error args)]
+      (if-not (= args ::s/invalid)
+        (let [{:keys [:form-key :form-id :error]} args]
+          (update-in db [form-key form-id :errors] conj error))
+        (do (console :error (s/explain-str :district0x.form/add-error args))
+            nil)))))
 
 (reg-event-db
   :district0x.form/remove-error
   interceptors
-  (fn [db [form-key form-id error]]
-    (update-in db [form-key form-id :errors] (comp set (partial remove #{error})))))
+  (fn [db args]
+    (let [args (s/conform :district0x.form/add-error args)]
+      (if-not (= args ::s/invalid)
+        (let [{:keys [:form-key :form-id :error]} args]
+          (update-in db [form-key form-id :errors] (comp set (partial remove #{error}))))
+        (do (console :error (s/explain-str :district0x.form/add-error args))
+            nil)))))
 
 (reg-event-fx
   :district0x.contract/event-watch-once
@@ -450,7 +471,7 @@
                :tx-opts tx-opts
                :on-success [:district0x.log/info]
                :on-error [:district0x.log/error method]
-               :on-tx-receipt [:district0x.form/receipt-loaded (:gas tx-opts) (assoc opts :fn-key method)]}]}})))
+               :on-tx-receipt [:district0x.form/tx-receipt-loaded (:gas tx-opts) (assoc opts :fn-key method)]}]}})))
 
 (reg-event-fx
   :district0x.contract/constant-fn-call

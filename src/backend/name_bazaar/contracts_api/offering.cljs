@@ -7,7 +7,7 @@
     [district0x.utils :refer [zero-address?]]))
 
 (def offering-props [:offering/offering-registry :offering/ens :offering/node :offering/name :offering/original-owner
-                     :offering/emergency-multisig :offering/type :offering/created-on :offering/new-owner :offering/price])
+                     :offering/emergency-multisig :offering/offering-type :offering/created-on :offering/new-owner :offering/price])
 
 (defn get-offering [server-state contract-address]
   (web3-eth-async/contract-call
@@ -15,7 +15,7 @@
                    [err (when res
                           (-> (zipmap offering-props res)
                             (assoc :offering/address contract-address)
-                            (update :offering/type bn/->number)
+                            (update :offering/offering-type bn/->number)
                             (update :offering/price bn/->number)
                             (update :offering/created-on bn/->number)
                             (update :offering/new-owner #(when-not (zero-address? %)))))])))
