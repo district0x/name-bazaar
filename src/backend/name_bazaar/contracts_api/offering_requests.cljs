@@ -25,10 +25,10 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-(defn requests-count [server-state {:keys [:offering-requests/node]}]
+(defn requests-counts [server-state {:keys [:offering-requests/nodes]}]
   (web3-eth-async/contract-call
     (chan 1 (map (fn [[err res]]
-                   [err (bn/->number res)])))
+                   [err (map bn/->number res)])))
     (state/instance server-state :offering-requests)
-    :requests-count
-    node))
+    :get-requests-counts
+    nodes))

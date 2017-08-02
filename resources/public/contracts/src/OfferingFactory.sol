@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.14;
 
 import "ens/ENS.sol";
 import "OfferingRegistry.sol";
@@ -25,11 +25,11 @@ contract OfferingFactory {
         emergencyMultisig = _emergencyMultisig;
     }
 
-    function registerOffering(bytes32 node, address newOffering, uint offeringType)
+    function registerOffering(bytes32 node, address newOffering, uint version)
         internal
     {
         require(ens.owner(node) == msg.sender);
-        offeringRegistry.addOffering(newOffering, node, msg.sender, offeringType);
+        offeringRegistry.addOffering(newOffering, node, msg.sender, version);
         offeringRequests.clearRequests(node);
     }
 

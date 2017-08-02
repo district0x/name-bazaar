@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.14;
 
 import "ens/AbstractENS.sol";
 import "OfferingRegistry.sol";
@@ -12,7 +12,7 @@ library OfferingLibrary {
         string name;
         address originalOwner;
         address emergencyMultisig;
-        uint offeringType;
+        uint version;
         uint createdOn;
         address newOwner;
         uint price;
@@ -28,7 +28,7 @@ library OfferingLibrary {
         string _name, 
         address _originalOwner,
         address _emergencyMultisig,
-        uint _offeringType,
+        uint _version,
         uint _price
     ) {
         self.offeringRegistry = OfferingRegistry(_offeringRegistry);
@@ -37,7 +37,7 @@ library OfferingLibrary {
         self.name = _name;
         self.originalOwner = _originalOwner;
         self.emergencyMultisig = _emergencyMultisig;
-        self.offeringType = _offeringType;
+        self.version = _version;
         self.createdOn = now;
         self.price = _price;
     }
@@ -74,7 +74,7 @@ library OfferingLibrary {
     }
 
     function setChanged(Offering storage self) {
-        self.offeringRegistry.setOfferingChanged(self.offeringType);
+        self.offeringRegistry.setOfferingChanged(self.version);
     }
 
     function setOfferingRegistry(Offering storage self, address _offeringRegistry) {

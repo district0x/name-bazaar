@@ -1,13 +1,12 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.14;
 
 contract TestTwo {
     function() payable {
         revert();
-        throw;
     }
 
     function buy() payable {
-        throw;
+        revert();
     }
 }
 

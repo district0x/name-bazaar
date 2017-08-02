@@ -54,9 +54,6 @@
 (defn epoch->long [x]
   (* x 1000))
 
-(defn not-neg? [x]
-  (not (neg? x)))
-
 (defn truncate
   "Truncate a string with suffix (ellipsis by default) if it is
    longer than specified length."
@@ -137,7 +134,7 @@
     (js/parseFloat (replace-comma number))
     number))
 
-(defn non-neg? [x]
+(defn not-neg? [x]
   (not (neg? x)))
 
 (defn non-neg-ether-value? [x & [{:keys [:allow-empty?]}]]
@@ -239,3 +236,6 @@
     (if (fn? resolution)
       (resolution value)
       value)))
+
+(defn split-include-empty [s re]
+  (butlast (string/split (str s " ") re)))

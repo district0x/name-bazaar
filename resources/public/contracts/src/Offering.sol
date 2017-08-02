@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.14;
 
 import "ens/AbstractENS.sol";
 import "OfferingLibrary.sol";
@@ -17,7 +17,7 @@ contract Offering {
         string _name,
         address _originalOwner,
         address _emergencyMultisig,
-        uint _offeringType,
+        uint _version,
         uint _price
     ) {
         offering.construct(
@@ -27,7 +27,7 @@ contract Offering {
             _name,
             _originalOwner,
             _emergencyMultisig,
-            _offeringType,
+            _version,
             _price
         );
     }

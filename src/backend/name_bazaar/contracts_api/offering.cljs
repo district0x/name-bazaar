@@ -4,22 +4,14 @@
     [cljs.core.async :refer [<! >! chan]]
     [district0x.big-number :as bn]
     [district0x.server.state :as state]
-    [district0x.utils :refer [zero-address?]]))
-
-(def offering-props [:offering/offering-registry :offering/ens :offering/node :offering/name :offering/original-owner
-                     :offering/emergency-multisig :offering/offering-type :offering/created-on :offering/new-owner :offering/price])
+    [district0x.utils :refer [zero-address?]]
+    [name-bazaar.shared.utils :refer [parse-offering]]))
 
 (defn get-offering [server-state contract-address]
   (web3-eth-async/contract-call
     (chan 1 (map (fn [[err res]]
-                   [err (when res
-                          (-> (zipmap offering-props res)
-                            (assoc :offering/address contract-address)
-                            (update :offering/offering-type bn/->number)
-                            (update :offering/price bn/->number)
-                            (update :offering/created-on bn/->number)
-                            (update :offering/new-owner #(when-not (zero-address? %)))))])))
+                   [err (parse-offering contract-address res)])))
     (web3-eth-async/contract-at (state/web3 server-state)
-                                (:abi (state/contract server-state :offering))
+                                (:abi (state/contract server-state :instant-buy-offering))
                                 contract-address)
     :offering))

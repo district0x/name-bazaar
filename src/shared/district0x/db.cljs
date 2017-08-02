@@ -6,6 +6,7 @@
 (s/def ::load-node-addresses? boolean?)
 (s/def ::web3 (complement nil?))
 (s/def ::node-url string?)
+(s/def ::server-url string?)
 (s/def ::contracts-not-found? boolean?)
 (s/def ::handler keyword?)
 (s/def ::route-params (s/map-of keyword? (some-fn number? string?)))
@@ -58,9 +59,8 @@
 (s/def ::order-by (s/map-of any? ::order-by-dir))
 (s/def ::offset integer?)
 (s/def ::limit integer?)
-(s/def ::infinite-scroll (s/keys [::offset ::limit]))
-(s/def ::list (s/keys :req-un [::ids ::loading?]
-                      :opt-un [::infinite-scroll]))
+(s/def ::infinite-scroll (s/keys :opt-un [::offset ::limit]))
+(s/def ::list (s/keys :opt-un [::ids ::loading? ::infinite-scroll]))
 
 (s/def ::items (s/coll-of any?))
 
@@ -69,12 +69,15 @@
 (s/def ::form-default-params (s/map-of ::form-key (s/map-of keyword? any?)))
 (s/def ::form-tx-opts (s/map-of ::form-key (s/map-of keyword? any?)))
 
+(s/def :district0x-emails/set-email (s/map-of :district0x.db/nil-form-id :district0x.db/form))
+
 (s/def ::db (s/keys :req-un [::active-address
                              ::blockchain-connection-error?
                              ::contracts-not-found?
                              ::dialog
                              ::my-addresses
                              ::node-url
+                             ::server-url
                              ::smart-contracts
                              ::snackbar
                              ::web3
@@ -90,7 +93,8 @@
                              ::balances
                              ::conversion-rates
                              ::load-conversion-rates-interval
-                             ::load-node-addresses?]))
+                             ::load-node-addresses?
+                             :district0x-emails/set-email]))
 
 (def default-db
   {:web3 nil

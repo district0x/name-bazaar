@@ -9,7 +9,7 @@
     [name-bazaar.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
-    [name-bazaar.shared.utils :refer [offering-type->kw]]
+    [name-bazaar.shared.utils :refer [offering-version->type]]
     [district0x.big-number :as bn])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -19,7 +19,7 @@
   (go
     (let [offering-ch (offering/get-offering server-state (:offering args))
           owner-ch (ens/owner server-state {:node (:node args)})
-          english-auction-ch (when (= (offering-type->kw (:offering-type args)) :english-auction-offering)
+          english-auction-ch (when (= (offering-version->type (:version args)) :english-auction-offering)
                                (english-auction-offering/get-english-auction-offering server-state
                                                                                       (:offering args)))
           offering-data (cond-> (second (<! offering-ch))
@@ -31,7 +31,7 @@
 (defn on-offering-changed [server-state err {:keys [:args]}]
   (go
     (let [offering-ch (offering/get-offering server-state (:offering args))
-          english-auction-ch (when (= (offering-type->kw (:offering-type args)) :english-auction-offering)
+          english-auction-ch (when (= (offering-version->type (:version args)) :english-auction-offering)
                                (english-auction-offering/get-english-auction-offering server-state
                                                                                       (:offering args)))
           offering-data (second (<! offering-ch))
@@ -46,15 +46,17 @@
     (when filter
       (web3-eth/stop-watching! filter (fn [])))))
 
-(defn on-new-requests [server-state err {{:keys [:node]} :args}]
+(defn on-new-requests [server-state err {{:keys [:node :name]} :args}]
   (go
-    (let [requests-count (second (<! (offering-requests/requests-count server-state {:offering-requests/node node})))]
-      (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node node
-                                                             :offering-requests/requests-count requests-count}))))
+    (let [requests-count (first (second (<! (offering-requests/requests-counts server-state {:offering-requests/nodes [node]}))))]
+      (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
+                                                             :offering-request/name name
+                                                             :offering-request/requesters-count requests-count}))))
 
-(defn on-request-added [server-state err {{:keys [:node :requests-count]} :args}]
-  (db/upsert-offering-requests! (state/db server-state) {:offering-requests/node (print.foo/look node)
-                                                         :offering-requests/requests-count (bn/->number requests-count)}))
+(defn on-request-added [server-state err {{:keys [:node :name :requests-count]} :args}]
+  (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
+                                                         :offering-request/name name
+                                                         :offering-request/requesters-count (bn/->number requests-count)}))
 
 (defn on-ens-transfer [server-state err {{:keys [:node :owner]} :args}]
   (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner

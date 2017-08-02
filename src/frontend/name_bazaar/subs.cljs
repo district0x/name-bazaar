@@ -7,6 +7,3 @@
     [goog.string.format]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]))
-
-
-

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.14;
 
 import "UsedByFactories.sol";
 import "OfferingRequestsAbstract.sol";
@@ -15,21 +15,21 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
 
     mapping(bytes32 => Requests) public requests;
 
-    event onNewRequests(bytes32 node);
-    event onRequestAdded(bytes32 node, address requester, uint requestsCount);
+    event onNewRequests(bytes32 node, string name);
+    event onRequestAdded(bytes32 node, string name, address requester, uint requestsCount);
     event onRequestsCleared(bytes32 node);
 
     function addRequest(string name) {
         require(bytes(name).length > 0);
         var node = namehash(name);
         if (bytes(requests[node].name).length == 0) {
-            onNewRequests(node);
+            onNewRequests(node, name);
         }
         requests[node].name = name;
         if (!requests[node].hasRequested[msg.sender]) {
             requests[node].hasRequested[msg.sender] = true;
             requests[node].requesters.push(msg.sender);
-            onRequestAdded(node, msg.sender, requests[node].requesters.length);
+            onRequestAdded(node, name, msg.sender, requests[node].requesters.length);
         }
     }
 
@@ -43,8 +43,32 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         }
     }
 
-    function requestsCount(bytes32 node) constant returns(uint) {
-        return requests[node].requesters.length;
+    function getRequestsCounts(bytes32[] nodes) constant returns(uint[] counts) {
+        counts = new uint[](nodes.length);
+        for(uint i = 0; i < nodes.length; i++) {
+            counts[i] = requests[nodes[i]].requesters.length;
+        }
+        return counts;
+    }
+
+    function getRequests(bytes32[] nodes) constant returns(string names, uint[] counts) {
+        counts = new uint[](nodes.length);
+        for(uint i = 0; i < nodes.length; i++) {
+            names = names.toSlice()
+                         .concat(requests[nodes[i]].name.toSlice())
+                         .toSlice()
+                         .concat("<-DELIM->".toSlice());
+            counts[i] = requests[nodes[i]].requesters.length;
+        }
+        return (names, counts);
+    }
+
+    function hasRequested(bytes32 node, address[] addresses) constant returns(bool[] _hasRequested) {
+        _hasRequested = new bool[](addresses.length);
+        for(uint i = 0; i < addresses.length; i++) {
+            _hasRequested[i] = requests[nodes[node]].hasRequested[addresses[i]];
+        }
+        return _hasRequested;
     }
 
     function namehash(string name) internal returns(bytes32) {

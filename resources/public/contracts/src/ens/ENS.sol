@@ -16,7 +16,7 @@ contract ENS is AbstractENS {
 
     // Permits modifications only by the owner of the specified node.
     modifier only_owner(bytes32 node) {
-        if (records[node].owner != msg.sender) throw;
+        require(records[node].owner == msg.sender);
         _;
     }
 
@@ -24,7 +24,7 @@ contract ENS is AbstractENS {
      * Constructs a new ENS registrar.
      */
     function ENS() {
-        records[0].owner = msg.sender;
+        records[bytes32(0)].owner = msg.sender;
     }
 
     /**

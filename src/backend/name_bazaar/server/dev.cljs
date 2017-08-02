@@ -109,12 +109,12 @@
   (go
     (let [node "0xd207027b2d1e45a6b8a0f8ee1770f9ef4a13dc7de33943418f5db61ce1505a06"]
       (print.foo/look (<! (web3-eth-async/contract-call (state/instance :offering-requests) :requests node)))
-      (print.foo/look (<! (offering-requests/requests-count @*server-state* {:offering-requests/node node})))))
+      (print.foo/look (<! (offering-requests/requests-counts @*server-state* {:offering-request/node node})))))
 
   (go
     (let [node "0x18e2e2dce965b0ce974fe3c754464f5fe075316ee8f0f91ab7907d0d16ba375c"]
       (print.foo/look (<! (web3-eth-async/contract-call (state/instance :offering-requests) :requests node)))
-      (print.foo/look (<! (offering-requests/requests-count @*server-state* {:offering-requests/node node})))))
+      (print.foo/look (<! (offering-requests/requests-counts @*server-state* {:offering-request/node node})))))
 
   (web3-eth/get-block (state/web3) 1 println)
   (namehash "eth")
@@ -153,14 +153,13 @@
   (go (print.foo/look (<! (db/search-offerings (state/db) {}))))
   (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/original-owner "0x5d434a053b4cfc35a65aeb77126717228ca7dcbf"}))))
   (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/max-price (web3/to-wei 2 :ether)}))))
-  (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/offering-type :english-auction-offering
+  (go (print.foo/look (<! (db/search-offerings (state/db) {:offering/version :english-auction-offering
                                                            :order-by [[:price :asc]]}))))
 
   (go (print.foo/look (<! (db/search-offering-requests (state/db) {:order-by [[:requests-count :desc]]}))))
 
   (go (print.foo/look (<! (http/get "http://localhost:6200/offerings"
                                     {:query-params {:name "%.eth"
-                                                    :max-end-time "aasdasd"
                                                     :node-owner? true
                                                     :order-by-columns [:price]
                                                     :order-by-dirs [:asc]}}))))

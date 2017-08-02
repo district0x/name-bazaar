@@ -25,7 +25,8 @@
     [madvas.re-frame.google-analytics-fx]
     [madvas.re-frame.web3-fx]
     [medley.core :as medley]
-    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch]]))
+    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch]]
+    [cemerick.url :as url]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -357,8 +358,11 @@
 (reg-event-fx
   :district0x.form/submit
   interceptors
-  (fn [{:keys [db]} [{:keys [:form-key :form-data :form-id :tx-opts :contract-key :contract-method] :as props}]]
-    (let [{:keys [:web3 :active-address :contract-method-args-order :contract-method-wei-args :form-tx-opts]} db
+  (fn [{:keys [db]} [{:keys [:form-key :form-data :form-id :tx-opts :contract-key :contract-method
+                             :contract-method-wei-args :contract-method-args-order] :as props}]]
+    (let [{:keys [:web3 :active-address :form-tx-opts]} db
+          contract-method-args-order (or contract-method-args-order (:contract-method-args-order db))
+          contract-method-wei-args (or contract-method-wei-args (:contract-method-wei-args db))
           contract-key (or contract-key (keyword (namespace form-key)))
           tx-opts (merge
                     {:from active-address}
@@ -394,6 +398,18 @@
         {:dispatch-n (map #(concat % [form-data tx-receipt]) on-tx-receipt-n)})
       (when-not (and success? on-error)
         {:dispatch (concat on-tx-receipt [form-data tx-receipt])}))))
+
+(reg-event-fx
+  :district0x-emails/set-email
+  interceptors
+  (fn [{:keys [:db]} [form-data submit-props]]
+    {:dispatch [:district0x.form/submit
+                (merge
+                  {:form-key :district0x-emails/set-email
+                   :contract-key :district0x-emails
+                   :form-data form-data
+                   :contract-method-args-order [:district0x-emails/email]}
+                  submit-props)]}))
 
 (reg-event-db
   :district0x.transactions/add
@@ -472,6 +488,33 @@
                :on-success [:district0x.log/info]
                :on-error [:district0x.log/error method]
                :on-tx-receipt [:district0x.form/tx-receipt-loaded (:gas tx-opts) (assoc opts :fn-key method)]}]}})))
+
+(reg-event-fx
+  :district0x.list/http-load
+  interceptors
+  (fn [{:keys [db]} [{:keys [:http-xhrio :list-id :list-key :clear-existing-ids? :path :view-key
+                             :on-success]} :as opts]]
+    {:http-xhrio (merge
+                   {:method :get
+                    :timeout 20000
+                    :uri (str (url/url (:server-url db) path))
+                    :response-format (ajax/json-response-format)
+                    :on-success [:district0x/dispatch-n [[:district0x.list/loaded opts]
+                                                         on-success]]
+                    :on-failure [:district0x.log/error]
+                    :params (if view-key
+                              (get db view-key)
+                              list-id)}
+                   http-xhrio)
+     :db (update-in db [list-key list-id] merge (merge {:loading? true}
+                                                       (when clear-existing-ids?
+                                                         {:ids []})))}))
+
+(reg-event-fx
+  :district0x.list/loaded
+  interceptors
+  (fn [{:keys [db]} [{:keys [:list-id :list-key]} ids]]
+    {:db (update-in db [list-key list-id] merge {:loading? false :ids ids})}))
 
 (reg-event-fx
   :district0x.contract/constant-fn-call
@@ -596,4 +639,16 @@
   interceptors
   (fn [{:keys [:db]} [disabled?]]
     {:db (assoc db :ui-disabled? disabled?)}))
+
+(reg-event-fx
+  :district0x/async-flow
+  interceptors
+  (fn [_ [params]]
+    {:async-flow params}))
+
+(reg-event-fx
+  :district0x/dispatch-n
+  interceptors
+  (fn [_ [params]]
+    {:dispatch-n params}))
 

@@ -43,7 +43,8 @@
                           created_on UNSIGNED INTEGER NOT NULL,
                           name VARCHAR NOT NULL,
                           original_owner CHAR(42) NOT NULL,
-                          offering_type UNSIGNED INTEGER NOT NULL,
+                          new_owner CHAR(42) DEFAULT NULL,
+                          version UNSIGNED INTEGER NOT NULL,
                           price UNSIGNED BIG INT NOT NULL,
                           end_time UNSIGNED INTEGER DEFAULT NULL,
                           is_node_owner BOOLEAN NOT NULL DEFAULT false
@@ -51,12 +52,15 @@
                    (.run db "CREATE INDEX created_on_index ON offerings (created_on)" log-error)
                    (.run db "CREATE INDEX name_index ON offerings (name)" log-error)
                    (.run db "CREATE INDEX original_owner_index ON offerings (original_owner)" log-error)
+                   (.run db "CREATE INDEX new_owner_index ON offerings (new_owner)" log-error)
                    (.run db "CREATE INDEX price_index ON offerings (price)" log-error)
                    (.run db "CREATE INDEX end_time_index ON offerings (end_time)" log-error)
                    (.run db "CREATE INDEX is_node_owner_index ON offerings (is_node_owner)" log-error)
+                   (.run db "CREATE INDEX version_index ON offerings (version)" log-error)
 
                    (.run db "CREATE TABLE offering_requests (
                           node CHAR(66) PRIMARY KEY NOT NULL,
+                          name VARCHAR NOT NULL,
                           requests_count UNSIGNED INTEGER NOT NULL DEFAULT 0
                           )" log-error)
 
@@ -66,7 +70,8 @@
                     :offering/created-on
                     :offering/name
                     :offering/original-owner
-                    :offering/offering-type
+                    :offering/new-owner
+                    :offering/version
                     :offering/price
                     :english-auction-offering/end-time
                     :offering/node-owner?])
@@ -94,7 +99,7 @@
 (def result-map->seq (comp (map (partial map vals))
                            (map flatten)))
 
-(def offering-requests-keys [:offering-requests/node :offering-requests/requests-count])
+(def offering-requests-keys [:offering-request/node :offering-request/name :offering-request/requesters-count])
 
 (defn upsert-offering-requests! [db values]
   (db-run! db {:insert-or-replace-into :offering-requests
@@ -107,8 +112,8 @@
 (s/def ::offerings-order-by-item (s/tuple ::offering-order-by-column ::order-by-dir))
 (s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :kind vector? :distinct true))
 
-(defn search-offerings [db {:keys [:original-owner :name :min-price :max-price
-                                   :max-end-time :offering-type :node-owner? :limit :offset :order-by]
+(defn search-offerings [db {:keys [:original-owner :new-owner :name :min-price :max-price
+                                   :max-end-time version :node-owner? :limit :offset :order-by]
                             :or {offset 0 limit -1}}]
   (db-all db
           (chan 1 result-map->seq)
@@ -117,11 +122,12 @@
                    :offset offset
                    :limit limit}
             original-owner (merge-where [:= :original-owner original-owner])
+            new-owner (merge-where [:= :new-owner new-owner])
             min-price (merge-where [:>= :price min-price])
             max-price (merge-where [:<= :price max-price])
             max-end-time (merge-where [:<= :end-time max-end-time])
-            offering-type (merge-where [(if (= (keyword offering-type) :instant-buy-offering) :< :>=)
-                                        :offering-type 100000])
+            version (merge-where [(if (= (keyword version) :instant-buy-offering) :< :>=)
+                                        :version 100000])
             (boolean? node-owner?) (merge-where [:= :is-node-owner node-owner?])
             name (merge-where [:like :name name])
             (s/valid? ::offerings-order-by order-by) (merge {:order-by order-by}))))
@@ -130,7 +136,7 @@
 (s/def ::offering-requests-order-by-item (s/tuple ::offering-requests-order-by-column ::order-by-dir))
 (s/def ::offering-requests-order-by (s/coll-of ::offering-requests-order-by-item :kind vector? :distinct true))
 
-(defn search-offering-requests [db {:keys [:limit :offset :order-by]
+(defn search-offering-requests [db {:keys [:limit :offset :name :order-by]
                                     :or {offset 0 limit -1}}]
   (db-all db
           (chan 1 result-map->seq)
@@ -138,6 +144,7 @@
                    :from [:offering-requests]
                    :offset offset
                    :limit limit}
+            name (merge-where [:like :name name])
             (s/valid? ::offering-requests-order-by order-by) (merge {:order-by order-by}))))
 
 
