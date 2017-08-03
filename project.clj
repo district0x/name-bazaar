@@ -80,7 +80,8 @@
               :source-paths ["dev"]
               :resource-paths ["resources"]
               :cljsbuild {:builds [{:id "dev"
-                                    :source-paths ["src/frontend" "src/shared"]
+                                    :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
+                                                   "src/district0x/ui" "src/district0x/shared"]
                                     :figwheel {:on-jsload "name-bazaar.core/mount-root"}
                                     :compiler {:main "name-bazaar.core"
                                                :output-to "resources/public/js/compiled/app.js"
@@ -91,7 +92,8 @@
                                                :closure-defines {goog.DEBUG true}
                                                :external-config {:devtools/config {:features-to-install :all}}}}
                                    {:id "dev-backend"
-                                    :source-paths ["src/backend" "src/shared"]
+                                    :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
+                                                   "src/district0x/server" "src/district0x/shared"]
                                     :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
                                     :compiler {:main "name-bazaar.server.dev"
                                                :output-to "dev-backend/name-bazaar.js",
@@ -100,7 +102,8 @@
                                                :optimizations :none,
                                                :source-map true}}
                                    {:id "min"
-                                    :source-paths ["src/cljs"]
+                                    :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
+                                                   "src/district0x/ui" "src/district0x/shared"]
                                     :compiler {:main "name-bazaar.core"
                                                :output-to "resources/public/js/compiled/app.js"
                                                :optimizations :advanced
@@ -108,7 +111,9 @@
                                                :pretty-print false
                                                :pseudo-names false}}
                                    {:id "dev-tests"
-                                    :source-paths ["src/cljs" "test"]
+                                    :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
+                                                   "src/district0x/server" "src/district0x/shared"
+                                                   "test"]
                                     :figwheel true
                                     :compiler {:main "name-bazaar.cmd"
                                                :output-to "dev-tests/name-bazaar-tests.js",
