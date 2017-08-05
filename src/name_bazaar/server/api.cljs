@@ -6,8 +6,7 @@
     [district0x.server.state :as state]
     [medley.core :as medley]
     [name-bazaar.server.db :as db]
-    [clojure.string :as string]
-    [district0x.utils :as u])
+    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (api-server/reg-get!
@@ -15,6 +14,14 @@
   (fn [req res]
     (go
       (send-json! res (<! (db/search-offerings
+                            (state/db)
+                            (api-server/sanitized-query-params req)))))))
+
+(api-server/reg-get!
+  "/ens-records"
+  (fn [req res]
+    (go
+      (send-json! res (<! (db/search-ens-records
                             (state/db)
                             (api-server/sanitized-query-params req)))))))
 

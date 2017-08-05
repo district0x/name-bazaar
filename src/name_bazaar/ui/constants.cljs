@@ -121,6 +121,7 @@
                    :offering/price 0.01}}
    :form.ens/set-owner
    {:contract-method :ens/set-owner
+    :transaction-name "ENS Ownership Transfer"
     :form-id-keys [:ens.record/node]
     :tx-opts {:gas 100000 :gas-price gas-price}}})
 
@@ -129,20 +130,23 @@
    :offering/min-price {:name "min-price" :parser js/parseInt}
    :offering/max-price {:name "max-price" :parser js/parseInt}
    :offering/max-end-time {:name "max-end-time"}
-   :offering/type {:name "type" keyword?}
+   :offering/type {:name "type" :parser keyword}
    :offering-request/name {:name "name"}})
 
 (def route-handler->form-key
-  {:route.offerings/search :search-form/search-offerings
-   :route.offering-requests/search :search-form/search-offering-requests})
+  {:route.offerings/search :search-form/offerings
+   :route.offering-requests/search :search-form/offering-requests})
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
-        [["user/" :offering/original-owner "/offerings"] :route.users/offerings]
-        ["my-settings" :route.users/my-settings]
-        ["my-offerings" :route.offerings/active-address-offerings]
-        ["offering/create" :route.offerings/create]
-        [["offering/" :offering/address] :route.offerings/detail]
-        ["offerings/" :route.offerings/search]
-        ["offering-requests/" :route.offering-requests/search]
+        ["watched-names" :route/watched-ens-records]
+        [["user/" :offering/original-owner "/offerings"] :route.user/offerings]
+        ["my-settings" :route.user/my-settings]
+        ["my-offerings" :route.user/my-offerings]
+        ["offering/create" :route.offering/create]
+        [["offering/" :offering/address] :route.offering/detail]
+        ["offerings" :route.offerings/search]
+        ["offering-requests" :route.offering-requests/search]
+        ["about" :route/about]
+        ["how-it-works" :route/how-it-works]
         [true :route/home]]])

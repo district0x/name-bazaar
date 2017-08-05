@@ -1,7 +1,7 @@
 (ns name-bazaar.shared.utils
   (:require
     [district0x.shared.big-number :as bn]
-    [district0x.utils :as u]))
+    [district0x.shared.utils :as d0x-shared-utils]))
 
 (defn offering-version->type [offering-type]
   (if (>= (bn/->number offering-type) 100000)
@@ -20,7 +20,7 @@
       (assoc :offering/type (offering-version->type (:offering/version offering)))
       (update :offering/price bn/->number)
       (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
-      (update :offering/new-owner #(when-not (u/zero-address? %))))))
+      (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %))))))
 
 (def english-auction-offering-props [:english-auction-offering/end-time :english-auction-offering/extension-duration
                                      :english-auction-offering/min-bid-increase :english-auction-offering/winning-bidder])

@@ -10,7 +10,8 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [re-frame.core :refer [reg-sub]]))
+    [re-frame.core :refer [reg-sub]]
+    [reagent.core :as r]))
 
 (defn color-emphasize [& args]
   (apply js/MaterialUIUtils.colorManipulator.emphasize args))
@@ -42,7 +43,7 @@
 
 (defn url-query-params->form-data
   ([form-field->query-param]
-   (url-query-params->form-data (current-url)))
+   (url-query-params->form-data (current-url) form-field->query-param))
   ([url form-field->query-param]
    (->> (:query url)
      (medley/map-keys (set/map-invert (medley/map-vals :name form-field->query-param)))
@@ -125,21 +126,34 @@
        string
        (str (subs string 0 (- length suffix-len)) suffix)))))
 
+(defn provides-web3? []
+  (boolean (aget js/window "web3")))
+
+(defn parse-props-children [props children]
+  (if (map? props)
+    [props children]
+    [nil (concat [props] children)]))
+
+(defn create-with-default-props [component default-props]
+  (fn [props & children]
+    (let [[props children] (parse-props-children props children)]
+      (into [] (concat
+                 [component (r/merge-props default-props props)]
+                 children)))))
+
+(defn current-component-mui-theme []
+  (aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme"))
+
 (defn reg-form-sub [form-key f]
-  (let [form-internal-query-id (keyword (str "district0x." (d0x-shared-utils/name-with-ns :aasda/bdd)))]
-    (reg-sub
-      form-internal-query-id
-      (fn [db]
-        (db form-key)))
-    (reg-sub
-      form-key
-      :<- [form-internal-query-id]
-      :<- [:district0x/form-configs]
-      (fn [[form form-configs] [query-id form-id]]
-        (f [(merge (get-in form-configs [form-key :default-data])
-                   (form form-id))
-            form-configs]
-           [query-id form-id])))))
+  (reg-sub
+    form-key
+    :<- [:district0x/form form-key]
+    :<- [:district0x/form-configs]
+    (fn [[form form-configs] [query-id form-id]]
+      (f [(merge (get-in form-configs [form-key :default-data])
+                 (form form-id))
+          form-configs]
+         [query-id form-id]))))
 
 
 

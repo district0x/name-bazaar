@@ -5,8 +5,8 @@
     [cljsjs.material-ui]
     [cljsjs.react-flexbox-grid]
     [cljsjs.web3]
-    [district0x.events]
-    [district0x.subs]
+    [district0x.ui.events]
+    [district0x.ui.subs]
     [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
     [name-bazaar.ui.components.main-panel :refer [main-panel]]
     [name-bazaar.ui.constants :as constants]
@@ -28,7 +28,7 @@
   (s/check-asserts goog.DEBUG)
   (google-analytics-fx/set-enabled! (not goog.DEBUG))
   (dispatch-sync [:district0x/initialize
-                  {:default-db name-bazaar.db/default-db
+                  {:default-db name-bazaar.ui.db/default-db
                    :effects
                    {:async-flow {:first-dispatch [:district0x/load-smart-contracts
                                                   {:version constants/contracts-version}]}}}])

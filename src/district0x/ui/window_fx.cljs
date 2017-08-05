@@ -1,4 +1,4 @@
-(ns district0x.window-fx
+(ns district0x.ui.window-fx
   (:require
     [cljs.spec.alpha :as s]
     [goog.events :as events]

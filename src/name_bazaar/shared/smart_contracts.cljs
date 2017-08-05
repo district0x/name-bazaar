@@ -3,19 +3,16 @@
 (def smart-contracts 
 {:instant-buy-offering-factory
  {:name "InstantBuyOfferingFactory",
-  :address "0x300ecc4d315c8c6cc4e9a1cd3b196e51a0a7ae07"},
+  :address "0xb70070eeafd33640f0371fbf19752b00cd013adf"},
  :instant-buy-offering-library
  {:name "InstantBuyOfferingLibrary",
-  :address "0x47eb86b18bda271e8a6335f1cc382a2115717ac7"},
+  :address "0xd2dd56ccf06171f756e0fdefc6d465cbdc1db24b"},
  :english-auction-offering-library
  {:name "EnglishAuctionOfferingLibrary",
-  :address "0xacd5d34d2c0553bfe8e064776d84dd7185c376b1"},
+  :address "0x93a10aa22741c984e5378d82245ae4c94c9e9b84"},
  :english-auction-offering-factory
  {:name "EnglishAuctionOfferingFactory",
-  :address "0x4f903f17b9f1927b401387106fbab58ea6a7c553"},
- :test-two
- {:name "TestTwo",
-  :address "0x0000000000000000000000000000000000000000"},
+  :address "0xe905cb162143a400d438ecc6ea81d692714653be"},
  :english-auction-offering
  {:name "EnglishAuctionOffering",
   :address "0x0000000000000000000000000000000000000000"},
@@ -23,19 +20,16 @@
  {:name "InstantBuyOffering",
   :address "0x0000000000000000000000000000000000000000"},
  :ens
- {:name "ENS", :address "0xdec6ab98d62d45cf294e4ae6aedd11a35165982c"},
+ {:name "ENS", :address "0x8d821b4cacaab8e099c6d00208a435f59a16d141"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0x417cdd31017d8e7f88e9b8195e2589d67303164e"},
- :test-one
- {:name "TestOne",
+  :address "0x93f8d18f8fdd9634379efaad3d8c7239d5dca26e"},
+ :district0x-emails
+ {:name "District0xEmails",
   :address "0x0000000000000000000000000000000000000000"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0xbdaa96bef729859cb17ff32d28f0d6b009777f3c"},
+  :address "0x9809c418aed8aee7d7683f31ab55595c1fdc8426"},
  :offering-library
  {:name "OfferingLibrary",
-  :address "0x69aa50d91de3aac8238d1e9a04341e80d326c3b3"}
- :district0x-emails
- {:name "District0xEmails"
-  :address "0x0000000000000000000000000000000000000000"}})
+  :address "0xc7305cb72250429edfbaa683f523de9813317a69"}})

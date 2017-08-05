@@ -1,4 +1,4 @@
-(ns district0x.interval-fx
+(ns district0x.ui.interval-fx
   (:require
     [cljs.spec.alpha :as s]
     [medley.core :as medley]

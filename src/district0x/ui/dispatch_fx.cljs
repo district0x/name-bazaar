@@ -1,4 +1,4 @@
-(ns district0x.dispatch-fx
+(ns district0x.ui.dispatch-fx
   (:require
     [re-frame.core :as re-frame :refer [reg-fx dispatch]]))
 

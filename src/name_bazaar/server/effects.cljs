@@ -9,7 +9,7 @@
 (def default-deploy-opts
   {:from-index 0
    :contracts-file-namespace 'name-bazaar.shared.smart-contracts
-   :contracts-file-path "/src/shared/name_bazaar/shared/smart_contracts.cljs"})
+   :contracts-file-path "/src/name_bazaar/shared/smart_contracts.cljs"})
 
 (def library-placeholders
   {:offering-library "__OfferingLibrary.sol:OfferingLibrary___"

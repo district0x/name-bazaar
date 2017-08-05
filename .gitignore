@@ -19,3 +19,4 @@ pom.xml.asc
 /resources/public/contracts/build/*.bin
 /dev-backend/
 /dev-tests/
+/src/name_bazaar/server/repl.cljs

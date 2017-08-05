@@ -15,18 +15,17 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [district0x.shared.big-number :as bn]
-    [district0x.debounce-fx]
-    [district0x.events :refer [get-contract get-instance reg-empty-event-fx]]
-    [district0x.utils :as u]
+    [district0x.ui.debounce-fx]
+    [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.shared.utils :refer [parse-offering parse-english-auction-offering parse-ens-record parse-offering-requests-counts]]
+    [name-bazaar.shared.utils :refer [parse-offering parse-english-auction-offering parse-ens-record parse-offering-requests-counts]]
     [name-bazaar.ui.utils :refer [namehash sha3]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v]]))
 
-(def check-spec-interceptor (after (partial district0x.events/check-and-throw :name-bazaar.db/db)))
+(def check-spec-interceptor (after (partial district0x.ui.events/check-and-throw :name-bazaar.db/db)))
 (def interceptors [trim-v check-spec-interceptor])
 
 (defn- node-name [db node]
@@ -116,19 +115,18 @@
                 {:form-key :form.offering-requests/add-request}]}))
 
 (reg-event-fx
-  :load-offering-ids
+  :search/offerings
   interceptors
   (fn [{:keys [:db]} [opts]]
-    {:dispatch [:district0x.list/http-load
+    {:dispatch [:district0x.search-results/load
                 (merge
-                  {:list-key :list/offerings
-                   :path "/offerings"
+                  {:search-results-key :search-results/offerings
+                   :endpoint "/offerings"
                    :on-success [:load-offerings]}
                   opts)]}))
 
-
 (defn- english-auction-offering? [db offering-address]
-  (= (get-in db [:offering-registry/offerings % :offering/type]) :english-auction-offering))
+  (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :english-auction-offering))
 
 (reg-event-fx
   :load-offerings
@@ -151,11 +149,10 @@
       (merge {:db (-> db
                     (update-in [:offering-registry/offerings address] merge offering)
                     (update-in [:ens/records address] merge {:ens.record/node (:offering/node offering)
-                                                             :ens.record/name (:offering/name offering)}))
-              :dispatch [:load-ens-records [(:offering/node offering)]]
-              (when (and :load-type-specific-offerings?
-                         (= (:offering/type offering) :english-auction-offering))
-                {:dispatch-n [[:load-english-auction-offerings]]})}))))
+                                                             :ens.record/name (:offering/name offering)}))}
+             (when (and :load-type-specific-offerings?
+                        (= (:offering/type offering) :english-auction-offering))
+               {:dispatch-n [[:load-english-auction-offerings]]})))))
 
 (reg-event-fx
   :load-english-auction-offerings
@@ -184,7 +181,7 @@
     {:web3-fx.contract/constant-fns
      {:fns (for [node ens-record-nodes]
              {:instance (get-contract db :ens)
-              :method :english-auction-offering
+              :method :records
               :on-success [:ens-record-loaded {:ens.record/node node}]
               :on-error [:district0x.log/error]})}}))
 
@@ -196,13 +193,22 @@
       {:db (update-in db [:ens/records node] merge ens-record)})))
 
 (reg-event-fx
-  :load-offering-requests-ids
+  :search/ens-record-offerings
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:ens.record/node :ens.record/name]}]]
+    (let [node (if name (namehash name) node)]
+      {:dispatch [:search/offerings {:params {:node node
+                                              :order-by-columns [:created-on]
+                                              :order-by-dirs [:desc]}}]})))
+
+(reg-event-fx
+  :search/offering-requests
   interceptors
   (fn [{:keys [:db]} [opts]]
-    {:dispatch [:district0x.list/http-load
+    {:dispatch [:district0x.search-results/load
                 (merge
-                  {:list-key :list/offering-requests
-                   :path "/offering-requests"
+                  {:search-results-key :search-results/offering-requests
+                   :endpoint "/offering-requests"
                    :on-success [:load-offering-requests]}
                   opts)]}))
 
@@ -269,6 +275,48 @@
                         (-> (set requesters)
                           (set/difference addrs-not-requested)
                           (set/union addrs-requested))))})))
+
+(reg-event-fx
+  :load-ens-records-last-offering
+  interceptors
+  (fn [{:keys [:db]} [nodes]]
+    {:dispatch [:district0x.server/http-get {:endpoint "/ens-records"
+                                             :params {:nodes nodes
+                                                      :select-fields [:node :last-offering]}
+                                             :on-success [:ens-records-last-offering-loaded]}]}))
+
+(reg-event-fx
+  :ens-records-last-offering-loaded
+  interceptors
+  (fn [{:keys [:db]} [results]]
+    (update db :ens/records merge #(hash-map (:node %) {:ens.record/last-offering (:last-offering %)}))))
+
+(reg-event-fx
+  :watched-ens-records/load
+  interceptors
+  (fn [{:keys [:db]}]
+    (let [nodes (map :ens.record/node (:watched-ens-records db))]
+      {:dispatch-n [[:load-nodes-last-offering-ids nodes]
+                    [:load-ens-records nodes]]})))
+
+(reg-event-fx
+  :watched-ens-records/add
+  [interceptors (inject-cofx :localstorage)]
+  (fn [{:keys [:db :localstorage]} [name]]
+    (let [node (namehash name)
+          new-db (update db :watched-ens-records conj {:ens.record/name name :ens.record/node node})]
+      {:db new-db
+       :localstorage (merge localstorage (select-keys new-db :watched-ens-records))
+       :dispatch-n [[:load-nodes-last-offering-ids [node]]
+                    [:load-ens-records [node]]]})))
+
+(reg-event-fx
+  :watched-ens-records/remove
+  [interceptors (inject-cofx :localstorage)]
+  (fn [{:keys [:db :localstorage]} [node]]
+    (let [new-db (update db :watched-ens-records (partial remove #(= node (:ens.record/node %))))]
+      {:db new-db
+       :localstorage (merge localstorage (select-keys new-db :watched-ens-records))})))
 
 (reg-event-fx
   :watch-on-offering-added

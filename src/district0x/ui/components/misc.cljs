@@ -1,10 +1,9 @@
-(ns district0x.components.misc
+(ns district0x.ui.components.misc
   (:require
     [cljs-react-material-ui.reagent :as ui]
     [cljsjs.react-flexbox-grid]
     [clojure.set :as set]
-    [district0x.components.utils :refer [current-component-mui-theme parse-props-children create-with-default-props]]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme parse-props-children create-with-default-props]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 

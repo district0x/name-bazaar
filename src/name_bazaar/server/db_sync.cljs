@@ -25,8 +25,11 @@
           offering-data (cond-> (second (<! offering-ch))
                           true (assoc :offering/node-owner? (= (:offering args) (second (<! owner-ch))))
                           english-auction-ch (merge (second (<! english-auction-ch))))]
-
-      (db/upsert-offering! (state/db server-state) offering-data))))
+      (let [db (state/db server-state)]
+        (.serialize db (fn []
+                         (db/upsert-offering! db offering-data)
+                         (db/upsert-ens-record! db {:ens.record/node (:offering/node offering-data)
+                                                    :ens.record/last-offering (:offering/address offering-data)})))))))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
   (go

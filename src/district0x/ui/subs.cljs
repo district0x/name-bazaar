@@ -1,12 +1,17 @@
-(ns district0x.subs
+(ns district0x.ui.subs
   (:require
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
-    [district0x.constants :as constants]
+    [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]))
+
+(reg-sub
+  :district0x/db
+  (fn [db [_ key]]
+    (get db key)))
 
 (reg-sub
   :district0x/my-addresses
@@ -21,11 +26,11 @@
 (reg-sub
   :district0x/can-submit-into-blockchain?
   (fn [db _]
-    (boolean (and (or constants/provides-web3? (:load-node-addresses? db))
+    (boolean (and (or (d0x-ui-utils/provides-web3?) (:load-node-addresses? db))
                   (:active-address db)))))
 
 (reg-sub
-  :db/active-page
+  :district0x/active-page
   (fn [db _]
     (:active-page db)))
 
@@ -50,6 +55,16 @@
   :<- [:district0x/balances]
   (fn [[active-address balances] [_ token]]
     (get-in balances [active-address (or token :eth)])))
+
+(reg-sub
+  :district0x/form
+  (fn [db [_ form-key]]
+    (db form-key)))
+
+(reg-sub
+  :district0x/search-results
+  (fn [db [_ search-results-key]]
+    (db search-results-key)))
 
 (reg-sub
   :district0x/contracts-not-found?
@@ -137,7 +152,7 @@
   :<- [:district0x/transactions]
   :<- [:district0x/transaction-ids-by-form]
   (fn [[active-address transactions transactions-by-form] [_ form-key form-id]]
-    (->> (get-in transactions-by-form [form-key active-address form-id])
+    (-> (get-in transactions-by-form [form-key active-address form-id])
       first
       transactions
       :block-hash

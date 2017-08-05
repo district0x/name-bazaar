@@ -16,3 +16,43 @@
     (fn [[form]]
       form)))
 
+(reg-sub
+  :offering-registry/offerings
+  (fn [db]
+    (:offering-registry/offerings db)))
+
+(reg-sub
+  :offering-requests/requests
+  (fn [db]
+    (:offering-requests/requests db)))
+
+(reg-sub
+  :ens/records
+  (fn [db]
+    (:ens/records db)))
+
+(reg-sub
+  :watched-ens-records
+  :<- [:district0x/db :watched-ens-records]
+  :<- [:ens/records]
+  :<- [:offering-registry/offerings]
+  (fn [watched-ens-records ens-records offerings]
+    (map (fn [ens-record]
+           (-> ens-record
+             (merge (ens-records (:ens.record/node ens-record)))
+             (update :ens.record/last-offering offerings)))
+         watched-ens-records)))
+
+(reg-sub
+  :search-results/offerings
+  :<- [:district0x/search-results :search-results/offerings]
+  :<- [:offering-registry/offerings]
+  (fn [[search-results offerings] [_ search-params]]
+    (update search-results search-params #(assoc % :items (map offerings (:ids %))))))
+
+(reg-sub
+  :search-results/offering-requests
+  :<- [:district0x/search-results :search-results/offering-requests]
+  :<- [:offering-requests/requests]
+  (fn [[search-results offering-requests] [_ search-params]]
+    (update search-results search-params #(assoc % :items (map offering-requests (:ids %))))))

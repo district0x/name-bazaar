@@ -1,4 +1,4 @@
-(ns district0x.db
+(ns district0x.ui.db
   (:require
     [cljs.spec.alpha :as s]
     [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3?]]
@@ -29,8 +29,7 @@
 (s/def ::setter? boolean?)
 (s/def ::smart-contracts (s/map-of keyword? (s/keys :req-un [::name] :opt-un [::setter? ::address ::bin ::abi])))
 (s/def ::my-addresses (s/coll-of string?))
-(s/def ::active-address (s/nilable string?))
-(s/def ::active-address ::sender)
+(s/def ::active-address (s/nilable address?))
 (s/def ::conversion-rates (s/map-of number? number?))
 (s/def ::load-conversion-rates-interval (s/nilable int?))
 (s/def ::blockchain-connection-error? boolean?)
@@ -39,17 +38,18 @@
 
 (s/def ::contract-method keyword?)
 (s/def ::contract-address address?)
-(s/def ::contract-address-form-id (s/keys :req-un [::contract-address]))
-(s/def ::nil-form-id nil?)
+(s/def :form-id/contract-address (s/keys :req-un [::contract-address]))
+(s/def :form-id/nil nil?)
 (s/def ::form-key keyword?)
 (s/def ::form-field keyword?)
-(s/def :district0x.db.form/errors (s/coll-of keyword?))
-(s/def :district0x.db.form/data (s/map-of ::form-field any?))
-(s/def ::form (s/keys :opt-un [:district0x.db.form/errors :district0x.db.form/data]))
-(s/def ::form-id (s/nilable map?))
+(s/def :district0x.db.ui.form/errors (s/coll-of keyword?))
+(s/def :district0x.db.ui.form/data (s/map-of ::form-field any?))
+(s/def ::form (s/keys :opt-un [:district0x.db.ui.form/errors :district0x.db.ui.form/data]))
+(s/def ::form-id (s/nilable (s/map-of keyword? any?)))
 (s/def ::form-id-keys (s/coll-of keyword?))
 
-(s/def ::forms-by-contract-address (s/map-of ::contract-address-form-id ::form))
+(s/def ::nil-id-form (s/map-of :form-id/nil ::form))
+(s/def ::contract-address-id-form (s/map-of :form-id/contract-address ::form))
 
 (s/def :transaction/block-hash sha3?)
 (s/def :transaction/hash sha3?)
@@ -59,6 +59,7 @@
 (s/def :transaction/status (partial contains? #{:tx.status/pending :tx.status/not-loaded :tx.status/success
                                                 :tx.status/failure}))
 
+(s/def ::sender address?)
 (s/def ::transaction-id sha3?)
 (s/def ::transaction-id-list (s/coll-of ::transaction-id :kind list?))
 (s/def ::transaction-name string?)
@@ -82,7 +83,7 @@
 (s/def ::offset integer?)
 (s/def ::limit integer?)
 (s/def ::infinite-scroll (s/keys :opt-un [::offset ::limit]))
-(s/def ::list (s/keys :opt-un [::ids ::loading? ::infinite-scroll]))
+(s/def ::search-results (s/keys :opt-un [::ids ::loading? ::infinite-scroll]))
 
 (s/def ::items (s/coll-of any?))
 
@@ -108,7 +109,7 @@
                                                                 :opt-un [:district0x.db.query-param/parser])))
 
 (s/def ::route-handler->form-key (s/map-of ::handler ::form-key))
-(s/def :form.district0x-emails/set-email (s/map-of :district0x.db/nil-form-id :district0x.db/form))
+(s/def :form.district0x-emails/set-email (s/map-of :form-id/nil ::form))
 
 (s/def ::db (s/keys :req-un [::active-address
                              ::blockchain-connection-error?

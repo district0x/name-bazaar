@@ -4,7 +4,6 @@
     [cljs.core.async :refer [<! >! chan]]
     [district0x.shared.big-number :as bn]
     [district0x.server.state :as state]
-    [district0x.utils :refer [zero-address?]]
     [name-bazaar.shared.utils :refer [parse-offering]]))
 
 (defn get-offering [server-state contract-address]

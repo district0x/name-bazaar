@@ -1,4 +1,4 @@
-(ns district0x.components.active-address-select-field
+(ns district0x.ui.components.active-address-select-field
   (:require
     [cljs-react-material-ui.reagent :as ui]
     [district0x.ui.utils :as d0x-ui-utils]

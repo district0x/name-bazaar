@@ -2,6 +2,7 @@
   (:require
     [cemerick.url :as url]
     [cljs-web3.core :as web3]
+    [cljs.core.async :refer [<! >! chan]]
     [clojure.set :as set]
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
@@ -37,7 +38,7 @@
   (or (= x "0x0000000000000000000000000000000000000000")
       (= x "0x")))
 
-(defn ensure-vec [x]
+(defn collify [x]
   (if (sequential? x) x [x]))
 
 (defn empty-string? [x]
@@ -136,3 +137,7 @@
   (when x
     (str (when-let [n (namespace x)] (str n "/")) (name x))))
 
+(defn combination-of? [keys-set coll]
+  (let [coll (collify coll)]
+    (and (seq coll)
+         (every? (partial contains? keys-set) coll))))

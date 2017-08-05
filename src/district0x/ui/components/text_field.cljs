@@ -1,7 +1,7 @@
-(ns district0x.components.text-field
+(ns district0x.ui.components.text-field
   (:require
+    [district0x.shared.utils :as d0x-shared-utils :refer [http-url?]]
     [district0x.ui.utils :as d0x-ui-utils]
-    [district0x.shared.utils :refer [http-url?]]
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
@@ -102,7 +102,7 @@
 
 (defn ether-field [{:keys [:value :on-change :form-key :field-key :on-change :allow-empty?
                            :only-positive? :value-error-text] :as props}]
-  (let [validator (if only-positive? u/pos-ether-value? u/non-neg-ether-value?)]
+  (let [validator (if only-positive? d0x-shared-utils/pos-ether-value? d0x-shared-utils/non-neg-ether-value?)]
     [text-field
      (r/merge-props
        {:on-change (fn [e value]

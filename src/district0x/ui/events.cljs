@@ -1,4 +1,4 @@
-(ns district0x.events
+(ns district0x.ui.events
   (:require
     [ajax.core :as ajax]
     [akiroz.re-frame.storage :as re-frame-storage]
@@ -7,6 +7,7 @@
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs-web3.personal :as web3-personal]
+    [cemerick.url :as url]
     [cljs-web3.utils :as web3-utils]
     [cljs.spec.alpha :as s]
     [clojure.data :as data]
@@ -14,21 +15,20 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.constants :as constants]
-    [district0x.db :as d0x-db]
-    [district0x.dispatch-fx]
-    [district0x.interval-fx]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.ui.db]
+    [district0x.ui.dispatch-fx]
+    [district0x.ui.interval-fx]
     [district0x.ui.utils :as d0x-ui-utils]
-    [district0x.window-fx]
+    [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
     [madvas.re-frame.google-analytics-fx]
     [madvas.re-frame.web3-fx]
     [medley.core :as medley]
-    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch]]
-    [cemerick.url :as url]))
+    [print.foo :include-macros true]
+    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch]]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -44,7 +44,7 @@
       (.error js/console (s/explain-str a-spec db))
       (throw "DB Spec check failed"))))
 
-(def check-spec-interceptor (after (partial check-and-throw :district0x.db/db)))
+(def check-spec-interceptor (after (partial check-and-throw :district0x.ui.db/db)))
 
 (def interceptors [trim-v check-spec-interceptor])
 
@@ -70,39 +70,14 @@
    :on-success on-success
    :on-failure on-failure})
 
-(def log-used-gas
-  (re-frame/->interceptor
-    :id :log-used-gas
-    :before (fn [{:keys [coeffects] :as context}]
-              (let [event (:event coeffects)
-                    {:keys [gas-used] :as receipt} (last event)
-                    gas-limit (first event)]
-                (let [gas-used-percent (* (/ gas-used gas-limit) 100)
-                      gas-used-percent-str (gstring/format "%.2f%" gas-used-percent)]
-                  (console :log "gas used:" gas-used-percent-str gas-used (second event))
-                  (-> context
-                    (update-in [:coeffects :event (dec (count event))]
-                               merge
-                               {:success? (< gas-used gas-limit)
-                                :gas-used-percent gas-used-percent-str})
-                    (update-in [:coeffects :event] #(-> % rest vec))
-                    (assoc-in [:coeffects :db :last-transaction-gas-used] gas-used-percent)))))
-    :after (fn [context]
-             (let [event (:event (:coeffects context))]
-               (update context :effects merge
-                       {:ga/event ["log-used-gas"
-                                   (name (:fn-key (first event)))
-                                   (str (select-keys (last event) [:gas-used :gas-used-percent :transaction-hash
-                                                                   :success?]))]})))))
-
 (defn- merge-query-params-into-form [{:keys [:route-handler->form-key] :as db} {:keys [:handler]} query-data]
   (if-let [form-key (route-handler->form-key handler)]
     (update db form-key merge query-data)
     db))
 
 (defn initialize-db [default-db localstorage]
-  (let [web3 (if constants/provides-web3?
-               (aget js/window "web3")
+  (let [web3 (if (d0x-ui-utils/provides-web3?)
+               (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
                (web3/create-web3 (:node-url default-db)))
         load-node-addresses? (if (and (nil? (:load-node-addresses? default-db))
                                       (string/includes? (:node-url default-db) "localhost"))
@@ -123,7 +98,7 @@
   :district0x/initialize
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [localstorage]} [{:keys [:default-db :conversion-rates :effects]}]]
-    (let [db (district0x.events/initialize-db default-db localstorage)
+    (let [db (district0x.ui.events/initialize-db default-db localstorage)
           not-loaded-txs (medley/filter-vals (partial has-tx-status? :tx.status/not-loaded) (:transactions db))
           pending-txs (medley/filter-vals (partial has-tx-status? :tx.status/pending) (:transactions db))]
       (merge
@@ -131,16 +106,19 @@
          :ga/page-view [(d0x-ui-utils/current-location-hash)]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
-         :district0x/dispatch-n [[:district0x/load-my-addresses]
-                                 (for [tx-hash (keys not-loaded-txs)]
-                                   [:district0x/load-transaction-and-receipt tx-hash])
-                                 (for [tx-hash (keys pending-txs)]
-                                   [:district0x/load-transaction-receipt tx-hash])]}
+         :district0x/dispatch-n (remove empty?
+                                        [(for [tx-hash (keys not-loaded-txs)]
+                                           [:district0x/load-transaction-and-receipt tx-hash])
+                                         (for [tx-hash (keys pending-txs)]
+                                           [:district0x/load-transaction-receipt tx-hash])])
+         ;; On slowed computers injection may not yet happened, so we'll give it some time, just in case
+         :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000) :dispatch [:district0x/load-my-addresses]}]}
         (when conversion-rates
           {:district0x/dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
            :dispatch-interval {:dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
                                :ms (or (:ms conversion-rates) 60000)
                                :db-path [:district0x/load-conversion-rates-interval]}})
+
         effects))))
 
 (reg-event-fx
@@ -160,15 +138,20 @@
   :district0x/load-my-addresses
   interceptors
   (fn [{:keys [db]}]
-    (if constants/provides-web3?
-      {:dispatch [:district0x/my-addresses-loaded (web3-eth/accounts (:web3 db))]}
-      (if (:load-node-addresses? db)
-        {:web3-fx.blockchain/fns
-         {:web3 (:web3 db)
-          :fns [[web3-eth/accounts
-                 [:district0x/my-addresses-loaded]
-                 [:district0x/blockchain-connection-error :initialize]]]}}
-        {:dispatch [:district0x/my-addresses-loaded []]}))))
+    (let [new-db (if (d0x-ui-utils/provides-web3?)
+                   (assoc db :web3 (aget js/window "web3"))
+                   db)]
+      (merge
+        {:db new-db}
+        (if (or (:load-node-addresses? db)
+                (d0x-ui-utils/provides-web3?))
+          {:web3-fx.blockchain/fns
+           {:web3 (:web3 new-db)
+            :fns [{:f web3-eth/accounts
+                   :on-success [:district0x/my-addresses-loaded]
+                   :on-error [:district0x/dispatch-n [[:district0x/set-fallback-web3]
+                                                      [:district0x/my-addresses-loaded []]]]}]}}
+          {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
   :district0x/load-smart-contracts
@@ -417,11 +400,11 @@
 
 (reg-event-fx
   :district0x.form/tx-receipt-loaded
-  [interceptors log-used-gas]
+  interceptors
   (fn [{:keys [:db]} [{:keys [:on-tx-receipt :on-tx-receipt-n :form-data :on-error]
                        :or {on-error [:district0x.snackbar/show-transaction-error]}}
                       {:keys [:transaction-hash :gas-used] :as tx-receipt}]]
-    (let [success? (not= (get-in db [:transactions transaction-hash :gas])) gas-used]
+    (let [success? (not= (get-in db [:transactions transaction-hash :gas]) gas-used)]
       (merge
         {:district0x/dispatch [:district0x/transaction-receipt-loaded tx-receipt]}
         (when (and success? on-tx-receipt)
@@ -524,6 +507,11 @@
                             (-> transaction
                               (select-keys [:block-hash :gas-used :gas :value :status])
                               (update :value bn/->number)))]
+      (let [{:keys [:gas :gas-used :form-data]} (get-in new-db [:transactions transaction-hash])]
+        (when (and gas gas-used)
+          (println transaction-hash gas gas-used (str (* (/ gas gas-used) 100) "%")))
+        (when form-data
+          (print.foo/look form-data)))
       (merge
         {:db new-db
          :localstorage (merge localstorage (select-keys new-db [:transactions]))}))))
@@ -532,9 +520,9 @@
   :district0x.transaction-log/clear
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]}]
-    (let [cleared-txs (select-keys d0x-db/default-db [:transactions
-                                                      :transaction-ids-chronological
-                                                      :transaction-ids-by-form])]
+    (let [cleared-txs (select-keys district0x.ui.db/default-db [:transactions
+                                                                :transaction-ids-chronological
+                                                                :transaction-ids-by-form])]
       {:db (merge db cleared-txs)
        :localstorage (merge localstorage cleared-txs)})))
 
@@ -585,7 +573,7 @@
   (fn [{:keys [:db]} [db-path event-id dispatch & args]]
     {:web3-fx.contract/events-stop-watching {:db-path db-path
                                              :event-ids [event-id]}
-     :dispatch (vec (concat (d0x-shared-utils/ensure-vec dispatch) args))}))
+     :dispatch (vec (concat (d0x-shared-utils/collify dispatch) args))}))
 
 
 (reg-event-fx
@@ -607,31 +595,68 @@
                :on-tx-receipt [:district0x.form/tx-receipt-loaded (:gas tx-opts) (assoc opts :fn-key method)]}]}})))
 
 (reg-event-fx
-  :district0x.list/http-load
+  :district0x.server/http-get
   interceptors
-  (fn [{:keys [db]} [{:keys [:http-xhrio :list-id :list-key :clear-existing-ids? :path :form-key
-                             :on-success]} :as opts]]
+  (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :endpoint]} :as opts]]
     {:http-xhrio (merge
                    {:method :get
                     :timeout 20000
-                    :uri (str (url/url (:server-url db) path))
+                    :uri (str (url/url (:server-url db) endpoint))
                     :response-format (ajax/json-response-format)
-                    :on-success [:district0x/dispatch-n [[:district0x.list/loaded opts]
-                                                         on-success]]
+                    :on-success on-success
                     :on-failure [:district0x.log/error]
-                    :params (if form-key
-                              (get db form-key)
-                              list-id)}
-                   http-xhrio)
-     :db (update-in db [list-key list-id] merge (merge {:loading? true}
-                                                       (when clear-existing-ids?
-                                                         {:ids []})))}))
+                    :params params}
+                   http-xhrio)}))
 
 (reg-event-fx
-  :district0x.list/loaded
+  :district0x.search-results/load
   interceptors
-  (fn [{:keys [db]} [{:keys [:list-id :list-key]} ids]]
-    {:db (update-in db [list-key list-id] merge {:loading? false :ids ids})}))
+  (fn [{:keys [db]} [{:keys [:http-xhrio :search-params :search-results-key :clear-existing-ids? :endpoint :form-key
+                             :on-success]} :as opts]]
+    {:db (update-in db [search-results-key search-params] merge (merge {:loading? true}
+                                                                       (when clear-existing-ids?
+                                                                         {:ids []})))
+     :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
+                                             :endpoint endpoint
+                                             :params (if form-key
+                                                       (get db form-key)
+                                                       (dissoc search-params :select-fields))
+                                             :on-success [:district0x.search-results/loaded opts]}]}))
+
+(reg-event-fx
+  :district0x.search-results/loaded
+  interceptors
+  (fn [{:keys [db]} [{:keys [:search-results-key :search-params :id-key :on-success]} results]]
+    (let [ids (if id-key (map #(get % id-key)) results)]
+      {:db (update-in db [search-results-key search-params] merge {:loading? false :ids ids})
+       :dispatch (concat on-success [ids results])})))
+
+(reg-event-fx
+  :district0x.search-results/load-multi
+  interceptors
+  (fn [{:keys [db]} [{:keys [:http-xhrio :search-params-fn :search-params-key :search-results-key :clear-existing-ids?
+                             :endpoint :form-key :on-success :request-params]} :as opts]]
+    {:db (update db search-results-key (partial merge-with merge) (zipmap
+                                                                    (vals search-params-fn)
+                                                                    (repeat (count search-params-fn)
+                                                                            (merge {:loading? true}
+                                                                                   (when clear-existing-ids?
+                                                                                     {:ids []})))))
+     :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
+                                             :endpoint endpoint
+                                             :params (if form-key
+                                                       (db form-key)
+                                                       request-params)
+                                             :on-success [:district0x.search-results/multi-loaded opts]}]}))
+
+(reg-event-fx
+  :district0x.search-results/multi-loaded
+  interceptors
+  (fn [{:keys [db]} [{:keys [:search-results-key search-params-fn :search-params-key :id-key :on-success]} results]]
+    {:db (update db search-results-key merge (map #(hash-map (search-params-fn %)
+                                                             (d0x-shared-utils/collify (get % id-key)))
+                                                  results))
+     :dispatch (concat on-success [(map #(get % id-key) results) results])}))
 
 (reg-event-fx
   :district0x.contract/constant-fn-call

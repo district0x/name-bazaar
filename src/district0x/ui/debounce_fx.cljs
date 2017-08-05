@@ -1,4 +1,4 @@
-(ns district0x.debounce-fx
+(ns district0x.ui.debounce-fx
   (:require
     [re-frame.core :refer [reg-fx dispatch console]]
     [cljs.spec.alpha :as s]))

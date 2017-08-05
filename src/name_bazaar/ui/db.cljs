@@ -4,12 +4,13 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [cljs.spec.alpha :as s]
-    [district0x.db]
+    [district0x.ui.db]
     [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [re-frame.core :refer [dispatch]]))
 
+(s/def :offering/address address?)
 (s/def :offering/node sha3?)
 (s/def :offering/name string?)
 (s/def :offering/original-owner address?)
@@ -44,7 +45,7 @@
                                                  :english-auction-offering/highest-bidder
                                                  :english-auction-offering/bids]))
 
-(s/def :offering-registry/offerings (s/map-of address? :offering-registry/offering))
+(s/def :offering-registry/offerings (s/map-of :offering/address :offering-registry/offering))
 
 (s/def :offering-request/requesters (s/coll-of address? :kind set?))
 (s/def :offering-request/requesters-count not-neg?)
@@ -59,6 +60,7 @@
 (s/def :ens.record/resolver address?)
 (s/def :ens.record/ttl not-neg?)
 (s/def :ens.record/name string?)
+
 (s/def :ens/record (s/keys :opt [:ens.record/owner
                                  :ens.record/name
                                  :ens.record/resolver
@@ -66,57 +68,68 @@
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
-(s/def :instant-buy-offering-factory/create-offering :district0x.db/no-form-id-form)
-(s/def :instant-buy-offering/buy ::contract-address-forms)
+(s/def ::watched-ens-records (s/coll-of (s/keys :req [:ens.record/name :ens.record/node]) :kind list?))
 
-(s/def :english-auction-offering-factory/create-offering :district0x.db/no-form-id-form)
+(s/def :search-form/offerings (s/keys :opt [:offering/name
+                                            :offering/min-price
+                                            :offering/max-price
+                                            :offering/max-end-time
+                                            :offering/version
+                                            :offering/node-owner?]
+                                      :opt-un [:district0x.ui.db/offset
+                                               :district0x.ui.db/order-by]))
 
-(s/def :ens/set-owner (s/map-of (s/merge :district0x.db/no-form-id
-                                         (s/keys :req-un [:ens.record/node]))
-                                :district0x.db/form))
+(s/def :search-form/offering-requests (s/keys :opts [:offering-request/name]
+                                              :opt-un [:district0x.ui.db/offset :district0x.ui.db/order-by]))
+(s/def :search-params/offerings (s/merge :search-form/offerings (s/keys :opt [:offering/original-owner])))
+(s/def :search-results/offerings (s/map-of :search-params/offerings :district0x.ui.db/search-results))
 
-(s/def :search-form/search-offerings (s/keys :opt [:offering/name
-                                                   :offering/min-price
-                                                   :offering/max-price
-                                                   :offering/max-end-time
-                                                   :offering/version
-                                                   :offering/node-owner?]
-                                             :opt-un [:district0x.db/offset
-                                                      :district0x.db/order-by]))
+(s/def :search-params/offering-requests :search-form/offering-requests)
+(s/def :search-results/offering-requests (s/map-of :search-params/offering-requests :district0x.ui.db/search-results))
 
-(s/def :search-form/search-offering-requests (s/keys :opts [:offering-request/name]
-                                                     :opt-un [:district0x.db/offset :district0x.db/order-by]))
-(s/def :list-id/offerings (s/merge :search-form/search-offerings (s/keys :opt [:offering/original-owner])))
-(s/def :list/offerings (s/map-of :list-id/offerings :district0x.db/list))
-(s/def :list-id/offering-requests :search-form/search-offering-requests)
-(s/def :list/offering-requests (s/map-of :list-id/offering-requests :district0x.db/list))
-
-
-
-(s/def :ens/set-owner (s/map-of (s/keys :req [:ens.record/node]) :district0x.db/form))
-(s/def :instant-buy-offering-factory/create-offering (s/map-of :district0x.db/nil-form-id :district0x.db/form))
-(s/def :instant-buy-offering/buy (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :instant-buy-offering/set-settings (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :english-auction-offering-factory/create-offering (s/map-of :district0x.db/nil-form-id :district0x.db/form))
-(s/def :english-auction-offering/bid (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :english-auction-offering/finalize (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :english-auction-offering/withdraw (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :english-auction-offering/set-settings (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :offering/reclaim-ownership (s/map-of :district0x.db/contract-address-form-id :district0x.db/form))
-(s/def :offering-requests/add-request (s/map-of (s/keys :req [:offering-request/name]) :district0x.db/form))
+(s/def :form.ens/set-owner (s/map-of (s/keys :req [:ens.record/node]) :district0x.ui.db/form))
+(s/def :form.instant-buy-offering-factory/create-offering :district0x.ui.db/nil-id-form)
+(s/def :form.instant-buy-offering/buy :district0x.ui.db/contract-address-id-form)
+(s/def :form.instant-buy-offering/set-settings :district0x.ui.db/contract-address-id-form)
+(s/def :form.english-auction-offering-factory/create-offering :district0x.ui.db/nil-id-form)
+(s/def :form.english-auction-offering/bid :district0x.ui.db/contract-address-id-form)
+(s/def :form.english-auction-offering/finalize :district0x.ui.db/contract-address-id-form)
+(s/def :form.english-auction-offering/withdraw :district0x.ui.db/contract-address-id-form)
+(s/def :form.english-auction-offering/set-settings :district0x.ui.db/contract-address-id-form)
+(s/def :form.offering/reclaim-ownership :district0x.ui.db/contract-address-id-form)
+(s/def :form.offering-requests/add-request (s/map-of (s/keys :req [:offering-request/name]) :district0x.ui.db/form))
 
 (s/def ::db (s/merge
-              :district0x.db/db
+              :district0x.ui.db/db
               (s/keys :req [:ens/records
                             :offering-registry/offerings
                             :offering-requests/requests
-                            :instant-buy-offering-factory/create-offering])))
+
+                            :form.ens/set-owner
+                            :form.instant-buy-offering-factory/create-offering
+                            :form.instant-buy-offering/buy
+                            :form.instant-buy-offering/set-settings
+                            :form.english-auction-offering-factory/create-offering
+                            :form.english-auction-offering/bid
+                            :form.english-auction-offering/finalize
+                            :form.english-auction-offering/withdraw
+                            :form.english-auction-offering/set-settings
+                            :form.offering/reclaim-ownership
+                            :form.offering-requests/add-request
+                            :form.district0x-emails/set-email
+
+                            :search-results/offerings
+                            :search-results/offering-requests
+
+                            :search-form/offerings
+                            :search-form/offering-requests]
+                      :req-un [::watched-ens-records])))
 
 
 
 (def default-db
   (merge
-    district0x.db/default-db
+    district0x.ui.db/default-db
     {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
      :server-url "http://localhost:6200"
      :smart-contracts smart-contracts
@@ -128,6 +141,7 @@
      :offering-registry/offerings {}
      :offering-requests/requests {}
      :ens/records {}
+     :watched-ens-records '()
 
      :form.ens/set-owner {}
      :form.instant-buy-offering-factory/create-offering {}
@@ -142,10 +156,10 @@
      :form.offering-requests/add-request {}
      :form.district0x-emails/set-email {}
 
-     :list/offerings {}
-     :list/offering-requests {}
+     :search-results/offerings {}
+     :search-results/offering-requests {}
 
-     :search-form/search-offerings {:offering/node-owner? true :order-by {:offering/created-on :desc}}
-     :search-form/search-offering-requests {:order-by {:offering-request/requesters-count :desc}}
+     :search-form/offerings {:offering/node-owner? true :order-by {:offering/created-on :desc}}
+     :search-form/offering-requests {:order-by {:offering-request/requesters-count :desc}}
 
      }))

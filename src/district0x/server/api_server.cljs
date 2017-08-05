@@ -79,8 +79,8 @@
 
 (defn parse-order-by [{:keys [:order-by-columns :order-by-dirs] :as query}]
   (-> query
-    (assoc :order-by (into [] (zipmap (d0x-shared-utils/ensure-vec order-by-columns)
-                                      (d0x-shared-utils/ensure-vec order-by-dirs))))
+    (assoc :order-by (into [] (zipmap (d0x-shared-utils/collify order-by-columns)
+                                      (d0x-shared-utils/collify order-by-dirs))))
     (dissoc :order-by-columns :order-by-dirs)))
 
 (def sanitize-query (comp restrict-limit

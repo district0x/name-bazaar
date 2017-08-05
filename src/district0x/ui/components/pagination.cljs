@@ -1,4 +1,4 @@
-(ns district0x.components.pagination
+(ns district0x.ui.components.pagination
   (:require
     [cljs-react-material-ui.reagent :as ui]
     [cljsjs.react-ultimate-pagination]

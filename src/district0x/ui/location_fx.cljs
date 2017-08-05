@@ -1,4 +1,4 @@
-(ns district0x.location-fx
+(ns district0x.ui.location-fx
   (:require
     [bidi.bidi :as bidi]
     [cemerick.url :as url]

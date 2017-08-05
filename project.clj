@@ -21,6 +21,7 @@
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
                  [bidi "2.1.1"]
+                 [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.5.8"]
                  [cljsjs/bignumber "2.1.4-1"]
                  [cljsjs/react-flexbox-grid "1.0.0-0" :exclusions [cljsjs/react cljsjs/react-dom]]
@@ -82,8 +83,8 @@
               :cljsbuild {:builds [{:id "dev"
                                     :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
                                                    "src/district0x/ui" "src/district0x/shared"]
-                                    :figwheel {:on-jsload "name-bazaar.core/mount-root"}
-                                    :compiler {:main "name-bazaar.core"
+                                    :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
+                                    :compiler {:main "name-bazaar.ui.core"
                                                :output-to "resources/public/js/compiled/app.js"
                                                :output-dir "resources/public/js/compiled/out"
                                                :asset-path "js/compiled/out"
@@ -104,7 +105,7 @@
                                    {:id "min"
                                     :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
                                                    "src/district0x/ui" "src/district0x/shared"]
-                                    :compiler {:main "name-bazaar.core"
+                                    :compiler {:main "name-bazaar.ui.core"
                                                :output-to "resources/public/js/compiled/app.js"
                                                :optimizations :advanced
                                                :closure-defines {goog.DEBUG false}
