@@ -32,8 +32,8 @@
     (:ens/records db)))
 
 (reg-sub
-  :watched-ens-records
-  :<- [:district0x/db :watched-ens-records]
+  :search-form/watched-names
+  :<- [:district0x/db :search-form/watched-names]
   :<- [:ens/records]
   :<- [:offering-registry/offerings]
   (fn [watched-ens-records ens-records offerings]

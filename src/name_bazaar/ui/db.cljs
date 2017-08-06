@@ -8,7 +8,8 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
-    [re-frame.core :refer [dispatch]]))
+    [re-frame.core :refer [dispatch]]
+    [district0x.ui.utils :as d0x-ui-utils]))
 
 (s/def :offering/address address?)
 (s/def :offering/node sha3?)
@@ -68,27 +69,49 @@
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
-(s/def ::watched-ens-records (s/coll-of (s/keys :req [:ens.record/name :ens.record/node]) :kind list?))
+(s/def :watched-names/ens-records (s/coll-of (s/keys :req [:ens.record/name :ens.record/node])))
+(s/def :watched-names/new-name string?)
 
-(s/def :search-form/offerings (s/keys :opt [:offering/name
-                                            :offering/min-price
-                                            :offering/max-price
-                                            :offering/max-end-time
-                                            :offering/version
-                                            :offering/node-owner?]
-                                      :opt-un [:district0x.ui.db/offset
-                                               :district0x.ui.db/order-by]))
+(s/def :search-form.watched-names/data (s/keys :opt [:watched-names/ens-records
+                                                     :watched-names/new-name]))
 
-(s/def :search-form/offering-requests (s/keys :opts [:offering-request/name]
-                                              :opt-un [:district0x.ui.db/offset :district0x.ui.db/order-by]))
-(s/def :search-params/offerings (s/merge :search-form/offerings (s/keys :opt [:offering/original-owner])))
+(s/def :search-form/watched-names (s/merge :district0x.ui.db/form
+                                           (s/keys :opts-un [:search-form.watched-names/data])))
+
+(s/def :search-form.search-offerings/data (s/keys :opt [:offering/name
+                                                        :offering/min-price
+                                                        :offering/max-price
+                                                        :offering/max-end-time
+                                                        :offering/version
+                                                        :offering/node-owner?]
+                                                  :opt-un [:district0x.ui.db/offset
+                                                           :district0x.ui.db/limit
+                                                           :district0x.ui.db/order-by]))
+(s/def :search-form/search-offerings (s/merge :district0x.ui.db/form
+                                              (s/keys :opts-un [:search-form.search-offerings/data])))
+
+(s/def :search-form.home-page-search/data (s/keys :opt [:offering/name
+                                                        :offering/node-owner?]
+                                                  :opt-un [:district0x.ui.db/order-by
+                                                           :district0x.ui.db/limit]))
+(s/def :search-form/home-page-search (s/merge :district0x.ui.db/form
+                                              (s/keys :opts-un [:search-form.home-page-search/data])))
+
+
+(s/def :search-form.search-offering-requests/data (s/keys :opts [:offering-request/name]
+                                                          :opt-un [:district0x.ui.db/offset :district0x.ui.db/order-by]))
+(s/def :search-form/search-offering-requests (s/merge :district0x.ui.db/form
+                                                      (s/keys :opts-un [:search-form.search-offering-requests/data])))
+
+
+(s/def :search-params/offerings (s/merge :search-form.search-offerings/data (s/keys :opt [:offering/original-owner])))
 (s/def :search-results/offerings (s/map-of :search-params/offerings :district0x.ui.db/search-results))
 
-(s/def :search-params/offering-requests :search-form/offering-requests)
+(s/def :search-params/offering-requests :search-form/search-offering-requests)
 (s/def :search-results/offering-requests (s/map-of :search-params/offering-requests :district0x.ui.db/search-results))
 
 (s/def :form.ens/set-owner (s/map-of (s/keys :req [:ens.record/node]) :district0x.ui.db/form))
-(s/def :form.instant-buy-offering-factory/create-offering :district0x.ui.db/nil-id-form)
+(s/def :form.instant-buy-offering-factory/create-offering :district0x.ui.db/form)
 (s/def :form.instant-buy-offering/buy :district0x.ui.db/contract-address-id-form)
 (s/def :form.instant-buy-offering/set-settings :district0x.ui.db/contract-address-id-form)
 (s/def :form.english-auction-offering-factory/create-offering :district0x.ui.db/nil-id-form)
@@ -121,9 +144,12 @@
                             :search-results/offerings
                             :search-results/offering-requests
 
-                            :search-form/offerings
-                            :search-form/offering-requests]
-                      :req-un [::watched-ens-records])))
+                            :search-form/search-offerings
+                            :search-form/search-offering-requests
+                            :search-form/home-page-search
+                            :search-form/watched-names
+
+                            ])))
 
 
 
@@ -132,6 +158,7 @@
     district0x.ui.db/default-db
     {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
      :server-url "http://localhost:6200"
+     :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :contract-method-configs constants/contract-method-configs
      :form-configs constants/form-configs
@@ -141,7 +168,6 @@
      :offering-registry/offerings {}
      :offering-requests/requests {}
      :ens/records {}
-     :watched-ens-records '()
 
      :form.ens/set-owner {}
      :form.instant-buy-offering-factory/create-offering {}
@@ -159,7 +185,18 @@
      :search-results/offerings {}
      :search-results/offering-requests {}
 
-     :search-form/offerings {:offering/node-owner? true :order-by {:offering/created-on :desc}}
-     :search-form/offering-requests {:order-by {:offering-request/requesters-count :desc}}
+     :search-form/search-offerings {:data {:offering/node-owner? true
+                                           :order-by [[:offering/created-on :desc]]}}
+
+     :search-form/search-offering-requests {:data {:order-by [[:offering-request/requesters-count :desc]]
+                                                   :offering-request/name ""}}
+
+     :search-form/home-page-search {:data {:offering/node-owner? true
+                                           :offering/name ""
+                                           :order-by [[:offering/created-on :desc]]
+                                           :limit 4}}
+
+     :search-form/watched-names {:data {:watched-names/ens-records []
+                                        :watched-names/new-name ""}}
 
      }))

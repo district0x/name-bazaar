@@ -19,6 +19,8 @@
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
+(def labels ["car" "metacar" "carservice" "ab-car-service" "cars" "something" "car-abc"])
+
 (defn generate! [server-state {:keys [:total-accounts]}]
   (let [ch (chan)
         root-node "eth"]
@@ -28,7 +30,7 @@
 
       (doseq [address-index (range total-accounts)]
         (let [owner (state/my-address server-state address-index)
-              label (u/rand-str 5 {:lowercase-only? true})
+              label (nth labels address-index) #_ (u/rand-str 5 {:lowercase-only? true})
               name (str label "." root-node)
               node (namehash name)
               offering-type (if (zero? (rand-int 2)) :instant-buy-offering :english-auction-offering)

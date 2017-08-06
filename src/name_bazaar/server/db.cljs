@@ -9,8 +9,14 @@
     [honeysql.helpers :as sql-helpers :refer [merge-where]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+; name VARCHAR NOT NULL,
+; name_rowid INTEGER DEFAULT NULL,
+; FOREIGN KEY(name_rowid) REFERENCES ens_names(rowid)
+
 (defn create-tables! [db]
   (.serialize db (fn []
+                   #_(.run db "CREATE VIRTUAL TABLE ens_names USING fts5(name)" log-error)
+
                    (.run db "CREATE TABLE offerings (
                           address CHAR(42) PRIMARY KEY NOT NULL,
                           created_on UNSIGNED INTEGER NOT NULL,
@@ -45,7 +51,9 @@
                           requesters_count UNSIGNED INTEGER NOT NULL DEFAULT 0
                           )" log-error)
 
-                   (.run db "CREATE INDEX requesters_count_index ON offering_requests (requesters_count)" log-error))))
+                   (.run db "CREATE INDEX requesters_count_index ON offering_requests (requesters_count)" log-error)
+                   (.run db "CREATE INDEX offering_requests_name_index ON offering_requests (name)" log-error)
+                   )))
 
 (def offering-keys [:offering/address
                     :offering/created-on
@@ -81,12 +89,9 @@
                :set {:is-node-owner node-owner?}
                :where [:= :address address]}))
 
-(defn offering-exists? [db offering-address]
-  (db-get db {:select [1]
-              :from [:offerings]
-              :where [:= :address offering-address]}))
-
-(def offering-requests-keys [:offering-request/node :offering-request/name :offering-request/requesters-count])
+(def offering-requests-keys [:offering-request/node
+                             :offering-request/name
+                             :offering-request/requesters-count])
 
 (defn upsert-offering-requests! [db values]
   (db-run! db {:insert-or-replace-into :offering-requests
@@ -105,7 +110,8 @@
                                    :select-fields]
                             :or {offset 0 limit -1}}]
   (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])]
+        select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
+        order-bys (conca)]
     (db-all db
             (sql-results-chan select-fields)
             (cond-> {:select select-fields
@@ -121,7 +127,7 @@
                                     :version 100000])
               (boolean? node-owner?) (merge-where [:= :is-node-owner node-owner?])
               node (merge-where [:= :node node])
-              name (merge-where [:like :name name])
+              name (merge-where [:like :name (str "%" name "%")])
               (s/valid? ::offerings-order-by order-by) (merge {:order-by order-by})))))
 
 (s/def ::ens-records-select-fields (partial combination-of? #{:node :last-offering}))

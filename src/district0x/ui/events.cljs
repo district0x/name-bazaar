@@ -2,12 +2,12 @@
   (:require
     [ajax.core :as ajax]
     [akiroz.re-frame.storage :as re-frame-storage]
+    [cemerick.url :as url]
     [cljs-time.coerce :as time-coerce]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs-web3.personal :as web3-personal]
-    [cemerick.url :as url]
     [cljs-web3.utils :as web3-utils]
     [cljs.spec.alpha :as s]
     [clojure.data :as data]
@@ -20,6 +20,8 @@
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.interval-fx]
+    [district0x.ui.spec-interceptors :refer [validate-args conform-args]]
+    [district0x.ui.spec]
     [district0x.ui.utils :as d0x-ui-utils]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
@@ -44,7 +46,7 @@
       (.error js/console (s/explain-str a-spec db))
       (throw "DB Spec check failed"))))
 
-(def check-spec-interceptor (after (partial check-and-throw :district0x.ui.db/db)))
+(def check-spec-interceptor (after (partial check-and-throw :district0x.ui/db)))
 
 (def interceptors [trim-v check-spec-interceptor])
 
@@ -59,6 +61,9 @@
 
 (defn all-contracts-deployed? [db]
   (every? #(and (:instance %) (:address %)) (vals (:smart-contracts db))))
+
+(defn get-form-data [db form-key & [form-id]]
+  (get-in db (remove nil? [form-key form-id :data])))
 
 (defn contract-xhrio [contract-name code-type version on-success on-failure]
   {:method :get
@@ -338,33 +343,26 @@
            (assoc :active-address address))
      :localstorage (assoc localstorage :active-address address)}))
 
-(s/def :district0x.form/set-value (s/cat :form-key :district0x.db/form-key
-                                         :form-id (s/? ::form-id)
-                                         :field-key keyword?
-                                         :value any?
-                                         :validator (s/? (s/or :validator-fn fn?
-                                                               :valid? boolean?))))
-
 (reg-event-fx
   :district0x.form/set-value
-  interceptors
-  (fn [db args]
-    (let [args (s/conform :district0x.form/set-value args)]
-      (if-not (= args ::s/invalid)
-        (let [{:keys [:form-key :form-id :field-key :value :validator]} args
-              validator (d0x-shared-utils/resolve-conformed-spec-or {:valid? constantly} validator)]
-          {:db
-           (cond-> db
-             true (assoc-in [form-key form-id :data field-key] value)
+  [interceptors (conform-args (s/cat :form-key :form/key
+                                     :form-id (s/? :form/id)
+                                     :field-key :form/field
+                                     :value any?
+                                     :validator (s/? (s/or :validator-fn fn?
+                                                           :valid? boolean?))))]
+  (fn [db [{:keys [:form-key :form-id :field-key :value :validator]}]]
+    (let [validator (d0x-shared-utils/resolve-conformed-spec-or {:valid? constantly} validator)]
+      {:db
+       (cond-> db
+         true (assoc-in (remove nil? [form-key form-id :data field-key]) value)
 
-             (or (and validator (validator value))
-                 (nil? validator))
-             (update-in [form-key form-id :errors] (comp set (partial remove #{field-key})))
+         (or (and validator (validator value))
+             (nil? validator))
+         (update-in (remove nil? [form-key form-id :errors]) (comp set (partial remove #{field-key})))
 
-             (and validator (not (validator value)))
-             (update-in [form-key form-id :errors] conj field-key))})
-        (do (console :error (s/explain-str :district0x.form/set-value args))
-            nil)))))
+         (and validator (not (validator value)))
+         (update-in (remove nil? [form-key form-id :errors]) conj field-key))})))
 
 (reg-event-fx
   :district0x.form/submit
@@ -490,7 +488,7 @@
                                                              :hash tx-hash
                                                              :state :tx.status/not-loaded}))
                    (update :transaction-ids-chronological conj tx-hash)
-                   (update-in [:transaction-ids-by-form form-key (:from tx-opts) form-id] tx-hash))]
+                   (update-in (remove nil? [:transaction-ids-by-form form-key (:from tx-opts) form-id]) tx-hash))]
       {:db new-db
        :localstorage (merge localstorage
                             (select-keys new-db [:transactions
@@ -526,31 +524,21 @@
       {:db (merge db cleared-txs)
        :localstorage (merge localstorage cleared-txs)})))
 
-(s/def :district0x.form/add-error (s/cat :form-key :district0x.db/form-key
-                                         :form-id (s/? ::form-id)
-                                         :error keyword?))
+(s/def :district0x.form/error-fx (s/cat :form-key :form/key
+                                        :form-id (s/? :form/id)
+                                        :error keyword?))
 
 (reg-event-fx
   :district0x.form/add-error
-  interceptors
-  (fn [db args]
-    (let [args (s/conform :district0x.form/add-error args)]
-      (if-not (= args ::s/invalid)
-        (let [{:keys [:form-key :form-id :error]} args]
-          (update-in db [form-key form-id :errors] conj error))
-        (do (console :error (s/explain-str :district0x.form/add-error args))
-            nil)))))
+  [interceptors (conform-args :district0x.form/error-fx)]
+  (fn [db {:keys [:form-key :form-id :error]}]
+    (update-in db (remove nil? [form-key form-id :errors]) conj error)))
 
 (reg-event-db
   :district0x.form/remove-error
-  interceptors
-  (fn [db args]
-    (let [args (s/conform :district0x.form/add-error args)]
-      (if-not (= args ::s/invalid)
-        (let [{:keys [:form-key :form-id :error]} args]
-          (update-in db [form-key form-id :errors] (comp set (partial remove #{error}))))
-        (do (console :error (s/explain-str :district0x.form/add-error args))
-            nil)))))
+  [interceptors (conform-args :district0x.form/error-fx)]
+  (fn [db {:keys [:form-key :form-id :error]}]
+    (update-in db (remove nil? [form-key form-id :errors]) (comp set (partial remove #{error})))))
 
 (reg-event-fx
   :district0x.contract/event-watch-once
@@ -605,7 +593,8 @@
                     :response-format (ajax/json-response-format)
                     :on-success on-success
                     :on-failure [:district0x.log/error]
-                    :params params}
+                    :params (if (:order-by params)
+                              (update params :order-by #(partition-all 2 (interleave %))))}
                    http-xhrio)}))
 
 (reg-event-fx

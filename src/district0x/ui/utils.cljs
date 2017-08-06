@@ -11,7 +11,8 @@
     [goog.string.format]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [bidi.bidi :as bidi]))
 
 (defn color-emphasize [& args]
   (apply js/MaterialUIUtils.colorManipulator.emphasize args))
@@ -40,6 +41,9 @@
                first
                (string/replace "#" ""))]
     (if (empty? hash) "/" hash)))
+
+(defn match-current-location [routes]
+  (bidi/match-route routes (current-location-hash)))
 
 (defn url-query-params->form-data
   ([form-field->query-param]

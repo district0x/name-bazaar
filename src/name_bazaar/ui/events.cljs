@@ -16,16 +16,17 @@
     [day8.re-frame.async-flow-fx]
     [district0x.shared.big-number :as bn]
     [district0x.ui.debounce-fx]
-    [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx]]
+    [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx get-form-data]]
+    [district0x.ui.spec-interceptors :refer [validate-args conform-args]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.ui.constants :as constants]
     [name-bazaar.shared.utils :refer [parse-offering parse-english-auction-offering parse-ens-record parse-offering-requests-counts]]
+    [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [namehash sha3]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v]]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
-(def check-spec-interceptor (after (partial district0x.ui.events/check-and-throw :name-bazaar.db/db)))
+(def check-spec-interceptor (after (partial district0x.ui.events/check-and-throw :name-bazaar.ui.db/db)))
 (def interceptors [trim-v check-spec-interceptor])
 
 (defn- node-name [db node]
@@ -292,31 +293,35 @@
     (update db :ens/records merge #(hash-map (:node %) {:ens.record/last-offering (:last-offering %)}))))
 
 (reg-event-fx
-  :watched-ens-records/load
+  :search/watched-names
   interceptors
   (fn [{:keys [:db]}]
-    (let [nodes (map :ens.record/node (:watched-ens-records db))]
+    (let [nodes (map :ens.record/node (get-form-data db :search-form/watched-names))]
       {:dispatch-n [[:load-nodes-last-offering-ids nodes]
                     [:load-ens-records nodes]]})))
 
 (reg-event-fx
-  :watched-ens-records/add
+  :search-form.watched-names/add
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [name]]
     (let [node (namehash name)
-          new-db (update db :watched-ens-records conj {:ens.record/name name :ens.record/node node})]
+          new-db (update-in db [:search-form/watched-names :data :watched-names/ens-records]
+                            conj
+                            {:ens.record/name name :ens.record/node node})]
       {:db new-db
-       :localstorage (merge localstorage (select-keys new-db :watched-ens-records))
+       :localstorage (merge localstorage (select-keys new-db :search-form/watched-names))
        :dispatch-n [[:load-nodes-last-offering-ids [node]]
                     [:load-ens-records [node]]]})))
 
 (reg-event-fx
-  :watched-ens-records/remove
+  :search-form.watched-names/remove
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [node]]
-    (let [new-db (update db :watched-ens-records (partial remove #(= node (:ens.record/node %))))]
+    (let [new-db (update db
+                         [:search-form/watched-names :data :watched-names/ens-records]
+                         (partial remove #(= node (:ens.record/node %))))]
       {:db new-db
-       :localstorage (merge localstorage (select-keys new-db :watched-ens-records))})))
+       :localstorage (merge localstorage (select-keys new-db :search-form/watched-names))})))
 
 (reg-event-fx
   :watch-on-offering-added

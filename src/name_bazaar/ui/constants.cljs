@@ -134,8 +134,8 @@
    :offering-request/name {:name "name"}})
 
 (def route-handler->form-key
-  {:route.offerings/search :search-form/offerings
-   :route.offering-requests/search :search-form/offering-requests})
+  {:route.offerings/search :search-form/search-offerings
+   :route.offering-requests/search :search-form/search-offering-requests})
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]

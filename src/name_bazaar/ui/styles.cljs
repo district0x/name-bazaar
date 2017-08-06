@@ -1,28 +1,22 @@
 (ns name-bazaar.ui.styles
   (:require [cljs-react-material-ui.core :refer [color get-mui-theme]]))
 
-(def theme-cyan "#7cf8fa")
-(def theme-blue "#2c398f")
-(def theme-green "#23fdd8")
-(def theme-orange "#ffd500")
-(def theme-gray "#47608e")
+#_ (def primary1-color theme-green)
+#_ (def accent1-color theme-cyan)
+#_ (def text-color "rgba(0, 0, 0, 0.87)")
 
-(def primary1-color theme-green)
-(def accent1-color theme-cyan)
-(def text-color "rgba(0, 0, 0, 0.87)")
-
-(def palette {:primary1-color primary1-color
-              :accent1-color accent1-color
-              :text-color theme-blue})
+(def palette {#_ #_ :primary1-color primary1-color
+              #_ #_ :accent1-color accent1-color
+              #_ #_ :text-color theme-blue})
 
 (def mui-theme (get-mui-theme {:palette palette
-                               :font-family "proxima-soft, sans-serif"
+                               :font-family "Open Sans, sans-serif"
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}
-                               :flat-button {:primary-text-color theme-blue}
-                               :drop-down-menu {:accent-color theme-blue}
-                               :menu-item {:selected-text-color theme-cyan}
-                               :snackbar {:background-color "rgba(0, 0, 0, 0.95)"
+                               #_ #_ :flat-button {:primary-text-color theme-blue}
+                               #_ #_ :drop-down-menu {:accent-color theme-blue}
+                               #_ #_ :menu-item {:selected-text-color theme-cyan}
+                               #_ #_ :snackbar {:background-color "rgba(0, 0, 0, 0.95)"
                                           :text-color theme-cyan}}))
 
 ;; --- GENERIC STYLES BEGNINNING ---

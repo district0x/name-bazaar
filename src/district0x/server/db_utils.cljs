@@ -12,9 +12,17 @@
   (when err
     (println err)))
 
-(defn db-run! [db sql-map]
-  (let [[query & values] (sql/format sql-map)]
-    (.run db query (clj->js values) log-error)))
+(defn- db-run! [db sql-map & [{:keys [:get-last-id?]}]]
+  (let [[query & values] (sql/format sql-map)
+        ch (chan)]
+    (.run db query (clj->js values) (fn [err res]
+                                      (if err
+                                        (log-error err)
+                                        (if get-last-id?
+                                          (this-as this
+                                            (go (>! ch (aget this "lastID"))))
+                                          (go (>! ch true))))))
+    ch))
 
 (defn db-get [db & args]
   (let [[ch [sql-map]] (if (instance? cljs.core.async.impl.channels/ManyToManyChannel (first args))
@@ -23,7 +31,11 @@
         [query & values] (sql/format sql-map)]
     (.get db query (clj->js values) (fn [err res]
                                       (log-error err)
-                                      (go (>! ch (or res false)))))
+                                      (go (>! ch (if res
+                                                   (-> res
+                                                     (js->clj :keywordize-keys true)
+                                                     (->> (transform-keys cs/->kebab-case-keyword)))
+                                                   false)))))
     ch))
 
 (defn db-all [db & args]

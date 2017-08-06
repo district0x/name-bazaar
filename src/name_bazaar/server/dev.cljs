@@ -44,7 +44,7 @@
 (def Web3 (nodejs/require "web3"))
 (set! js/Web3 Web3)
 
-(def total-accounts 5)
+(def total-accounts 7)
 (def port 6200)
 
 (defn on-jsload []

@@ -43,6 +43,6 @@
       (let [{:keys [:handler]} @active-page]
         [misc/main-panel
          {:mui-theme styles/mui-theme}
-         (if (= :home handler)
-           (route->component handler)
-           )]))))
+         (if (= :route/home handler)
+           [(route->component handler)]
+           [:div "some page"])]))))
