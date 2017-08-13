@@ -35,6 +35,12 @@
     (:active-page db)))
 
 (reg-sub
+  :district0x/route-params
+  :<- [:district0x/active-page]
+  (fn [active-page]
+    (:route-params active-page)))
+
+(reg-sub
   :district0x/conversion-rates
   (fn [db]
     (:conversion-rates db)))
@@ -48,6 +54,11 @@
   :district0x/balances
   (fn [db _]
     (:balances db)))
+
+(reg-sub
+  :district0x/routes
+  (fn [db _]
+    (:routes db)))
 
 (reg-sub
   :district0x/active-address-balance

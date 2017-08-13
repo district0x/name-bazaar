@@ -29,7 +29,7 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-(defn owner [server-state {:keys [:node :name]}]
+(defn owner [server-state {:keys [:ens.record/node :ens.record/name]}]
   (web3-eth-async/contract-call (state/instance server-state :ens) :owner (d0x-server-utils/ensure-namehash name node)))
 
 (defn on-transfer-once [server-state & args]
@@ -37,3 +37,9 @@
 
 (defn on-transfer [server-state & args]
   (apply web3-eth/contract-call (state/instance server-state :ens) :Transfer args))
+
+(defn on-new-owner [server-state & args]
+  (apply web3-eth/contract-call (state/instance server-state :ens) :NewOwner args))
+
+(defn on-new-owner-once [server-state & args]
+  (apply d0x-server-utils/watch-event-once (state/instance server-state :ens) :NewOwner args))

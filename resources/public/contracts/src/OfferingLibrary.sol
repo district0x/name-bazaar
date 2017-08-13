@@ -1,15 +1,16 @@
 pragma solidity ^0.4.14;
 
-import "ens/AbstractENS.sol";
+import "ens/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 
 library OfferingLibrary {
 
     struct Offering {
         OfferingRegistry offeringRegistry;
-        AbstractENS ens;
+        Registrar registrar;
         bytes32 node;
         string name;
+        bytes32 labelHash;
         address originalOwner;
         address emergencyMultisig;
         uint version;
@@ -23,18 +24,20 @@ library OfferingLibrary {
     function construct(
         Offering storage self,
         address _offeringRegistry,
-        address _ens, 
-        bytes32 _node, 
-        string _name, 
+        address _registrar,
+        bytes32 _node,
+        string _name,
+        bytes32 _labelHash,
         address _originalOwner,
         address _emergencyMultisig,
         uint _version,
         uint _price
     ) {
         self.offeringRegistry = OfferingRegistry(_offeringRegistry);
-        self.ens = AbstractENS(_ens);
+        self.registrar = Registrar(_registrar);
         self.node = _node;
         self.name = _name;
+        self.labelHash = _labelHash;
         self.originalOwner = _originalOwner;
         self.emergencyMultisig = _emergencyMultisig;
         self.version = _version;
@@ -47,34 +50,38 @@ library OfferingLibrary {
         require(isEmergency || isSenderOriginalOwner(self));
 
         if (isContractNodeOwner(self)) {
-            self.ens.setOwner(self.node, self.originalOwner);
+            self.registrar.transfer(self.node, self.originalOwner);
         }
         if (isEmergency) {
             // New owner is not really this address, but it's the way to recogize it
             // was disabled in emergency without having separate var for it, which is costly
             self.newOwner = 0xdead;
         }
-        setChanged(self);
+        fireOnChanged(self);
     }
 
     // Security method in case user transfers other name to this contract than it's supposed to be
     function claimOwnership(Offering storage self, bytes32 node, address _address) {
         require(isSenderEmergencyMultisig(self));
         require(self.node != node);
-        self.ens.setOwner(node, _address);
+        self.registrar.transfer(node, _address);
     }
 
     function transferOwnership(Offering storage self, address _newOwner, uint _price) {
         require(!wasEmergencyCancelled(self));
         require(!wasOwnershipTransferred(self));
         self.newOwner = _newOwner;
-        self.ens.setOwner(self.node, _newOwner);
+        if (isNodeTLDOfRegistrar(self)) {
+            self.registrar.transfer(self.labelHash, _newOwner);
+        } else {
+            self.registrar.ens().setOwner(self.node, _newOwner);
+        }
         onTransfer(_newOwner, _price, now);
-        setChanged(self);
+        fireOnChanged(self);
     }
 
-    function setChanged(Offering storage self) {
-        self.offeringRegistry.setOfferingChanged(self.version);
+    function fireOnChanged(Offering storage self) {
+        self.offeringRegistry.fireOnOfferingChanged(self.version);
     }
 
     function setOfferingRegistry(Offering storage self, address _offeringRegistry) {
@@ -83,7 +90,18 @@ library OfferingLibrary {
     }
 
     function isContractNodeOwner(Offering storage self) returns(bool) {
-        return self.ens.owner(self.node) == address(this);
+        if (isNodeTLDOfRegistrar(self)) {
+            address deed;
+            (,deed,,,) = self.registrar.entries(self.labelHash);
+            return self.registrar.ens().owner(self.node) == address(this) &&
+                   Deed(deed).owner() == address(this);
+        } else {
+            return self.registrar.ens().owner(self.node) == address(this);
+        }
+    }
+
+    function isNodeTLDOfRegistrar(Offering storage self) returns (bool) {
+        return self.node == sha3(self.registrar.rootNode(), self.labelHash);
     }
 
     function isSenderOriginalOwner(Offering storage self) returns(bool) {

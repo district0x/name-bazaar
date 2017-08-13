@@ -1,4 +1,5 @@
-(ns name-bazaar.ui.pages.offering-create-page)
+(ns name-bazaar.ui.pages.offering-create-page
+  (:require [district0x.ui.components.misc :as misc :refer [row row-with-cols col center-layout paper page]]))
 
-(defn offering-create-page []
-  )
+(defmethod page :route.offering/create []
+  [:div "Create new offering page"])

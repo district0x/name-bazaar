@@ -3,34 +3,37 @@
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils]))
 
-(defn offering-version->type [offering-type]
-  (if (>= (bn/->number offering-type) 100000)
+(defn offering-version->type [version]
+  (if (>= (bn/->number version) 100000)
     :english-auction-offering
     :instant-buy-offering))
 
-(def offering-props [:offering/offering-registry :offering/ens :offering/node :offering/name :offering/original-owner
-                     :offering/emergency-multisig :offering/version :offering/created-on :offering/new-owner
-                     :offering/price])
+(def offering-props [:offering/offering-registry :offering/registrar :offering/node :offering/name :offering/label-hash
+                     :offering/original-owner :offering/emergency-multisig :offering/version :offering/created-on
+                     :offering/new-owner :offering/price])
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates?]}]]
   (when offering
-    (-> (zipmap offering-props offering)
-      (assoc :offering/address offering-address)
-      (update :offering/version bn/->number)
-      (assoc :offering/type (offering-version->type (:offering/version offering)))
-      (update :offering/price bn/->number)
-      (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
-      (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %))))))
+    (let [offering (zipmap offering-props offering)]
+      (-> offering
+        (assoc :offering/address offering-address)
+        (update :offering/version bn/->number)
+        (assoc :offering/type (offering-version->type (:offering/version offering)))
+        (update :offering/price bn/->number)
+        (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
+        (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %)))))))
 
 (def english-auction-offering-props [:english-auction-offering/end-time :english-auction-offering/extension-duration
-                                     :english-auction-offering/min-bid-increase :english-auction-offering/winning-bidder])
+                                     :english-auction-offering/min-bid-increase :english-auction-offering/winning-bidder
+                                     :english-auction-offering/bid-count])
 
 (defn parse-english-auction-offering [english-auction-offering & [{:keys [:parse-dates?]}]]
   (when english-auction-offering
     (-> (zipmap english-auction-offering-props english-auction-offering)
       (update :english-auction-offering/end-time (if parse-dates? bn/->date-time bn/->number))
       (update :english-auction-offering/extension-duration bn/->number)
-      (update :english-auction-offering/min-bid-increase bn/->number))))
+      (update :english-auction-offering/min-bid-increase bn/->number)
+      (update :english-auction-offering/bid-count bn/->number))))
 
 (defn parse-offering-requests-counts [nodes counts]
   (zipmap nodes (map #(hash-map :offering-request/requesters-count (bn/->number %)) counts)))
@@ -42,5 +45,24 @@
     (-> (zipmap ens-record-props ens-record)
       (update :ens.record/ttl bn/->number)
       (assoc :ens.record/node node))))
+
+(def registrar-entry-states
+  {0 :registrar.entry.state/open
+   1 :registrar.entry.state/auction
+   2 :registrar.entry.state/owned
+   3 :registrar.entry.state/forbidden
+   4 :registrar.entry.state/reveal
+   5 :registrar.entry.state/not-yet-available})
+
+(def registrar-entry-props [:registrar.entry/state :registrar.entry/deed :registrar.entry/registration-date
+                            :registrar.entry/value :registrar.entry/highest-bid])
+
+(defn parse-registrar-entry [entry & [{:keys [:parse-dates?]}]]
+  (when entry
+    (-> (zipmap registrar-entry-props entry)
+      (update :registrar.entry/state (comp registrar-entry-states bn/->number))
+      (update :registrar.entry/registration-date (if parse-dates? bn/->date-time bn/->number))
+      (update :registrar.entry/value bn/->number)
+      (update :registrar.entry/highest-bid bn/->number))))
 
 

@@ -15,7 +15,8 @@
     [name-bazaar.ui.subs]
     [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [district0x.ui.utils :as d0x-ui-utils]))
 
 (defn mount-root []
   (s/check-asserts goog.DEBUG)
@@ -32,5 +33,7 @@
                    :effects
                    {:async-flow {:first-dispatch [:district0x/load-smart-contracts
                                                   {:version constants/contracts-version}]}}}])
+  (set! (.-onhashchange js/window)
+        #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
   (mount-root))
 

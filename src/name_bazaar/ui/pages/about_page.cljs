@@ -1,4 +1,5 @@
-(ns name-bazaar.ui.pages.about-page)
+(ns name-bazaar.ui.pages.about-page
+  (:require [district0x.ui.components.misc :as misc :refer [row row-with-cols col center-layout paper page]]))
 
-(defn about-page []
-  )
+(defmethod page :route/about []
+  [:div "About Page"])

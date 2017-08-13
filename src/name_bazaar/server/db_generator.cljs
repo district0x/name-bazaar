@@ -13,7 +13,8 @@
     [name-bazaar.server.contracts-api.instant-buy-offering :as instant-buy-offering]
     [name-bazaar.server.contracts-api.instant-buy-offering-factory :as instant-buy-offering-factory]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests])
+    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
+    [name-bazaar.server.contracts-api.registrar :as registrar])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
@@ -22,26 +23,21 @@
 (def labels ["car" "metacar" "carservice" "ab-car-service" "cars" "something" "car-abc"])
 
 (defn generate! [server-state {:keys [:total-accounts]}]
-  (let [ch (chan)
-        root-node "eth"]
+  (let [ch (chan)]
     (go
-      (<! (ens/set-subnode-owner! server-state {:ens.record/label root-node
-                                                :ens.record/owner (state/active-address server-state)}))
-
       (doseq [address-index (range total-accounts)]
         (let [owner (state/my-address server-state address-index)
-              label (nth labels address-index) #_ (u/rand-str 5 {:lowercase-only? true})
-              name (str label "." root-node)
+              label (nth labels address-index) #_(u/rand-str 5 {:lowercase-only? true})
+              name (str label "." registrar/root-node)
               node (namehash name)
               offering-type (if (zero? (rand-int 2)) :instant-buy-offering :english-auction-offering)
               price (web3/to-wei (inc (rand-int 10)) :ether)
               buyer (state/my-address server-state (rand-int total-accounts))
-              request-name (if (zero? (rand-int 2)) name (str (u/rand-str 1 {:lowercase-only? true}) "." root-node))]
-          (<! (ens/set-subnode-owner! server-state
-                                      {:ens.record/label label
-                                       :ens.record/node root-node
-                                       :ens.record/owner owner}
-                                      {:from (state/active-address server-state)}))
+              request-name (if (zero? (rand-int 2)) name (str (u/rand-str 1 {:lowercase-only? true})
+                                                              "."
+                                                              registrar/root-node))]
+
+          (<! (registrar/register! server-state {:ens.record/label label} {:from owner}))
 
           (<! (offering-requests/add-request! server-state {:offering-request/name request-name} {:form owner}))
 
@@ -63,7 +59,9 @@
           (let [[_ {{:keys [:offering]} :args}] (<! (offering-registry/on-offering-added-once server-state
                                                                                               {:node node
                                                                                                :owner owner}))]
-            (<! (ens/set-owner! server-state {:ens.record/node node :ens.record/owner offering} {:from owner}))
+            (<! (registrar/transfer! server-state
+                                     {:ens.record/label label :ens.record/owner offering}
+                                     {:from owner}))
 
             (when (zero? (rand-int 2))
               (if (= offering-type :instant-buy-offering)
@@ -75,28 +73,5 @@
                                                              :from buyer})))
 
             )))
-
-
-
-
-      #_(<! (instant-buy-offering/buy! server-state {:contract-address offering
-                                                     :value-ether 0.01
-                                                     :from (state/my-address server-state 1)}))
-
-
-      #_(let [[_ {{:keys [:offering]} :args}]
-              (<! (offering-registry/on-offering-added-once server-state
-                                                            {:node (namehash "eth")
-                                                             :owner (state/active-address server-state)}))]
-          (<! (ens/set-owner! server-state {:ens.record/name "eth" :ens.record/owner offering}))
-
-          (<! (instant-buy-offering/buy! server-state {:contract-address offering
-                                                       :value-ether 0.01
-                                                       :from (state/my-address server-state 1)}))
-
-          )
-
-
-
       (>! ch true))
     ch))

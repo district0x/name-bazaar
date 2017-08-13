@@ -116,7 +116,7 @@
       (let [[err tx-hash] (<! (apply web3-eth-async/contract-call args))
             [_ tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state-atom) tx-hash))]
         (if err
-          (println err)
+          (println method err)
           (println method (.toLocaleString (:gas-used tx-receipt))))
         (>! ch [err tx-hash])))
     ch))

@@ -20,7 +20,8 @@
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.interval-fx]
-    [district0x.ui.spec-interceptors :refer [validate-args conform-args]]
+    [district0x.ui.location-fx]
+    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db]]
     [district0x.ui.spec]
     [district0x.ui.utils :as d0x-ui-utils]
     [district0x.ui.window-fx]
@@ -39,16 +40,7 @@
     id
     (constantly nil)))
 
-(defn check-and-throw
-  [a-spec db]
-  (when goog.DEBUG
-    (when-not (s/valid? a-spec db)
-      (.error js/console (s/explain-str a-spec db))
-      (throw "DB Spec check failed"))))
-
-(def check-spec-interceptor (after (partial check-and-throw :district0x.ui/db)))
-
-(def interceptors [trim-v check-spec-interceptor])
+(def interceptors [trim-v (validate-db :district0x.ui/db)])
 
 (defn get-contract [db key]
   (get-in db [:smart-contracts key]))
@@ -80,12 +72,16 @@
     (update db form-key merge query-data)
     db))
 
+(defn localhost-node? [{:keys [:node-url]}]
+  (string/includes? node-url "localhost"))
+
 (defn initialize-db [default-db localstorage]
-  (let [web3 (if (d0x-ui-utils/provides-web3?)
+  (let [web3 (if (and (d0x-ui-utils/provides-web3?)
+                      (not (localhost-node? default-db)))
                (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
                (web3/create-web3 (:node-url default-db)))
         load-node-addresses? (if (and (nil? (:load-node-addresses? default-db))
-                                      (string/includes? (:node-url default-db) "localhost"))
+                                      localhost-node?)
                                true
                                (:load-node-addresses? default-db))]
     (as-> default-db db
@@ -143,7 +139,7 @@
   :district0x/load-my-addresses
   interceptors
   (fn [{:keys [db]}]
-    (let [new-db (if (d0x-ui-utils/provides-web3?)
+    (let [new-db (if (and (d0x-ui-utils/provides-web3?) (not (localhost-node? db)))
                    (assoc db :web3 (aget js/window "web3"))
                    db)]
       (merge
@@ -343,7 +339,7 @@
            (assoc :active-address address))
      :localstorage (assoc localstorage :active-address address)}))
 
-(reg-event-fx
+(reg-event-db
   :district0x.form/set-value
   [interceptors (conform-args (s/cat :form-key :form/key
                                      :form-id (s/? :form/id)
@@ -353,16 +349,15 @@
                                                            :valid? boolean?))))]
   (fn [db [{:keys [:form-key :form-id :field-key :value :validator]}]]
     (let [validator (d0x-shared-utils/resolve-conformed-spec-or {:valid? constantly} validator)]
-      {:db
-       (cond-> db
-         true (assoc-in (remove nil? [form-key form-id :data field-key]) value)
+      (cond-> db
+        true (assoc-in (remove nil? [form-key form-id :data field-key]) value)
 
-         (or (and validator (validator value))
-             (nil? validator))
-         (update-in (remove nil? [form-key form-id :errors]) (comp set (partial remove #{field-key})))
+        (or (and validator (validator value))
+            (nil? validator))
+        (update-in (remove nil? [form-key form-id :errors]) (comp set (partial remove #{field-key})))
 
-         (and validator (not (validator value)))
-         (update-in (remove nil? [form-key form-id :errors]) conj field-key))})))
+        (and validator (not (validator value)))
+        (update-in (remove nil? [form-key form-id :errors]) conj field-key)))))
 
 (reg-event-fx
   :district0x.form/submit
@@ -594,22 +589,23 @@
                     :on-success on-success
                     :on-failure [:district0x.log/error]
                     :params (if (:order-by params)
-                              (update params :order-by #(partition-all 2 (interleave %))))}
+                              (update params :order-by #(partition-all 2 (interleave %)))
+                              params)}
                    http-xhrio)}))
 
 (reg-event-fx
   :district0x.search-results/load
   interceptors
   (fn [{:keys [db]} [{:keys [:http-xhrio :search-params :search-results-key :clear-existing-ids? :endpoint :form-key
-                             :on-success]} :as opts]]
+                             :on-success] :as opts}]]
     {:db (update-in db [search-results-key search-params] merge (merge {:loading? true}
                                                                        (when clear-existing-ids?
                                                                          {:ids []})))
      :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
                                              :endpoint endpoint
                                              :params (if form-key
-                                                       (get db form-key)
-                                                       (dissoc search-params :select-fields))
+                                                       (get-form-data db form-key)
+                                                       search-params)
                                              :on-success [:district0x.search-results/loaded opts]}]}))
 
 (reg-event-fx
@@ -617,14 +613,16 @@
   interceptors
   (fn [{:keys [db]} [{:keys [:search-results-key :search-params :id-key :on-success]} results]]
     (let [ids (if id-key (map #(get % id-key)) results)]
-      {:db (update-in db [search-results-key search-params] merge {:loading? false :ids ids})
-       :dispatch (concat on-success [ids results])})))
+      (merge
+        {:db (update-in db [search-results-key (dissoc search-params :select-fields)] merge {:loading? false :ids ids})}
+        (when on-success
+          {:dispatch (vec (concat on-success [ids results]))})))))
 
 (reg-event-fx
   :district0x.search-results/load-multi
   interceptors
   (fn [{:keys [db]} [{:keys [:http-xhrio :search-params-fn :search-params-key :search-results-key :clear-existing-ids?
-                             :endpoint :form-key :on-success :request-params]} :as opts]]
+                             :endpoint :form-key :on-success :request-params] :as opts}]]
     {:db (update db search-results-key (partial merge-with merge) (zipmap
                                                                     (vals search-params-fn)
                                                                     (repeat (count search-params-fn)
@@ -634,7 +632,7 @@
      :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
                                              :endpoint endpoint
                                              :params (if form-key
-                                                       (db form-key)
+                                                       (get-form-data db form-key)
                                                        request-params)
                                              :on-success [:district0x.search-results/multi-loaded opts]}]}))
 
@@ -642,10 +640,12 @@
   :district0x.search-results/multi-loaded
   interceptors
   (fn [{:keys [db]} [{:keys [:search-results-key search-params-fn :search-params-key :id-key :on-success]} results]]
-    {:db (update db search-results-key merge (map #(hash-map (search-params-fn %)
-                                                             (d0x-shared-utils/collify (get % id-key)))
-                                                  results))
-     :dispatch (concat on-success [(map #(get % id-key) results) results])}))
+    (merge
+      {:db (update db search-results-key merge (map #(hash-map (search-params-fn %)
+                                                               (d0x-shared-utils/collify (get % id-key)))
+                                                    results))}
+      (when on-success
+        {:dispatch (vec (concat on-success [(map #(get % id-key) results) results]))}))))
 
 (reg-event-fx
   :district0x.contract/constant-fn-call
@@ -715,7 +715,7 @@
                  {:open? true
                   :message message
                   :action "SHOW ME"
-                  :on-action-touch-tap #(dispatch [:district0x.location/set-hash route route-params routes])})}))
+                  :on-action-touch-tap #(dispatch [:district0x.location/nav-to route route-params])})}))
 
 (reg-event-db
   :district0x.dialog/close
@@ -748,10 +748,15 @@
     {:location/set-query args}))
 
 (reg-event-fx
-  :district0x.location/set-hash
+  :district0x.location/nav-to
   interceptors
-  (fn [{:keys [db]} args]
-    {:location/set-hash args}))
+  (fn [{:keys [:db]} [route route-params]]
+    {:location/nav-to [route route-params (:routes db)]}))
+
+(reg-fx
+  :district0x.location/add-to-query
+  (fn [_ args]
+    (:location/add-to-query args)))
 
 (reg-event-fx
   :district0x.window/resized

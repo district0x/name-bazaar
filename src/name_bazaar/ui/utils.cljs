@@ -10,3 +10,8 @@
     (let [[label & rest] (string/split name ".")]
       (sha3 (namehash (string/join "." rest))
             (sha3 label)))))
+
+(defn strip-eth-suffix [s]
+  (if (and (string? s) (string/ends-with? s ".eth"))
+    (subs s 0 (- (count s) 4))
+    s))

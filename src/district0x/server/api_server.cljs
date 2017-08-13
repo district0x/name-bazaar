@@ -8,6 +8,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def express (nodejs/require "express"))
+(def cors (nodejs/require "cors"))
 (def body-parser (nodejs/require "body-parser"))
 
 (defonce *app* (atom nil))
@@ -36,6 +37,7 @@
 
 (defn setup-app! []
   (reset! *app* (express))
+  (.use @*app* (cors))
   (.use @*app* (.urlencoded body-parser #js {:extended true}))
   (.use @*app* (.json body-parser))
   (doseq [method (keys @*registered-routes*)]

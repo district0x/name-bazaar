@@ -20,6 +20,6 @@ library InstantBuyOfferingLibrary {
         require(offering.isSenderOriginalOwner());
         require(!offering.wasOwnershipTransferred());
         offering.price = _price;
-        offering.setChanged();
+        offering.fireOnChanged();
     }
 }

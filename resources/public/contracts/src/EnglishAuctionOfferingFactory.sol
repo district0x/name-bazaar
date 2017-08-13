@@ -2,17 +2,17 @@ pragma solidity ^0.4.14;
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
-import "./EnglishAuctionOffering.sol";
+import "EnglishAuctionOffering.sol";
 
 contract EnglishAuctionOfferingFactory is OfferingFactory {
 
     function EnglishAuctionOfferingFactory(
-        address ens,
+        address registrar,
         address offeringRegistry,
         address offeringRequests,
         address emergencyMultisig
     )
-        OfferingFactory(ens, offeringRegistry, offeringRequests, emergencyMultisig)
+        OfferingFactory(registrar, offeringRegistry, offeringRequests, emergencyMultisig)
     {
     }
 
@@ -24,11 +24,13 @@ contract EnglishAuctionOfferingFactory is OfferingFactory {
         uint minBidIncrease
     ) {
         var node = namehash(name);
+        var labelHash = getLabelHash(name);
         address newOffering = new EnglishAuctionOffering(
             offeringRegistry,
-            ens,
+            registrar,
             node,
             name,
+            labelHash,
             msg.sender,
             emergencyMultisig,
             startPrice,
@@ -37,7 +39,7 @@ contract EnglishAuctionOfferingFactory is OfferingFactory {
             minBidIncrease
         );
 
-        registerOffering(node, newOffering, 100000);
+        registerOffering(node, labelHash, newOffering, 100000);
     }
 }
 

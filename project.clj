@@ -42,7 +42,8 @@
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]]
 
-  :npm {:dependencies [[eth-ens-namehash "2.0.0"]
+  :npm {:dependencies [[cors "2.8.4"]
+                       [eth-ens-namehash "2.0.0"]
                        [ethereumjs-testrpc "3.0.3"]
                        [express "4.15.3"]
                        [solc "0.4.13"]

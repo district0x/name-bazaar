@@ -5,11 +5,13 @@
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
     [cljs.core.async.impl.channels]
-    [clojure.string :as string])
+    [clojure.string :as string]
+    [cljs.nodejs :as nodejs])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def fs (js/require "fs"))
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
+(def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
 
 (defn fetch-contract [file-name & [{:keys [:contracts-path :response-format]
                                     :or {contracts-path (str (.cwd js/process)
@@ -45,6 +47,9 @@
 
 (defn ensure-namehash [name node]
   (if name (namehash name) node))
+
+(defn ensure-sha3 [label hash]
+  (if label (sha3 name) hash))
 
 (defn rand-str [n & [{:keys [:lowercase-only?]}]]
   (let [chars-between #(map char (range (.charCodeAt %1) (inc (.charCodeAt %2))))

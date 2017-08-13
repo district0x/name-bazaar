@@ -139,7 +139,7 @@
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
-        ["watched-names" :route/watched-ens-records]
+        ["watched-names" :route/watched-names]
         [["user/" :offering/original-owner "/offerings"] :route.user/offerings]
         ["my-settings" :route.user/my-settings]
         ["my-offerings" :route.user/my-offerings]

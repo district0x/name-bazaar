@@ -3,7 +3,7 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
-    [district0x.ui.utils :refer [reg-form-sub]]
+    [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
@@ -11,7 +11,7 @@
     [re-frame.core :refer [reg-sub]]))
 
 (doseq [form-key (keys constants/form-configs)]
-  (reg-form-sub
+  (d0x-ui-utils/reg-submit-form-sub
     form-key
     (fn [[form]]
       form)))
@@ -32,6 +32,21 @@
     (:ens/records db)))
 
 (reg-sub
+  :search-form/home-page-search
+  (fn [db]
+    (:search-form/home-page-search db)))
+
+(reg-sub
+  :search-form/search-offering-requests
+  (fn [db]
+    (:search-form/search-offering-requests db)))
+
+(reg-sub
+  :search-form/search-offerings
+  (fn [db]
+    (:search-form/search-offerings db)))
+
+(reg-sub
   :search-form/watched-names
   :<- [:district0x/db :search-form/watched-names]
   :<- [:ens/records]
@@ -48,11 +63,15 @@
   :<- [:district0x/search-results :search-results/offerings]
   :<- [:offering-registry/offerings]
   (fn [[search-results offerings] [_ search-params]]
-    (update search-results search-params #(assoc % :items (map offerings (:ids %))))))
+    (let [search-results (search-results search-params)]
+      (-> search-results
+        (assoc :items (map offerings (:ids search-results)))))))
 
 (reg-sub
   :search-results/offering-requests
   :<- [:district0x/search-results :search-results/offering-requests]
   :<- [:offering-requests/requests]
   (fn [[search-results offering-requests] [_ search-params]]
-    (update search-results search-params #(assoc % :items (map offering-requests (:ids %))))))
+    (let [search-results (search-results search-params)]
+      (-> search-results
+        (assoc :items (map offering-requests (:ids search-results)))))))

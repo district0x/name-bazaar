@@ -13,26 +13,29 @@
 (s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params]))
 (s/def :db/window-width-size int?)
 (s/def :snackbar/open? boolean?)
-(s/def :snackbar/open? :dialog/open?)
+(s/def :dialog/open? :snackbar/open?)
 (s/def :snackbar/message string?)
 (s/def :snackbar/on-request-close fn?)
 (s/def :snackbar/auto-hide-duration int?)
 (s/def :dialog/modal boolean?)
 (s/def :dialog/title string?)
 (s/def :db/snackbar (s/keys :req-un [:snackbar/open? :snackbar/message :snackbar/on-request-close :snackbar/auto-hide-duration]))
-(s/def :db/dialog (s/keys :req-un [:snackbar/open? :dialog/title :dialog/modal]))
+(s/def :db/dialog (s/keys :req-un [:dialog/open? :dialog/title :dialog/modal]))
+(s/def :contract/key keyword?)
 (s/def :contract/name string?)
 (s/def :contract/method keyword?)
 (s/def :contract/address address?)
 (s/def :contract/bin string?)
 (s/def :contract/abi array?)
-(s/def :db/smart-contracts (s/map-of keyword? (s/keys :req-un [:contract/name] :opt-un [:contract/address :contract/bin :contract/abi])))
+(s/def :db/smart-contracts (s/map-of :contract/key (s/keys :req-un [:contract/name] :opt-un [:contract/address :contract/bin :contract/abi])))
 (s/def :db/my-addresses (s/coll-of string?))
 (s/def :db/active-address (s/nilable address?))
-(s/def :db/conversion-rates (s/map-of number? number?))
+(s/def :conversion-rate/currency keyword?)
+(s/def :db/conversion-rates (s/map-of :conversion-rate/currency number?))
 (s/def :db/load-conversion-rates-interval (s/nilable int?))
 (s/def :db/blockchain-connection-error? boolean?)
-(s/def :db/balances (s/map-of address? (s/map-of keyword? not-neg?)))
+(s/def :balance/currency keyword?)
+(s/def :db/balances (s/map-of address? (s/map-of :balance/currency not-neg?)))
 (s/def :db/ui-disabled? boolean?)
 
 (s/def :form-id.entry/contract-address :contract/address)
@@ -42,8 +45,8 @@
 (s/def :form/errors (s/coll-of keyword?))
 (s/def :form/data (s/map-of :form/field any?))
 (s/def :db/form (s/keys :opt-un [:form/errors :form/data]))
-(s/def :form/id (s/nilable (s/map-of keyword? any?)))
-(s/def :form/id-keys (s/coll-of keyword?))
+(s/def :form/id (s/nilable :form/data))
+(s/def :form/id-keys (s/coll-of :form/field))
 
 (s/def :db/contract-address-id-form (s/map-of :form-id/contract-address :db/form))
 
@@ -117,6 +120,8 @@
 (s/def :district0x-emails/email string?)
 (s/def :form.district0x-emails/set-email (s/merge :db/form (s/keys :opt [:district0x-emails/email])))
 
+(s/def :db/routes (some-fn vector? map?))
+
 (s/def :district0x.ui/db (s/keys :req-un [:db/active-address
                                           :db/blockchain-connection-error?
                                           :db/contracts-not-found?
@@ -134,7 +139,8 @@
                                           :db/contract-method-configs
                                           :db/form-configs
                                           :db/form-field->query-param
-                                          :db/route-handler->form-key]
+                                          :db/route-handler->form-key
+                                          :db/routes]
                                  :opt-un [:db/active-page
                                           :db/balances
                                           :db/conversion-rates

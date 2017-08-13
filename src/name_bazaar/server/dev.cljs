@@ -18,13 +18,16 @@
     [honeysql.core :as sql]
     [honeysql.helpers :as sql-helpers]
     [name-bazaar.server.api]
+    [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.server.contracts-api.english-auction-offering :as english-auction-offering]
     [name-bazaar.server.contracts-api.english-auction-offering-factory :as english-auction-offering-factory]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.instant-buy-offering :as instant-buy-offering]
     [name-bazaar.server.contracts-api.instant-buy-offering-factory :as instant-buy-offering-factory]
+    [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
+    [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
@@ -33,7 +36,6 @@
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
-
 
 (set! js/XMLHttpRequest (nodejs/require "xhr2"))
 
@@ -61,12 +63,15 @@
 (set! *main-cli-fn* -main)
 
 (defn initialize! [server-state-atom]
-  (go
-    (db-sync/stop-syncing!)
-    (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
-    (<! (deploy-smart-contracts! server-state-atom))
-    (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
-    (d0x-effects/create-db! server-state-atom)
-    (db-sync/start-syncing! @server-state-atom)))
+  (let [ch (chan)]
+    (go
+      (db-sync/stop-syncing!)
+      (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
+      (<! (deploy-smart-contracts! server-state-atom))
+      (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
+      (d0x-effects/create-db! server-state-atom)
+      (db-sync/start-syncing! @server-state-atom)
+      (>! ch true))
+    ch))
 
 

@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 cd resources/public/contracts/src
 
-solc --overwrite --optimize --bin --abi OfferingRegistry.sol -o ../build/
-solc --overwrite --optimize --bin --abi instant_buy/InstantBuyOfferingFactory.sol -o ../build/ --allow-paths /Users/matus/www/district0x/name-bazaar/resources/public/contracts/src
-solc --overwrite --optimize --bin --abi english_auction/EnglishAuctionOfferingFactory.sol -o ../build/ --allow-paths /Users/matus/www/district0x/name-bazaar/resources/public/contracts/src
-solc --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
-solc --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
-solc --overwrite --optimize --bin --abi ens/ENS.sol -o ../build/
+function solc-err-only {
+    solc "$@" 2>&1 | grep -A 2 "Error"
+}
 
-solc --overwrite --optimize --bin --abi Test.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi OfferingRegistry.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi InstantBuyOfferingFactory.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi EnglishAuctionOfferingFactory.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi MockRegistrar.sol -o ../build/
+
+#solc --overwrite --optimize --bin --abi Test.sol -o ../build/
 
 
 cd ../build

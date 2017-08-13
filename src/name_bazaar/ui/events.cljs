@@ -17,17 +17,17 @@
     [district0x.shared.big-number :as bn]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx get-form-data]]
-    [district0x.ui.spec-interceptors :refer [validate-args conform-args]]
+    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [parse-offering parse-english-auction-offering parse-ens-record parse-offering-requests-counts]]
     [name-bazaar.ui.constants :as constants]
+    [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
-(def check-spec-interceptor (after (partial district0x.ui.events/check-and-throw :name-bazaar.ui.db/db)))
-(def interceptors [trim-v check-spec-interceptor])
+(def interceptors [trim-v (validate-db :name-bazaar.ui.db/db)])
 
 (defn- node-name [db node]
   (get-in db [:ens/records node :ens.record/name]))
@@ -118,13 +118,29 @@
 (reg-event-fx
   :search/offerings
   interceptors
-  (fn [{:keys [:db]} [opts]]
+  (fn [{:keys [:db]} [opts load-opts]]
     {:dispatch [:district0x.search-results/load
                 (merge
                   {:search-results-key :search-results/offerings
                    :endpoint "/offerings"
-                   :on-success [:load-offerings]}
+                   :on-success [:search/offerings-loaded load-opts]}
                   opts)]}))
+
+(reg-event-fx
+  :search/offerings-loaded
+  interceptors
+  (fn [{:keys [:db]} [load-opts offering-addresses]]
+    {:dispatch [:load-offerings offering-addresses load-opts]}))
+
+(reg-event-fx
+  :search/home-page-search
+  interceptors
+  (fn [{:keys [:db]} [params]]
+    {:dispatch-debounce {:key :search/home-page-search
+                         :event [:search/offerings
+                                 {:search-params (merge (get-form-data db :search-form/home-page-search)
+                                                        params)}]
+                         :delay 300}}))
 
 (defn- english-auction-offering? [db offering-address]
   (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :english-auction-offering))
@@ -132,25 +148,25 @@
 (reg-event-fx
   :load-offerings
   interceptors
-  (fn [{:keys [:db]} [offering-addresses]]
+  (fn [{:keys [:db]} [offering-addresses {:keys [:load-type-specific-data?]}]]
     (let [offering-abi (:abi (get-contract db :instant-buy-offering))]
       {:web3-fx.contract/constant-fns
        {:fns (for [offering-address offering-addresses]
                {:instance (web3-eth/contract-at (:web3 db) offering-abi offering-address)
                 :method :offering
                 :on-success [:offering-loaded {:offering/address offering-address
-                                               :load-type-specific-data? true}]
+                                               :load-type-specific-data? load-type-specific-data?}]
                 :on-error [:district0x.log/error]})}})))
 
 (reg-event-fx
   :offering-loaded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering/address :load-type-specific-offerings?]} offering]]
-    (let [offering (parse-offering address offering)]
+    (let [{:keys [:offering/node] :as offering} (parse-offering address offering {:parse-dates? true})]
       (merge {:db (-> db
                     (update-in [:offering-registry/offerings address] merge offering)
-                    (update-in [:ens/records address] merge {:ens.record/node (:offering/node offering)
-                                                             :ens.record/name (:offering/name offering)}))}
+                    (update-in [:ens/records node] merge {:ens.record/node node
+                                                          :ens.record/name node}))}
              (when (and :load-type-specific-offerings?
                         (= (:offering/type offering) :english-auction-offering))
                {:dispatch-n [[:load-english-auction-offerings]]})))))
@@ -172,15 +188,15 @@
   :english-auction-offering-loaded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering/address]} english-auction-offering]]
-    (let [offering (parse-english-auction-offering english-auction-offering)]
+    (let [offering (parse-english-auction-offering english-auction-offering {:parse-dates? true})]
       {:db (update-in db [:offering-registry/offerings address] merge offering)})))
 
 (reg-event-fx
   :load-ens-records
   interceptors
-  (fn [{:keys [:db]} [ens-record-nodes]]
+  (fn [{:keys [:db]} [nodes]]
     {:web3-fx.contract/constant-fns
-     {:fns (for [node ens-record-nodes]
+     {:fns (for [node nodes]
              {:instance (get-contract db :ens)
               :method :records
               :on-success [:ens-record-loaded {:ens.record/node node}]
@@ -190,7 +206,7 @@
   :ens-record-loaded
   interceptors
   (fn [{:keys [:db]} [{:keys [:ens.record/node]} ens-record]]
-    (let [ens-record (parse-ens-record node ens-record)]
+    (let [ens-record (parse-ens-record node ens-record {:parse-dates? true})]
       {:db (update-in db [:ens/records node] merge ens-record)})))
 
 (reg-event-fx

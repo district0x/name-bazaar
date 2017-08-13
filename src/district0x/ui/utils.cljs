@@ -42,6 +42,9 @@
                (string/replace "#" ""))]
     (if (empty? hash) "/" hash)))
 
+(defn path-for [{:keys [:route :route-params :routes]}]
+  (str "#" (medley/mapply bidi/path-for routes route route-params)))
+
 (defn match-current-location [routes]
   (bidi/match-route routes (current-location-hash)))
 
@@ -148,14 +151,14 @@
 (defn current-component-mui-theme []
   (aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme"))
 
-(defn reg-form-sub [form-key f]
+(defn reg-submit-form-sub [form-key f]
   (reg-sub
     form-key
     :<- [:district0x/form form-key]
     :<- [:district0x/form-configs]
     (fn [[form form-configs] [query-id form-id]]
       (f [(merge (get-in form-configs [form-key :default-data])
-                 (form form-id))
+                 (if form-id (form form-id) form))
           form-configs]
          [query-id form-id]))))
 

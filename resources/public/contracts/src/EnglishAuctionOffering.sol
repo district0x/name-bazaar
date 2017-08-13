@@ -2,20 +2,19 @@ pragma solidity ^0.4.14;
 
 import "Offering.sol";
 import "SafeMath.sol";
-import "./EnglishAuctionOfferingLibrary.sol";
+import "EnglishAuctionOfferingLibrary.sol";
 
 contract EnglishAuctionOffering is Offering {
     using EnglishAuctionOfferingLibrary for EnglishAuctionOfferingLibrary.EnglishAuctionOffering;
 
     EnglishAuctionOfferingLibrary.EnglishAuctionOffering public englishAuctionOffering;
 
-    event onBid(address indexed bidder, uint amount, uint endTime);
-
     function EnglishAuctionOffering(
         address _offeringRegistry,
-        address _ens,
+        address _registrar,
         bytes32 _node,
         string _name,
+        bytes32 _labelHash,
         address _originalOwner,
         address _emergencyMultisig,
         uint _startPrice,
@@ -23,7 +22,7 @@ contract EnglishAuctionOffering is Offering {
         uint _extensionDuration,
         uint _minBidIncrease
     )
-        Offering(_offeringRegistry, _ens, _node, _name, _originalOwner, _emergencyMultisig, 100000, _startPrice)
+        Offering(_offeringRegistry, _registrar, _node, _name, _labelHash,  _originalOwner, _emergencyMultisig, 100000, _startPrice)
     {
         englishAuctionOffering.construct(
             _endTime,

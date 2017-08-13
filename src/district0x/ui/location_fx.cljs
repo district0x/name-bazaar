@@ -30,7 +30,7 @@
     (set-location-query! new-query)))
 
 (reg-fx
-  :location/set-hash
+  :location/nav-to
   (fn [[route route-params routes]]
     (nav-to! route route-params routes)))
 

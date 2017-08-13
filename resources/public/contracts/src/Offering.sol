@@ -1,6 +1,5 @@
 pragma solidity ^0.4.14;
 
-import "ens/AbstractENS.sol";
 import "OfferingLibrary.sol";
 
 contract Offering {
@@ -12,9 +11,10 @@ contract Offering {
 
     function Offering(
         address _offeringRegistry,
-        address _ens,
+        address _registrar,
         bytes32 _node,
         string _name,
+        bytes32 _labelHash,
         address _originalOwner,
         address _emergencyMultisig,
         uint _version,
@@ -22,9 +22,10 @@ contract Offering {
     ) {
         offering.construct(
             _offeringRegistry,
-            _ens,
+            _registrar,
             _node,
             _name,
+            _labelHash,
             _originalOwner,
             _emergencyMultisig,
             _version,
@@ -41,7 +42,7 @@ contract Offering {
         offering.claimOwnership(node, _address);
     }
 
-//    function setOfferingRegistry(address _offeringRegistry) {
-//        offering.setOfferingRegistry(_offeringRegistry);
-//    }
+    function setOfferingRegistry(address _offeringRegistry) {
+        offering.setOfferingRegistry(_offeringRegistry);
+    }
 }

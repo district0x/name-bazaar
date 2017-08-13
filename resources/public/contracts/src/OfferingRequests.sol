@@ -66,7 +66,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     function hasRequested(bytes32 node, address[] addresses) constant returns(bool[] _hasRequested) {
         _hasRequested = new bool[](addresses.length);
         for(uint i = 0; i < addresses.length; i++) {
-            _hasRequested[i] = requests[nodes[node]].hasRequested[addresses[i]];
+            _hasRequested[i] = requests[node].hasRequested[addresses[i]];
         }
         return _hasRequested;
     }

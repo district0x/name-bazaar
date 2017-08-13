@@ -3,8 +3,12 @@
     [cljs.core.async :refer [<! >! chan]]
     [district0x.server.effects :as d0x-effects]
     [district0x.server.state :as state]
-    [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories])
+    [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
+    [cljs.nodejs :as nodejs]
+    [name-bazaar.server.contracts-api.ens :as ens])
   (:require-macros [cljs.core.async.macros :refer [go]]))
+
+(def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
 
 (def default-deploy-opts
   {:from-index 0
@@ -13,12 +17,19 @@
 
 (def library-placeholders
   {:offering-library "__OfferingLibrary.sol:OfferingLibrary___"
-   :instant-buy-offering-library "__instant_buy/InstantBuyOfferingLibrar__"
-   :english-auction-offering-library "__english_auction/EnglishAuctionOfferi__"})
+   :instant-buy-offering-library "__InstantBuyOfferingLibrary.sol:Instan__"
+   :english-auction-offering-library "__EnglishAuctionOfferingLibrary.sol:En__"})
 
 (defn deploy-ens! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
                                                                {:contract-key :ens})))
+
+(defn deploy-registrar! [server-state-atom default-opts]
+  (d0x-effects/deploy-smart-contract! server-state-atom
+                                      (merge default-opts
+                                             {:contract-key :registrar
+                                              :args [(state/contract-address @server-state-atom :ens)
+                                                     (namehash "eth")]})))
 
 (defn deploy-offering-registry! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
@@ -50,7 +61,7 @@
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
                                                                                                     :instant-buy-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :ens)
+                                                                :args [(state/contract-address @server-state-atom :registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
@@ -61,7 +72,7 @@
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
                                                                                                     :english-auction-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :ens)
+                                                                :args [(state/contract-address @server-state-atom :registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
@@ -70,6 +81,13 @@
   (let [ch (chan)]
     (go
       (<! (deploy-ens! server-state-atom default-deploy-opts))
+      (<! (deploy-registrar! server-state-atom default-deploy-opts))
+
+      (<! (ens/set-subnode-owner! @server-state-atom
+                                  {:ens.record/label "eth"
+                                   :ens.record/node ""
+                                   :ens.record/owner (state/contract-address @server-state-atom :registrar)}))
+
       (<! (deploy-offering-registry! server-state-atom default-deploy-opts))
       (<! (deploy-offering-requests! server-state-atom default-deploy-opts))
       (<! (deploy-offering-library! server-state-atom default-deploy-opts))

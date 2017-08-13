@@ -2,19 +2,19 @@ pragma solidity ^0.4.14;
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
-import "./InstantBuyOffering.sol";
+import "InstantBuyOffering.sol";
 import "strings.sol";
 
 contract InstantBuyOfferingFactory is OfferingFactory {
     using strings for *;
 
     function InstantBuyOfferingFactory(
-        address ens,
+        address registrar,
         address offeringRegistry,
         address offeringRequests,
         address emergencyMultisig
     )
-        OfferingFactory(ens, offeringRegistry, offeringRequests, emergencyMultisig)
+        OfferingFactory(registrar, offeringRegistry, offeringRequests, emergencyMultisig)
     {
     }
 
@@ -22,17 +22,19 @@ contract InstantBuyOfferingFactory is OfferingFactory {
         string name,
         uint price
     ) {
-        bytes32 node = namehash(name);
+        var node = namehash(name);
+        var labelHash = getLabelHash(name);
         address newOffering = new InstantBuyOffering(
             offeringRegistry,
-            ens,
+            registrar,
             node,
             name,
+            getLabelHash(name),
             msg.sender,
             emergencyMultisig,
             price
         );
-        registerOffering(node, newOffering, 1);
+        registerOffering(node, labelHash, newOffering, 1);
     }
 }
 

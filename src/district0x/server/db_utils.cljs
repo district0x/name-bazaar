@@ -62,3 +62,9 @@
     (chan 1 (map (partial transform-keys cs/->kebab-case-keyword)))
     (chan 1 sql-results-map->seq)))
 
+(defn order-by-closest-like [col-name s {:keys [:suffix :prefix]}]
+  (sql/call :case
+            [:= col-name (str prefix s suffix)] 1
+            [:like col-name (str prefix s "%" suffix)] 2
+            [:like col-name (str prefix "%" s "%" suffix)] 3
+            :else 4))

@@ -5,13 +5,16 @@
     [clojure.set :as set]
     [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme parse-props-children create-with-default-props]]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [medley.core :as medley]))
 
 (def col (r/adapt-react-class js/ReactFlexboxGrid.Col))
 (def row-with-cols (r/adapt-react-class js/ReactFlexboxGrid.Row))
 (def grid (r/adapt-react-class js/ReactFlexboxGrid.Grid))
 
 (def row (create-with-default-props row-with-cols {:style {:margin-left 0 :margin-right 0}}))
+
+(defmulti page identity)
 
 (defn paper []
   (let [xs-width? (subscribe [:district0x/window-xs-width?])
@@ -66,6 +69,18 @@
       :allowFullScreen true}
      props)])
 
+(defn a []
+  (let [routes (subscribe [:district0x/routes])]
+    (fn [{:keys [:route-params :route] :as props} body]
+      [:a
+       (r/merge-props
+         {:href (when-not (some nil? (vals route-params))
+                  (d0x-ui-utils/path-for {:route route
+                                          :route-params route-params
+                                          :routes @routes}))
+          :on-click #(.stopPropagation %)}
+         (dissoc props :route-params :route)) body])))
+
 (defn main-panel []
   (let [snackbar (subscribe [:district0x/snackbar])
         dialog (subscribe [:district0x/dialog])
@@ -80,4 +95,18 @@
                 [ui/dialog (-> @dialog
                              (set/rename-keys {:open? :open}))]])
          [:div "UI is disabled"])])))
+
+#_ (defn left-navigation-layout []
+  (let []
+    [:div {:style (merge styles/content-wrap
+                         (when @lg-width?
+                           {:padding-left (+ 256 styles/desktop-gutter)})
+                         (when @xs-width?
+                           (styles/padding-all styles/desktop-gutter-mini)))}
+     (if @contracts-not-found?
+       [contracts-not-found-page]
+       (if (or @active-setters?
+               (contains? #{:about :how-it-works} handler))
+         [page]
+         [setters-not-active-page]))]))
 

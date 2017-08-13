@@ -12,10 +12,9 @@ library EnglishAuctionOfferingLibrary {
         uint  extensionDuration;
         uint  minBidIncrease;
         address winningBidder;
+        uint bidCount;
         mapping(address => uint) pendingReturns;
     }
-
-    event onBid(address indexed bidder, uint amount, uint endTime, uint datetime);
 
     function construct(
         EnglishAuctionOffering storage self,
@@ -36,6 +35,7 @@ library EnglishAuctionOfferingLibrary {
     ) {
         require(now < self.endTime);
         require(msg.sender != self.winningBidder);
+        require(offering.isContractNodeOwner());
 
         uint bidValue = self.pendingReturns[msg.sender].add(msg.value);
         self.pendingReturns[msg.sender] = 0;
@@ -48,14 +48,15 @@ library EnglishAuctionOfferingLibrary {
         }
 
         self.winningBidder = msg.sender;
+        self.bidCount += 1;
         offering.price = bidValue;
 
         if ((self.endTime - self.extensionDuration) <= now) {
             self.endTime = now.add(self.extensionDuration);
         }
 
-        onBid(msg.sender, offering.price, self.endTime, now);
-        offering.setChanged();
+        offering.fireOnChanged();
+        offering.offeringRegistry.fireOnOfferingBid(offering.version, msg.sender, offering.price);
     }
 
     function withdraw(
@@ -119,7 +120,7 @@ library EnglishAuctionOfferingLibrary {
             _extensionDuration,
             _minBidIncrease
         );
-        offering.setChanged();
+        offering.fireOnChanged();
     }
 
     function hasNoBids(EnglishAuctionOffering storage self) returns(bool) {
