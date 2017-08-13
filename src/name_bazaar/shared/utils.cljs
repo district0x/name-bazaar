@@ -5,8 +5,8 @@
 
 (defn offering-version->type [version]
   (if (>= (bn/->number version) 100000)
-    :english-auction-offering
-    :instant-buy-offering))
+    :auction-offering
+    :buy-now-offering))
 
 (def offering-props [:offering/offering-registry :offering/registrar :offering/node :offering/name :offering/label-hash
                      :offering/original-owner :offering/emergency-multisig :offering/version :offering/created-on
@@ -23,17 +23,17 @@
         (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %)))))))
 
-(def english-auction-offering-props [:english-auction-offering/end-time :english-auction-offering/extension-duration
-                                     :english-auction-offering/min-bid-increase :english-auction-offering/winning-bidder
-                                     :english-auction-offering/bid-count])
+(def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
+                             :auction-offering/min-bid-increase :auction-offering/winning-bidder
+                             :auction-offering/bid-count])
 
-(defn parse-english-auction-offering [english-auction-offering & [{:keys [:parse-dates?]}]]
-  (when english-auction-offering
-    (-> (zipmap english-auction-offering-props english-auction-offering)
-      (update :english-auction-offering/end-time (if parse-dates? bn/->date-time bn/->number))
-      (update :english-auction-offering/extension-duration bn/->number)
-      (update :english-auction-offering/min-bid-increase bn/->number)
-      (update :english-auction-offering/bid-count bn/->number))))
+(defn parse-auction-offering [auction-offering & [{:keys [:parse-dates?]}]]
+  (when auction-offering
+    (-> (zipmap auction-offering-props auction-offering)
+      (update :auction-offering/end-time (if parse-dates? bn/->date-time bn/->number))
+      (update :auction-offering/extension-duration bn/->number)
+      (update :auction-offering/min-bid-increase bn/->number)
+      (update :auction-offering/bid-count bn/->number))))
 
 (defn parse-offering-requests-counts [nodes counts]
   (zipmap nodes (map #(hash-map :offering-request/requesters-count (bn/->number %)) counts)))

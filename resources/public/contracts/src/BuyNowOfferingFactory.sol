@@ -2,11 +2,13 @@ pragma solidity ^0.4.14;
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
-import "EnglishAuctionOffering.sol";
+import "BuyNowOffering.sol";
+import "strings.sol";
 
-contract EnglishAuctionOfferingFactory is OfferingFactory {
+contract BuyNowOfferingFactory is OfferingFactory {
+    using strings for *;
 
-    function EnglishAuctionOfferingFactory(
+    function BuyNowOfferingFactory(
         address registrar,
         address offeringRegistry,
         address offeringRequests,
@@ -18,28 +20,21 @@ contract EnglishAuctionOfferingFactory is OfferingFactory {
 
     function createOffering(
         string name,
-        uint startPrice,
-        uint endTime,
-        uint extensionDuration,
-        uint minBidIncrease
+        uint price
     ) {
         var node = namehash(name);
         var labelHash = getLabelHash(name);
-        address newOffering = new EnglishAuctionOffering(
+        address newOffering = new BuyNowOffering(
             offeringRegistry,
             registrar,
             node,
             name,
-            labelHash,
+            getLabelHash(name),
             msg.sender,
             emergencyMultisig,
-            startPrice,
-            endTime,
-            extensionDuration,
-            minBidIncrease
+            price
         );
-
-        registerOffering(node, labelHash, newOffering, 100000);
+        registerOffering(node, labelHash, newOffering, 1);
     }
 }
 

@@ -2,7 +2,7 @@ pragma solidity ^0.4.14;
 
 import "OfferingLibrary.sol";
 
-library InstantBuyOfferingLibrary {
+library BuyNowOfferingLibrary {
     using OfferingLibrary for OfferingLibrary.Offering;
 
     function buy(

@@ -4,7 +4,7 @@
     [cljs.core.async :refer [<! >! chan]]
     [district0x.shared.big-number :as bn]
     [district0x.server.state :as state]
-    [name-bazaar.server.contracts-api.english-auction-offering :as english-auction-offering]
+    [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
@@ -33,30 +33,22 @@
                  offering-address)))))
     ch))
 
-(defn english-auction? [version]
-  (= (offering-version->type version) :english-auction-offering))
+(defn auction? [version]
+  (= (offering-version->type version) :auction-offering))
 
 (defn get-offering-from-event [server-state event-args]
   (let [ch (chan)]
     (go
       (let [offering (second (<! (offering/get-offering server-state (:offering event-args))))
-            english-auction-offering (when (english-auction? (:version event-args))
-                                       (second (<! (english-auction-offering/get-english-auction-offering server-state (:offering event-args)))))
+            auction-offering (when (auction? (:version event-args))
+                               (second (<! (auction-offering/get-auction-offering server-state
+                                                                                  (:offering event-args)))))
             owner? (<! (node-owner? server-state (:offering event-args) offering))
             offering (-> offering
-                       (merge english-auction-offering)
+                       (merge auction-offering)
                        (assoc :offering/node-owner? owner?))]
         (>! ch offering)))
     ch))
-
-(defn on-offering-added [server-state err {:keys [:args]}]
-  (go
-    (let [offering (<! (get-offering-from-event server-state args))
-          db (state/db server-state)]
-      (.serialize db (fn []
-                       (db/upsert-offering! db offering)
-                       (db/upsert-ens-record! db {:ens.record/node (:offering/node offering)
-                                                  :ens.record/last-offering (:offering/address offering)}))))))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
   (go
@@ -106,7 +98,7 @@
            (offering-registry/on-offering-added server-state
                                                 {}
                                                 {:from-block 0 :to-block "latest"}
-                                                (partial on-offering-added server-state))
+                                                (partial on-offering-changed server-state))
 
            (offering-requests/on-new-requests server-state
                                               {}

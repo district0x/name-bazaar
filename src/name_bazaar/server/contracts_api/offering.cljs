@@ -11,6 +11,6 @@
     (chan 1 (map (fn [[err res]]
                    [err (parse-offering contract-address res)])))
     (web3-eth-async/contract-at (state/web3 server-state)
-                                (:abi (state/contract server-state :instant-buy-offering))
+                                (:abi (state/contract server-state :buy-now-offering))
                                 contract-address)
     :offering))

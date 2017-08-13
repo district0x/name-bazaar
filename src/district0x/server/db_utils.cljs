@@ -2,10 +2,11 @@
   (:require
     [camel-snake-kebab.core :as cs :include-macros true]
     [camel-snake-kebab.extras :refer [transform-keys]]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan put!]]
+    [cljs.spec.alpha :as s]
+    [district0x.server.utils :as d0x-server-utils]
     [honeysql.core :as sql]
-    [medley.core :as medley]
-    )
+    [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn log-error [err]
@@ -20,33 +21,49 @@
                                         (log-error err)
                                         (if get-last-id?
                                           (this-as this
-                                            (go (>! ch (aget this "lastID"))))
-                                          (go (>! ch true))))))
+                                            (put! ch (aget this "lastID")))
+                                          (put! ch true)))))
     ch))
 
-(defn db-get [db & args]
-  (let [[ch [sql-map]] (if (instance? cljs.core.async.impl.channels/ManyToManyChannel (first args))
-                         [(first args) (rest args)]
-                         [(chan) args])
-        [query & values] (sql/format sql-map)]
+(defn ->count-query [sql-map]
+  (-> sql-map
+    (assoc :select [:%count.*])
+    (dissoc :offset :limit :order-by)))
+
+(defn db-get [db sql-map & [{:keys [:port]
+                             :or {port (chan)}}]]
+  (let [[query & values] (sql/format sql-map)]
     (.get db query (clj->js values) (fn [err res]
                                       (log-error err)
-                                      (go (>! ch (if res
+                                      (put! port (if res
                                                    (-> res
                                                      (js->clj :keywordize-keys true)
                                                      (->> (transform-keys cs/->kebab-case-keyword)))
-                                                   false)))))
-    ch))
+                                                   false))))
+    port))
 
-(defn db-all [db & args]
-  (let [[ch [sql-map]] (if (instance? cljs.core.async.impl.channels/ManyToManyChannel (first args))
-                         [(first args) (rest args)]
-                         [(chan) args])
+(defn db-all [db sql-map & [{:keys [:port :total-count?]
+                             :or {port (chan)}}]]
+  (let [result-ch (chan)
+        total-count-ch (chan)
         [query & values] (sql/format sql-map)]
+    (if total-count?
+      (let [[query & values] (sql/format (->count-query sql-map))]
+        (.get db query (clj->js values) (fn [err res]
+                                          (log-error err)
+                                          (put! total-count-ch (aget res "count(*)")))))
+      (put! total-count-ch false))
     (.all db query (clj->js values) (fn [err res]
                                       (log-error err)
-                                      (go (>! ch (js->clj (or res []) :keywordize-keys true)))))
-    ch))
+                                      (put! port (->> (js->clj (or res []) :keywordize-keys true)
+                                                   (map (partial transform-keys cs/->kebab-case-keyword))))))
+    (go
+      (let [total-count (<! total-count-ch)
+            items (<! port)]
+        (put! result-ch (merge {:items items}
+                               (when total-count
+                                 {:total-count total-count})))))
+    result-ch))
 
 (defn keyword->sql-col [kw]
   (keyword (name kw)))

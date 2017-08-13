@@ -10,41 +10,41 @@
    {:form-data-order [:ens.record/node
                       :ens.record/owner]}
 
-   :english-auction-offering/set-settings
+   :auction-offering/set-settings
    {:form-data-order [:contract-address
                       :offering/price
-                      :english-auction-offering-factory/end-time
-                      :english-auction-offering-factory/extension-duration
-                      :english-auction-offering-factory/min-bid-increase]
+                      :auction-offering-factory/end-time
+                      :auction-offering-factory/extension-duration
+                      :auction-offering-factory/min-bid-increase]
     :wei-keys #{:offering/price}}
 
-   :instant-buy-offering-factory/create-offering
+   :buy-now-offering-factory/create-offering
    {:form-data-order [:offering/name
                       :offering/price]
     :wei-keys #{:offering/price}}
 
-   :english-auction-offering-factory/finalize
+   :auction-offering-factory/finalize
    {:form-data-order [:contract-address
-                      :english-auction-offering/transfer-price?]}
+                      :auction-offering/transfer-price?]}
 
-   :instant-buy-offering/buy
+   :buy-now-offering/buy
    {:form-data-order [:contract-address]}
 
-   :english-auction-offering-factory/withdraw
+   :auction-offering-factory/withdraw
    {:form-data-order [:contract-address
-                      :english-auction-offering/bidder]}
+                      :auction-offering/bidder]}
 
-   :english-auction-offering-factory/create-offering
+   :auction-offering-factory/create-offering
    {:form-data-order [:offering/name
-                      :english-auction-offering-factory/end-time
-                      :english-auction-offering-factory/extension-duration
-                      :english-auction-offering-factory/min-bid-increase]
-    :wei-keys #{:offering/price :english-auction-offering-factory/min-bid-increase}}
+                      :auction-offering-factory/end-time
+                      :auction-offering-factory/extension-duration
+                      :auction-offering-factory/min-bid-increase]
+    :wei-keys #{:offering/price :auction-offering-factory/min-bid-increase}}
 
-   :english-auction-offering/bid
+   :auction-offering/bid
    {:form-data-order [:contract-address]}
 
-   :instant-buy-offering/set-settings
+   :buy-now-offering/set-settings
    {:form-data-order [:contract-address
                       :offering/price]
     :wei-keys #{:offering/price}}})
@@ -52,22 +52,22 @@
 (def gas-price 4000000000)
 
 (def form-configs
-  {:form.english-auction-offering/withdraw
-   {:contract-method :english-auction-offering/withdraw
+  {:form.auction-offering/withdraw
+   {:contract-method :auction-offering/withdraw
     :transaction-name "Auction Bid Withdrawal"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 70000 :gas-price gas-price}
-    :default-data {:english-auction-offering/bidder nil}}
+    :default-data {:auction-offering/bidder nil}}
 
-   :form.english-auction-offering-factory/create-offering
-   {:contract-method :english-auction-offering-factory/create-offering
+   :form.auction-offering-factory/create-offering
+   {:contract-method :auction-offering-factory/create-offering
     :transaction-name "New Auction Offering"
     :tx-opts {:gas 700000 :gas-price gas-price}
     :default-data {:offering/name ""
                    :offering/price 0.01
-                   :english-auction-offering-factory/end-time (to-epoch (t/plus (t/now) (t/weeks 1)))
-                   :english-auction-offering-factory/extension-duration (t/in-seconds (t/hours 1))
-                   :english-auction-offering-factory/min-bid-increase 0.01}}
+                   :auction-offering-factory/end-time (to-epoch (t/plus (t/now) (t/weeks 1)))
+                   :auction-offering-factory/extension-duration (t/in-seconds (t/hours 1))
+                   :auction-offering-factory/min-bid-increase 0.01}}
 
    :form.offering-requests/add-request
    {:contract-method :offering-requests/add-request
@@ -75,46 +75,46 @@
     :form-id-keys [:offering-request/name]
     :tx-opts {:gas 100000 :gas-price gas-price}}
 
-   :form.english-auction-offering/bid
-   {:contract-method :english-auction-offering/bid
+   :form.auction-offering/bid
+   {:contract-method :auction-offering/bid
     :transaction-name "Auction Bid"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 70000 :gas-price gas-price}}
 
    :form.offering/reclaim-ownership
-   {:contract-method :instant-buy-offering/reclaim-ownership
+   {:contract-method :buy-now-offering/reclaim-ownership
     :transaction-name "Reclaim Offering Ownership"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 200000 :gas-price gas-price}}
 
-   :form.instant-buy-offering/set-settings
-   {:contract-method :instant-buy-offering/set-settings
+   :form.buy-now-offering/set-settings
+   {:contract-method :buy-now-offering/set-settings
     :transaction-name "Update Offering Settings"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 250000 :gas-price gas-price}
     :default-data {:offering/price 0}}
 
-   :form.english-auction-offering/finalize
-   {:contract-method :english-auction-offering/finalize
+   :form.auction-offering/finalize
+   {:contract-method :auction-offering/finalize
     :transaction-name "Finalize Auction"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 70000 :gas-price gas-price}
-    :default-data {:english-auction-offering/transfer-price? true}}
+    :default-data {:auction-offering/transfer-price? true}}
 
-   :form.instant-buy-offering/buy
-   {:contract-method :instant-buy-offering/buy
-    :transaction-name "Instant Buy Offering"
+   :form.buy-now-offering/buy
+   {:contract-method :buy-now-offering/buy
+    :transaction-name "Buy Now Offering"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 100000 :gas-price gas-price}}
 
-   :form.english-auction-offering/set-settings
-   {:contract-method :english-auction-offering/set-settings
+   :form.auction-offering/set-settings
+   {:contract-method :auction-offering/set-settings
     :transaction-name "Update Offering Settings"
     :form-id-keys [:contract-address]
     :tx-opts {:gas 1000000 :gas-price gas-price}}
 
-   :form.instant-buy-offering-factory/create-offering
-   {:contract-method :instant-buy-offering-factory/create-offering
+   :form.buy-now-offering-factory/create-offering
+   {:contract-method :buy-now-offering-factory/create-offering
     :transaction-name "New Instant Buy Offering"
     :tx-opts {:gas 500000 :gas-price gas-price}
     :default-data {:offering/name ""

@@ -61,16 +61,16 @@
 (def ^:dynamic OfferingRegistry nil)
 (def ^:dynamic OfferingRequests nil)
 (def ^:dynamic ENSNodeNames nil)
-(def ^:dynamic InstantBuyOfferingFactory nil)
-(def ^:dynamic EnglishAuctionOfferingFactory nil)
-(def instant-buy-offering-abi (fetch-abi "InstantBuyOffering"))
-(def english-auction-offering-abi (fetch-abi "EnglishAuctionOffering"))
+(def ^:dynamic BuyNowOfferingFactory nil)
+(def ^:dynamic AuctionOfferingFactory nil)
+(def buy-now-offering-abi (fetch-abi "BuyNowOffering"))
+(def auction-offering-abi (fetch-abi "AuctionOffering"))
 
-(defn instant-buy-offering-at [contract-address]
-  (web3-eth/contract-at web3 instant-buy-offering-abi contract-address))
+(defn buy-now-offering-at [contract-address]
+  (web3-eth/contract-at web3 buy-now-offering-abi contract-address))
 
-(defn english-auction-offering-at [contract-address]
-  (web3-eth/contract-at web3 english-auction-offering-abi contract-address))
+(defn auction-offering-at [contract-address]
+  (web3-eth/contract-at web3 auction-offering-abi contract-address))
 
 (defn deploy-contracts! [done]
   (go
@@ -108,25 +108,25 @@
                                   :bin (fetch-bin "OfferingRequests")
                                   :args [(aget ENSNodeNames "address")]})))
 
-    (set! InstantBuyOfferingFactory (<! (test-utils/deploy-contract-ch!
+    (set! BuyNowOfferingFactory (<! (test-utils/deploy-contract-ch!
                                           {:web3 web3
                                            :from (first accounts)
-                                           :abi (fetch-abi "InstantBuyOfferingFactory")
-                                           :bin (fetch-bin "InstantBuyOfferingFactory")
+                                           :abi (fetch-abi "BuyNowOfferingFactory")
+                                           :bin (fetch-bin "BuyNowOfferingFactory")
                                            :args (map #(aget % "address")
                                                       [ENS OfferingRegistry OfferingRequests])})))
 
-    (set! EnglishAuctionOfferingFactory (<! (test-utils/deploy-contract-ch!
+    (set! AuctionOfferingFactory (<! (test-utils/deploy-contract-ch!
                                               {:web3 web3
                                                :from (first accounts)
-                                               :abi (fetch-abi "EnglishAuctionOfferingFactory")
-                                               :bin (fetch-bin "EnglishAuctionOfferingFactory")
+                                               :abi (fetch-abi "AuctionOfferingFactory")
+                                               :bin (fetch-bin "AuctionOfferingFactory")
                                                :args (map #(aget % "address")
                                                           [ENS OfferingRegistry OfferingRequests])})))
 
     (doseq [Contract [OfferingRegistry OfferingRequests]]
       (<! (state-call-ch! Contract :set-factories
-                          {:args [(map #(aget % "address") [InstantBuyOfferingFactory EnglishAuctionOfferingFactory])
+                          {:args [(map #(aget % "address") [BuyNowOfferingFactory AuctionOfferingFactory])
                                   true]
                            :from (first accounts)})))
 
@@ -144,7 +144,7 @@
    })
 
 (deftest name-bazaar-test1
-  (is InstantBuyOfferingFactory)
+  (is BuyNowOfferingFactory)
   (async done
     (go
       (is (= 1 1))
@@ -164,15 +164,15 @@
 
         (is (= (first accounts) (<! (contract-call-ch ENS :owner (namehash "eth"))))))
 
-      #_ (testing "Can create InstantBuy Offering"
-        (is (true? (u/tx-address? (<! (state-call-ch! InstantBuyOfferingFactory :create-offering
+      #_ (testing "Can create Buy Now Offering"
+        (is (true? (u/tx-address? (<! (state-call-ch! BuyNowOfferingFactory :create-offering
                                                       {:args ["eth" 0]
                                                        :from (first accounts)})))))
 
         (let [offering-address (<! (contract-call-ch OfferingRegistry :offerings 0))]
           (is (web3/address? offering-address))
-          (is (= (namehash "eth") (<! (contract-call-ch (instant-buy-offering-at offering-address) :node))))
-          (is (= "eth" (<! (contract-call-ch (instant-buy-offering-at offering-address) :name))))
+          (is (= (namehash "eth") (<! (contract-call-ch (buy-now-offering-at offering-address) :node))))
+          (is (= "eth" (<! (contract-call-ch (buy-now-offering-at offering-address) :name))))
           (is (true? (u/tx-address? (<! (state-call-ch! ENS :set-owner
                                                         {:args [(namehash "eth") offering-address]
                                                          :from (first accounts)})))))

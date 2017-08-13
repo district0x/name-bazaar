@@ -29,14 +29,14 @@
      :ens/records {}
 
      :form.ens/set-owner {}
-     :form.instant-buy-offering-factory/create-offering {}
-     :form.instant-buy-offering/buy {}
-     :form.instant-buy-offering/set-settings {}
-     :form.english-auction-offering-factory/create-offering {}
-     :form.english-auction-offering/bid {}
-     :form.english-auction-offering/finalize {}
-     :form.english-auction-offering/withdraw {}
-     :form.english-auction-offering/set-settings {}
+     :form.buy-now-offering-factory/create-offering {}
+     :form.buy-now-offering/buy {}
+     :form.buy-now-offering/set-settings {}
+     :form.auction-offering-factory/create-offering {}
+     :form.auction-offering/bid {}
+     :form.auction-offering/finalize {}
+     :form.auction-offering/withdraw {}
+     :form.auction-offering/set-settings {}
      :form.offering/reclaim-ownership {}
      :form.offering-requests/add-request {}
      :form.district0x-emails/set-email {}

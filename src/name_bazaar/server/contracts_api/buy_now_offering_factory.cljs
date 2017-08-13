@@ -1,4 +1,4 @@
-(ns name-bazaar.server.contracts-api.instant-buy-offering-factory
+(ns name-bazaar.server.contracts-api.buy-now-offering-factory
   (:require
     [cljs-web3.async.eth :as web3-eth]
     [district0x.server.effects :as effects]
@@ -6,7 +6,7 @@
 
 (defn create-offering! [server-state {:keys [:offering/name :offering/price]} opts]
   (effects/logged-contract-call! server-state
-                                 (state/instance server-state :instant-buy-offering-factory)
+                                 (state/instance server-state :buy-now-offering-factory)
                                  :create-offering
                                  name
                                  price

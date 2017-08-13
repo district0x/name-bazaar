@@ -7,8 +7,8 @@
   (effects/logged-contract-call! server-state
                                  (state/instance contract-key)
                                  :set-factories
-                                 [(state/contract-address server-state :instant-buy-offering-factory)
-                                  (state/contract-address server-state :english-auction-offering-factory)]
+                                 [(state/contract-address server-state :buy-now-offering-factory)
+                                  (state/contract-address server-state :auction-offering-factory)]
                                  true
                                  (merge
                                    {:gas 100000

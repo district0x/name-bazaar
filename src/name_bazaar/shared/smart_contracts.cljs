@@ -1,40 +1,40 @@
 (ns name-bazaar.shared.smart-contracts) 
 
 (def smart-contracts 
-{:instant-buy-offering-factory
- {:name "InstantBuyOfferingFactory",
-  :address "0x625f35e9a343db0814b3c8f6c0d04d6756020572"},
+{:auction-offering-factory
+ {:name "AuctionOfferingFactory",
+  :address "0xfb07323f115fecd3220dd7feb9358ab29e2d337f"},
+ :buy-now-offering-library
+ {:name "BuyNowOfferingLibrary",
+  :address "0xe99a6f981c55d696b19276ec1d92c11d203afd59"},
+ :buy-now-offering-factory
+ {:name "BuyNowOfferingFactory",
+  :address "0xd6915c0876be3afd34b577e88f5045e27bfd87b6"},
  :registrar
  {:name "MockRegistrar",
-  :address "0x9abf2fb86b7f4d3fb59f262061d27efd7457f7b6"},
- :instant-buy-offering-library
- {:name "InstantBuyOfferingLibrary",
-  :address "0x1ab4e18108fe86271e666fa0630106aa3f039df4"},
- :english-auction-offering-library
- {:name "EnglishAuctionOfferingLibrary",
-  :address "0x87c7ba8246b54a0f1b2c427730d1dad4c7d37c19"},
- :english-auction-offering-factory
- {:name "EnglishAuctionOfferingFactory",
-  :address "0x740bf98063db8876db69058c75127e0b30019396"},
- :english-auction-offering
- {:name "EnglishAuctionOffering",
+  :address "0x5b0e95d21a1e3756c61ad766d69f1a9f214d8451"},
+ :buy-now-offering
+ {:name "BuyNowOffering",
   :address "0x0000000000000000000000000000000000000000"},
+ :auction-offering-library
+ {:name "AuctionOfferingLibrary",
+  :address "0x7167eb3e31fc6c8ad7a990d5ea3cc2128d3ed397"},
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
- :instant-buy-offering
- {:name "InstantBuyOffering",
-  :address "0x0000000000000000000000000000000000000000"},
  :ens
- {:name "ENS", :address "0x0e09bcb071ce80de476d52f3be016812ff2733db"},
+ {:name "ENS", :address "0x48fcaddee3e71cf799080032e68d990d5454bfbc"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0x63649e469210d1e042967a88a53d69b111f513da"},
+  :address "0xb1a2190418f231f46ca36030391cbb5f2eb86606"},
  :district0x-emails
  {:name "District0xEmails",
   :address "0x0000000000000000000000000000000000000000"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0xf38e2120e2f6534034edba6057f1a82c7e512e08"},
+  :address "0xba882b3a206a6cabfed3a0b4b95c44071085bae5"},
  :offering-library
  {:name "OfferingLibrary",
-  :address "0xe37332440658f72aa7b935c6c6dd3d6cb0983af7"}})
+  :address "0xbc59338f94ebf5d04efe4ad717694a91a228d8ee"},
+ :auction-offering
+ {:name "AuctionOffering",
+  :address "0x0000000000000000000000000000000000000000"}})

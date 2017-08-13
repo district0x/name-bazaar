@@ -14,11 +14,11 @@
 (s/def :offering/created-on date?)
 (s/def :offering/transferred-on (s/nilable date?))
 (s/def :offering/price not-neg?)
-(s/def :english-auction-offering/end-time date?)
-(s/def :english-auction-offering/extension-duration not-neg?)
-(s/def :english-auction-offering/min-bid-increase not-neg?)
-(s/def :english-auction-offering/highest-bidder address?)
-(s/def :english-auction-offering/bid-count not-neg?)
+(s/def :auction-offering/end-time date?)
+(s/def :auction-offering/extension-duration not-neg?)
+(s/def :auction-offering/min-bid-increase not-neg?)
+(s/def :auction-offering/highest-bidder address?)
+(s/def :auction-offering/bid-count not-neg?)
 
 (s/def :offering-registry/offering (s/keys :opt [:offering/node
                                                  :offering/name
@@ -29,11 +29,11 @@
                                                  :offering/created-on
                                                  :offering/transferred-on
                                                  :offering/price
-                                                 :english-auction-offering/end-time
-                                                 :english-auction-offering/extension-duration
-                                                 :english-auction-offering/min-bid-increase
-                                                 :english-auction-offering/highest-bidder
-                                                 :english-auction-offering/bid-count]))
+                                                 :auction-offering/end-time
+                                                 :auction-offering/extension-duration
+                                                 :auction-offering/min-bid-increase
+                                                 :auction-offering/highest-bidder
+                                                 :auction-offering/bid-count]))
 
 (s/def :offering-registry/offerings (s/map-of :offering/address :offering-registry/offering))
 
@@ -100,14 +100,14 @@
 (s/def :search-results/offering-requests (s/map-of :search-params/offering-requests :db/search-results))
 
 (s/def :form.ens/set-owner (s/map-of (s/keys :req [:ens.record/node]) :db/form))
-(s/def :form.instant-buy-offering-factory/create-offering :db/form)
-(s/def :form.instant-buy-offering/buy :db/contract-address-id-form)
-(s/def :form.instant-buy-offering/set-settings :db/contract-address-id-form)
-(s/def :form.english-auction-offering-factory/create-offering :db/form)
-(s/def :form.english-auction-offering/bid :db/contract-address-id-form)
-(s/def :form.english-auction-offering/finalize :db/contract-address-id-form)
-(s/def :form.english-auction-offering/withdraw :db/contract-address-id-form)
-(s/def :form.english-auction-offering/set-settings :db/contract-address-id-form)
+(s/def :form.buy-now-offering-factory/create-offering :db/form)
+(s/def :form.buy-now-offering/buy :db/contract-address-id-form)
+(s/def :form.buy-now-offering/set-settings :db/contract-address-id-form)
+(s/def :form.auction-offering-factory/create-offering :db/form)
+(s/def :form.auction-offering/bid :db/contract-address-id-form)
+(s/def :form.auction-offering/finalize :db/contract-address-id-form)
+(s/def :form.auction-offering/withdraw :db/contract-address-id-form)
+(s/def :form.auction-offering/set-settings :db/contract-address-id-form)
 (s/def :form.offering/reclaim-ownership :db/contract-address-id-form)
 (s/def :form.offering-requests/add-request (s/map-of (s/keys :req [:offering-request/name]) :db/form))
 
@@ -118,14 +118,14 @@
                                              :offering-requests/requests
 
                                              :form.ens/set-owner
-                                             :form.instant-buy-offering-factory/create-offering
-                                             :form.instant-buy-offering/buy
-                                             :form.instant-buy-offering/set-settings
-                                             :form.english-auction-offering-factory/create-offering
-                                             :form.english-auction-offering/bid
-                                             :form.english-auction-offering/finalize
-                                             :form.english-auction-offering/withdraw
-                                             :form.english-auction-offering/set-settings
+                                             :form.buy-now-offering-factory/create-offering
+                                             :form.buy-now-offering/buy
+                                             :form.buy-now-offering/set-settings
+                                             :form.auction-offering-factory/create-offering
+                                             :form.auction-offering/bid
+                                             :form.auction-offering/finalize
+                                             :form.auction-offering/withdraw
+                                             :form.auction-offering/set-settings
                                              :form.offering/reclaim-ownership
                                              :form.offering-requests/add-request
                                              :form.district0x-emails/set-email

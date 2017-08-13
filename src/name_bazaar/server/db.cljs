@@ -41,12 +41,6 @@
                    (.run db "CREATE INDEX version_index ON offerings (version)" log-error)
                    (.run db "CREATE INDEX bid_count_index ON offerings (bid_count)" log-error)
 
-                   (.run db "CREATE TABLE ens_records (
-                          node CHAR(66) NOT NULL,
-                          last_offering CHAR(42) NOT NULL,
-                          FOREIGN KEY(last_offering) REFERENCES offerings(address)
-                          )" log-error)
-
                    (.run db "CREATE TABLE offering_requests (
                           node CHAR(66) PRIMARY KEY NOT NULL,
                           name VARCHAR NOT NULL,
@@ -65,8 +59,8 @@
                     :offering/new-owner
                     :offering/version
                     :offering/price
-                    :english-auction-offering/end-time
-                    :english-auction-offering/bid-count
+                    :auction-offering/end-time
+                    :auction-offering/bid-count
                     :offering/node-owner?])
 
 (def offering-columns (-> offering-keys
@@ -78,14 +72,6 @@
   (db-run! db {:insert-or-replace-into :offerings
                :columns offering-columns
                :values [((apply juxt offering-keys) values)]}))
-
-(def ens-record-columns [:ens.record/node
-                         :ens.record/last-offering])
-
-(defn upsert-ens-record! [db values]
-  (db-run! db {:insert-or-replace-into :ens-records
-               :columns (keywords->sql-cols ens-record-columns)
-               :values [((apply juxt ens-record-columns) values)]}))
 
 (defn set-offering-node-owner?! [db {:keys [:offering/node-owner? :offering/address]}]
   (db-run! db {:update :offerings
@@ -110,12 +96,12 @@
 
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :name :min-price :max-price
                                    :max-end-time :version :node-owner? :limit :offset :order-by
-                                   :select-fields :root-name]
+                                   :select-fields :root-name :total-count?]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])]
+
     (db-all db
-            (sql-results-chan select-fields)
             (cond-> {:select select-fields
                      :from [:offerings]
                      :offset offset
@@ -125,40 +111,28 @@
               min-price (merge-where [:>= :price min-price])
               max-price (merge-where [:<= :price max-price])
               max-end-time (merge-where [:<= :end-time max-end-time])
-              version (merge-where [(if (= (keyword version) :instant-buy-offering) :< :>=)
+              version (merge-where [(if (= (keyword version) :buy-now-offering) :< :>=)
                                     :version 100000])
               (boolean? node-owner?) (merge-where [:= :is-node-owner node-owner?])
               node (merge-where [:= :node node])
               name (merge-where [:like :name (str "%" name "%." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
-              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by order-by)))))
-
-(s/def ::ens-records-select-fields (partial combination-of? #{:node :last-offering}))
-
-(defn search-ens-records [db {:keys [:nodes :select-fields :offset :limit]
-                              :or {offset 0 limit -1}}]
-  (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::ens-records-select-fields select-fields) select-fields [:node])]
-    (db-all db
-            (sql-results-chan select-fields)
-            (cond-> {:select select-fields
-                     :from [:ens-records]
-                     :offset offset
-                     :limit limit}
-              nodes (merge-where [:in :node (collify nodes)])))))
+              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by order-by))
+            {:total-count? total-count?
+             :port (sql-results-chan select-fields)})))
 
 (s/def ::offering-requests-order-by-column (partial contains? #{:requesters-count}))
 (s/def ::offering-requests-order-by-item (s/tuple ::offering-requests-order-by-column ::order-by-dir))
 (s/def ::offering-requests-order-by (s/coll-of ::offering-requests-order-by-item :kind vector? :distinct true))
 (s/def ::offering-requests-select-fields (partial combination-of? #{:node :name :requesters-count}))
 
-(defn search-offering-requests [db {:keys [:limit :offset :name :order-by :root-name :select-fields]
+(defn search-offering-requests [db {:keys [:limit :offset :name :order-by :root-name :select-fields
+                                           :total-count?]
                                     :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:node])]
     (db-all db
-            (sql-results-chan select-fields)
             (cond-> {:select select-fields
                      :from [:offering-requests]
                      :offset offset
@@ -166,7 +140,8 @@
               name (merge-where [:like :name (str "%" name "%." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
-              (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge {:order-by order-by})
-              ))))
+              (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge {:order-by order-by}))
+            {:port (sql-results-chan select-fields)
+             :total-count? total-count?})))
 
 

@@ -585,7 +585,7 @@
                    {:method :get
                     :timeout 20000
                     :uri (str (url/url (:server-url db) endpoint))
-                    :response-format (ajax/json-response-format)
+                    :response-format (ajax/json-response-format {:keywords? true})
                     :on-success on-success
                     :on-failure [:district0x.log/error]
                     :params (if (:order-by params)
@@ -611,12 +611,15 @@
 (reg-event-fx
   :district0x.search-results/loaded
   interceptors
-  (fn [{:keys [db]} [{:keys [:search-results-key :search-params :id-key :on-success]} results]]
-    (let [ids (if id-key (map #(get % id-key)) results)]
+  (fn [{:keys [db]} [{:keys [:search-results-key :search-params :id-key :on-success]}
+                     {:keys [:items :total-count] :as response}]]
+    (let [ids (if id-key (map #(get % id-key)) items)]
       (merge
-        {:db (update-in db [search-results-key (dissoc search-params :select-fields)] merge {:loading? false :ids ids})}
+        {:db (update-in db [search-results-key (dissoc search-params :select-fields)] merge {:loading? false
+                                                                                             :ids ids
+                                                                                             :total-count total-count})}
         (when on-success
-          {:dispatch (vec (concat on-success [ids results]))})))))
+          {:dispatch (vec (concat on-success [ids items response]))})))))
 
 (reg-event-fx
   :district0x.search-results/load-multi
@@ -639,13 +642,14 @@
 (reg-event-fx
   :district0x.search-results/multi-loaded
   interceptors
-  (fn [{:keys [db]} [{:keys [:search-results-key search-params-fn :search-params-key :id-key :on-success]} results]]
+  (fn [{:keys [db]} [{:keys [:search-results-key search-params-fn :search-params-key :id-key :on-success]}
+                     {:keys [:items]}]]
     (merge
       {:db (update db search-results-key merge (map #(hash-map (search-params-fn %)
                                                                (d0x-shared-utils/collify (get % id-key)))
-                                                    results))}
+                                                    items))}
       (when on-success
-        {:dispatch (vec (concat on-success [(map #(get % id-key) results) results]))}))))
+        {:dispatch (vec (concat on-success [(map #(get % id-key) items) items]))}))))
 
 (reg-event-fx
   :district0x.contract/constant-fn-call

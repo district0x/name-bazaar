@@ -17,8 +17,8 @@
 
 (def library-placeholders
   {:offering-library "__OfferingLibrary.sol:OfferingLibrary___"
-   :instant-buy-offering-library "__InstantBuyOfferingLibrary.sol:Instan__"
-   :english-auction-offering-library "__EnglishAuctionOfferingLibrary.sol:En__"})
+   :buy-now-offering-library "__BuyNowOfferingLibrary.sol:BuyNowOffe__"
+   :auction-offering-library "__AuctionOfferingLibrary.sol:AuctionOf__"})
 
 (defn deploy-ens! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
@@ -43,35 +43,35 @@
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
                                                                {:contract-key :offering-library})))
 
-(defn deploy-instant-buy-library! [server-state-atom default-opts]
+(defn deploy-buy-now-library! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:contract-key :instant-buy-offering-library
+                                                               {:contract-key :buy-now-offering-library
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library])})))
 
-(defn deploy-english-auction-library! [server-state-atom default-opts]
+(defn deploy-auction-library! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:contract-key :english-auction-offering-library
+                                                               {:contract-key :auction-offering-library
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library])})))
 
-(defn deploy-instant-buy-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
+(defn deploy-buy-now-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:contract-key :instant-buy-offering-factory
+                                                               {:contract-key :buy-now-offering-factory
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
-                                                                                                    :instant-buy-offering-library])
+                                                                                                    :buy-now-offering-library])
                                                                 :args [(state/contract-address @server-state-atom :registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
 
-(defn deploy-english-auction-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
+(defn deploy-auction-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:contract-key :english-auction-offering-factory
+                                                               {:contract-key :auction-offering-factory
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
-                                                                                                    :english-auction-offering-library])
+                                                                                                    :auction-offering-library])
                                                                 :args [(state/contract-address @server-state-atom :registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
@@ -91,12 +91,12 @@
       (<! (deploy-offering-registry! server-state-atom default-deploy-opts))
       (<! (deploy-offering-requests! server-state-atom default-deploy-opts))
       (<! (deploy-offering-library! server-state-atom default-deploy-opts))
-      (<! (deploy-instant-buy-library! server-state-atom default-deploy-opts))
-      (<! (deploy-english-auction-library! server-state-atom default-deploy-opts))
-      (<! (deploy-instant-buy-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
-                                                                              (state/active-address @server-state-atom)}))
-      (<! (deploy-english-auction-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
-                                                                                  (state/active-address @server-state-atom)}))
+      (<! (deploy-buy-now-library! server-state-atom default-deploy-opts))
+      (<! (deploy-auction-library! server-state-atom default-deploy-opts))
+      (<! (deploy-buy-now-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
+                                                                          (state/active-address @server-state-atom)}))
+      (<! (deploy-auction-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
+                                                                          (state/active-address @server-state-atom)}))
 
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-registry}))
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-requests}))

@@ -84,15 +84,13 @@
 (s/def :search-params/order-by (s/coll-of (s/tuple keyword? :search-params/order-by-dir)))
 (s/def :search-params/offset integer?)
 (s/def :search-params/limit integer?)
-(s/def :search-results/infinite-scroll (s/keys :opt-un [:search-params/offset :search-params/limit]))
 (s/def :search-results/ids (s/coll-of any?))
-(s/def :search-results/items (s/coll-of any?))
+(s/def :search-results/total-count (s/nilable not-neg?))
 (s/def :search-results/loading? boolean?)
 
 (s/def :db/search-results (s/keys :opt-un [:search-results/ids
-                                           :search-results/items
                                            :search-results/loading?
-                                           :search-results/infinite-scroll]))
+                                           :search-results/total-count]))
 
 (s/def :form-config/default-data :form/data)
 (s/def :form-config/form-data-order (s/coll-of :form/field))

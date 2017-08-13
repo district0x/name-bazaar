@@ -3,7 +3,7 @@
     [cljs-web3.async.eth :as web3-eth-async]
     [cljs-web3.async.evm :as web3-evm-async]
     [cljs-web3.eth :as web3-eth]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan take!]]
     [cljs.core.async.impl.channels]
     [clojure.string :as string]
     [cljs.nodejs :as nodejs])
@@ -62,3 +62,6 @@
 
 (defn chan? [x]
   (instance? cljs.core.async.impl.channels/ManyToManyChannel x))
+
+(defn print-take! [ch]
+  (take! ch println))

@@ -21,7 +21,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [parse-offering parse-english-auction-offering parse-ens-record parse-offering-requests-counts]]
+    [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-ens-record parse-offering-requests-counts]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3]]
@@ -33,62 +33,62 @@
   (get-in db [:ens/records node :ens.record/name]))
 
 (reg-event-fx
-  :instant-buy-offering-factory/create-offering
+  :buy-now-offering-factory/create-offering
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
                 {:form-data form-data
-                 :form-key :form.instant-buy-offering-factory/create-offering}]}))
+                 :form-key :form.buy-now-offering-factory/create-offering}]}))
 
 (reg-event-fx
-  :english-auction-offering-factory/create-offering
+  :auction-offering-factory/create-offering
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
                 {:form-data form-data
-                 :form-key :form.english-auction-offering-factory/create-offering}]}))
+                 :form-key :form.auction-offering-factory/create-offering}]}))
 
 (reg-event-fx
-  :instant-buy-offering/buy
+  :buy-now-offering/buy
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.instant-buy-offering/buy}]}))
+                {:form-key :form.buy-now-offering/buy}]}))
 
 (reg-event-fx
-  :instant-buy-offering/set-settings
+  :buy-now-offering/set-settings
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.instant-buy-offering/set-settings}]}))
+                {:form-key :form.buy-now-offering/set-settings}]}))
 
 (reg-event-fx
-  :english-auction-offering/bid
+  :auction-offering/bid
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.english-auction-offering/bid}]}))
+                {:form-key :form.auction-offering/bid}]}))
 
 (reg-event-fx
-  :english-auction-offering/finalize
+  :auction-offering/finalize
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.english-auction-offering/finalize}]}))
+                {:form-key :form.auction-offering/finalize}]}))
 
 (reg-event-fx
-  :english-auction-offering/withdraw
+  :auction-offering/withdraw
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.english-auction-offering/withdraw}]}))
+                {:form-key :form.auction-offering/withdraw}]}))
 
 (reg-event-fx
-  :english-auction-offering/set-settings
+  :auction-offering/set-settings
   interceptors
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.english-auction-offering/set-settings}]}))
+                {:form-key :form.auction-offering/set-settings}]}))
 
 
 (reg-event-fx
@@ -142,14 +142,14 @@
                                                         params)}]
                          :delay 300}}))
 
-(defn- english-auction-offering? [db offering-address]
-  (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :english-auction-offering))
+(defn- auction-offering? [db offering-address]
+  (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :auction-offering))
 
 (reg-event-fx
   :load-offerings
   interceptors
   (fn [{:keys [:db]} [offering-addresses {:keys [:load-type-specific-data?]}]]
-    (let [offering-abi (:abi (get-contract db :instant-buy-offering))]
+    (let [offering-abi (:abi (get-contract db :buy-now-offering))]
       {:web3-fx.contract/constant-fns
        {:fns (for [offering-address offering-addresses]
                {:instance (web3-eth/contract-at (:web3 db) offering-abi offering-address)
@@ -168,27 +168,27 @@
                     (update-in [:ens/records node] merge {:ens.record/node node
                                                           :ens.record/name node}))}
              (when (and :load-type-specific-offerings?
-                        (= (:offering/type offering) :english-auction-offering))
-               {:dispatch-n [[:load-english-auction-offerings]]})))))
+                        (= (:offering/type offering) :auction-offering))
+               {:dispatch-n [[:load-auction-offerings]]})))))
 
 (reg-event-fx
-  :load-english-auction-offerings
+  :load-auction-offerings
   interceptors
   (fn [{:keys [:db]} [offering-addresses]]
-    (let [english-auction-offering-abi (:abi (get-contract db :english-auction-offering))]
+    (let [auction-offering-abi (:abi (get-contract db :auction-offering))]
       {:web3-fx.contract/constant-fns
        {:fns (for [offering-address offering-addresses]
-               (let [instance (web3-eth/contract-at (:web3 db) english-auction-offering-abi offering-address)]
+               (let [instance (web3-eth/contract-at (:web3 db) auction-offering-abi offering-address)]
                  {:instance instance
-                  :method :english-auction-offering
-                  :on-success [:english-auction-offering-loaded {:offering/address offering-address}]
+                  :method :auction-offering
+                  :on-success [:auction-offering-loaded {:offering/address offering-address}]
                   :on-error [:district0x.log/error]}))}})))
 
 (reg-event-fx
-  :english-auction-offering-loaded
+  :auction-offering-loaded
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering/address]} english-auction-offering]]
-    (let [offering (parse-english-auction-offering english-auction-offering {:parse-dates? true})]
+  (fn [{:keys [:db]} [{:keys [:offering/address]} auction-offering]]
+    (let [offering (parse-auction-offering auction-offering {:parse-dates? true})]
       {:db (update-in db [:offering-registry/offerings address] merge offering)})))
 
 (reg-event-fx

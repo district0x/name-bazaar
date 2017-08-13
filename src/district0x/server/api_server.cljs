@@ -57,7 +57,9 @@
   (js->clj (aget req "query") :keywordize-keys true))
 
 (defn restrict-limit [query]
-  (update query :limit max 100))
+  (if (:limit query)
+    (update query :limit min 100)
+    query))
 
 (defn parse-keyword-value [x]
   (if (and (string? x) (string/starts-with? x ":"))

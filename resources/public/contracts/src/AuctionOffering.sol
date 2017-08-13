@@ -2,14 +2,14 @@ pragma solidity ^0.4.14;
 
 import "Offering.sol";
 import "SafeMath.sol";
-import "EnglishAuctionOfferingLibrary.sol";
+import "AuctionOfferingLibrary.sol";
 
-contract EnglishAuctionOffering is Offering {
-    using EnglishAuctionOfferingLibrary for EnglishAuctionOfferingLibrary.EnglishAuctionOffering;
+contract AuctionOffering is Offering {
+    using AuctionOfferingLibrary for AuctionOfferingLibrary.AuctionOffering;
 
-    EnglishAuctionOfferingLibrary.EnglishAuctionOffering public englishAuctionOffering;
+    AuctionOfferingLibrary.AuctionOffering public auctionOffering;
 
-    function EnglishAuctionOffering(
+    function AuctionOffering(
         address _offeringRegistry,
         address _registrar,
         bytes32 _node,
@@ -24,7 +24,7 @@ contract EnglishAuctionOffering is Offering {
     )
         Offering(_offeringRegistry, _registrar, _node, _name, _labelHash,  _originalOwner, _emergencyMultisig, 100000, _startPrice)
     {
-        englishAuctionOffering.construct(
+        auctionOffering.construct(
             _endTime,
             _extensionDuration,
             _minBidIncrease
@@ -32,15 +32,15 @@ contract EnglishAuctionOffering is Offering {
     }
 
     function bid() payable {
-        englishAuctionOffering.bid(offering);
+        auctionOffering.bid(offering);
     }
 
     function finalize(bool transferPrice) {
-        englishAuctionOffering.finalize(offering, transferPrice);
+        auctionOffering.finalize(offering, transferPrice);
     }
 
     function withdraw(address _address) {
-        englishAuctionOffering.withdraw(offering, _address);
+        auctionOffering.withdraw(offering, _address);
     }
 
     function setSettings(
@@ -49,7 +49,7 @@ contract EnglishAuctionOffering is Offering {
         uint _extensionDuration,
         uint _minBidIncrease
     ) {
-        englishAuctionOffering.setSettings(
+        auctionOffering.setSettings(
             offering,
             _startPrice,
             _endTime,
@@ -58,7 +58,7 @@ contract EnglishAuctionOffering is Offering {
     }
 
     function reclaimOwnership() {
-        englishAuctionOffering.reclaimOwnership(offering);
+        auctionOffering.reclaimOwnership(offering);
     }
 
     function() payable {

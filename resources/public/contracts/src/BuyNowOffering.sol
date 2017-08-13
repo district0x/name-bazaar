@@ -1,11 +1,11 @@
 pragma solidity ^0.4.14;
 
 import "Offering.sol";
-import "InstantBuyOfferingLibrary.sol";
+import "BuyNowOfferingLibrary.sol";
 
-contract InstantBuyOffering is Offering {
+contract BuyNowOffering is Offering {
 
-    function InstantBuyOffering(
+    function BuyNowOffering(
         address _offeringRegistry,
         address _registrar,
         bytes32 _node,
@@ -20,11 +20,11 @@ contract InstantBuyOffering is Offering {
     }
 
     function buy() payable {
-        InstantBuyOfferingLibrary.buy(offering);
+        BuyNowOfferingLibrary.buy(offering);
     }
 
     function setSettings(uint _price) {
-        InstantBuyOfferingLibrary.setSettings(offering, _price);
+        BuyNowOfferingLibrary.setSettings(offering, _price);
     }
 
     function() payable {

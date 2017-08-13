@@ -3,11 +3,11 @@ pragma solidity ^0.4.14;
 import "SafeMath.sol";
 import "OfferingLibrary.sol";
 
-library EnglishAuctionOfferingLibrary {
+library AuctionOfferingLibrary {
     using SafeMath for uint;
     using OfferingLibrary for OfferingLibrary.Offering;
 
-    struct EnglishAuctionOffering {
+    struct AuctionOffering {
         uint  endTime;
         uint  extensionDuration;
         uint  minBidIncrease;
@@ -17,7 +17,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function construct(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         uint _endTime,
         uint _extensionDuration,
         uint _minBidIncrease
@@ -30,7 +30,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function bid(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         OfferingLibrary.Offering storage offering
     ) {
         require(now < self.endTime);
@@ -60,7 +60,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function withdraw(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         OfferingLibrary.Offering storage offering,
         address _address
     ) {
@@ -72,7 +72,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function finalize(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         OfferingLibrary.Offering storage offering,
         bool transferPrice
     ) {
@@ -89,7 +89,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function reclaimOwnership(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         OfferingLibrary.Offering storage offering
     ) {
         if (offering.isSenderEmergencyMultisig()) {
@@ -103,7 +103,7 @@ library EnglishAuctionOfferingLibrary {
     }
 
     function setSettings(
-        EnglishAuctionOffering storage self,
+        AuctionOffering storage self,
         OfferingLibrary.Offering storage offering,
         uint _startPrice,
         uint _endTime,
@@ -123,7 +123,7 @@ library EnglishAuctionOfferingLibrary {
         offering.fireOnChanged();
     }
 
-    function hasNoBids(EnglishAuctionOffering storage self) returns(bool) {
+    function hasNoBids(AuctionOffering storage self) returns(bool) {
         return self.winningBidder == 0x0;
     }
 }
