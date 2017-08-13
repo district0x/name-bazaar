@@ -18,14 +18,6 @@
                             (api-server/sanitized-query-params req)))))))
 
 (api-server/reg-get!
-  "/ens-records"
-  (fn [req res]
-    (go
-      (send-json! res (<! (db/search-ens-records
-                            (state/db)
-                            (api-server/sanitized-query-params req)))))))
-
-(api-server/reg-get!
   "/offering-requests"
   (fn [req res]
     (go

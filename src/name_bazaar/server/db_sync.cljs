@@ -55,6 +55,11 @@
     (let [offering (<! (get-offering-from-event server-state args))]
       (db/upsert-offering! (state/db server-state) offering))))
 
+(defn on-offering-bid [server-state err {{:keys [:offering :version :bidder :value]} :args}]
+  (db/insert-bid! (state/db server-state) {:bid/bidder bidder
+                                           :bid/value (bn/->number value)
+                                           :bid/offering offering}))
+
 (defn stop-watching-filters! []
   (doseq [filter @event-filters]
     (when filter
@@ -72,9 +77,13 @@
                                                          :offering-request/name name
                                                          :offering-request/requesters-count (bn/->number requesters-count)}))
 
-(defn on-ens-transfer [server-state err {{:keys [:node :owner]} :args}]
-  (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
-                                                         :offering/node-owner? true}))
+(defn on-ens-new-owner [server-state err {{:keys [:node :owner]} :args}]
+  (go
+    (let [offering (second (<! (offering/get-offering server-state owner)))]
+      (when offering
+        (let [owner? (<! (node-owner? server-state owner offering))]
+          (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
+                                                                 :offering/node-owner? owner?}))))))
 
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))
@@ -89,11 +98,10 @@
                                                {}
                                                "latest"
                                                (partial on-request-added server-state))
-
-           (ens/on-transfer server-state
-                            {}
-                            "latest"
-                            (partial on-ens-transfer server-state))
+           (ens/on-new-owner server-state
+                             {}
+                             "latest"
+                             (partial on-ens-new-owner server-state))
 
            (offering-registry/on-offering-added server-state
                                                 {}
@@ -103,7 +111,12 @@
            (offering-requests/on-new-requests server-state
                                               {}
                                               {:from-block 0 :to-block "latest"}
-                                              (partial on-new-requests server-state))]))
+                                              (partial on-new-requests server-state))
+
+           (offering-registry/on-offering-bid server-state
+                                              {}
+                                              {:from-block 0 :to-block "latest"}
+                                              (partial on-offering-bid server-state))]))
 
 (defn stop-syncing! []
   (stop-watching-filters!)

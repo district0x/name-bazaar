@@ -6,7 +6,7 @@
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
     [district0x.server.db-utils :refer [log-error db-get db-run! db-all keywords->sql-cols sql-results-chan order-by-closest-like]]
-    [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by]])
+    [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 ; name VARCHAR NOT NULL,
@@ -40,6 +40,16 @@
                    (.run db "CREATE INDEX is_node_owner_index ON offerings (is_node_owner)" log-error)
                    (.run db "CREATE INDEX version_index ON offerings (version)" log-error)
                    (.run db "CREATE INDEX bid_count_index ON offerings (bid_count)" log-error)
+
+                   (.run db "CREATE TABLE bids (
+                          bidder CHAR(42) NOT NULL,
+                          value UNSIGNED INTEGER NOT NULL,
+                          offering CHAR(42) NOT NULL,
+                          FOREIGN KEY(offering) REFERENCES offerings(address)
+                          )" log-error)
+
+                   (.run db "CREATE INDEX bidder_index ON bids (bidder)" log-error)
+                   (.run db "CREATE INDEX bid_value_index ON bids (value)" log-error)
 
                    (.run db "CREATE TABLE offering_requests (
                           node CHAR(66) PRIMARY KEY NOT NULL,
@@ -78,6 +88,18 @@
                :set {:is-node-owner node-owner?}
                :where [:= :address address]}))
 
+(defn offering-exists? [db offering-address]
+  (db-get db {:select [1]
+              :from [:offerings]
+              :where [:= :address offering-address]}))
+
+(def bids-keys [:bid/bidder :bid/value :bid/offering])
+
+(defn insert-bid! [db values]
+  (db-run! db {:insert-into :bids
+               :columns (keywords->sql-cols bids-keys)
+               :values [((apply juxt bids-keys) values)]}))
+
 (def offering-requests-keys [:offering-request/node
                              :offering-request/name
                              :offering-request/requesters-count])
@@ -96,13 +118,13 @@
 
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :name :min-price :max-price
                                    :max-end-time :version :node-owner? :limit :offset :order-by
-                                   :select-fields :root-name :total-count?]
+                                   :select-fields :root-name :total-count? :bidder]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])]
 
     (db-all db
-            (cond-> {:select select-fields
+            (cond-> {:select (concat select-fields [:b.bidder])
                      :from [:offerings]
                      :offset offset
                      :limit limit}
@@ -111,6 +133,8 @@
               min-price (merge-where [:>= :price min-price])
               max-price (merge-where [:<= :price max-price])
               max-end-time (merge-where [:<= :end-time max-end-time])
+              bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
+              bidder (merge-where [:= :b.bidder bidder])
               version (merge-where [(if (= (keyword version) :buy-now-offering) :< :>=)
                                     :version 100000])
               (boolean? node-owner?) (merge-where [:= :is-node-owner node-owner?])

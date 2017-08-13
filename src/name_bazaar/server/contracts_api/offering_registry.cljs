@@ -13,3 +13,6 @@
 
 (defn on-offering-changed [server-state & args]
   (apply web3-eth/contract-call (state/instance server-state :offering-registry) :on-offering-changed args))
+
+(defn on-offering-bid [server-state & args]
+  (apply web3-eth/contract-call (state/instance server-state :offering-registry) :on-offering-bid args))

@@ -30,7 +30,7 @@
               label (nth labels address-index) #_(u/rand-str 5 {:lowercase-only? true})
               name (str label "." registrar/root-node)
               node (namehash name)
-              offering-type (if (zero? (rand-int 2)) :buy-now-offering :auction-offering)
+              offering-type :auction-offering #_ (if (zero? (rand-int 2)) :buy-now-offering :auction-offering)
               price (web3/to-wei (inc (rand-int 10)) :ether)
               buyer (state/my-address server-state (rand-int total-accounts))
               request-name (if (zero? (rand-int 2)) name (str (u/rand-str 1 {:lowercase-only? true})
@@ -63,7 +63,7 @@
                                      {:ens.record/label label :ens.record/owner offering}
                                      {:from owner}))
 
-            (when (zero? (rand-int 2))
+            (when true #_ (zero? (rand-int 2))
               (if (= offering-type :buy-now-offering)
                 (buy-now-offering/buy! server-state {:contract-address offering
                                                      :value price

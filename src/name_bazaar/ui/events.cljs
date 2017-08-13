@@ -294,15 +294,6 @@
                           (set/union addrs-requested))))})))
 
 (reg-event-fx
-  :load-ens-records-last-offering
-  interceptors
-  (fn [{:keys [:db]} [nodes]]
-    {:dispatch [:district0x.server/http-get {:endpoint "/ens-records"
-                                             :params {:nodes nodes
-                                                      :select-fields [:node :last-offering]}
-                                             :on-success [:ens-records-last-offering-loaded]}]}))
-
-(reg-event-fx
   :ens-records-last-offering-loaded
   interceptors
   (fn [{:keys [:db]} [results]]
