@@ -1,14 +1,15 @@
 (ns district0x.server.state)
 
-(defonce *server-state* (atom {:log-gas-usage? true
+(defonce *server-state* (atom {:log-contract-calls? true
                                :smart-contracts {}
                                :my-addresses []
                                :web3 nil
-                               :db nil}))
+                               :db nil
+                               :testrpc-server nil}))
 
 (defn web3
   ([]
-    (web3 @*server-state*))
+   (web3 @*server-state*))
   ([server-state]
    (:web3 server-state)))
 
@@ -26,13 +27,13 @@
 
 (defn my-address
   ([i]
-   (active-address @*server-state*))
+   (my-address @*server-state* i))
   ([server-state i]
    (nth (:my-addresses server-state) i)))
 
 (defn instance
   ([contract-key]
-    (instance @*server-state* contract-key))
+   (instance @*server-state* contract-key))
   ([server-state contract-key]
    (get-in server-state [:smart-contracts contract-key :instance])))
 

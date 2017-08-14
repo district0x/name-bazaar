@@ -117,7 +117,7 @@
                                                    "src/district0x/server" "src/district0x/shared"
                                                    "test"]
                                     :figwheel true
-                                    :compiler {:main "name-bazaar.cmd"
+                                    :compiler {:main "name-bazaar.run-tests"
                                                :output-to "dev-tests/name-bazaar-tests.js",
                                                :output-dir "dev-tests",
                                                :target :nodejs,

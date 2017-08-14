@@ -4,7 +4,8 @@
     [cljs-web3.core :as web3]
     [district0x.server.effects :as effects]
     [district0x.server.state :as state]
-    [district0x.server.utils :as d0x-server-utils]))
+    [district0x.server.utils :as d0x-server-utils]
+    [cljs-web3.async.eth :as web3-eth-async]))
 
 (defn buy! [server-state {:keys [:contract-address :value-ether] :as opts}]
   (effects/logged-contract-call! server-state

@@ -5,8 +5,9 @@
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan take!]]
     [cljs.core.async.impl.channels]
+    [cljs.nodejs :as nodejs]
     [clojure.string :as string]
-    [cljs.nodejs :as nodejs])
+    [district0x.shared.utils :as d0x-shared-utils])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def fs (js/require "fs"))
@@ -65,3 +66,5 @@
 
 (defn print-take! [ch]
   (take! ch println))
+
+(def tx-sent? (comp d0x-shared-utils/sha3? second))

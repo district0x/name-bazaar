@@ -77,33 +77,36 @@
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
 
-(defn deploy-smart-contracts! [server-state-atom]
-  (let [ch (chan)]
+(defn deploy-smart-contracts! [server-state-atom & [deploy-opts]]
+  (let [ch (chan)
+        deploy-opts (merge default-deploy-opts deploy-opts)]
     (go
-      (<! (deploy-ens! server-state-atom default-deploy-opts))
-      (<! (deploy-registrar! server-state-atom default-deploy-opts))
+      (<! (deploy-ens! server-state-atom deploy-opts))
+      (<! (deploy-registrar! server-state-atom deploy-opts))
 
       (<! (ens/set-subnode-owner! @server-state-atom
                                   {:ens.record/label "eth"
                                    :ens.record/node ""
                                    :ens.record/owner (state/contract-address @server-state-atom :registrar)}))
 
-      (<! (deploy-offering-registry! server-state-atom default-deploy-opts))
-      (<! (deploy-offering-requests! server-state-atom default-deploy-opts))
-      (<! (deploy-offering-library! server-state-atom default-deploy-opts))
-      (<! (deploy-buy-now-library! server-state-atom default-deploy-opts))
-      (<! (deploy-auction-library! server-state-atom default-deploy-opts))
-      (<! (deploy-buy-now-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
-                                                                          (state/active-address @server-state-atom)}))
-      (<! (deploy-auction-factory! server-state-atom default-deploy-opts {:offering-factory/emergency-multisig
-                                                                          (state/active-address @server-state-atom)}))
+      (<! (deploy-offering-registry! server-state-atom deploy-opts))
+      (<! (deploy-offering-requests! server-state-atom deploy-opts))
+      (<! (deploy-offering-library! server-state-atom deploy-opts))
+      (<! (deploy-buy-now-library! server-state-atom deploy-opts))
+      (<! (deploy-auction-library! server-state-atom deploy-opts))
+      (<! (deploy-buy-now-factory! server-state-atom deploy-opts {:offering-factory/emergency-multisig
+                                                                  (state/active-address @server-state-atom)}))
+      (<! (deploy-auction-factory! server-state-atom deploy-opts {:offering-factory/emergency-multisig
+                                                                  (state/active-address @server-state-atom)}))
 
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-registry}))
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-requests}))
 
-      (d0x-effects/store-smart-contracts! (:smart-contracts @server-state-atom)
-                                          {:file-path (:contracts-file-path default-deploy-opts)
-                                           :namespace (:contracts-file-namespace default-deploy-opts)})
+
+      (when (:persist? deploy-opts)
+        (d0x-effects/store-smart-contracts! (:smart-contracts @server-state-atom)
+                                            {:file-path (:contracts-file-path deploy-opts)
+                                             :namespace (:contracts-file-namespace deploy-opts)}))
 
       (>! ch server-state-atom))
     ch))

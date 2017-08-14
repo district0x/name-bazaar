@@ -3,7 +3,7 @@
     [cljs-web3.async.eth :as web3-eth-async]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan put!]]
     [cljs.pprint :as pprint]
     [district0x.server.utils :as d0x-server-utils :refer [fetch-abi fetch-bin link-library]]
     [medley.core :as medley]
@@ -45,7 +45,7 @@
 
 (defn deploy-smart-contract! [server-state-atom {:keys [:contract-key :args :contracts-file-path
                                                         :contracts-file-namespace :from-index
-                                                        :persist? :library-placeholders]
+                                                        :library-placeholders]
                                                  :as opts}]
   (let [ch (chan)
         {:keys [:abi :bin]} (state/contract @server-state-atom contract-key)
@@ -66,33 +66,37 @@
                                                   opts)])))
             [_ Instance] (<! deploy-ch)
             address (aget Instance "address")]
-        (println "Contract" contract-key "deployed at:" address)
+        (when (:log-contract-calls? @server-state-atom)
+          (println "Contract" contract-key "deployed at:" address))
         (swap! server-state-atom update-in [:smart-contracts contract-key] merge {:address address
                                                                                   :instance Instance})
-        (when persist?
-          (store-smart-contracts! (:smart-contracts @server-state-atom)
-                                  {:file-path contracts-file-path
-                                   :namespace contracts-file-namespace}))
         (>! ch address)))
     ch))
 
-(defn create-web3! [server-state-atom {:keys [:port :url]}]
-  (let [web3 (web3/create-web3 Web3 (if url
-                                      url
-                                      (str "http://localhost:" port)))]
+(defn create-web3! [server-state-atom & [{:keys [:port :url]}]]
+  (let [web3
+        (if (or port url)
+          (web3/create-web3 Web3 (if url
+                                   url
+                                   (str "http://localhost:" port)))
+          (new Web3))]
     (swap! server-state-atom assoc :web3 web3)
     web3))
 
-(defn start-testrpc! [server-state-atom & [{:keys [:port] :as testrpc-opts}]]
+(defn start-testrpc! [server-state-atom & [{:keys [:port :web3] :as testrpc-opts}]]
   (let [ch (chan)]
-    (let [server (.server TestRPC testrpc-opts)]
-      (.listen server port (fn [err]
-                             (if err
-                               (println err)
-                               (go
-                                 (println "TestRPC started at port" port)
-                                 (>! ch (create-web3! server-state-atom {:port port}))))))
-      (swap! server-state-atom assoc :testrpc-server server))
+    (if port
+      (let [server (.server TestRPC testrpc-opts)]
+        (.listen server port (fn [err]
+                               (if err
+                                 (println err)
+                                 (do
+                                   (println "TestRPC started at port" port)
+                                   (put! ch server)))))
+        (swap! server-state-atom assoc :testrpc-server server))
+      (do
+        (.setProvider web3 (.provider TestRPC (clj->js testrpc-opts)))
+        (put! ch web3)))
     ch))
 
 (defn create-db! [server-state]
@@ -110,14 +114,15 @@
         (>! ch [err my-addresses])))
     ch))
 
-(defn logged-contract-call! [server-state-atom & [instance method :as args]]
+(defn logged-contract-call! [server-state & [instance method :as args]]
   (let [ch (chan)]
     (go
       (let [[err tx-hash] (<! (apply web3-eth-async/contract-call args))
-            [_ tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state-atom) tx-hash))]
+            [_ tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state) tx-hash))]
         (if err
           (println method err)
-          (println method (.toLocaleString (:gas-used tx-receipt))))
+          (when (:log-contract-calls? server-state)
+            (println method (.toLocaleString (:gas-used tx-receipt)))))
         (>! ch [err tx-hash])))
     ch))
 

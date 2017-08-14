@@ -47,17 +47,19 @@
 (set! js/Web3 Web3)
 
 (def total-accounts 7)
-(def port 6200)
+(def api-port 6200)
+(def testrpc-port 8549)
 
 (defn on-jsload []
-  (api-server/start! port))
+  (api-server/start! api-port))
 
 (defn -main [& _]
   (go
-    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts :port 8549}))
+    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts :port testrpc-port}))
+    (d0x-effects/create-web3! *server-state* {:port testrpc-port})
     (d0x-effects/create-db! *server-state*)
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-    (api-server/start! port)
+    (api-server/start! api-port)
     (<! (d0x-effects/load-my-addresses! *server-state*))))
 
 (set! *main-cli-fn* -main)
@@ -67,7 +69,7 @@
     (go
       (db-sync/stop-syncing!)
       (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
-      (<! (deploy-smart-contracts! server-state-atom))
+      (<! (deploy-smart-contracts! server-state-atom {:persist? true}))
       (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
       (d0x-effects/create-db! server-state-atom)
       (db-sync/start-syncing! @server-state-atom)

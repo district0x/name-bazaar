@@ -44,3 +44,6 @@
         (>! ch (<! (deed/owner server-state (:registrar.entry/deed entry))))))
     ch))
 
+(defn ens [server-state]
+  (web3-eth-async/contract-call (state/instance :registrar) :ens))
+
