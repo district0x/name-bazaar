@@ -19,43 +19,10 @@
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :routes constants/routes
-     :contract-method-configs constants/contract-method-configs
-     :form-configs constants/form-configs
-     :form-field->query-param constants/form-field->query-param
-     :route-handler->form-key constants/route-handler->form-key
 
      :offering-registry/offerings {}
      :offering-requests/requests {}
      :ens/records {}
 
-     :form.ens/set-owner {}
-     :form.buy-now-offering-factory/create-offering {}
-     :form.buy-now-offering/buy {}
-     :form.buy-now-offering/set-settings {}
-     :form.auction-offering-factory/create-offering {}
-     :form.auction-offering/bid {}
-     :form.auction-offering/finalize {}
-     :form.auction-offering/withdraw {}
-     :form.auction-offering/set-settings {}
-     :form.offering/reclaim-ownership {}
-     :form.offering-requests/add-request {}
-     :form.district0x-emails/set-email {}
-     :form.mock-registrar/register {}
-
      :search-results/offerings {}
-     :search-results/offering-requests {}
-
-     :search-form/search-offerings {:data {:offering/node-owner? true
-                                           :order-by [[:offering/created-on :desc]]}}
-
-     :search-form/search-offering-requests {:data {:order-by [[:offering-request/requesters-count :desc]]
-                                                   :offering-request/name ""}}
-
-     :search-form/home-page-search {:data {:offering/node-owner? true
-                                           :offering/name ""
-                                           :limit 4}}
-
-     :search-form/watched-names {:data {:watched-names/ens-records []
-                                        :watched-names/new-name ""}}
-
-     }))
+     :search-results/offering-requests {}}))

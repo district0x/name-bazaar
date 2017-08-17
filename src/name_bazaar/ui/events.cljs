@@ -16,13 +16,13 @@
     [day8.re-frame.async-flow-fx]
     [district0x.shared.big-number :as bn]
     [district0x.ui.debounce-fx]
-    [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx get-form-data]]
+    [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-ens-record parse-offering-requests-counts]]
-    [name-bazaar.ui.constants :as constants]
+    [name-bazaar.ui.constants :as constants :refer [default-gas-price]]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
@@ -36,9 +36,13 @@
   :buy-now-offering-factory/create-offering
   [interceptors (validate-first-arg (s/keys :req [:offering/name :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-data form-data
-                 :form-key :form.buy-now-offering-factory/create-offering}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :buy-now-offering
+                 :contract-method :create-offering
+                 :form-data form-data
+                 :tx-opts {:gas 700000 :gas-price default-gas-price}
+                 :args-order [:offering/name
+                              :offering/price]}]}))
 
 (reg-event-fx
   :auction-offering-factory/create-offering
@@ -48,49 +52,88 @@
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-data form-data
-                 :form-key :form.auction-offering-factory/create-offering}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :auction-offering-factory
+                 :contract-method :create-offering
+                 :form-data form-data
+                 :tx-opts {:gas 700000 :gas-price default-gas-price}
+                 :args-order [:offering/name
+                              :offering/price
+                              :auction-offering/end-time
+                              :auction-offering/extension-duration
+                              :auction-offering/min-bid-increase]
+                 :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]}))
 
 (reg-event-fx
   :buy-now-offering/buy
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.buy-now-offering/buy
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :buy-now-offering
+                 :contract-method :buy
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :tx-opts {:gas 100000
+                           :gas-price default-gas-price
+                           :value (:offering/price form-data)}
+                 :form-id (select-keys form-data [:offering/address])}]}))
 
 (reg-event-fx
   :buy-now-offering/set-settings
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.buy-now-offering/set-settings
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :buy-now-offering
+                 :contract-method :set-settings
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :args-order [:offering/price]
+                 :tx-opts {:gas 250000 :gas-price default-gas-price}
+                 :form-id (select-keys form-data [:offering/address])
+                 :wei-keys #{:offering/price}}]}))
 
 (reg-event-fx
   :auction-offering/bid
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/bid
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :auction-offering
+                 :contract-method :bid
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :tx-opts {:gas 70000
+                           :gas-price default-gas-price
+                           :value (:offering/price form-data)}
+                 :wei-keys #{:offering/price}
+                 :form-id (select-keys form-data [:offering/address])}]}))
 
 (reg-event-fx
   :auction-offering/finalize
-  [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price :auction-offering/transfer-price?]))]
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :auction-offering/transfer-price?]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/finalize
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :auction-offering
+                 :contract-method :finalize
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :args-order [:auction-offering/transfer-price?]
+                 :tx-opts {:gas 300000
+                           :gas-price default-gas-price
+                           :value (:offering/price form-data)}
+                 :form-id (select-keys form-data [:offering/address])}]}))
 
 (reg-event-fx
   :auction-offering/withdraw
-  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :auction-offering/bidder]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/withdraw
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :auction-offering
+                 :contract-method :withdraw
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :args-order [:auction-offering/bidder]
+                 :tx-opts {:gas 70000 :gas-price default-gas-price}
+                 :form-id (select-keys form-data [:offering/address])}]}))
 
 (reg-event-fx
   :auction-offering/set-settings
@@ -99,44 +142,71 @@
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/set-settings
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :auction-offering
+                 :contract-method :set-settings
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :args-order [:offering/price
+                              :auction-offering/end-time
+                              :auction-offering/extension-duration
+                              :auction-offering/min-bid-increase]
+                 :form-id (select-keys form-data [:offering/address])
+                 :tx-opts {:gas 1000000 :gas-price default-gas-price}
+                 :wei-keys #{:offering/price}}]}))
 
 
 (reg-event-fx
   :offering/reclaim-ownership
   [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.offering/reclaim-ownership
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :buy-now-offering
+                 :contract-method :reclaim-ownership
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :form-id (select-keys form-data [:offering/address])
+                 :tx-opts {:gas 200000 :gas-price default-gas-price}}]}))
 
 (reg-event-fx
   :ens/set-owner
-  [interceptors (validate-first-arg (s/keys :req [:ens.record/owner] :opt [:ens.record/name :ens.record/node]))]
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/owner]
+                                            :opt [:ens.record/name
+                                                  :ens.record/node]))]
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (cond-> form-data
                       (:ens.record/name form-data) (assoc :ens.record/node (namehash (:ens.record/name form-data))))]
-      {:dispatch [:district0x.form/submit
-                  {:form-key :form.ens/set-owner
-                   :form-data form-data}]})))
+      {:dispatch [:district0x/make-transaction
+                  {:contract-key :ens
+                   :contract-method :set-owner
+                   :form-data form-data
+                   :args-order [:ens.record/node :ens.record/owner]
+                   :form-id (select-keys form-data [:ens.record/node])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}}]})))
 
 (reg-event-fx
   :offering-requests/add-request
   [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.offering-requests/add-request
-                 :form-data form-data}]}))
+    {:dispatch [:district0x/make-transaction
+                {:contract-key :offering-requests
+                 :contract-method :add-request
+                 :form-data form-data
+                 :args-order [:ens.record/name]
+                 :form-id (select-keys form-data [:ens.record/name])
+                 :tx-opts {:gas 100000 :gas-price default-gas-price}}]}))
 
 (reg-event-fx
   :mock-registrar/register
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x.form/submit
-                {:form-key :form.mock-registrar/register
-                 :form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))}]}))
+    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
+      {:dispatch [:district0x/make-transaction
+                  {:contract-key :mock-registrar
+                   :contract-method :register
+                   :form-data form-data
+                   :args-order [:ens.record/label-hash]
+                   :tx-opts {:gas 700000 :gas-price default-gas-price}}]})))
 
 (reg-event-fx
   :search/offerings
@@ -156,13 +226,11 @@
     {:dispatch [:load-offerings offering-addresses load-opts]}))
 
 (reg-event-fx
-  :search/home-page-search
+  :search/offerings-debounced
   interceptors
   (fn [{:keys [:db]} [params]]
-    {:dispatch-debounce {:key :search/home-page-search
-                         :event [:search/offerings
-                                 {:search-params (merge (get-form-data db :search-form/home-page-search)
-                                                        params)}]
+    {:dispatch-debounce {:key :search/offerings-debounced
+                         :event [:search/offerings {:search-params params}]
                          :delay 300}}))
 
 (defn- auction-offering? [db offering-address]
@@ -322,7 +390,7 @@
   (fn [{:keys [:db]} [results]]
     (update db :ens/records merge #(hash-map (:node %) {:ens.record/last-offering (:last-offering %)}))))
 
-(reg-event-fx
+#_ (reg-event-fx
   :search/watched-names
   interceptors
   (fn [{:keys [:db]}]

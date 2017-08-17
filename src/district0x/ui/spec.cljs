@@ -54,17 +54,26 @@
 (s/def :transaction/value not-neg?)
 (s/def :transaction/gas-used not-neg?)
 (s/def :transaction/gas not-neg?)
+(s/def :transaction/gas-price not-neg?)
+
 (s/def :transaction/status (partial contains? #{:tx.status/pending :tx.status/not-loaded :tx.status/success
                                                 :tx.status/failure}))
 
-(s/def :transaction/sender address?)
+
+(s/def :transaction/from address?)
 (s/def :transaction/form-data :form/data)
-(s/def :transaction/form-key :form/key)
 (s/def :transaction/form-id :form/id)
-(s/def :transaction/tx-opts (s/map-of keyword? any?))
+(s/def :transaction/tx-opts (s/keys :opt-un [:transaction/from
+                                             :transaction/gas
+                                             :transaction/gas-price]))
 (s/def :transaction/created-on not-neg?)
-(s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/form-key
-                                                                     :transaction/form-data
+(s/def :transaction/args-order (s/coll-of :form/field))
+(s/def :transaction/wei-keys (s/coll-of :form/field :kind set?))
+(s/def :transaction/contract-key :contract/key)
+(s/def :transaction/contract-address :contract/address)
+
+
+(s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/form-data
                                                                      :transaction/tx-opts
                                                                      :transaction/hash
                                                                      :transaction/status]
@@ -75,11 +84,12 @@
                                                                       :transaction/value
                                                                       :transaction/created-on])))
 (s/def :db/transaction-ids-chronological (s/coll-of :transaction/hash :kind list?))
-(s/def :db/transaction-ids-by-form (s/map-of :form/key
-                                             (s/map-of :transaction/sender
-                                                       (s/or
-                                                         :with-form-id (s/map-of :form/id :db/transaction-ids-chronological)
-                                                         :without-form-id :db/transaction-ids-chronological))))
+(s/def :db/transaction-ids-by-form (s/map-of :contract/key
+                                             (s/map-of :contract/method
+                                                       (s/map-of :transaction/from
+                                                                 (s/or
+                                                                   :with-form-id (s/map-of :form/id :db/transaction-ids-chronological)
+                                                                   :without-form-id :db/transaction-ids-chronological)))))
 
 (s/def :transaction-log-settings/from-active-address-only? (s/nilable boolean?))
 (s/def :db/transaction-log-settings (s/keys :req-un [:transaction-log-settings/from-active-address-only?]))
@@ -96,36 +106,11 @@
                                            :search-results/loading?
                                            :search-results/total-count]))
 
-(s/def :contract-method-config/args-order (s/coll-of :form/field))
-(s/def :contract-method-config/wei-keys (s/coll-of :form/field :kind set?))
-(s/def :contract-method-config/contract-address-key keyword?)
-(s/def :contract-method-config/ether-value-key keyword?)
-
-(s/def :db/contract-method-configs (s/map-of :contract/method
-                                             (s/keys :opts-un [:contract-method-config/args-order
-                                                               :contract-method-config/wei-keys
-                                                               :contract-method-config/contract-address-key
-                                                               :contract-method-config/ether-value-key])))
-
-
-(s/def :form-config/default-data :form/data)
-(s/def :form-config/contract-method :contract/method)
-(s/def :form-config/form-id-keys :form/id-keys)
-
-(s/def :db/form-configs (s/map-of :form/key (s/keys :req-un [:form-config/contract-method
-                                                             :transaction/tx-opts]
-                                                    :opt-un [:form-config/form-id-keys
-                                                             :form-config/default-data])))
-
 (s/def :route.query-param/name string?)
 (s/def :route.query-param/parser fn?)
-(s/def :db/form-field->query-param (s/map-of :form/field (s/keys :req-un [:route.query-param/name]
-                                                                 :opt-un [:route.query-param/parser])))
-
-(s/def :db/route-handler->form-key (s/map-of :route/handler :form/key))
 
 (s/def :district0x-emails/email string?)
-(s/def :form.district0x-emails/set-email (s/merge :db/form (s/keys :opt [:district0x-emails/email])))
+(s/def :district0x-emails/address address?)
 
 (s/def :db/routes (some-fn vector? map?))
 
@@ -144,10 +129,6 @@
                                           :db/transaction-ids-chronological
                                           :db/transaction-ids-by-form
                                           :db/transaction-log-settings
-                                          :db/contract-method-configs
-                                          :db/form-configs
-                                          :db/form-field->query-param
-                                          :db/route-handler->form-key
                                           :db/routes]
                                  :opt-un [:db/active-page
                                           :db/menu-drawer

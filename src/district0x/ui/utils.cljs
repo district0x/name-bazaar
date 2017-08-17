@@ -62,15 +62,10 @@
               {k v})))
      (into {}))))
 
-(defn create-length-validator
-  ([max-length] (create-length-validator 0 max-length))
-  ([min-length max-length]
-   (if max-length
-     (fn [x]
-       (<= (or min-length 0)
-           (if (string? x) (count (string/trim x)) 0)
-           max-length))
-     (constantly true))))
+(defn valid-length?
+  ([s max-length] (valid-length? s max-length 0))
+  ([s max-length min-length]
+   (and (string? s) (<= (or min-length 0) (count (string/trim s)) max-length))))
 
 (defn pluralize [text count]
   (str text (when (not= count 1) "s")))
@@ -196,6 +191,11 @@
             js/Math.floor
             int
             (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
+
+(def default-data-source-config {"text" "text" "value" "value"})
+
+(defn map->data-source [coll key-key val-key]
+  (map #(hash-map "text" (get % val-key) "value" (get % key-key)) coll))
 
 
 

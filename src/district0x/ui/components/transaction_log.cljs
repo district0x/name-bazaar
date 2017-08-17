@@ -80,13 +80,13 @@
    (d0x-ui-utils/format-eth-with-code value)])
 
 (defn transaction-log-item-name [{:keys [:transaction :transaction-name-fn] :as props}]
-  (let [{:keys [:form-data :form-config]} transaction]
+  (let [{:keys [:form-data :contract-key :contract-method]} transaction]
     [:div
      (r/merge-props
        {:style tx-name-style}
        (dissoc props :transaction :transaction-name-fn))
      (when (fn? transaction-name-fn)
-       (transaction-name-fn (:contract-method form-config) form-data transaction))]))
+       (transaction-name-fn contract-key contract-method form-data transaction))]))
 
 (def transaction-statuses
   {:tx.status/success ["Completed" check-circle-icon]
@@ -104,18 +104,18 @@
      (icon {:style tx-status-icon-style})]))
 
 (defn gstring-transaction-name-fn [templates]
-  (fn [contract-method form-data]
-    (let [[gstring-template & form-data-keys] (templates contract-method)]
+  (fn [contract-key contract-method form-data]
+    (let [[gstring-template & form-data-keys] (templates (keyword contract-key contract-method))]
       (apply gstring/format gstring-template ((apply juxt form-data-keys) form-data)))))
 
 (defn on-item-click-routes-fn [config]
-  (fn [contract-method form-data]
-    (let [[route route-params-fn] (config contract-method)]
+  (fn [contract-key contract-method form-data]
+    (let [[route route-params-fn] (config (keyword contract-key contract-method))]
       (dispatch [:district0x.location/nav-to route (route-params-fn form-data)]))))
 
 (defn transaction-log-item [{:keys [:transaction :last? :container-props :border-bottom-style
                                     :transaction-name-fn :on-click]}]
-  (let [{:keys [:hash :form-config :form-data]} transaction]
+  (let [{:keys [:hash :form-data :contract-key :contract-method]} transaction]
     [ui/menu-item
      (r/merge-props
        {:style (when-not last?
@@ -124,7 +124,7 @@
         :on-touch-tap (fn [e]
                         (when-not (and (instance? js/HTMLAnchorElement (aget e "target"))
                                        (fn? on-click))
-                          (on-click (:contract-method form-config) form-data transaction)))}
+                          (on-click contract-key contract-method form-data transaction)))}
        container-props)
      [:div
       [transaction-log-item-name {:transaction transaction :transaction-name-fn transaction-name-fn}]

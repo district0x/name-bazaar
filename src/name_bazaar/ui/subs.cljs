@@ -10,7 +10,7 @@
     [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [reg-sub]]))
 
-(doseq [form-key (keys constants/form-configs)]
+#_ (doseq [form-key (keys constants/form-configs)]
   (d0x-ui-utils/reg-submit-form-sub
     form-key
     (fn [[form]]
@@ -31,22 +31,7 @@
   (fn [db]
     (:ens/records db)))
 
-(reg-sub
-  :search-form/home-page-search
-  (fn [db]
-    (:search-form/home-page-search db)))
-
-(reg-sub
-  :search-form/search-offering-requests
-  (fn [db]
-    (:search-form/search-offering-requests db)))
-
-(reg-sub
-  :search-form/search-offerings
-  (fn [db]
-    (:search-form/search-offerings db)))
-
-(reg-sub
+#_ (reg-sub
   :search-form/watched-names
   :<- [:district0x/db :search-form/watched-names]
   :<- [:ens/records]

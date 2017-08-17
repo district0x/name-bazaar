@@ -20,6 +20,7 @@
 (s/def :auction-offering/highest-bidder address?)
 (s/def :auction-offering/bid-count not-neg?)
 (s/def :auction-offering/transfer-price? boolean?)
+(s/def :auction-offering/bidder address?)
 
 (s/def :offering-registry/offering (s/keys :opt [:offering/node
                                                  :offering/name
@@ -102,45 +103,13 @@
 (s/def :search-params/offering-requests :search-form/search-offering-requests)
 (s/def :search-results/offering-requests (s/map-of :search-params/offering-requests :db/search-results))
 
-(s/def :form.ens/set-owner (s/map-of (s/keys :req [:ens.record/node]) :db/form))
-(s/def :form.buy-now-offering-factory/create-offering (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.buy-now-offering/buy (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.buy-now-offering/set-settings (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.auction-offering-factory/create-offering :db/form)
-(s/def :form.auction-offering/bid (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.auction-offering/finalize (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.auction-offering/withdraw (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.auction-offering/set-settings (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.offering/reclaim-ownership (s/map-of (s/keys :req [:offering/address]) :db/form))
-(s/def :form.offering-requests/add-request (s/map-of (s/keys :req [:offering-request/name]) :db/form))
-(s/def :form.mock-registrar/register :db/form)
-
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
                                              :offering-registry/offerings
                                              :offering-requests/requests
 
-                                             :form.ens/set-owner
-                                             :form.buy-now-offering-factory/create-offering
-                                             :form.buy-now-offering/buy
-                                             :form.buy-now-offering/set-settings
-                                             :form.auction-offering-factory/create-offering
-                                             :form.auction-offering/bid
-                                             :form.auction-offering/finalize
-                                             :form.auction-offering/withdraw
-                                             :form.auction-offering/set-settings
-                                             :form.offering/reclaim-ownership
-                                             :form.offering-requests/add-request
-                                             :form.mock-registrar/register
-                                             :form.district0x-emails/set-email
-
                                              :search-results/offerings
                                              :search-results/offering-requests
-
-                                             :search-form/search-offerings
-                                             :search-form/search-offering-requests
-                                             :search-form/home-page-search
-                                             :search-form/watched-names
 
                                              ])))

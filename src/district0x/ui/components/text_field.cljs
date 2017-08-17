@@ -1,7 +1,7 @@
 (ns district0x.ui.components.text-field
   (:require
     [district0x.shared.utils :as d0x-shared-utils :refer [http-url?]]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils :refer [valid-length?]]
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
@@ -63,58 +63,48 @@
       :floating-label-fixed (boolean (seq (str value)))}
      props)])
 
-(defn form-text-field [{:keys [:validator :form-key :field-key :value] :as props}]
-  [text-field
-   (r/merge-props
-     {:on-change #(dispatch [:form/set-value form-key field-key %2 validator])}
-     (dissoc props :validator :form-key :field-key))])
-
 (defn text-field-with-length []
   (fn [{:keys [:value :on-change :max-length :min-length :max-length-error-text
                :min-length-error-text] :as props}]
-    (let [validator (d0x-ui-utils/create-length-validator min-length max-length)
-          valid? (validator value)]
-      [form-text-field
-       (r/merge-props
-         {:validator validator
-          :error-text (when-not valid?
-                        (if (pos? min-length)
-                          (or min-length-error-text
-                              (gstring/format "Write between %s and %s characters" min-length max-length))
-                          (or max-length-error-text
-                              "Text is too long")))}
-         (dissoc props :min-length :max-length))])))
+    [text-field
+     (r/merge-props
+       {:error-text (when-not (valid-length? value max-length min-length)
+                      (if (pos? min-length)
+                        (or min-length-error-text
+                            (gstring/format "Write between %s and %s characters" min-length max-length))
+                        (or max-length-error-text
+                            "Text is too long")))
+        :on-change (fn [e value]
+                     (when (fn? on-change)
+                       (on-change e value (valid-length? value max-length min-length))))}
+       (dissoc props :min-length :max-length :max-length-error-text :min-length-error-text))]))
 
 (defn url-field []
-  (fn [{:keys [:value :on-change :max-length :allow-empty? :max-length-error-text
-               :url-error-text] :as props}]
-    (let [max-length-validator (d0x-ui-utils/create-length-validator max-length)]
-      [form-text-field
-       (r/merge-props
-         {:validator (every-pred #(http-url? % {:allow-empty? allow-empty?}) max-length-validator)
-          :error-text (if-not (max-length-validator value)
-                        (or max-length-error-text
-                            (gstring/format "URL must be shorter than %s characters" max-length))
-                        (when-not (http-url? value {:allow-empty? allow-empty?})
-                          (or url-error-text
-                              "Invalid URL")))}
-         (dissoc props :allow-empty? :max-length :max-length-error-text :url-error-text))])))
+  (fn [{:keys [:value :on-change :max-length :allow-empty? :max-length-error-text :url-error-text]
+        :as props}]
+    [text-field
+     (r/merge-props
+       {:error-text (if-not (valid-length? value max-length)
+                      (or max-length-error-text
+                          (gstring/format "URL must be shorter than %s characters" max-length))
+                      (when-not (http-url? value {:allow-empty? allow-empty?})
+                        (or url-error-text
+                            "Invalid URL")))
+        :on-change (fn [e value]
+                     (when (fn? on-change)
+                       (on-change e value (and (valid-length? value max-length)
+                                               (http-url? value {:allow-empty? allow-empty?})))))}
+       (dissoc props :allow-empty? :max-length :max-length-error-text :url-error-text))]))
 
-(defn ether-field [{:keys [:value :on-change :form-key :field-key :on-change :allow-empty?
-                           :only-positive? :value-error-text] :as props}]
+(defn ether-field [{:keys [:value :on-change :on-change :allow-empty?
+                           :value-error-text :only-positive?] :as props}]
   (let [validator (if only-positive? d0x-shared-utils/pos-ether-value? d0x-shared-utils/non-neg-ether-value?)]
     [text-field
      (r/merge-props
        {:on-change (fn [e value]
                      (if on-change
-                       (on-change e value)
-                       (dispatch [:form/set-value
-                                  form-key
-                                  field-key
-                                  value
-                                  #(validator % (select-keys props [:allow-empty?]))])))
+                       (on-change e value (validator value (select-keys props [:allow-empty?])))))
         :error-text (when-not (validator value (select-keys props [:allow-empty?]))
                       (or value-error-text "Invalid value"))}
-       (dissoc props :form-key :field-key :on-change :allow-empty? :only-positive?
-               :value-error-text))]))
+       (dissoc props :on-change :allow-empty? :only-positive? :value-error-text))]))
 

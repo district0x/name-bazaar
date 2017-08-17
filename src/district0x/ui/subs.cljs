@@ -168,7 +168,6 @@
   (fn [[transactions transaction-ids-chronological form-configs settings active-address]]
     (cond->> transaction-ids-chronological
       true (map transactions)
-      true (map #(assoc % :form-config (form-configs (:form-key %))))
       true (map #(update % :created-on from-long))
       (:from-active-address-only? settings) (filter #(= active-address (get-in % [:tx-opts :from]))))))
 
@@ -177,8 +176,8 @@
   :<- [:district0x/active-address]
   :<- [:district0x/transactions]
   :<- [:district0x/transaction-ids-by-form]
-  (fn [[active-address transactions transactions-by-form] [_ form-key form-id]]
-    (-> (get-in transactions-by-form [form-key active-address form-id])
+  (fn [[active-address transactions transactions-by-form] [_ contract-key contract-method form-id]]
+    (-> (get-in transactions-by-form (remove nil? [contract-key contract-method active-address form-id]))
       first
       transactions
       :block-hash
