@@ -10,21 +10,21 @@
     [name-bazaar.ui.pages.ens-record-detail-page]
     [name-bazaar.ui.pages.home-page]
     [name-bazaar.ui.pages.how-it-works-page]
-    [name-bazaar.ui.pages.my-offerings-page]
     [name-bazaar.ui.pages.my-settings-page]
     [name-bazaar.ui.pages.offering-create-page]
     [name-bazaar.ui.pages.offering-detail-page]
     [name-bazaar.ui.pages.offering-requests-search-page]
     [name-bazaar.ui.pages.offerings-search-page]
+    [name-bazaar.ui.pages.user-bids-page]
     [name-bazaar.ui.pages.user-offerings-page]
-    [name-bazaar.ui.pages.watched-ens-records-page]
+    [name-bazaar.ui.pages.user-purchases-page]
+    [name-bazaar.ui.pages.watched-names-page]
     [name-bazaar.ui.styles :as styles]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
 (defn main-panel []
-  (let [xs-width? (subscribe [:district0x/window-xs-width?])
-        active-page (subscribe [:district0x/active-page])]
+  (let [active-page (subscribe [:district0x/active-page])]
     (fn []
       (let [{:keys [:handler]} @active-page]
         [misc/main-panel

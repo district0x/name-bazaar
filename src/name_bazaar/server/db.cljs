@@ -124,7 +124,7 @@
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])]
 
     (db-all db
-            (cond-> {:select (concat select-fields [:b.bidder])
+            (cond-> {:select select-fields
                      :from [:offerings]
                      :offset offset
                      :limit limit}

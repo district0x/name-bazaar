@@ -17,7 +17,7 @@
     [district0x.shared.big-number :as bn]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance reg-empty-event-fx get-form-data]]
-    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db]]
+    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
@@ -34,7 +34,7 @@
 
 (reg-event-fx
   :buy-now-offering-factory/create-offering
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/name :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
                 {:form-data form-data
@@ -42,7 +42,11 @@
 
 (reg-event-fx
   :auction-offering-factory/create-offering
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/name
+                                                  :offering/price
+                                                  :auction-offering/end-time
+                                                  :auction-offering/extension-duration
+                                                  :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
                 {:form-data form-data
@@ -50,70 +54,89 @@
 
 (reg-event-fx
   :buy-now-offering/buy
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.buy-now-offering/buy}]}))
+                {:form-key :form.buy-now-offering/buy
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :buy-now-offering/set-settings
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.buy-now-offering/set-settings}]}))
+                {:form-key :form.buy-now-offering/set-settings
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :auction-offering/bid
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/bid}]}))
+                {:form-key :form.auction-offering/bid
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :auction-offering/finalize
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price :auction-offering/transfer-price?]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/finalize}]}))
+                {:form-key :form.auction-offering/finalize
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :auction-offering/withdraw
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/withdraw}]}))
+                {:form-key :form.auction-offering/withdraw
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :auction-offering/set-settings
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/price
+                                                  :auction-offering/end-time
+                                                  :auction-offering/extension-duration
+                                                  :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.auction-offering/set-settings}]}))
+                {:form-key :form.auction-offering/set-settings
+                 :form-data form-data}]}))
 
 
 (reg-event-fx
   :offering/reclaim-ownership
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.offering/reclaim-ownership}]}))
+                {:form-key :form.offering/reclaim-ownership
+                 :form-data form-data}]}))
 
 (reg-event-fx
   :ens/set-owner
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/owner] :opt [:ens.record/name :ens.record/node]))]
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (cond-> form-data
                       (:ens.record/name form-data) (assoc :ens.record/node (namehash (:ens.record/name form-data))))]
       {:dispatch [:district0x.form/submit
-                  {:form-data form-data
-                   :form-key :form.ens/set-owner}]})))
+                  {:form-key :form.ens/set-owner
+                   :form-data form-data}]})))
 
 (reg-event-fx
   :offering-requests/add-request
-  interceptors
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x.form/submit
-                {:form-key :form.offering-requests/add-request}]}))
+                {:form-key :form.offering-requests/add-request
+                 :form-data form-data}]}))
+
+(reg-event-fx
+  :mock-registrar/register
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
+  (fn [{:keys [:db]} [form-data]]
+    {:dispatch [:district0x.form/submit
+                {:form-key :form.mock-registrar/register
+                 :form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))}]}))
 
 (reg-event-fx
   :search/offerings

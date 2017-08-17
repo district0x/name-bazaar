@@ -40,6 +40,7 @@
      :form.offering/reclaim-ownership {}
      :form.offering-requests/add-request {}
      :form.district0x-emails/set-email {}
+     :form.mock-registrar/register {}
 
      :search-results/offerings {}
      :search-results/offering-requests {}

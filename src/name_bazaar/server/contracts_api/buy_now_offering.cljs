@@ -7,11 +7,11 @@
     [district0x.server.utils :as d0x-server-utils]
     [cljs-web3.async.eth :as web3-eth-async]))
 
-(defn buy! [server-state {:keys [:contract-address :value-ether] :as opts}]
+(defn buy! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth/contract-at (state/web3 server-state)
                                                        (:abi (state/contract server-state :buy-now-offering))
-                                                       contract-address)
+                                                       address)
                                  :buy
                                  (merge {:gas 300000
                                          :from (state/active-address server-state)

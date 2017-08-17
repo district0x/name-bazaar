@@ -12,7 +12,8 @@
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]
     [reagent.core :as r]
-    [bidi.bidi :as bidi]))
+    [bidi.bidi :as bidi]
+    [cljs-react-material-ui.reagent :as ui]))
 
 (defn color-emphasize [& args]
   (apply js/MaterialUIUtils.colorManipulator.emphasize args))
@@ -81,8 +82,12 @@
      :hours (js/Math.floor (mod (/ milis-difference 3600000) 24))
      :days (js/Math.floor (/ milis-difference 86400000))}))
 
-(defn etherscan-url [address]
-  (gstring/format "https://etherscan.io/address/%s" address))
+(defn etherscan-url [address & [{:keys [:type]
+                                 :or {type :address}}]]
+  (gstring/format "https://etherscan.io/%s/%s" (if (= type :address) "address" "tx") address))
+
+(defn etherscan-tx-url [tx-hash]
+  (etherscan-url tx-hash {:type :transaction}))
 
 (defn bool->yes|no [x]
   (if x "yes" "no"))
@@ -107,17 +112,17 @@
 
 (defn format-eth [x]
   (when x
-    (.toLocaleString x js/undefined #js {:maximumFractionDigits 3})))
+    (.toLocaleString x js/undefined #js {:maximumFractionDigits 2})))
 
 (defn to-locale-string [x max-fraction-digits]
   (when x
     (.toLocaleString x js/undefined #js {:maximumFractionDigits max-fraction-digits})))
 
-(defn format-eth-with-symbol [x]
+(defn format-eth-with-code [x]
   (when x
     (str (format-eth x) " ETH")))
 
-(defn format-dnt-with-symbol [x]
+(defn format-dnt-with-code [x]
   (when x
     (str (format-eth x) " DNT")))
 
@@ -137,7 +142,7 @@
   (boolean (aget js/window "web3")))
 
 (defn parse-props-children [props children]
-  (if (map? props)
+  (if (or (map? props) (nil? props))
     [props children]
     [nil (concat [props] children)]))
 
@@ -148,8 +153,8 @@
                  [component (r/merge-props default-props props)]
                  children)))))
 
-(defn current-component-mui-theme []
-  (aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme"))
+(defn current-component-mui-theme [& args]
+  (js->clj (apply aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme" args)))
 
 (defn reg-submit-form-sub [form-key f]
   (reg-sub
@@ -161,6 +166,36 @@
                  (if form-id (form form-id) form))
           form-configs]
          [query-id form-id]))))
+
+(defn create-icon [path]
+  (fn [props]
+    (r/as-element
+      [ui/svg-icon
+       (r/merge-props
+         {}
+         props)
+       (r/as-element
+         [:path {:d path}])])))
+
+(defn time-ago [time]
+  (when time
+    (let [units [{:name "second" :limit 60 :in-second 1}
+                 {:name "minute" :limit 3600 :in-second 60}
+                 {:name "hour" :limit 86400 :in-second 3600}
+                 {:name "day" :limit 604800 :in-second 86400}
+                 {:name "week" :limit 2629743 :in-second 604800}
+                 {:name "month" :limit 31556926 :in-second 2629743}
+                 {:name "year" :limit nil :in-second 31556926}]
+          diff (t/in-seconds (t/interval time (t/now)))]
+      (if (< diff 5)
+        "just now"
+        (let [unit (first (drop-while #(or (>= diff (:limit %))
+                                           (not (:limit %)))
+                                      units))]
+          (-> (/ diff (:in-second unit))
+            js/Math.floor
+            int
+            (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
 
 
 

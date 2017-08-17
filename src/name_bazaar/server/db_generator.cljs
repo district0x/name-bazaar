@@ -14,7 +14,7 @@
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
-    [name-bazaar.server.contracts-api.registrar :as registrar])
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
@@ -30,7 +30,7 @@
               label (nth labels address-index) #_(u/rand-str 5 {:lowercase-only? true})
               name (str label "." registrar/root-node)
               node (namehash name)
-              offering-type :auction-offering #_ (if (zero? (rand-int 2)) :buy-now-offering :auction-offering)
+              offering-type :auction-offering #_(if (zero? (rand-int 2)) :buy-now-offering :auction-offering)
               price (web3/to-wei (inc (rand-int 10)) :ether)
               buyer (state/my-address server-state (rand-int total-accounts))
               request-name (if (zero? (rand-int 2)) name (str (u/rand-str 1 {:lowercase-only? true})
@@ -63,14 +63,10 @@
                                      {:ens.record/label label :ens.record/owner offering}
                                      {:from owner}))
 
-            (when true #_ (zero? (rand-int 2))
+            (when true #_(zero? (rand-int 2))
               (if (= offering-type :buy-now-offering)
-                (buy-now-offering/buy! server-state {:contract-address offering
-                                                     :value price
-                                                     :from buyer})
-                (auction-offering/bid! server-state {:contract-address offering
-                                                     :value price
-                                                     :from buyer})))
+                (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
+                (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
 
             )))
       (>! ch true))

@@ -21,7 +21,7 @@
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
-    [name-bazaar.server.contracts-api.registrar :as registrar]
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
@@ -59,11 +59,11 @@
     (go
       (let [ss @*server-state*]
         (is (= (contract-address :ens) (second (<! (registrar/ens ss)))))
-        (is (= (contract-address :registrar) (second (<! (auction-offering-factory/registrar ss)))))
+        (is (= (contract-address :mock-registrar) (second (<! (auction-offering-factory/registrar ss)))))
         (is (= (contract-address :offering-registry) (second (<! (auction-offering-factory/offering-registry ss)))))
         (is (= (contract-address :offering-requests) (second (<! (auction-offering-factory/offering-requests ss)))))
 
-        (is (= (contract-address :registrar) (second (<! (buy-now-offering-factory/registrar ss)))))
+        (is (= (contract-address :mock-registrar) (second (<! (buy-now-offering-factory/registrar ss)))))
         (is (= (contract-address :offering-registry) (second (<! (buy-now-offering-factory/offering-registry ss)))))
         (is (= (contract-address :offering-requests) (second (<! (buy-now-offering-factory/offering-requests ss)))))
 

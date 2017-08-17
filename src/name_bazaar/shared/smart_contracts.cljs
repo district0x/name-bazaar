@@ -3,38 +3,41 @@
 (def smart-contracts 
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
-  :address "0xdbeed0aaa4982ce2bc246424bc8a37f9c0dde786"},
+  :address "0x170adc3e8e900ac0118e8795c08b48cc24ae7e0b"},
  :buy-now-offering-library
  {:name "BuyNowOfferingLibrary",
-  :address "0x130643ce0901fdb15d44e2f2f3e2e3b746180c6a"},
+  :address "0x43b21184e98dbf7d14141c971e6026e1b082095a"},
  :buy-now-offering-factory
  {:name "BuyNowOfferingFactory",
-  :address "0x6ad5456b089d38f53ba6219302d56987dfe407cc"},
+  :address "0xa381abb6137e1e3884512a455338c2d88c088464"},
  :registrar
- {:name "MockRegistrar",
-  :address "0x74c6b7b525d138fb97c7674569db956329f3a4ca"},
+ {:name "Registrar",
+  :address "0x542d337975c2f9b436621024df371244bd53a0af"},
  :buy-now-offering
  {:name "BuyNowOffering",
   :address "0x0000000000000000000000000000000000000000"},
  :auction-offering-library
  {:name "AuctionOfferingLibrary",
-  :address "0xb2860a7758fc0ef007720eee238e3befc6b161fd"},
+  :address "0x0de2de4d24cd9e40d3f74412c1abbf1ab96c8223"},
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :ens
- {:name "ENS", :address "0x6691f62646564519fa869de3ab1fd394630fef5f"},
+ {:name "ENS", :address "0x39fdfbea45ffddabe41a27f73fca6e5dbd625c7f"},
+ :mock-registrar
+ {:name "MockRegistrar",
+  :address "0x2a10e8d12ceb97096f60c4cc369eb2a050510eed"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0xc6aa8977fc240ab1d49de9aa6029f08e35eaa141"},
+  :address "0xf612ae3cd8a0fc207590d8212195e9c1a486038f"},
  :district0x-emails
  {:name "District0xEmails",
   :address "0x0000000000000000000000000000000000000000"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0x58ed27a464b6f1bc04d82d7c96f8c70e3b533e73"},
+  :address "0x38a60889eeaea7567331a2d173df0ad0fe629004"},
  :offering-library
  {:name "OfferingLibrary",
-  :address "0xbec294bec362e1cac1e4b881d9acdd62acfa821c"},
+  :address "0xd0de9eaa0a0b1b14fc963c244aeb79368c50bb90"},
  :auction-offering
  {:name "AuctionOffering",
   :address "0x0000000000000000000000000000000000000000"}})

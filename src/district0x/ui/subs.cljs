@@ -1,5 +1,6 @@
 (ns district0x.ui.subs
   (:require
+    [cljs-time.coerce :refer [from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -35,6 +36,11 @@
     (:active-page db)))
 
 (reg-sub
+  :district0x/transaction-log-settings
+  (fn [db _]
+    (:transaction-log-settings db)))
+
+(reg-sub
   :district0x/route-params
   :<- [:district0x/active-page]
   (fn [active-page]
@@ -54,6 +60,11 @@
   :district0x/balances
   (fn [db _]
     (:balances db)))
+
+(reg-sub
+  :district0x/menu-drawer-open?
+  (fn [db _]
+    (get-in db [:menu-drawer :open?])))
 
 (reg-sub
   :district0x/routes
@@ -152,10 +163,14 @@
   :<- [:district0x/transactions]
   :<- [:district0x/transaction-ids-chronological]
   :<- [:district0x/form-configs]
-  (fn [[transactions transaction-ids-chronological form-configs]]
-    (->> transaction-ids-chronological
-      (map transactions)
-      (map #(assoc % :form-config (form-configs (:form-key %)))))))
+  :<- [:district0x/transaction-log-settings]
+  :<- [:district0x/active-address]
+  (fn [[transactions transaction-ids-chronological form-configs settings active-address]]
+    (cond->> transaction-ids-chronological
+      true (map transactions)
+      true (map #(assoc % :form-config (form-configs (:form-key %))))
+      true (map #(update % :created-on from-long))
+      (:from-active-address-only? settings) (filter #(= active-address (get-in % [:tx-opts :from]))))))
 
 (reg-sub
   :district0x/tx-pending?

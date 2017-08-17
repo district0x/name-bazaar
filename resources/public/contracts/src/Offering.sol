@@ -38,8 +38,8 @@ contract Offering {
     }
 
     // Security method in case user transfers other name to this contract than it's supposed to be
-    function claimOwnership(bytes32 node, address _address) {
-        offering.claimOwnership(node, _address);
+    function claimOwnership(bytes32 node, bytes32 labelHash, address _address, bool doRegistrarTransfer) {
+        offering.claimOwnership(node, labelHash, _address, doRegistrarTransfer);
     }
 
     function setOfferingRegistry(address _offeringRegistry) {

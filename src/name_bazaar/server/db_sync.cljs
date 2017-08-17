@@ -12,7 +12,7 @@
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
     [clojure.string :as string]
-    [name-bazaar.server.contracts-api.registrar :as registrar])
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce event-filters (atom []))

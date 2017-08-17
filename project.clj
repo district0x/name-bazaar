@@ -44,7 +44,7 @@
 
   :npm {:dependencies [[cors "2.8.4"]
                        [eth-ens-namehash "2.0.0"]
-                       [ethereumjs-testrpc "3.0.3"]
+                       [ethereumjs-testrpc "4.0.1"]
                        [express "4.15.3"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]

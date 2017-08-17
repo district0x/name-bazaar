@@ -9,11 +9,11 @@
     [district0x.shared.big-number :as bn]
     [name-bazaar.shared.utils :refer [parse-auction-offering]]))
 
-(defn bid! [server-state {:keys [:contract-address :value-ether] :as opts}]
+(defn bid! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth-async/contract-at (state/web3 server-state)
                                                              (:abi (state/contract server-state :auction-offering))
-                                                             contract-address)
+                                                             address)
                                  :bid
                                  (merge {:gas 300000
                                          :from (state/active-address server-state)

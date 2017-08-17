@@ -86,7 +86,7 @@
 (defn start-testrpc! [server-state-atom & [{:keys [:port :web3] :as testrpc-opts}]]
   (let [ch (chan)]
     (if port
-      (let [server (.server TestRPC testrpc-opts)]
+      (let [server (.server TestRPC (clj->js (merge {:locked false} testrpc-opts)))]
         (.listen server port (fn [err]
                                (if err
                                  (println err)
@@ -95,7 +95,7 @@
                                    (put! ch server)))))
         (swap! server-state-atom assoc :testrpc-server server))
       (do
-        (.setProvider web3 (.provider TestRPC (clj->js testrpc-opts)))
+        (.setProvider web3 (.provider TestRPC (clj->js (merge {:locked false} testrpc-opts))))
         (put! ch web3)))
     ch))
 

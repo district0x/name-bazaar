@@ -1,5 +1,5 @@
 (ns name-bazaar.ui.styles
-  (:require [cljs-react-material-ui.core :refer [color get-mui-theme]]))
+  (:require [cljs-react-material-ui.core :refer [get-mui-theme]]))
 
 #_ (def primary1-color theme-green)
 #_ (def accent1-color theme-cyan)
@@ -18,6 +18,8 @@
                                #_ #_ :menu-item {:selected-text-color theme-cyan}
                                #_ #_ :snackbar {:background-color "rgba(0, 0, 0, 0.95)"
                                           :text-color theme-cyan}}))
+
+(def color cljs-react-material-ui.core/color)
 
 ;; --- GENERIC STYLES BEGNINNING ---
 

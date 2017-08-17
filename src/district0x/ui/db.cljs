@@ -4,7 +4,7 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3?]]
     [district0x.ui.utils :as d0x-ui-utils]
     [re-frame.core :refer [dispatch]]))
-\
+
 (def default-db
   {:web3 nil
    :contracts-not-found? false
@@ -26,6 +26,7 @@
    :blockchain-connection-error? false
    :conversion-rates {}
    :balances {}
+   :transaction-log-settings {:from-active-address-only? false}
    :transactions {}
    :transaction-ids-chronological '()
    :transaction-ids-by-form {}

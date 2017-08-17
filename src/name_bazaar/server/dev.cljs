@@ -27,7 +27,7 @@
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
-    [name-bazaar.server.contracts-api.registrar :as registrar]
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
@@ -53,9 +53,13 @@
 (defn on-jsload []
   (api-server/start! api-port))
 
+
+
+
 (defn -main [& _]
   (go
-    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts :port testrpc-port}))
+    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
+                                                    :port testrpc-port}))
     (d0x-effects/create-web3! *server-state* {:port testrpc-port})
     (d0x-effects/create-db! *server-state*)
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)

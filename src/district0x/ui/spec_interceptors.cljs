@@ -13,7 +13,10 @@
     :after (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects
                  {:keys [:db]} :effects :as context}]
              (when (and goog.DEBUG db (not (s/valid? spec db)))
-               (console :error "DB is invalid after event" (or untrimmed-event event) "\n" (s/explain-str spec db)))
+               (console :error "DB is invalid after event"
+                        (or untrimmed-event event) "\n"
+                        (subs (s/explain-str spec db) 0 1000))
+               (console :log db))
              context)))
 
 (defn validate-args [spec]
@@ -21,6 +24,14 @@
     :id :validate-args
     :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
               (if (s/valid? spec event)
+                context
+                (error-message event untrimmed-event spec)))))
+
+(defn validate-first-arg [spec]
+  (re-frame/->interceptor
+    :id :validate-args
+    :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
+              (if (s/valid? spec (first event))
                 context
                 (error-message event untrimmed-event spec)))))
 

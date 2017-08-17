@@ -27,7 +27,7 @@
 (defn deploy-registrar! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom
                                       (merge default-opts
-                                             {:contract-key :registrar
+                                             {:contract-key :mock-registrar
                                               :args [(state/contract-address @server-state-atom :ens)
                                                      (namehash "eth")]})))
 
@@ -61,7 +61,7 @@
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
                                                                                                     :buy-now-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :registrar)
+                                                                :args [(state/contract-address @server-state-atom :mock-registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
@@ -72,7 +72,7 @@
                                                                 :library-placeholders (select-keys library-placeholders
                                                                                                    [:offering-library
                                                                                                     :auction-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :registrar)
+                                                                :args [(state/contract-address @server-state-atom :mock-registrar)
                                                                        (state/contract-address @server-state-atom :offering-registry)
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
@@ -87,7 +87,7 @@
       (<! (ens/set-subnode-owner! @server-state-atom
                                   {:ens.record/label "eth"
                                    :ens.record/node ""
-                                   :ens.record/owner (state/contract-address @server-state-atom :registrar)}))
+                                   :ens.record/owner (state/contract-address @server-state-atom :mock-registrar)}))
 
       (<! (deploy-offering-registry! server-state-atom deploy-opts))
       (<! (deploy-offering-requests! server-state-atom deploy-opts))

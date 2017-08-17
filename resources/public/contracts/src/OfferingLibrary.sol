@@ -50,7 +50,7 @@ library OfferingLibrary {
         require(isEmergency || isSenderOriginalOwner(self));
 
         if (isContractNodeOwner(self)) {
-            self.registrar.transfer(self.node, self.originalOwner);
+            doTransferOwnership(self, self.originalOwner);
         }
         if (isEmergency) {
             // New owner is not really this address, but it's the way to recogize it
@@ -61,23 +61,37 @@ library OfferingLibrary {
     }
 
     // Security method in case user transfers other name to this contract than it's supposed to be
-    function claimOwnership(Offering storage self, bytes32 node, address _address) {
+    function claimOwnership(
+        Offering storage self,
+        bytes32 node,
+        bytes32 labelHash,
+        address _address,
+        bool doRegistrarTransfer
+    ) {
         require(isSenderEmergencyMultisig(self));
         require(self.node != node);
-        self.registrar.transfer(node, _address);
+        if (doRegistrarTransfer) {
+            self.registrar.transfer(self.labelHash, _address);
+        } else {
+            self.registrar.ens().setOwner(self.node, _address);
+        }
     }
 
     function transferOwnership(Offering storage self, address _newOwner, uint _price) {
         require(!wasEmergencyCancelled(self));
         require(!wasOwnershipTransferred(self));
         self.newOwner = _newOwner;
+        doTransferOwnership(self, _newOwner);
+        onTransfer(_newOwner, _price, now);
+        fireOnChanged(self);
+    }
+
+    function doTransferOwnership(Offering storage self, address _newOwner) {
         if (isNodeTLDOfRegistrar(self)) {
             self.registrar.transfer(self.labelHash, _newOwner);
         } else {
             self.registrar.ens().setOwner(self.node, _newOwner);
         }
-        onTransfer(_newOwner, _price, now);
-        fireOnChanged(self);
     }
 
     function fireOnChanged(Offering storage self) {

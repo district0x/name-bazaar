@@ -21,7 +21,7 @@
         connection-error? (subscribe [:district0x/blockchain-connection-error?])]
     (fn [props & children]
       (let [[{:keys [:inner-style :use-loader?] :as props} children] (parse-props-children props children)
-            {:strs [desktopGutter desktopGutterLess]} (js->clj (aget (current-component-mui-theme) "spacing"))
+            {:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
             gutter (if @xs-width? desktopGutterLess desktopGutter)]
         [ui/paper
          (dissoc props :loading? :inner-style :use-loader?)
@@ -43,11 +43,13 @@
          children)])
 
 (defn etherscan-link [props & children]
-  (let [[{:keys [:address] :as props} children] (parse-props-children props children)]
+  (let [[{:keys [:address :tx-hash] :as props} children] (parse-props-children props children)]
     [:a (r/merge-props
-          {:href (d0x-ui-utils/etherscan-url address)
+          {:href (cond
+                   address (d0x-ui-utils/etherscan-url address)
+                   tx-hash (d0x-ui-utils/etherscan-tx-url tx-hash))
            :target :_blank}
-          (dissoc props :address))
+          (dissoc props :address :tx-hash))
      (if children children address)]))
 
 (defn watch [{:keys [:value :call-on-mount?]
@@ -96,17 +98,91 @@
                              (set/rename-keys {:open? :open}))]])
          [:div "UI is disabled"])])))
 
-#_ (defn left-navigation-layout []
-  (let []
-    [:div {:style (merge styles/content-wrap
-                         (when @lg-width?
-                           {:padding-left (+ 256 styles/desktop-gutter)})
-                         (when @xs-width?
-                           (styles/padding-all styles/desktop-gutter-mini)))}
-     (if @contracts-not-found?
-       [contracts-not-found-page]
-       (if (or @active-setters?
-               (contains? #{:about :how-it-works} handler))
-         [page]
-         [setters-not-active-page]))]))
+(defn nav-menu-item []
+  (let [active-address (subscribe [:district0x/active-address])
+        routes (subscribe [:district0x/routes])]
+    (fn [{:keys [:route :route-params :with-active-address-only?] :as props} & children]
+      (into [ui/list-item
+             (r/merge-props
+               (merge {}
+                      (when (and with-active-address-only?
+                                 @active-address)
+                        {:style {:display :none}})
+                      (when route
+                        {:href (d0x-ui-utils/path-for
+                                 {:route route
+                                  :route-params route-params
+                                  :routes @routes})}))
+               (dissoc props :route :route-params :with-active-address-only?))]
+            children))))
+
+(defn side-nav-menu []
+  (let [lg? (subscribe [:district0x/window-lg-width?])
+        drawer-open? (subscribe [:district0x/menu-drawer-open?])
+        active-address (subscribe [:district0x/active-address])
+        routes (subscribe [:district0x/routes])]
+    (fn [{:keys [:app-bar-props :contrainer-props :drawer-props :list-props]} nav-menu-items & children]
+      [ui/drawer
+       (r/merge-props
+         {:docked @lg?
+          :open (or @drawer-open? @lg?)
+          :on-request-change #(dispatch [:district0x.menu-drawer/set %])}
+         drawer-props)
+       (into
+         [:div
+          (r/merge-props
+            {:style {:height "100%"
+                     :flex-direction "column"
+                     :display "flex"
+                     :justify-content "space-between"}}
+            contrainer-props)
+          [:div
+           [ui/app-bar
+            (r/merge-props
+              {:show-menu-icon-button false}
+              app-bar-props)]
+           (into
+             [ui/selectable-list
+              (r/merge-props
+                {:style {:padding-top 0}
+                 :on-change (fn [])}
+                list-props)]
+             nav-menu-items)]]
+         children)])))
+
+(defn main-app-bar []
+  (let [lg? (subscribe [:district0x/window-lg-width?])]
+    (fn [props]
+      [ui/app-bar
+       (r/merge-props
+         {:show-menu-icon-button (not @lg?)
+          :on-left-icon-button-touch-tap #(dispatch [:district0x.menu-drawer/set true])}
+         props)])))
+
+(defn side-nav-menu-layout []
+  (let [lg? (subscribe [:district0x/window-lg-width?])
+        xs? (subscribe [:district0x/window-xs-width?])]
+    (fn [drawer-menu main-app-bar & children]
+      (let [{:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
+            drawer-width (current-component-mui-theme "drawer" "width")]
+        [:div
+         drawer-menu
+         main-app-bar
+         (into [:div {:style (merge {:padding-top desktopGutter
+                                     :padding-bottom desktopGutter
+                                     :padding-right desktopGutter
+                                     :padding-left desktopGutter}
+                                    (when @lg?
+                                      {:padding-left (+ drawer-width desktopGutter)})
+                                    (when @xs?
+                                      {:padding-top desktopGutterLess
+                                       :padding-bottom desktopGutterLess
+                                       :padding-right desktopGutterLess
+                                       :padding-left desktopGutterLess}))}]
+               children)]))))
+
+
+
+
+
 
