@@ -31,9 +31,19 @@
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects
-                   {:async-flow {:first-dispatch [:district0x/load-smart-contracts
-                                                  {:version constants/contracts-version}]}}}])
+                   {:async-flow {:first-dispatch [:district0x/load-smart-contracts {:version constants/contracts-version}]
+                                 :rules [{:when :seen?
+                                          :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
+                                          :dispatch-n [[:district0x/watch-my-eth-balances]]}
+                                         {:when :seen?
+                                          :events [:district0x/smart-contracts-loaded]
+                                          :dispatch [:active-page-changed]}]}
+                    :forward-events {:register :active-page-changed
+                                     :events #{:district0x/set-active-page}
+                                     :dispatch-to [:active-page-changed]}}}])
   (set! (.-onhashchange js/window)
         #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
   (mount-root))
+
+
 

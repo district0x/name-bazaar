@@ -49,18 +49,27 @@
 (defn match-current-location [routes]
   (bidi/match-route routes (current-location-hash)))
 
+(defn assoc-order-by-search-param [{:keys [:search-params/order-by-columns :search-params/order-by-dirs]
+                                    :as search-params}]
+  (if (and order-by-columns order-by-dirs)
+    (-> search-params
+      (assoc :search-params/order-by (d0x-shared-utils/parse-order-by-search-params order-by-columns order-by-dirs))
+      (dissoc :search-params/order-by-columns :search-params/order-by-dirs))
+    search-params))
+
 (defn url-query-params->form-data
   ([form-field->query-param]
    (url-query-params->form-data (current-url) form-field->query-param))
-  ([url form-field->query-param]
-   (->> (:query url)
+  ([query-params form-field->query-param]
+   (->> query-params
      (medley/map-keys (set/map-invert (medley/map-vals :name form-field->query-param)))
      (medley/remove-keys nil?)
      (map (fn [[k v]]
             (if-let [parser (get-in form-field->query-param [k :parser])]
               {k (parser v)}
               {k v})))
-     (into {}))))
+     (into {})
+     assoc-order-by-search-param)))
 
 (defn valid-length?
   ([s max-length] (valid-length? s max-length 0))
@@ -69,13 +78,6 @@
 
 (defn pluralize [text count]
   (str text (when (not= count 1) "s")))
-
-(defn time-remaining [from-time to-time]
-  (let [milis-difference (- (to-long to-time) (to-long from-time))]
-    {:seconds (js/Math.floor (mod (/ milis-difference 1000) 60))
-     :minutes (js/Math.floor (mod (/ (/ milis-difference 1000) 60) 60))
-     :hours (js/Math.floor (mod (/ milis-difference 3600000) 24))
-     :days (js/Math.floor (/ milis-difference 86400000))}))
 
 (defn etherscan-url [address & [{:keys [:type]
                                  :or {type :address}}]]
@@ -120,6 +122,49 @@
 (defn format-dnt-with-code [x]
   (when x
     (str (format-eth x) " DNT")))
+
+(defn time-duration-units [milis]
+  {:seconds (js/Math.floor (mod (/ milis 1000) 60))
+   :minutes (js/Math.floor (mod (/ (/ milis 1000) 60) 60))
+   :hours (js/Math.floor (mod (/ milis 3600000) 24))
+   :days (js/Math.floor (/ milis 86400000))})
+
+(defn time-remaining [from-time to-time]
+  (let [milis-difference (- (to-long to-time) (to-long from-time))]
+    (time-duration-units milis-difference)))
+
+(defn time-biggest-unit [{:keys [:seconds :minutes :hours :days]}]
+  (cond
+    (pos? days) [:days days]
+    (pos? hours) [:hours hours]
+    (pos? minutes) [:minutes minutes]
+    :else [:seconds seconds]))
+
+(defn time-remaining-biggest-unit [from-time to-time]
+  (time-biggest-unit (time-remaining from-time to-time)))
+
+(def time-unit->text {:days "day" :hours "hour" :minutes "minute" :seconds "second"})
+
+(defn format-time-duration-unit [unit amount]
+  (str amount " " (pluralize (time-unit->text unit) amount)))
+
+(defn format-time-remaining-biggest-unit
+  ([to-time]
+   (format-time-remaining-biggest-unit (t/now) to-time))
+  ([from-time to-time]
+   (let [[unit amount] (time-remaining-biggest-unit from-time to-time)]
+     (format-time-duration-unit unit amount))))
+
+(defn format-time-duration-units [milis]
+  (let [{:keys [:seconds :minutes :hours :days]} (time-duration-units milis)]
+    (reduce (fn [acc [unit amount]]
+              (if (or (pos? amount)
+                      (= unit :seconds))
+                (str acc (format-time-duration-unit unit amount) " ")
+                acc))
+            ""
+            ;; To ensure proper order
+            [[:days days] [:hours hours] [:minutes minutes] [:seconds seconds]])))
 
 (defn truncate
   "Truncate a string with suffix (ellipsis by default) if it is
@@ -196,6 +241,28 @@
 
 (defn map->data-source [coll key-key val-key]
   (map #(hash-map "text" (get % val-key) "value" (get % key-key)) coll))
+
+(defn parse-boolean-string [s]
+  (when (string? s)
+    (condp = (string/lower-case s)
+      "true" true
+      "false" false
+      nil)))
+
+(defn parse-int-or-nil [x]
+  (let [x (js/parseInt x)]
+    (when-not (js/isNaN x)
+      x)))
+
+(defn parse-float-or-nil [x]
+  (let [x (js/parseFloat (d0x-shared-utils/replace-comma x))]
+    (when-not (js/isNaN x)
+      x)))
+
+(defn parse-kw-coll-query-params [x]
+  (mapv keyword (d0x-shared-utils/collify x)))
+
+
 
 
 

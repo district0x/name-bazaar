@@ -61,6 +61,10 @@ contract AuctionOffering is Offering {
         auctionOffering.reclaimOwnership(offering);
     }
 
+    function pendingReturns(address bidder) constant returns (uint) {
+        return AuctionOfferingLibrary.pendingReturns(auctionOffering, bidder);
+    }
+
     function() payable {
         bid();
     }

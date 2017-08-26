@@ -41,7 +41,7 @@
   (let [ch (chan)]
     (go
       (let [[err entry] (<! (entry server-state args))]
-        (>! ch (<! (deed/owner server-state (:registrar.entry/deed entry))))))
+        (>! ch (<! (deed/owner server-state (:registrar.entry.deed/address entry))))))
     ch))
 
 (defn ens [server-state]

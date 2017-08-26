@@ -49,7 +49,7 @@
       (<! (stop!))
       (setup-app!)
       (reset! *server* (.listen @*app* port (fn []
-                                              (.log js/console "Server started at port" port)))))))
+                                              (println "Server started at port" port)))))))
 
 
 
@@ -83,8 +83,7 @@
 
 (defn parse-order-by [{:keys [:order-by-columns :order-by-dirs] :as query}]
   (-> query
-    (assoc :order-by (into [] (zipmap (d0x-shared-utils/collify order-by-columns)
-                                      (d0x-shared-utils/collify order-by-dirs))))
+    (assoc :order-by (d0x-shared-utils/parse-order-by-search-params order-by-columns order-by-dirs))
     (dissoc :order-by-columns :order-by-dirs)))
 
 (def sanitize-query (comp restrict-limit

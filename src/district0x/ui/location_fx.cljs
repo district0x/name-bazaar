@@ -20,13 +20,17 @@
 (defn set-location-query! [query-params]
   (set-location-hash!
     (str "#" (d0x-ui-utils/current-location-hash)
-         (when-let [query (url/map->query query-params)]
-           (str "?" query)))))
+         (cond
+           (map? query-params) (when-let [query (url/map->query query-params)]
+                                 (str "?" query))
+           (string? query-params) (when (seq query-params)
+                                    (str "?" query-params))))))
 
 (defn add-to-location-query! [query-params]
   (let [current-query (:query (d0x-ui-utils/current-url))
         new-query (merge current-query (->> query-params
-                                         (medley/remove-keys nil?)))]
+                                         (medley/remove-keys nil?)
+                                         (medley/map-keys name)))]
     (set-location-query! new-query)))
 
 (reg-fx

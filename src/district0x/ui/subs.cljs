@@ -7,7 +7,8 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [re-frame.core :refer [reg-sub]]))
+    [re-frame.core :refer [reg-sub]]
+    [cemerick.url :as url]))
 
 (reg-sub
   :district0x/db
@@ -45,6 +46,24 @@
   :<- [:district0x/active-page]
   (fn [active-page]
     (:route-params active-page)))
+
+(reg-sub
+  :district0x/query-params
+  :<- [:district0x/active-page]
+  (fn [active-page]
+    (:query-params active-page)))
+
+(reg-sub
+  :district0x/parsed-query-params
+  :<- [:district0x/query-params]
+  (fn [query-params [_ parsers]]
+    ))
+
+(reg-sub
+  :district0x/query-string
+  :<- [:district0x/query-params]
+  (fn [query-params]
+    (url/map->query query-params)))
 
 (reg-sub
   :district0x/conversion-rates

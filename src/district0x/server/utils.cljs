@@ -52,15 +52,6 @@
 (defn ensure-sha3 [label hash]
   (if label (sha3 name) hash))
 
-(defn rand-str [n & [{:keys [:lowercase-only?]}]]
-  (let [chars-between #(map char (range (.charCodeAt %1) (inc (.charCodeAt %2))))
-        chars (concat (when-not lowercase-only? (chars-between \0 \9))
-                      (chars-between \a \z)
-                      (when-not lowercase-only? (chars-between \A \Z))
-                      (when-not lowercase-only? [\_]))
-        password (take n (repeatedly #(rand-nth chars)))]
-    (reduce str password)))
-
 (defn chan? [x]
   (instance? cljs.core.async.impl.channels/ManyToManyChannel x))
 

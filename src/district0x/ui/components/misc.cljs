@@ -71,17 +71,15 @@
       :allowFullScreen true}
      props)])
 
-(defn a []
-  (let [routes (subscribe [:district0x/routes])]
-    (fn [{:keys [:route-params :route] :as props} body]
-      [:a
-       (r/merge-props
-         {:href (when-not (some nil? (vals route-params))
-                  (d0x-ui-utils/path-for {:route route
-                                          :route-params route-params
-                                          :routes @routes}))
-          :on-click #(.stopPropagation %)}
-         (dissoc props :route-params :route)) body])))
+(defn a [{:keys [:route-params :route :routes] :as props} body]
+  [:a
+   (r/merge-props
+     {:href (when-not (some nil? (vals route-params))
+              (d0x-ui-utils/path-for {:route route
+                                      :route-params route-params
+                                      :routes routes}))
+      :on-click #(.stopPropagation %)}
+     (dissoc props :route-params :route :routes)) body])
 
 (defn main-panel []
   (let [snackbar (subscribe [:district0x/snackbar])

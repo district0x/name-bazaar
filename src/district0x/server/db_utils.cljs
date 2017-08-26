@@ -6,7 +6,8 @@
     [cljs.spec.alpha :as s]
     [district0x.server.utils :as d0x-server-utils]
     [honeysql.core :as sql]
-    [medley.core :as medley])
+    [medley.core :as medley]
+    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn log-error [err]
@@ -39,7 +40,7 @@
                                                    (-> res
                                                      (js->clj :keywordize-keys true)
                                                      (->> (transform-keys cs/->kebab-case-keyword)))
-                                                   false))))
+                                                    false))))
     port))
 
 (defn db-all [db sql-map & [{:keys [:port :total-count?]
@@ -66,7 +67,7 @@
     result-ch))
 
 (defn keyword->sql-col [kw]
-  (keyword (name kw)))
+  (keyword (string/replace (name kw) "?" "")))
 
 (defn keywords->sql-cols [kws]
   (map keyword->sql-col kws))

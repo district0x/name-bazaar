@@ -5,8 +5,10 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [create-icon]]
     [goog.string :as gstring]
     [goog.string.format]
+    [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [district0x.shared.utils :as d0x-shared-utils]))
 
 (def bell-icon (create-icon "M14,20A2,2 0 0,1 12,22A2,2 0 0,1 10,20H14M12,2A1,1 0 0,1 13,3V4.08C15.84,4.56 18,7.03 18,10V16L21,19H3L6,16V10C6,7.03 8.16,4.56 11,4.08V3A1,1 0 0,1 12,2Z"))
 (def check-circle-icon (create-icon "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"))
@@ -15,7 +17,7 @@
 
 (def tx-value-style {:line-height "18px" :font-size "18px"})
 (def no-txs-row-style {:text-align "center" :width "100%" :font-size "12px" :color "#333" :height 300})
-(def icon-menu-style {:width 320 :padding-left 0})
+(def icon-menu-style {:padding-left 0})
 (def icon-menu-list-style {:padding-top 10 :padding-left 0})
 (def tx-info-line-style {:line-height "14px" :font-size "11.5px" :color "#333"})
 (def tx-info-link-style {:text-decoration :underline})
@@ -27,12 +29,12 @@
 (def tx-item-border-bottom-style {:border-bottom "0.5px solid #eee"})
 (def tx-items-container-style {:margin-top 10 :min-height 300})
 
-(defn transaction-log-title [props]
+(defn main-title [props]
   [:div
    (r/merge-props {:style title-style} props)
    "TRANSACTION LOG"])
 
-(defn transaction-log-settings []
+(defn settings []
   (let [settings (subscribe [:district0x/transaction-log-settings])]
     (fn [{:keys [:container-props :from-active-address-only-toggle-props]}]
       (let [{:keys [:from-active-address-only?]} @settings]
@@ -49,44 +51,43 @@
              :toggled from-active-address-only?}
             from-active-address-only-toggle-props)]]))))
 
-(defn transaction-log-item-time-ago-line [{{:keys [:created-on]} :transaction}]
+(defn transaction-time-ago [{{:keys [:created-on]} :transaction}]
   [:div {:style tx-info-line-style}
    "Sent " (d0x-ui-utils/time-ago created-on)])
 
-(defn transaction-log-item-gas [{{:keys [:status :gas :gas-used :gas-used-cost]} :transaction}]
+(defn transaction-gas [{{:keys [:status :gas :gas-used :gas-used-cost]} :transaction}]
   [:div
    {:style tx-info-line-style}
    (if (contains? #{:tx.status/success :tx.status/failure} status)
-     (str "Gas used: " gas-used (when gas-used-cost "($" gas-used-cost ")"))
+     (str "Gas used: " (d0x-ui-utils/to-locale-string gas-used 0) (when gas-used-cost "($" gas-used-cost ")"))
      (str "Gas limit: " gas))])
 
-(defn transaction-log-item-from [{{:keys [:tx-opts]} :transaction}]
+(defn transaction-from [{{:keys [:tx-opts]} :transaction}]
   [:div {:style tx-info-line-style}
    "From: " [d0x-misc/etherscan-link
              {:address (:from tx-opts)
               :style tx-info-link-style}
              (d0x-ui-utils/truncate (:from tx-opts) 20)]])
 
-(defn transaction-log-item-tx-id [{{:keys [:hash]} :transaction}]
+(defn transaction-id [{{:keys [:hash]} :transaction}]
   [:div {:style tx-info-line-style}
    "Tx ID: " [d0x-misc/etherscan-link
               {:tx-hash hash
                :style tx-info-link-style}
               (d0x-ui-utils/truncate hash 20)]])
 
-(defn transaction-log-item-value [{{:keys [:value]} :transaction}]
+(defn transaction-value [{{:keys [:value]} :transaction}]
   [:div
    {:style tx-value-style}
-   (d0x-ui-utils/format-eth-with-code value)])
+   (d0x-ui-utils/format-eth-with-code (d0x-shared-utils/wei->eth value))])
 
-(defn transaction-log-item-name [{:keys [:transaction :transaction-name-fn] :as props}]
-  (let [{:keys [:form-data :contract-key :contract-method]} transaction]
+(defn transaction-name [{:keys [:transaction] :as props}]
+  (let [{:keys [:form-data :contract-key :contract-method :name]} transaction]
     [:div
      (r/merge-props
        {:style tx-name-style}
-       (dissoc props :transaction :transaction-name-fn))
-     (when (fn? transaction-name-fn)
-       (transaction-name-fn contract-key contract-method form-data transaction))]))
+       (dissoc props :transaction))
+     name]))
 
 (def transaction-statuses
   {:tx.status/success ["Completed" check-circle-icon]
@@ -94,7 +95,7 @@
    :tx.status/pending ["Pending" timer-icon]
    :tx.status/not-loaded ["Loading" timer-icon]})
 
-(defn transaction-log-item-status [{{:keys [:status]} :transaction}]
+(defn transaction-status [{{:keys [:status]} :transaction}]
   (let [[status-text icon] (transaction-statuses status)]
     [row
      {:middle "xs"
@@ -103,38 +104,27 @@
      status-text
      (icon {:style tx-status-icon-style})]))
 
-(defn gstring-transaction-name-fn [templates]
-  (fn [contract-key contract-method form-data]
-    (let [[gstring-template & form-data-keys] (templates (keyword contract-key contract-method))]
-      (apply gstring/format gstring-template ((apply juxt form-data-keys) form-data)))))
-
-(defn on-item-click-routes-fn [config]
-  (fn [contract-key contract-method form-data]
-    (let [[route route-params-fn] (config (keyword contract-key contract-method))]
-      (dispatch [:district0x.location/nav-to route (route-params-fn form-data)]))))
-
-(defn transaction-log-item [{:keys [:transaction :last? :container-props :border-bottom-style
-                                    :transaction-name-fn :on-click]}]
-  (let [{:keys [:hash :form-data :contract-key :contract-method]} transaction]
+(defn transaction [{:keys [:transaction :last? :container-props :border-bottom-style]}]
+  (let [{:keys [:hash :form-data :contract-key :contract-method :result-href]} transaction]
     [ui/menu-item
      (r/merge-props
        {:style (when-not last?
                  (or tx-item-border-bottom-style border-bottom-style))
         :inner-div-style {:padding 10}
-        :on-touch-tap (fn [e]
-                        (when-not (and (instance? js/HTMLAnchorElement (aget e "target"))
-                                       (fn? on-click))
-                          (on-click contract-key contract-method form-data transaction)))}
+        :on-click (fn [e]
+                    (when-not (and (instance? js/HTMLAnchorElement (aget e "target"))
+                                   result-href)
+                      (set! (.-hash js/location) result-href)))}
        container-props)
      [:div
-      [transaction-log-item-name {:transaction transaction :transaction-name-fn transaction-name-fn}]
+      [transaction-name {:transaction transaction}]
       [row-with-cols
        [col
         {:xs 8}
-        [transaction-log-item-time-ago-line {:transaction transaction}]
-        [transaction-log-item-gas {:transaction transaction}]
-        [transaction-log-item-from {:transaction transaction}]
-        [transaction-log-item-tx-id {:transaction transaction}]]
+        [transaction-time-ago {:transaction transaction}]
+        [transaction-gas {:transaction transaction}]
+        [transaction-from {:transaction transaction}]
+        [transaction-id {:transaction transaction}]]
        [col
         {:xs 4
          :style {:text-align :right}}
@@ -143,21 +133,20 @@
           :bottom "xs"
           :style {:height "100%"}}
          [:div
-          [transaction-log-item-status {:transaction transaction}]
-          [transaction-log-item-value {:transaction transaction}]]]
+          [transaction-status {:transaction transaction}]
+          [transaction-value {:transaction transaction}]]]
         ]]]]))
 
-(defn transaction-log-no-items []
+(defn no-transactions []
   [row
    {:middle "xs"
     :center "xs"
     :style no-txs-row-style}
    "You haven't made any transactions yet."])
 
-(defn transaction-log-items []
+(defn transactions []
   (let [tx-log (subscribe [:district0x/transaction-log])]
-    (fn [{:keys [:transaction-name-fn :on-item-click :container-props] :as props}]
-      (print.foo/look @tx-log)
+    (fn [{:keys [:container-props] :as props}]
       (let [tx-log-items @tx-log]
         [:div
          (r/merge-props
@@ -165,13 +154,11 @@
            container-props)
          (if (seq tx-log-items)
            (for [{:keys [:hash] :as tx} tx-log-items]
-             [transaction-log-item
+             [transaction
               {:key hash
                :transaction tx
-               :transaction-name-fn transaction-name-fn
-               :on-click on-item-click
                :last? (= hash (:hash (last tx-log-items)))}])
-           [transaction-log-no-items])]))))
+           [no-transactions])]))))
 
 (defn transaction-log-layout [props & children]
   (let [[props [tx-log-title tx-log-settings tx-log-items]] (d0x-ui-utils/parse-props-children props children)]
@@ -189,8 +176,11 @@
      tx-log-items]))
 
 (defn transaction-log [props]
-  [transaction-log-layout
-   (:layout-props props)
-   [transaction-log-title (:title-props props)]
-   [transaction-log-settings (:settings-props props)]
-   [transaction-log-items (:items-props props)]])
+  (let [active-address (subscribe [:district0x/active-address])]
+    (fn []
+      (when @active-address
+        [transaction-log-layout
+         (:icon-menu-props props)
+         [main-title (:title-props props)]
+         [settings (:settings-props props)]
+         [transactions (:items-props props)]]))))

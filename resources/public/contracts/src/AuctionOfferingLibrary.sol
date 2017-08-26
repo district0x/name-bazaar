@@ -35,15 +35,15 @@ library AuctionOfferingLibrary {
     ) {
         require(now < self.endTime);
         require(msg.sender != self.winningBidder);
-        require(offering.isContractNodeOwner());
+//        require(offering.isContractNodeOwner());
 
         uint bidValue = self.pendingReturns[msg.sender].add(msg.value);
         self.pendingReturns[msg.sender] = 0;
 
         if (self.winningBidder == 0x0) {
-            require(bidValue >= offering.price);
+//            require(bidValue >= offering.price);
         } else {
-            require(bidValue >= offering.price.add(self.minBidIncrease));
+//            require(bidValue >= offering.price.add(self.minBidIncrease));
             self.pendingReturns[self.winningBidder] = self.pendingReturns[self.winningBidder].add(offering.price);
         }
 
@@ -55,8 +55,8 @@ library AuctionOfferingLibrary {
             self.endTime = now.add(self.extensionDuration);
         }
 
-        offering.fireOnChanged();
-        offering.offeringRegistry.fireOnOfferingBid(offering.version, msg.sender, offering.price);
+//        offering.fireOnChanged();
+//        offering.offeringRegistry.fireOnOfferingBid(offering.version, msg.sender, offering.price);
     }
 
     function withdraw(
@@ -125,6 +125,10 @@ library AuctionOfferingLibrary {
 
     function hasNoBids(AuctionOffering storage self) returns(bool) {
         return self.winningBidder == 0x0;
+    }
+
+    function pendingReturns(AuctionOffering storage self, address bidder) returns (uint) {
+        return self.pendingReturns[bidder];
     }
 }
 

@@ -46,15 +46,13 @@
 (def Web3 (nodejs/require "web3"))
 (set! js/Web3 Web3)
 
-(def total-accounts 7)
+(def total-accounts 6)
 (def api-port 6200)
 (def testrpc-port 8549)
 
 (defn on-jsload []
-  (api-server/start! api-port))
-
-
-
+  (api-server/start! api-port)
+  (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
 
 (defn -main [& _]
   (go

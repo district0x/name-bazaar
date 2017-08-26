@@ -33,7 +33,7 @@
     :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
               (if (and goog.DEBUG (s/valid? spec (first event)))
                 context
-                (error-message event untrimmed-event spec)))))
+                (error-message (first event) untrimmed-event spec)))))
 
 (defn conform-args [spec]
   (re-frame/->interceptor

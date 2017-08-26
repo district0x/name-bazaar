@@ -21,10 +21,20 @@
 
 (def wei->eth->num (comp js/parseFloat bn/->number wei->eth))
 
+(defn replace-comma [x]
+  (and (string? x) (string/replace x \, \.)))
+
 (defn eth->wei [x]
-  (web3/to-wei x :ether))
+  (web3/to-wei (if (string? x) (replace-comma x) x) :ether))
 
 (def eth->wei->num (comp js/parseInt eth->wei))
+
+(defn safe-eth->wei->num [x]
+  (when-not (empty? x)
+    (try
+      (eth->wei x)
+      (catch :default e
+        nil))))
 
 (def big-num->ether (comp bn/->number wei->eth))
 
@@ -43,9 +53,6 @@
 
 (defn empty-string? [x]
   (and (string? x) (empty? x)))
-
-(defn replace-comma [x]
-  (string/replace x \, \.))
 
 (defn parse-float [number]
   (if (string? number)
@@ -79,15 +86,12 @@
 
 (def non-neg-or-empty-ether-value? #(non-neg-ether-value? % {:allow-empty? true}))
 
-(defn num->wei [value]
-  (web3/to-wei (if (string? value) (replace-comma value) value) :ether))
-
 (defn eth-props->wei-props [args wei-keys]
   (medley/map-kv (fn [key value]
                    (if (contains? wei-keys key)
                      [key (if (sequential? value)
-                            (map num->wei value)
-                            (num->wei value))]
+                            (map eth->wei value)
+                            (eth->wei value))]
                      [key value]))
                  args))
 
@@ -150,3 +154,35 @@
     "Merge multiple nested maps."
     [& args]
     (reduce merge-in* nil args)))
+
+(defn parse-order-by-search-params [order-by-columns order-by-dirs]
+  (map vec (partition-all 2 (interleave (or order-by-columns []) (or order-by-dirs [])))))
+
+(defn split-order-by-search-params [order-by]
+  (let [order-by (or order-by [[]])]
+    (map vec (split-at (count order-by) (map name (apply interleave order-by))))))
+
+(defn apply-parsers [m parsers]
+  (medley/map-kv (fn [k v]
+                   (if-let [parser (get parsers k)]
+                     [k (parser v)]
+                     [k v]))
+                 m))
+
+(defn sort-by-desc [key-fn coll]
+  (sort-by key-fn #(compare %2 %1) coll))
+
+(defn sort-desc [coll]
+  (sort #(compare %2 %1) coll))
+
+(defn rand-str [n & [{:keys [:lowercase-only?]}]]
+  (let [chars-between #(map char (range (.charCodeAt %1) (inc (.charCodeAt %2))))
+        chars (concat (when-not lowercase-only? (chars-between \0 \9))
+                      (chars-between \a \z)
+                      (when-not lowercase-only? (chars-between \A \Z))
+                      (when-not lowercase-only? [\_]))
+        password (take n (repeatedly #(rand-nth chars)))]
+    (reduce str password)))
+
+(defn rand-nth-except [exception coll]
+  (first (shuffle (remove (partial = exception) coll))))

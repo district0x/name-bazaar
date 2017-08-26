@@ -1,25 +1,28 @@
 (ns name-bazaar.ui.styles
   (:require [cljs-react-material-ui.core :refer [get-mui-theme]]))
 
-#_ (def primary1-color theme-green)
-#_ (def accent1-color theme-cyan)
-#_ (def text-color "rgba(0, 0, 0, 0.87)")
+(def color cljs-react-material-ui.core/color)
 
-(def palette {#_ #_ :primary1-color primary1-color
-              #_ #_ :accent1-color accent1-color
-              #_ #_ :text-color theme-blue})
+(def primary1-color (color :cyan500))
+#_(def accent1-color theme-cyan)
+#_(def text-color "rgba(0, 0, 0, 0.87)")
+
+(def palette {:primary1-color primary1-color
+              #_#_:accent1-color accent1-color
+              #_#_:text-color theme-blue})
 
 (def mui-theme (get-mui-theme {:palette palette
                                :font-family "Open Sans, sans-serif"
+                               :app-bar {:height 56}
+                               :ripple {:color primary1-color}
+                               #_#_:svg-icon {:color primary1-color}
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}
-                               #_ #_ :flat-button {:primary-text-color theme-blue}
-                               #_ #_ :drop-down-menu {:accent-color theme-blue}
-                               #_ #_ :menu-item {:selected-text-color theme-cyan}
-                               #_ #_ :snackbar {:background-color "rgba(0, 0, 0, 0.95)"
-                                          :text-color theme-cyan}}))
-
-(def color cljs-react-material-ui.core/color)
+                               #_#_:flat-button {:primary-text-color theme-blue}
+                               #_#_:drop-down-menu {:accent-color theme-blue}
+                               #_#_:menu-item {:selected-text-color theme-cyan}
+                               #_#_:snackbar {:background-color "rgba(0, 0, 0, 0.95)"
+                                              :text-color theme-cyan}}))
 
 ;; --- GENERIC STYLES BEGNINNING ---
 
@@ -116,4 +119,32 @@
 (def content-wrap
   (padding-all desktop-gutter))
 
+(def visibility-hidden
+  {:visibility :hidden})
+
+(def visibility-visible
+  {:visibility :visible})
+
 ;; --- GENERIC STYLES END ---
+
+(def offering-list-item-height 52)
+
+(def warning-color
+  {:color (color :red500)})
+
+(def active-address-balance
+  {:color "#FFF"
+   :font-size 20})
+
+(def active-address-select-field-label
+  {:color "#FFF"})
+
+(def saved-searches-select-field
+  {:width "calc(100% - 48px)"})
+
+(def offering-search-params-drawer-mobile
+  {:padding desktop-gutter-less
+   :overflow :hidden})
+
+(def offerings-order-by-select-field
+  {:width "calc(100% - 48px)"})

@@ -16,7 +16,7 @@
            {:style button-style
             :label (str value)
             :secondary isActive
-            :on-touch-tap onClick}])))
+            :on-click onClick}])))
 
     js/ReactUltimatePagination.ITEM_TYPES.ELLIPSIS
     (fn [props]
@@ -24,7 +24,7 @@
         [ui/flat-button
          {:style button-style
           :label "..."
-          :on-touch-tap (aget props "onClick")}]))
+          :on-click (aget props "onClick")}]))
 
     js/ReactUltimatePagination.ITEM_TYPES.FIRST_PAGE_LINK
     (fn [props]
@@ -33,7 +33,7 @@
           [ui/flat-button
            {:style button-style
             :icon first-page-icon
-            :on-touch-tap onClick
+            :on-click onClick
             :disabled isActive}])))
 
     js/ReactUltimatePagination.ITEM_TYPES.PREVIOS_PAGE_LINK
@@ -43,7 +43,7 @@
           [ui/flat-button
            {:style button-style
             :icon previous-page-icon
-            :on-touch-tap onClick
+            :on-click onClick
             :disabled isActive}])))
 
     js/ReactUltimatePagination.ITEM_TYPES.NEXT_PAGE_LINK
@@ -53,7 +53,7 @@
           [ui/flat-button
            {:style button-style
             :icon next-page-icon
-            :on-touch-tap onClick
+            :on-click onClick
             :disabled isActive}])))
 
     js/ReactUltimatePagination.ITEM_TYPES.LAST_PAGE_LINK
@@ -63,7 +63,7 @@
           [ui/flat-button
            {:style button-style
             :icon last-page-icon
-            :on-touch-tap onClick
+            :on-click onClick
             :disabled isActive}])))}})
 
 (defn create-pagination [config-opts]

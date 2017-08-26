@@ -1,29 +1,40 @@
 (ns name-bazaar.ui.components.misc
   (:require
     [cljs-react-material-ui.reagent :as ui]
+    [components.active-address-balance :refer [active-address-balance]]
     [district0x.ui.components.active-address-select-field :refer [active-address-select-field]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
-    [district0x.ui.components.transaction-log :refer [transaction-log gstring-transaction-name-fn on-item-click-routes-fn]]
+    [district0x.ui.components.transaction-log :refer [transaction-log]]
     [name-bazaar.ui.components.icons :as icons]
+    [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]
-    [name-bazaar.ui.constants :as constants]))
+    [reagent.core :as r]))
+
+(defn a [props body]
+  [d0x-misc/a
+   (assoc props :routes constants/routes)
+   body])
 
 (defn main-app-bar-right-elements []
-  [row
-   {:middle "xs"
-    :end "xs"}
-   #_(when (and (seq @my-addresses)
-                @active-address-balance-dnt)
-       [:h2.bolder {:style (merge styles/app-bar-balance
-                                  {:margin-right 10})}
-        (u/format-dnt-with-symbol @active-address-balance-dnt)])
-   [transaction-log
-    {:items-props {:transaction-name-fn (gstring-transaction-name-fn constants/transaction-log-tx-name-templates)
-                   :on-item-click (on-item-click-routes-fn constants/transaction-log-on-item-click-routes)}}]
-   [active-address-select-field
-    {:select-field-props {:label-style {:color "#FFF"}}}]])
+  (let [xs-sm? (subscribe [:district0x/window-xs-sm-width?])
+        active-page (subscribe [:district0x/active-page])]
+    (fn []
+      [row
+       {:middle "xs"
+        :end "xs"}
+       (when-not @xs-sm?
+         [active-address-balance
+          {:style styles/active-address-balance}])
+       (when (and @xs-sm? (= (:handler @active-page) :route.offerings/search))
+         [ui/icon-button
+          {:on-click #(dispatch [:set-offerings-search-params-drawer true])}
+          (icons/filter {:color "#FFF"})])
+       [transaction-log
+        {:icon-menu-props {:style {:margin-right styles/desktop-gutter-mini}}}]
+       (when-not @xs-sm?
+         [active-address-select-field
+          {:select-field-props {:label-style styles/active-address-select-field-label}}])])))
 
 (defn side-nav-menu-layout [& children]
   (into [d0x-misc/side-nav-menu-layout

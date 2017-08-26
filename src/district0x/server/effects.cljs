@@ -15,9 +15,6 @@
 (def fs (js/require "fs"))
 (def sqlite3 (.verbose (js/require "sqlite3")))
 
-(comment
-  )
-
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts
     (medley/map-vals (fn [{:keys [:name :address] :as contract}]
@@ -53,7 +50,7 @@
                             opts)]
     (go
       (let [deploy-ch (chan 2)
-            [_ Instance] (<! (apply web3-eth-async/contract-new
+            [err Instance] (<! (apply web3-eth-async/contract-new
                                     deploy-ch
                                     (:web3 @server-state-atom)
                                     abi
@@ -63,14 +60,18 @@
                                                            bin
                                                            library-placeholders)
                                                    :gas 4500000}
-                                                  opts)])))
-            [_ Instance] (<! deploy-ch)
-            address (aget Instance "address")]
-        (when (:log-contract-calls? @server-state-atom)
-          (println "Contract" contract-key "deployed at:" address))
-        (swap! server-state-atom update-in [:smart-contracts contract-key] merge {:address address
-                                                                                  :instance Instance})
-        (>! ch address)))
+                                                  opts)])))]
+        (if err
+          (println "Error deploying contract" contract-key err)
+          (let [[err Instance] (<! deploy-ch)]              ;; Contract address is obtained only on second callback
+            (if err
+              (println "Error deploying contract" contract-key err)
+              (let [address (aget Instance "address")]
+                (when (:log-contract-calls? @server-state-atom)
+                  (println "Contract" contract-key "deployed at:" address))
+                (swap! server-state-atom update-in [:smart-contracts contract-key] merge {:address address
+                                                                                          :instance Instance})
+                (>! ch address)))))))
     ch))
 
 (defn create-web3! [server-state-atom & [{:keys [:port :url]}]]

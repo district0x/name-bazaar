@@ -22,7 +22,8 @@ html, body, #app {
 
 a {
     color: inherit;
-    text-decoration: none;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 a.no-decor {
@@ -73,7 +74,7 @@ h3 {
 }
 
 body {
-  font-size: 15px;
+  font-size: 13px;
   //line-height: 24px;
 }
 
@@ -112,5 +113,11 @@ strong, b {
     }
     .lg-margin-0 {
         margin: 0;
+    }
+}
+
+.last-child-no-border {
+    &:last-child {
+        border-bottom: none;
     }
 }

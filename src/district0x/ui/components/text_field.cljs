@@ -1,7 +1,7 @@
 (ns district0x.ui.components.text-field
   (:require
     [district0x.shared.utils :as d0x-shared-utils :refer [http-url?]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [valid-length?]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme parse-props-children create-with-default-props valid-length?]]
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
@@ -59,8 +59,7 @@
 (defn text-field [{:keys [:value] :as props}]
   [text-field*
    (r/merge-props
-     {:style {:display :block}
-      :floating-label-fixed (boolean (seq (str value)))}
+     {:floating-label-fixed (boolean (seq (str value)))}
      props)])
 
 (defn text-field-with-length []
@@ -68,6 +67,7 @@
                :min-length-error-text] :as props}]
     [text-field
      (r/merge-props
+       (dissoc props :min-length :max-length :max-length-error-text :min-length-error-text)
        {:error-text (when-not (valid-length? value max-length min-length)
                       (if (pos? min-length)
                         (or min-length-error-text
@@ -76,35 +76,63 @@
                             "Text is too long")))
         :on-change (fn [e value]
                      (when (fn? on-change)
-                       (on-change e value (valid-length? value max-length min-length))))}
-       (dissoc props :min-length :max-length :max-length-error-text :min-length-error-text))]))
+                       (on-change e value (valid-length? value max-length min-length))))})]))
 
 (defn url-field []
   (fn [{:keys [:value :on-change :max-length :allow-empty? :max-length-error-text :url-error-text]
         :as props}]
     [text-field
      (r/merge-props
+       (dissoc props :allow-empty? :max-length :max-length-error-text :url-error-text)
        {:error-text (if-not (valid-length? value max-length)
                       (or max-length-error-text
                           (gstring/format "URL must be shorter than %s characters" max-length))
                       (when-not (http-url? value {:allow-empty? allow-empty?})
                         (or url-error-text
-                            "Invalid URL")))
+                            " ")))
         :on-change (fn [e value]
                      (when (fn? on-change)
                        (on-change e value (and (valid-length? value max-length)
-                                               (http-url? value {:allow-empty? allow-empty?})))))}
-       (dissoc props :allow-empty? :max-length :max-length-error-text :url-error-text))]))
+                                               (http-url? value {:allow-empty? allow-empty?})))))})]))
 
 (defn ether-field [{:keys [:value :on-change :on-change :allow-empty?
                            :value-error-text :only-positive?] :as props}]
   (let [validator (if only-positive? d0x-shared-utils/pos-ether-value? d0x-shared-utils/non-neg-ether-value?)]
     [text-field
      (r/merge-props
+       (dissoc props :on-change :allow-empty? :only-positive? :value-error-text)
        {:on-change (fn [e value]
-                     (if on-change
+                     (when (fn? on-change)
                        (on-change e value (validator value (select-keys props [:allow-empty?])))))
         :error-text (when-not (validator value (select-keys props [:allow-empty?]))
-                      (or value-error-text "Invalid value"))}
-       (dissoc props :on-change :allow-empty? :only-positive? :value-error-text))]))
+                      (or value-error-text " "))})]))
+
+(defn ether-field-with-currency [{:keys [:container-props :currency-props :currency-code]
+                                  :as props
+                                  :or {currency-code "ETH"}}]
+  [:span
+   (r/merge-props
+     {:style {:width 256}}
+     container-props)
+   [ether-field
+    (r/merge-props
+      {:style {:width 223}}
+      (dissoc props :container-props :currency-props :currency-code))]
+   [:span
+    (r/merge-props
+      {:style {:font-size "1.4em"
+               :font-weight 300
+               :margin-left (current-component-mui-theme "spacing" "desktopGutterMini")}}
+      currency-props)
+    currency-code]])
+
+(defn integer-field [{:keys [:on-change :allow-empty?] :as props}]
+  [text-field
+   (r/merge-props
+     (dissoc props :allow-empty?)
+     {:on-change (fn [e value]
+                   (let [pattern (str "[0-9]" (if allow-empty? "*" "+"))]
+                     (when (and (fn? on-change)
+                                (re-matches (re-pattern pattern) value))
+                       (on-change e value))))})])
 

@@ -10,7 +10,8 @@
 (s/def :db/contracts-not-found? boolean?)
 (s/def :route/handler keyword?)
 (s/def :route/route-params (s/map-of keyword? (some-fn number? string?)))
-(s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params]))
+(s/def :route/query-params (s/nilable map?))
+(s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params :route/query-params]))
 (s/def :db/window-width-size int?)
 (s/def :snackbar/open? boolean?)
 (s/def :dialog/open? boolean?)
@@ -22,7 +23,8 @@
 (s/def :dialog/title string?)
 (s/def :db/snackbar (s/keys :req-un [:snackbar/open? :snackbar/message :snackbar/on-request-close :snackbar/auto-hide-duration]))
 (s/def :db/dialog (s/keys :req-un [:dialog/open? :dialog/title :dialog/modal]))
-(s/def :db/menu-drawer (s/keys :req-un [:drawer/open?]))
+(s/def :db/drawer (s/keys :req-un [:drawer/open?]))
+(s/def :db/menu-drawer :db/drawer)
 
 (s/def :contract/key keyword?)
 (s/def :contract/name string?)
@@ -60,6 +62,8 @@
                                                 :tx.status/failure}))
 
 
+(s/def :transaction/name string?)
+(s/def :transaction/result-href string?)
 (s/def :transaction/from address?)
 (s/def :transaction/form-data :form/data)
 (s/def :transaction/form-id :form/id)
@@ -76,7 +80,9 @@
 (s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/form-data
                                                                      :transaction/tx-opts
                                                                      :transaction/hash
-                                                                     :transaction/status]
+                                                                     :transaction/status
+                                                                     :transaction/name
+                                                                     :transaction/result-href]
                                                             :opts-un [:transaction/form-id
                                                                       :transaction/block-hash
                                                                       :transaction/gas-used
@@ -98,6 +104,7 @@
 (s/def :search-params/order-by (s/coll-of (s/tuple keyword? :search-params/order-by-dir)))
 (s/def :search-params/offset integer?)
 (s/def :search-params/limit integer?)
+
 (s/def :search-results/ids (s/coll-of any?))
 (s/def :search-results/total-count (s/nilable not-neg?))
 (s/def :search-results/loading? boolean?)
@@ -111,8 +118,6 @@
 
 (s/def :district0x-emails/email string?)
 (s/def :district0x-emails/address address?)
-
-(s/def :db/routes (some-fn vector? map?))
 
 (s/def :district0x.ui/db (s/keys :req-un [:db/active-address
                                           :db/blockchain-connection-error?
@@ -128,8 +133,7 @@
                                           :db/transactions
                                           :db/transaction-ids-chronological
                                           :db/transaction-ids-by-form
-                                          :db/transaction-log-settings
-                                          :db/routes]
+                                          :db/transaction-log-settings]
                                  :opt-un [:db/active-page
                                           :db/menu-drawer
                                           :db/balances

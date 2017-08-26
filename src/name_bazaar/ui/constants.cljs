@@ -1,31 +1,39 @@
 (ns name-bazaar.ui.constants
   (:require
     [cljs-time.coerce :refer [to-epoch]]
-    [cljs-time.core :as t]))
+    [cljs-time.core :as t]
+    [district0x.shared.utils :refer [collify]]
+    [district0x.ui.utils :refer [parse-boolean-string parse-kw-coll-query-params parse-int-or-nil parse-float-or-nil]]
+    [medley.core :as medley]))
 
 (def contracts-version "1.0.0")
 (def registrar-root ".eth")
 
 (def default-gas-price 4000000000)
 
-(def form-field->query-param
-  {:offering/name {:name "name"}
-   :offering/min-price {:name "min-price" :parser js/parseInt}
-   :offering/max-price {:name "max-price" :parser js/parseInt}
-   :offering/max-end-time {:name "max-end-time"}
-   :offering/type {:name "type" :parser keyword}
-   :offering-request/name {:name "name"}})
+(def infinite-lists-init-load-limit 25)
+(def infinite-lists-next-load-limit 10)
 
-(def route-handler->form-key
-  {:route.offerings/search :search-form/search-offerings
-   :route.offering-requests/search :search-form/search-offering-requests})
+(def query-params-parsers
+  {:route.offerings/search {:name-position keyword
+                            :min-length parse-int-or-nil
+                            :max-length parse-int-or-nil
+                            :buy-now? parse-boolean-string
+                            :auction? parse-boolean-string
+                            :exclude-numbers? parse-boolean-string
+                            :exclude-special-chars? parse-boolean-string
+                            :top-level-names? parse-boolean-string
+                            :sub-level-names? parse-boolean-string
+                            :order-by-dirs parse-kw-coll-query-params
+                            :order-by-columns parse-kw-coll-query-params}
+   :route.offering-requests/search {:name-position keyword}})
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
         ["watched-names" :route/watched-names]
-        [["user/" :offering/original-owner "/offerings"] :route.user/offerings]
-        [["user/" :offering/original-owner "/purchases"] :route.user/purchases]
-        [["user/" :offering/original-owner "/bids"] :route.user/bids]
+        [["user/" :user/address "/offerings"] :route.user/offerings]
+        [["user/" :user/address "/purchases"] :route.user/purchases]
+        [["user/" :user/address "/bids"] :route.user/bids]
         ["my-settings" :route.user/my-settings]
         ["my-offerings" :route.user/my-offerings]
         ["my-purchases" :route.user/my-purchases]
