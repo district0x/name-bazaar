@@ -80,6 +80,13 @@
     (= active-address (get-in offerings [offering-address :auction-offering/winning-bidder]))))
 
 (reg-sub
+  :offering/active-address-original-owner?
+  :<- [:district0x/active-address]
+  :<- [:offering-registry/offerings]
+  (fn [[active-address offerings] [_ offering-address]]
+    (= active-address (get-in offerings [offering-address :offering/original-owner]))))
+
+(reg-sub
   :offering/registrar-entry
   :<- [:offering-registry/offerings]
   :<- [:registrar/entries]

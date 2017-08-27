@@ -55,7 +55,7 @@
                      :offering/price price
                      :auction-offering/end-time (to-epoch (t/plus (t/now) (t/weeks 2)))
                      :auction-offering/extension-duration (rand-int 10000)
-                     :auction-offering/min-bid-increase (web3/to-wei 0.5 :ether)}
+                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                     {:from owner})))
 
 

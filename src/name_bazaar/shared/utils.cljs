@@ -2,7 +2,8 @@
   (:require
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils]))
+    [district0x.shared.utils :as d0x-shared-utils]
+    [cljs-web3.core :as web3]))
 
 (defn offering-version->type [version]
   (if (>= (bn/->number version) 100000)
@@ -89,5 +90,13 @@
       (update :registrar.entry/registration-date (if parse-dates? bn/->date-time bn/->number))
       (update :registrar.entry/value bn/->number)
       (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number)))))
+
+(defn calculate-min-bid
+  ([price min-bid-increase bid-count]
+   (calculate-min-bid price min-bid-increase bid-count 0))
+  ([price min-bid-increase bid-count pending-returns]
+   (let [min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
+     (bn/->number (bn/- (bn/+ (web3/to-big-number price) min-bid-increase) pending-returns)))))
+
 
 

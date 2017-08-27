@@ -14,9 +14,8 @@
     [clojure.string :as str]
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
-    [day8.re-frame.forward-events-fx]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei]]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
@@ -33,11 +32,14 @@
 
 (def interceptors [trim-v (validate-db :name-bazaar.ui.db/db)])
 
-(defn- node-name [db node]
+(defn- get-node-name [db node]
   (get-in db [:ens/records node :ens.record/name]))
 
-(defn- offering-name [db offering-address]
+(defn- get-offering-name [db offering-address]
   (get-in db [:offering-registry/offerings offering-address :offering/name]))
+
+(defn- get-offering [db offering-address]
+  (get-in db [:offering-registry/offerings offering-address]))
 
 (defn- auction-offering? [db offering-address]
   (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :auction-offering))
@@ -56,7 +58,9 @@
                                       {:clear-existing-items? true
                                        :clear-existing-params? true}]]
             [])]
-      {:dispatch-n dispatch-n
+      {:dispatch-n (concat
+                     [[:stop-watching-all-offerings]]
+                     dispatch-n)
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 
 (reg-event-fx
@@ -96,13 +100,15 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :buy-now-offering
+                {:name (gstring/format "Buy %s" (get-offering-name db (:offering/address form-data)))
+                 :contract-key :buy-now-offering
                  :contract-method :buy
                  :form-data form-data
                  :contract-address (:offering/address form-data)
+                 :result-href (path-for :route.offering/detail form-data)
                  :tx-opts {:gas 100000
                            :gas-price default-gas-price
-                           :value (:offering/price form-data)}
+                           :value (eth->wei (:offering/price form-data))}
                  :form-id (select-keys form-data [:offering/address])}]}))
 
 (reg-event-fx
@@ -124,7 +130,7 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Bid for %s" (offering-name db (:offering/address form-data)))
+                {:name (gstring/format "Bid for %s" (get-offering-name db (:offering/address form-data)))
                  :contract-key :auction-offering
                  :contract-method :bid
                  :form-data form-data
@@ -132,7 +138,7 @@
                  :result-href (path-for :route.offering/detail form-data)
                  :tx-opts {:gas 100000
                            :gas-price default-gas-price
-                           :value (d0x-shared-utils/eth->wei (:offering/price form-data))}
+                           :value (eth->wei (:offering/price form-data))}
                  :wei-keys #{:offering/price}
                  :form-id (select-keys form-data [:offering/address])}]}))
 
@@ -154,17 +160,25 @@
 (reg-event-fx
   :auction-offering/withdraw
   [interceptors (validate-first-arg (s/keys :req [:offering/address] :opt [:auction-offering/bidder]))]
-  (fn [{:keys [:db]} [form-data]]
+  (fn [{:keys [:db]} [{:keys [:offering/address] :as form-data}]]
     (let [form-data (if-not (:auction-offering/bidder form-data)
-                      (assoc form-data :auction-offering/bidder (:active-address form-data))
-                      form-data)]
+                      (assoc form-data :auction-offering/bidder (:active-address db))
+                      form-data)
+          pending-returns (get-in db [:offering-registry/offerings
+                                      address
+                                      :auction-offering/pending-returns
+                                      (:auction-offering/bidder form-data)])]
       {:dispatch [:district0x/make-transaction
-                  {:contract-key :auction-offering
+                  {:name (gstring/format "Withdraw %s ETH from %s auction"
+                                         (d0x-ui-utils/format-eth pending-returns)
+                                         (get-offering-name db (:offering/address form-data)))
+                   :contract-key :auction-offering
                    :contract-method :withdraw
                    :form-data form-data
                    :contract-address (:offering/address form-data)
                    :args-order [:auction-offering/bidder]
-                   :tx-opts {:gas 70000 :gas-price default-gas-price}
+                   :result-href (path-for :route.offering/detail form-data)
+                   :tx-opts {:gas 150000 :gas-price default-gas-price}
                    :form-id (select-keys form-data [:offering/address])}]})))
 
 (reg-event-fx
@@ -284,7 +298,7 @@
                 (merge
                   {:endpoint "/offerings"
                    :on-success [:load-offerings]}
-                  opts)]}))
+                  (assoc-in opts [:params :total-count?] true))]}))
 
 (reg-event-fx
   :load-offerings
@@ -346,11 +360,11 @@
              {:instance (get-instance db :auction-offering offering-address)
               :method :pending-returns
               :args [address]
-              :on-success [:pending-returns-loaded offering-address address]
+              :on-success [:auction-pending-returns-loaded offering-address address]
               :on-error [:district0x.log/error]})}}))
 
 (reg-event-fx
-  :pending-returns-loaded
+  :auction-pending-returns-loaded
   interceptors
   (fn [{:keys [:db]} [offering-address address pending-returns]]
     {:db (assoc-in db
@@ -449,7 +463,7 @@
   :load-offering-requests
   interceptors
   (fn [{:keys [:db]} [nodes]]
-    (let [[nodes-with-known-names nodes-with-unknown-names] (split-with (partial node-name db) nodes)]
+    (let [[nodes-with-known-names nodes-with-unknown-names] (split-with (partial get-node-name db) nodes)]
       {:web3-fx.contract/constant-fns
        {:fns
         (remove nil?
@@ -601,18 +615,60 @@
        :localstorage (merge localstorage (select-keys new-db [:saved-searches]))})))
 
 (reg-event-fx
-  :offering-expanded
+  :load-offering-related-info
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering/address :offering/label-hash :offering/node]}]]
-    {:dispatch-n [[:load-registrar-entry label-hash]
-                  [:load-my-addresses-auction-pending-returns address]
-                  [:load-ens-records [node]]]}))
+  (fn [{:keys [:db]} [{:keys [:offering/address :offering/label-hash :offering/node :offering/type]}]]
+    (merge
+      {:dispatch-n [[:load-registrar-entry label-hash]
+                    [:load-ens-records [node]]]}
+      (when (= type :auction-offering)
+        {:dispatch [:load-my-addresses-auction-pending-returns address]}))))
 
 (reg-event-fx
-  :offering-collapsed
+  :watch-offerings
+  interceptors
+  (fn [{:keys [:db]} [offering-addresses]]
+    {:web3-fx.contract/events
+     {:db-path [:watched-offerings]
+      :events (for [address offering-addresses]
+                {:instance (get-instance db :offering-registry)
+                 :event-id address
+                 :event-name :on-offering-changed
+                 :event-filter-opts {:offering address}
+                 :blockchain-filter-opts "latest"
+                 :on-success [:district0x/dispatch-n [[:load-offerings [address]]
+                                                      (when (auction-offering? db address)
+                                                        [:load-my-addresses-auction-pending-returns address])]]
+                 :on-error [:district0x.log/error]})}}))
+
+(reg-event-fx
+  :stop-watching-offerings
+  interceptors
+  (fn [{:keys [:db]} [offering-addresses]]
+    (when (seq offering-addresses)
+      {:web3-fx.contract/events-stop-watching
+       {:db-path [:watched-offerings]
+        :event-ids offering-addresses}})))
+
+(reg-event-fx
+  :stop-watching-all-offerings
   interceptors
   (fn [{:keys [:db]}]
-    ))
+    {:dispatch [:stop-watching-offerings (keys (:watched-offerings db))]}))
+
+(reg-event-fx
+  :offering-list-item-expanded
+  interceptors
+  (fn [{:keys [:db]} [offering]]
+    {:dispatch-n [[:load-offering-related-info offering]
+                  [:watch-offerings [(:offering/address offering)]]
+                  [:load-offerings [(:offering/address offering)]]]}))
+
+(reg-event-fx
+  :offering-list-item-collapsed
+  interceptors
+  (fn [{:keys [:db]} [offering]]
+    {:dispatch [:stop-watching-offerings [(:offering/address offering)]]}))
 
 (reg-event-fx
   :infinite-list/expand-item

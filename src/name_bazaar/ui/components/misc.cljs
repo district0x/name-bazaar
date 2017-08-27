@@ -72,7 +72,7 @@
              :key :route.offering/create
              :route :route.offering/create}]
            [d0x-misc/nav-menu-item
-            {:primary-text "My Offering"
+            {:primary-text "My Offerings"
              :key :route.user/my-offerings
              :route :route.user/my-offerings}]
            [d0x-misc/nav-menu-item

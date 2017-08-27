@@ -5,7 +5,7 @@ import "UsedByFactories.sol";
 contract OfferingRegistry is UsedByFactories {
 
     event onOfferingAdded(address indexed offering, bytes32 indexed node, address indexed owner, uint version);
-    event onOfferingChanged(address offering, uint version);
+    event onOfferingChanged(address indexed offering, uint version);
     event onOfferingBid(address offering, uint version, address bidder, uint value, uint datetime);
 
     mapping(address => bool) isOffering;

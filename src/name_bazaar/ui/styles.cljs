@@ -52,6 +52,9 @@
 (def margin-top-gutter-less
   {:margin-top desktop-gutter-less})
 
+(def margin-top-gutter-mini
+  {:margin-top desktop-gutter-mini})
+
 (defn margin-all [x]
   {:margin-top x
    :margin-bottom x
@@ -127,7 +130,19 @@
 
 ;; --- GENERIC STYLES END ---
 
-(def offering-list-item-height 52)
+(def search-results-list-item-height 52)
+(def auction-offering-list-item-expanded-height 410)
+(def buy-now-offering-list-item-expanded-height 260)
+
+(def search-results-list-item
+  {:padding-top desktop-gutter-mini
+   :padding-bottom desktop-gutter-mini
+   :padding-left desktop-gutter-less
+   :padding-right desktop-gutter-less})
+
+(def search-results-list-item-body
+  {:padding desktop-gutter-less
+   :height "100%"})
 
 (def warning-color
   {:color (color :red500)})
@@ -148,3 +163,32 @@
 
 (def offerings-order-by-select-field
   {:width "calc(100% - 48px)"})
+
+(def placeholder-animated-background
+  {:width "100%"
+   :height (- search-results-list-item-height
+              (search-results-list-item :padding-top)
+              (search-results-list-item :padding-bottom))
+   :animation-duration "1s"
+   :animation-fill-mode "forwards"
+   :animation-iteration-count "infinite"
+   :animation-name "placeHolderShimmer"
+   :animation-timing-function "linear"
+   :background-color "#f6f7f8"
+   :background "linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%)"
+   :position "relative"})
+
+(def placeholder-backgroud-masker
+  {:background-color "#FFF"
+   :position :absolute})
+
+(def search-results-paper
+  {:min-height 600})
+
+(def search-results-paper-inner
+  {:padding-bottom 0
+   :padding-left 0
+   :padding-right 0})
+
+
+

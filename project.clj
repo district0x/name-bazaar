@@ -14,7 +14,7 @@
                  [cljsjs/react-dom-server "15.6.1-1"]
                  [cljsjs/react-infinite "0.12.1-0"]
                  [cljsjs/solidity-sha3 "0.4.1-0"]
-                 [day8.re-frame/async-flow-fx "0.0.6"]
+                 [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.0"]
                  [lein-doo "0.1.7"]

@@ -18,23 +18,24 @@
     children))
 
 (defn expandable-list-item-header []
-  (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand] :as props} & children]
+  (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled?] :as props} & children]
     (let [expanded? @(subscribe [:infinite-list/item-expanded? index])]
       (into
         [:div
          {:style (merge expandable-item-header-style
                         {:height collapsed-height})
           :on-click (fn []
-                      (if expanded?
-                        (do
-                          (on-collapse)
-                          (dispatch [:infinite-list/collapse-item index]))
-                        (do
-                          (on-expand)
-                          (dispatch [:infinite-list/expand-item index expanded-height]))))}]
+                      (when-not expand-disabled?
+                        (if expanded?
+                          (do
+                            (on-collapse)
+                            (dispatch [:infinite-list/collapse-item index]))
+                          (do
+                            (on-expand)
+                            (dispatch [:infinite-list/expand-item index expanded-height])))))}]
         children))))
 
-(defn expandable-list-item [{:keys [:index :on-collapse :on-expand :expanded-height :collapsed-height]}
+(defn expandable-list-item [{:keys [:index :on-collapse :on-expand :expanded-height :collapsed-height :expand-disabled?]}
                             header body]
   [:div
    {:style expandable-item-style}
@@ -42,7 +43,8 @@
     {:index index
      :expanded-height expanded-height
      :on-collapse on-collapse
-     :on-expand on-expand}
+     :on-expand on-expand
+     :expand-disabled? expand-disabled?}
     header]
    [expandable-list-item-body
     {:index index
@@ -50,20 +52,33 @@
     body]])
 
 (defn infinite-list [{:keys [:initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
-                             :collapsed-item-height :on-infinite-load] :as props}
+                             :collapsed-item-height :on-infinite-load :on-initial-load :on-next-load
+                             :total-count] :as props}
                      list-items]
-  [react-infinite
-   (r/merge-props
-     {:element-height @(subscribe [:infinite-list/items-heights (count list-items) collapsed-item-height])
-      :use-window-as-scroll-container true
-      :infinite-load-begin-edge-offset -250
-      :is-infinite-loading loading?
-      :on-infinite-load (fn []
-                          (let [new-offset (+ offset (if (zero? offset) initial-load-limit next-load-limit))]
-                            (when (= new-offset (count list-items))
-                              (on-infinite-load new-offset))))
-      :loading-spinner-delegate (when loading?
-                                  loading-spinner-delegate)}
-     (dissoc props :initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
-             :collapsed-item-height :on-infinite-load))
-   list-items])
+  (let [all-items-loaded? (= total-count (count list-items))]
+    [react-infinite
+     (r/merge-props
+       {:element-height @(subscribe [:infinite-list/items-heights (count list-items) collapsed-item-height])
+        :use-window-as-scroll-container true
+        :infinite-load-begin-edge-offset -250
+        :is-infinite-loading (and loading? (not all-items-loaded?))
+        :on-infinite-load (fn []
+                            (when (and (not loading?)
+                                       (not all-items-loaded?))
+                              (if (and (zero? offset)
+                                       (empty? list-items))
+                                (do
+                                  (when (fn? on-infinite-load)
+                                    (on-infinite-load 0 initial-load-limit))
+                                  (when on-initial-load
+                                    (on-initial-load 0 initial-load-limit)))
+                                (let [next-offset (if (zero? offset) initial-load-limit (+ offset next-load-limit))]
+                                  (when (fn? on-initial-load)
+                                    (on-infinite-load next-offset next-load-limit))
+                                  (when (fn? on-next-load)
+                                    (on-next-load next-offset next-load-limit))))))
+        :loading-spinner-delegate (when (and loading? (not all-items-loaded?))
+                                    loading-spinner-delegate)}
+       (dissoc props :initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
+               :collapsed-item-height :on-infinite-load))
+     list-items]))

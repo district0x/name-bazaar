@@ -1,24 +1,21 @@
 (ns name-bazaar.ui.pages.offerings-search-page
   (:require
     [cljs-react-material-ui.reagent :as ui]
-    [cljsjs.react-infinite]
     [clojure.string :as string]
-    [components.offering-list-item :refer [offering-list-item]]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
     [district0x.ui.components.text-field :refer [text-field ether-field integer-field ether-field-with-currency]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code]]
     [medley.core :as medley]
     [name-bazaar.ui.components.icons :as icons]
-    [name-bazaar.ui.components.infinite-list :refer [infinite-list]]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-layout]]
+    [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
+    [name-bazaar.ui.components.search-results.offering-list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [etherscan-ens-url]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
-
-(def react-infinite (r/adapt-react-class js/Infinite))
 
 (defn keyword-text-field []
   (let [search-params (subscribe [:search-params/offerings-main-search])]
@@ -303,8 +300,7 @@
       {:bottom "xs"}
       [order-by-select-field
        {:style styles/offerings-order-by-select-field}]
-      [reset-search-icon-button]
-      ]]]])
+      [reset-search-icon-button]]]]])
 
 (defn search-params-drawer-mobile []
   (let [open? (subscribe [:offerings-search-params-drawer-open?])]
@@ -358,20 +354,16 @@
 (defn offerings-search-results []
   (let [search-results (subscribe [:search-results/offerings-main-search])]
     (fn []
-      (let [{:keys [:items :loading? :params]} @search-results]
+      (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [paper
-         {:inner-style {:padding-bottom 0
-                        :padding-left 0
-                        :padding-right 0}}
-         [infinite-list
-          {:initial-load-limit constants/infinite-lists-init-load-limit
-           :next-load-limit constants/infinite-lists-next-load-limit
+         {:inner-style styles/search-results-paper-inner
+          :style styles/search-results-paper}
+         [search-results-infinite-list
+          {:total-count total-count
            :offset (:offset params)
            :loading? loading?
-           :collapsed-item-height styles/offering-list-item-height
-           :on-infinite-load #(dispatch [:set-params-and-search-offerings-main-search
-                                         {:offset %
-                                          :limit constants/infinite-lists-next-load-limit}])}
+           :on-next-load (fn [offset limit]
+                           (dispatch [:set-params-and-search-offerings-main-search {:offset offset :limit limit}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item

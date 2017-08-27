@@ -20,3 +20,4 @@ pom.xml.asc
 /dev-backend/
 /dev-tests/
 /src/name_bazaar/server/repl.cljs
+/resources/public/css/name-bazaar.main.css.map

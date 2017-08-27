@@ -48,6 +48,10 @@
   (or (= x "0x0000000000000000000000000000000000000000")
       (= x "0x")))
 
+(defn empty-address? [x]
+  (or (zero-address? x)
+      (not x)))
+
 (defn collify [x]
   (if (sequential? x) x [x]))
 
