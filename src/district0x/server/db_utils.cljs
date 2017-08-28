@@ -54,7 +54,7 @@
                                           (log-error err)
                                           (put! total-count-ch (aget res "count(*)")))))
       (put! total-count-ch false))
-    (.all db query (clj->js values) (fn [err res]
+    (.all db (print.foo/look query) (clj->js values) (fn [err res]
                                       (log-error err)
                                       (put! port (->> (js->clj (or res []) :keywordize-keys true)
                                                    (map (partial transform-keys cs/->kebab-case-keyword))))))
@@ -86,3 +86,6 @@
             [:like col-name (str prefix s "%" suffix)] 2
             [:like col-name (str prefix "%" s "%" suffix)] 3
             :else 4))
+
+(defn if-null [column value]
+  (sql/call :ifnull column value))

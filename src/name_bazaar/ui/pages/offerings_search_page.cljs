@@ -84,10 +84,15 @@
                                     (on-confirm @saved-search-name))}])]}
          (dissoc props :on-confirm :on-cancel))
        [:div
-        [text-field
-         {:floating-label-text "Search Name"
-          :value @saved-search-name
-          :on-change #(reset! saved-search-name %2)}]]])))
+        [row
+         [text-field
+          {:floating-label-text "Search Name"
+           :value @saved-search-name
+           :on-change #(reset! saved-search-name %2)}]]
+        [row
+         {:style styles/margin-top-gutter-less}
+         [:small
+          "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]])))
 
 (defn save-search-button []
   (let [dialog-open? (r/atom false)
@@ -362,6 +367,7 @@
           {:total-count total-count
            :offset (:offset params)
            :loading? loading?
+           :no-items-text "No offerings found matching your search criteria"
            :on-next-load (fn [offset limit]
                            (dispatch [:set-params-and-search-offerings-main-search {:offset offset :limit limit}]))}
           (doall

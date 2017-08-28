@@ -1,11 +1,13 @@
 (ns name-bazaar.server.db
   (:require
+    [cljs-time.coerce :refer [to-epoch]]
+    [cljs-time.core :as t]
     [cljs.core.async :refer [<! >! chan]]
     [cljs.spec.alpha :as s]
+    [district0x.server.db-utils :refer [log-error db-get db-run! db-all keywords->sql-cols sql-results-chan order-by-closest-like if-null]]
     [district0x.server.honeysql-extensions]
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
-    [district0x.server.db-utils :refer [log-error db-get db-run! db-all keywords->sql-cols sql-results-chan order-by-closest-like]]
     [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -121,18 +123,18 @@
   (condp = name-position
     :contain (str "%" name "%")
     :start (str name "%")
-    :ens (str "%" name)
+    :end (str "%" name)
     (str "%" name "%")))
 
 
 (s/def ::order-by-dir (partial contains? #{:desc :asc}))
 (s/def ::offering-order-by-column (partial contains? #{:price :end-time :created-on :bid-count}))
 (s/def ::offerings-order-by-item (s/tuple ::offering-order-by-column ::order-by-dir))
-(s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :kind vector? :distinct true))
+(s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :distinct true))
 (s/def ::offerings-select-fields (partial combination-of? #{:address :node :version :name}))
 
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :name :min-price :max-price :buy-now? :auction?
-                                   :min-length :max-length :name-position :max-end-time :version :node-owner?
+                                   :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-special-chars? :exclude-numbers?
                                    :limit :offset :order-by :select-fields :root-name :total-count? :bidder]
                             :or {offset 0 limit -1 root-name "eth"}}]
@@ -151,7 +153,9 @@
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
               min-length (merge-where [:>= :label-length min-length])
               max-length (merge-where [:<= :label-length max-length])
-              max-end-time (merge-where [:<= :end-time max-end-time])
+              min-end-time-now? (merge-where [:or
+                                              [:>= :end-time (to-epoch (t/now))]
+                                              [:= :end-time nil]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder bidder])
               version (merge-where [:= :version version])
@@ -172,7 +176,9 @@
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
-              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by order-by))
+              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by order-by
+                                                                          #_ [[(if-null (first order-by) js/Number.MAX_VALUE)
+                                                                            (second order-by)]]))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
 

@@ -24,7 +24,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-offering-requests-counts parse-registrar-entry]]
+    [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-offering-requests-counts parse-registrar-entry offering-version->type]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price]]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for]]
@@ -636,10 +636,17 @@
                  :event-name :on-offering-changed
                  :event-filter-opts {:offering address}
                  :blockchain-filter-opts "latest"
-                 :on-success [:district0x/dispatch-n [[:load-offerings [address]]
-                                                      (when (auction-offering? db address)
-                                                        [:load-my-addresses-auction-pending-returns address])]]
+                 :on-success [:offering-registry/on-offering-changed]
                  :on-error [:district0x.log/error]})}}))
+
+(reg-event-fx
+  :offering-registry/on-offering-changed
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering :version]}]]
+    (merge
+      {:dispatch-n [[:load-offerings [offering]]]}
+      (when (= :auction-offering (offering-version->type version))
+        {:dispatch [:load-my-addresses-auction-pending-returns offering]}))))
 
 (reg-event-fx
   :stop-watching-offerings

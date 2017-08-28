@@ -39,6 +39,7 @@
                                                      :top-level-names? true
                                                      :exclude-special-chars? true
                                                      :node-owner? true
+                                                     :min-end-time-now? true
                                                      :order-by-columns [:created-on]
                                                      :order-by-dirs [:desc]
                                                      :offset 0

@@ -36,7 +36,8 @@
                  [cljsjs/react-truncate "2.0.3-0"]
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
-                 [com.cemerick/url "0.1.1"]
+                 [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
+                 ;[com.cemerick/url "0.1.1"]
                  [day8.re-frame/http-fx "0.1.3"]
                  [kibu/pushy "0.3.6"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]

@@ -71,7 +71,8 @@
    :on-failure on-failure})
 
 (defn localhost-node? [{:keys [:node-url]}]
-  (string/includes? node-url "localhost"))
+  (or (string/includes? node-url "localhost")
+      (string/includes? node-url "192.168")))
 
 (defn initialize-db [default-db localstorage current-url]
   (let [web3 (if (and (d0x-ui-utils/provides-web3?)

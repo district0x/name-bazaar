@@ -101,6 +101,24 @@
     (get ens-records (get-in offerings [offering-address :offering/node]))))
 
 (reg-sub
+  :buy-now-offering/buy-tx-pending?
+  (fn [[_ offering-address]]
+    [(subscribe [:district0x/tx-pending? :buy-now-offering :buy {:offering/address offering-address}])])
+  first)
+
+(reg-sub
+  :auction-offering/bid-tx-pending?
+  (fn [[_ offering-address]]
+    [(subscribe [:district0x/tx-pending? :auction-offering :bid {:offering/address offering-address}])])
+  first)
+
+(reg-sub
+  :auction-offering/withdraw-tx-pending?
+  (fn [[_ offering-address]]
+    [(subscribe [:district0x/tx-pending? :auction-offering :withdraw {:offering/address offering-address}])])
+  first)
+
+(reg-sub
   :offering/node-owner?
   (fn [[_ offering-address]]
     [(subscribe [:offering/ens-record offering-address])

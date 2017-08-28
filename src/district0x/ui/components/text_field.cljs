@@ -107,21 +107,24 @@
         :error-text (when-not (validator value (select-keys props [:allow-empty?]))
                       (or value-error-text " "))})]))
 
-(defn ether-field-with-currency [{:keys [:container-props :currency-props :currency-code]
+(defn ether-field-with-currency [{:keys [:container-props :currency-props :currency-code :full-width]
                                   :as props
                                   :or {currency-code "ETH"}}]
   [:span
    (r/merge-props
-     {:style {:width 256}}
+     {:style {:display :flex
+              :width (if full-width "100%" 256)
+              :align-items :flex-end}}
      container-props)
    [ether-field
     (r/merge-props
-      {:style {:width 223}}
-      (dissoc props :container-props :currency-props :currency-code))]
+      {:style {:flex-grow 1}}
+      (dissoc props :container-props :currency-props :currency-code :full-width))]
    [:span
     (r/merge-props
       {:style {:font-size "1.4em"
                :font-weight 300
+               :margin-bottom 11
                :margin-left (current-component-mui-theme "spacing" "desktopGutterMini")}}
       currency-props)
     currency-code]])

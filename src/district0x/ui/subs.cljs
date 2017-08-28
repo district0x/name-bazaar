@@ -26,7 +26,7 @@
     (:active-address db)))
 
 (reg-sub
-  :district0x/can-submit-into-blockchain?
+  :district0x/can-make-transaction?
   (fn [db _]
     (boolean (and (or (d0x-ui-utils/provides-web3?) (:load-node-addresses? db))
                   (:active-address db)))))
@@ -123,11 +123,6 @@
     (:snackbar db)))
 
 (reg-sub
-  :district0x/dialog
-  (fn [db]
-    (:dialog db)))
-
-(reg-sub
   :district0x/window-width-size
   (fn [db]
     (:window-width-size db)))
@@ -196,11 +191,14 @@
   :<- [:district0x/transactions]
   :<- [:district0x/transaction-ids-by-form]
   (fn [[active-address transactions transactions-by-form] [_ contract-key contract-method form-id]]
-    (-> (get-in transactions-by-form (remove nil? [contract-key contract-method active-address form-id]))
-      first
-      transactions
-      :block-hash
-      empty?)))
+
+    (let [transaction-hash (first (get-in transactions-by-form
+                                          (remove nil? [contract-key contract-method active-address form-id])))]
+      (when transaction-hash
+        (-> transaction-hash
+          transactions
+          :block-hash
+          empty?)))))
 
 
 

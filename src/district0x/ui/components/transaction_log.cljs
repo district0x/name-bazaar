@@ -1,14 +1,13 @@
 (ns district0x.ui.components.transaction-log
   (:require
     [cljs-react-material-ui.reagent :as ui]
+    [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col]]
     [district0x.ui.utils :as d0x-ui-utils :refer [create-icon]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]
-    [district0x.shared.utils :as d0x-shared-utils]))
+    [reagent.core :as r]))
 
 (def bell-icon (create-icon "M14,20A2,2 0 0,1 12,22A2,2 0 0,1 10,20H14M12,2A1,1 0 0,1 13,3V4.08C15.84,4.56 18,7.03 18,10V16L21,19H3L6,16V10C6,7.03 8.16,4.56 11,4.08V3A1,1 0 0,1 12,2Z"))
 (def check-circle-icon (create-icon "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"))

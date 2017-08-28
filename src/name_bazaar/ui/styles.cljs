@@ -113,6 +113,18 @@
 (def display-block
   {:display :block})
 
+(def display-inline-block
+  {:display :inline-block})
+
+(def display-none
+  {:display :none})
+
+(def opacity-1
+  {:opacity 1})
+
+(def opacity-0
+  {:opacity 0})
+
 (def italic-text
   {:font-style :italic})
 
@@ -128,21 +140,42 @@
 (def visibility-visible
   {:visibility :visible})
 
+(def text-overflow-ellipsis
+  {:overflow :hidden
+   :white-space :nowrap
+   :text-overflow :ellipsis})
+
+(def text-decor-none
+  {:text-decoration :none})
+
 ;; --- GENERIC STYLES END ---
 
-(def search-results-list-item-height 52)
-(def auction-offering-list-item-expanded-height 410)
-(def buy-now-offering-list-item-expanded-height 260)
+(defn search-results-list-item-height [xs?]
+  (if xs? 75 52))
 
-(def search-results-list-item
+(defn auction-offering-list-item-expanded-height [xs?]
+  (if xs? 700 430))
+
+(defn buy-now-offering-list-item-expanded-height [xs?]
+  (if xs? 400 260))
+
+(defn search-results-list-item [xs?]
   {:padding-top desktop-gutter-mini
    :padding-bottom desktop-gutter-mini
-   :padding-left desktop-gutter-less
-   :padding-right desktop-gutter-less})
+   :padding-left (if xs? desktop-gutter-mini desktop-gutter-less)
+   :padding-right (if xs? desktop-gutter-mini desktop-gutter-less)})
 
-(def search-results-list-item-body
-  {:padding desktop-gutter-less
+(def search-results-no-items
+  {:text-align :center
+   :width "100%"
+   :font-size "1.1em"})
+
+(defn search-results-list-item-body [xs?]
+  {:padding (if xs? desktop-gutter-mini desktop-gutter-less)
    :height "100%"})
+
+(def search-results-list-item-header
+  {:transition "opacity .25s ease-in"})
 
 (def warning-color
   {:color (color :red500)})
@@ -164,11 +197,11 @@
 (def offerings-order-by-select-field
   {:width "calc(100% - 48px)"})
 
-(def placeholder-animated-background
+(defn placeholder-animated-background [xs?]
   {:width "100%"
-   :height (- search-results-list-item-height
-              (search-results-list-item :padding-top)
-              (search-results-list-item :padding-bottom))
+   :height (- (search-results-list-item-height xs?)
+              (:padding-top (search-results-list-item xs?))
+              (:padding-bottom (search-results-list-item xs?)))
    :animation-duration "1s"
    :animation-fill-mode "forwards"
    :animation-iteration-count "infinite"
@@ -183,12 +216,36 @@
    :position :absolute})
 
 (def search-results-paper
-  {:min-height 600})
+  {:min-height 800})
 
 (def search-results-paper-inner
-  {:padding-bottom 0
-   :padding-left 0
-   :padding-right 0})
+  {:padding 0
+   :padding-top desktop-gutter-less})
 
+(defn offering-list-item-price [xs?]
+  {:width "100%"
+   :text-align (if xs? :left :right)
+   :font-size (if xs? "1.2em" "1.3em")})
+
+(def offering-list-item-time-left
+  {:font-size "1.05em"})
+
+(def offering-list-item-bid-count
+  {:font-size "1.05em"})
+
+(def offering-list-item-name
+  {:font-size "1.3em"
+   :overflow :hidden
+   :text-overflow :ellipsis
+   :white-space :nowrap})
+
+(def offering-list-item-type
+  {:font-size "0.75em"})
+
+(def offering-list-item-new-owner-info
+  {:font-size "1.2em"})
+
+(def offering-list-item-bid-count-xs
+  {:font-size "0.9em"})
 
 
