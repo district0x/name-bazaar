@@ -81,7 +81,7 @@
    (d0x-ui-utils/format-eth-with-code (d0x-shared-utils/wei->eth value))])
 
 (defn transaction-name [{:keys [:transaction] :as props}]
-  (let [{:keys [:form-data :contract-key :contract-method :name]} transaction]
+  (let [{:keys [:contract-key :contract-method :name]} transaction]
     [:div
      (r/merge-props
        {:style tx-name-style}
@@ -104,7 +104,7 @@
      (icon {:style tx-status-icon-style})]))
 
 (defn transaction [{:keys [:transaction :last? :container-props :border-bottom-style]}]
-  (let [{:keys [:hash :form-data :contract-key :contract-method :result-href]} transaction]
+  (let [{:keys [:hash :contract-key :contract-method :result-href]} transaction]
     [ui/menu-item
      (r/merge-props
        {:style (when-not last?

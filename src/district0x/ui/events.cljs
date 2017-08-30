@@ -346,7 +346,7 @@
                                                      :transaction/wei-keys
                                                      :transaction/form-id]))]
   (fn [{:keys [db]} [{:keys [:form-data :form-id :args-order :contract-key :wei-keys
-                             :contract-key :contract-method :contract-address] :as props}]]
+                             :contract-key :contract-method :contract-address :on-success] :as props}]]
     (let [{:keys [:web3 :active-address]} db
           props (update props :tx-opts (partial merge {:from active-address}))]
       {:web3-fx.contract/state-fns
@@ -360,7 +360,8 @@
                        (d0x-shared-utils/map->vec args-order))
                :tx-opts (:tx-opts props)
                :on-success [:district0x/dispatch-n [[:district0x/load-transaction]
-                                                    [:district0x.transactions/add props]]]
+                                                    [:district0x.transactions/add props]
+                                                    (when on-success on-success)]]
                :on-error [:district0x.log/error :district0x/make-transaction props]
                :on-tx-receipt [:district0x/on-tx-receipt props]}]}})))
 
@@ -429,12 +430,11 @@
 (reg-event-fx
   :district0x.transactions/add
   [interceptors (inject-cofx :localstorage)]
-  (fn [{:keys [:db :localstorage]} [{:keys [:tx-opts :form-data :form-id :contract-key :contract-method] :as props}
+  (fn [{:keys [:db :localstorage]} [{:keys [:tx-opts :form-id :contract-key :contract-method] :as props}
                                     tx-hash]]
     (let [new-db (-> db
                    (assoc-in [:transactions tx-hash] (merge (select-keys props [:contract-method
                                                                                 :contract-key
-                                                                                :form-data
                                                                                 :tx-opts
                                                                                 :name
                                                                                 :result-href])
@@ -719,5 +719,5 @@
   :district0x/dispatch-n
   interceptors
   (fn [_ [events & args]]
-    {:dispatch-n (mapv #(vec (concat % args)) events)}))
+    {:dispatch-n (mapv #(vec (concat % args)) (remove nil? events))}))
 

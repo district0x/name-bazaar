@@ -102,9 +102,10 @@
       [ui/mui-theme-provider
        {:mui-theme mui-theme}
        (if-not @ui-disabled?
-         (into content
-               [[ui/snackbar (print.foo/look (-> @snackbar
-                                (set/rename-keys {:open? :open})))]])
+         [:div
+          content
+          [ui/snackbar (-> @snackbar
+                         (set/rename-keys {:open? :open}))]]
          [:div "UI is disabled"])])))
 
 (defn nav-menu-item []

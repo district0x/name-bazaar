@@ -20,6 +20,12 @@
     (:offering-registry/offerings db)))
 
 (reg-sub
+  :offering-registry/offering
+  :<- [:offering-registry/offerings]
+  (fn [offerings [_ offering-address]]
+    (get offerings offering-address)))
+
+(reg-sub
   :offering-requests/requests
   (fn [db]
     (:offering-requests/requests db)))
@@ -123,6 +129,14 @@
                (update :ens.record/last-offering offerings)))
            watched-ens-records)))
 
+(reg-sub
+  :offering/loaded?
+  (fn [[_ offering-address]]
+    (subscribe [:offering-registry/offering offering-address]))
+  (fn [offering]
+    (and (:offering/name offering)
+         (or (= (:offering/type offering) :buy-now-offering)
+             (:auction-offering/end-time offering)))))
 
 (reg-sub
   :auction-offering/active-address-pending-returns

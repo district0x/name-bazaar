@@ -73,8 +73,7 @@
 (s/def :transaction/contract-address :contract/address)
 
 
-(s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/form-data
-                                                                     :transaction/tx-opts
+(s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/tx-opts
                                                                      :transaction/hash
                                                                      :transaction/status
                                                                      :transaction/name

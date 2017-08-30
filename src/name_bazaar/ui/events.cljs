@@ -48,7 +48,7 @@
   :active-page-changed
   interceptors
   (fn [{:keys [:db]}]
-    (let [{:keys [:handler :query-params]} (:active-page db)
+    (let [{:keys [:handler :route-params :query-params]} (:active-page db)
           dispatch-n
           (condp = handler
             :route.offerings/search [[:set-params-and-search-offerings-main-search
@@ -57,7 +57,9 @@
                                         (parse-query-params query-params :route.offerings/search))
                                       {:clear-existing-items? true
                                        :clear-existing-params? true}]]
+            :route.offerings/edit [[:load-offerings [(:offering/address route-params)]]]
             [])]
+
       {:dispatch-n (concat
                      [[:stop-watching-all-offerings]]
                      dispatch-n)
@@ -77,7 +79,7 @@
                  :args-order [:offering/name
                               :offering/price]
                  :wei-keys #{:offering/price}
-                 :on-tx-receipt [:on-offering-deployed form-data]}]}))
+                 :on-success [:on-create-offering-sent form-data (:active-address db)]}]}))
 
 (reg-event-fx
   :auction-offering-factory/create-offering
@@ -101,17 +103,29 @@
                                 :auction-offering/extension-duration
                                 :auction-offering/min-bid-increase]
                    :wei-keys #{:offering/price :auction-offering/min-bid-increase}
-                   :on-tx-receipt [:on-offering-deployed form-data]}]})))
+                   :on-success [:on-create-offering-sent form-data (:active-address db)]}]})))
 
 (reg-event-fx
-  :on-offering-deployed
+  :on-create-offering-sent
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering/name]}]]
+  (fn [{:keys [:db]} [{:keys [:offering/name] :as offering} sender-address]]
+    {:dispatch [:district0x.contract/event-watch-once {:contract-key :offering-registry
+                                                       :event-name :on-offering-added
+                                                       :event-filter-opts {:node (namehash name)
+                                                                           :owner sender-address}
+                                                       :blockchain-filter-opts "latest"
+                                                       :on-success [:on-my-offering-added offering]
+                                                       :on-error [:district0x.log/error]}]}))
+
+(reg-event-fx
+  :on-my-offering-added
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering/name]} {:keys [:offering :owner :node]}]]
     {:dispatch [:district0x.snackbar/show-message-redirect-action
-                {:message (str "Offering for " name " was deployed!")
-                 :route :route.user/my-offerings
-                 :routes constants/routes
-                 :action-text "See My Offerings"}]}))
+                {:message (str "Offering for " name " is ready!")
+                 :route :route.offerings/detail
+                 :route-params {:offering/address offering}
+                 :routes constants/routes}]}))
 
 (reg-event-fx
   :buy-now-offering/buy
@@ -143,7 +157,8 @@
                  :result-href (path-for :route.offerings/detail form-data)
                  :tx-opts {:gas 250000 :gas-price default-gas-price}
                  :form-id (select-keys form-data [:offering/address])
-                 :wei-keys #{:offering/price}}]}))
+                 :wei-keys #{:offering/price}
+                 :on-tx-receipt [:offering/set-settings-tx-receipt form-data]}]}))
 
 (reg-event-fx
   :auction-offering/bid
@@ -211,20 +226,32 @@
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Edit %s auction" (get-offering-name db (:offering/address form-data)))
-                 :contract-key :auction-offering
-                 :contract-method :set-settings
-                 :form-data form-data
-                 :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offerings/detail form-data)
-                 :args-order [:offering/price
-                              :auction-offering/end-time
-                              :auction-offering/extension-duration
-                              :auction-offering/min-bid-increase]
-                 :form-id (select-keys form-data [:offering/address])
-                 :tx-opts {:gas 1000000 :gas-price default-gas-price}
-                 :wei-keys #{:offering/price}}]}))
+    (let [form-data (update form-data :auction-offering/end-time to-epoch)]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Edit %s auction" (get-offering-name db (:offering/address form-data)))
+                   :contract-key :auction-offering
+                   :contract-method :set-settings
+                   :form-data form-data
+                   :contract-address (:offering/address form-data)
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :args-order [:offering/price
+                                :auction-offering/end-time
+                                :auction-offering/extension-duration
+                                :auction-offering/min-bid-increase]
+                   :form-id (select-keys form-data [:offering/address])
+                   :tx-opts {:gas 1000000 :gas-price default-gas-price}
+                   :on-tx-receipt [:offering/set-settings-tx-receipt form-data]
+                   :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]})))
+
+(reg-event-fx
+  :offering/set-settings-tx-receipt
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering/name :offering/address]}]]
+    {:dispatch [:district0x.snackbar/show-message-redirect-action
+                {:message (str "Offering for " name " was updated!")
+                 :route :route.offerings/detail
+                 :route-params {:offering/address address}
+                 :routes constants/routes}]}))
 
 
 (reg-event-fx
@@ -301,7 +328,9 @@
                    :form-data form-data
                    :result-href (path-for :route.ens-record/detail {:ens.record/name ens-record-name})
                    :args-order [:ens.record/label-hash]
-                   :tx-opts {:gas 700000 :gas-price default-gas-price}}]})))
+                   :tx-opts {:gas 700000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (str "Name " ens-record-name " was successfully registered")]}]})))
 
 
 (reg-event-fx
@@ -610,29 +639,6 @@
                          (partial remove #(= node (:ens.record/node %))))]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db :search-form/watched-names))})))
-
-#_(reg-event-fx
-    :watch-on-offering-added
-    interceptors
-    (fn [{:keys [:db]} [{:keys [:ens.record/node :ens.record/owner :on-success :on-error]}]]
-      {:dispatch [:district0x.contract/event-watch-once {:contract-key :offering-registry
-                                                         :event-name :on-offering-added
-                                                         :event-filter-opts {:node node :owner owner}
-                                                         :blockchain-filter-opts "latest"
-                                                         :on-success [:offering-registry/on-offering-added]}]}))
-
-(reg-event-fx
-  :offering-registry/on-offering-added
-  interceptors
-  (fn [{:keys [:db]} [{:keys [:offering :owner :node]} event]]
-    {:db (-> db
-           (update-in [:offering-registry/offerings offering] merge {:offering/node node
-                                                                     :offering/original-owner owner})
-           (update-in [:ens/records node] (fn [ens-node]
-                                            (merge ens-node
-                                                   {:ens.record/owner owner
-                                                    :node/offerings (conj (vec (:node/offerings ens-node))
-                                                                          offering)}))))}))
 
 (reg-event-fx
   :transfer-node-owner-to-latest-offering

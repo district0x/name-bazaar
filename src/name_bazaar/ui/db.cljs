@@ -14,8 +14,8 @@
 (def default-db
   (merge
     district0x.ui.db/default-db
-    {:node-url #_"https://mainnet.infura.io/" "http://192.168.88.49:8549" #_ "http://localhost:8549"
-     :server-url "http://192.168.88.49:6200" #_ "http://localhost:6200"
+    {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
+     :server-url  "http://localhost:6200"
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
 

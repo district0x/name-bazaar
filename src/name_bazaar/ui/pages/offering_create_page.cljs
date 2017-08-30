@@ -1,18 +1,19 @@
 (ns name-bazaar.ui.pages.offering-create-page
   (:require
     [cljs-react-material-ui.reagent :as ui]
-    [cljs-time.coerce :as time-coerce :refer [to-epoch]]
+    [cljs-time.coerce :as time-coerce :refer [to-epoch to-date]]
     [cljs-time.core :as t]
     [district0x.shared.utils :refer [pos-ether-value?]]
     [district0x.ui.components.misc :as misc :refer [row row-with-cols col paper page]]
     [district0x.ui.components.text-field :refer [text-field-with-suffix ether-field-with-currency]]
     [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme date+time->date-time]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme date+time->local-date-time]]
     [name-bazaar.shared.utils :refer [name-level]]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
+    [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
-    [name-bazaar.ui.utils :refer [namehash sha3]]
+    [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -89,8 +90,7 @@
            [ui/menu-item
             {:key (name val)
              :value (name val)
-             :primary-text text
-             :full-width @xs?}]))])))
+             :primary-text text}]))])))
 
 (defn offering-default-form-data []
   (let [end-time (time-coerce/to-date (t/plus (t/now) (t/days 3)))]
@@ -107,6 +107,9 @@
 
 (defn- hours->seconds [hours]
   (* hours 3600))
+
+(defn- seconds->hours [seconds]
+  (/ seconds 3600))
 
 (defn offering-min-bid-increase-text-field []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
@@ -161,7 +164,8 @@
          {:min-date (time-coerce/to-date (t/plus (t/now) (t/hours 1)))
           :floating-label-text "End Date"
           :text-field-style (if @xs? {:width "100%"} {})
-          :format-date (comp d0x-ui-utils/format-local-date time-coerce/to-date-time)}
+          :format-date (fn [x]
+                         (.toDateString x))}
          props)])))
 
 (defn auction-end-time-time-picker []
@@ -174,23 +178,54 @@
           :minutes-step 10}
          props)])))
 
+(defn- form-data->transaction-data [offering]
+  (let [auction? (= (:offering/type offering) :auction-offering)]
+    (cond-> offering
+      true (update :offering/name str constants/registrar-root)
+      auction? (assoc :auction-offering/end-time
+                      (date+time->local-date-time (:auction-offering.end-time/date offering)
+                                                  (:auction-offering.end-time/time offering)))
+      auction? (update :auction-offering/extension-duration
+                       hours->seconds))))
 
-(defn offering-form []
+(defn- transaction-data->form-data [offering]
+  (let [auction? (= (:offering/type offering) :auction-offering)]
+    (cond-> offering
+      true (update :offering/name strip-eth-suffix)
+      auction? (assoc :auction-offering.end-time/date (to-date (:auction-offering/end-time offering)))
+      auction? (assoc :auction-offering.end-time/time (to-date (:auction-offering/end-time offering)))
+      auction? (update :auction-offering/extension-duration seconds->hours))))
+
+(defn- get-submit-event [offering-type editing?]
+  (if (= offering-type :buy-now-offering)
+    (if editing?
+      :buy-now-offering/set-settings
+      :buy-now-offering-factory/create-offering)
+    (if editing?
+      :auction-offering/set-settings
+      :auction-offering-factory/create-offering)))
+
+
+(defn offering-form [{:keys [:offering]}]
   (let [xs? (subscribe [:district0x/window-xs-width?])
-        form-data (r/atom (offering-default-form-data))]
-    (fn []
+        form-data (r/atom (or offering (offering-default-form-data)))]
+    (fn [{:keys [:editing?]}]
       (let [{:keys [:offering/name :offering/type :offering/price :auction-offering/min-bid-increase
                     :auction-offering/extension-duration :auction-offering.end-time/date
                     :auction-offering.end-time/time]} @form-data
             auction? (= type :auction-offering)
-            ownership-status (get-ownership-status name)]
+            ownership-status (when-not editing? (get-ownership-status name))]
         [:div
-         [offering-name-text-field
-          {:value name
-           :ownership-status ownership-status
-           :on-change #(swap! form-data assoc :offering/name %2)}]
+         [:div
+          {:style {:height 80}}
+          [offering-name-text-field
+           {:value name
+            :ownership-status ownership-status
+            :disabled editing?
+            :on-change #(swap! form-data assoc :offering/name %2)}]]
          [offering-type-select-field
           {:value type
+           :disabled editing?
            :on-change #(swap! form-data assoc :offering/type (keyword %3))}]
          [ether-field-with-currency
           {:full-width @xs?
@@ -213,42 +248,84 @@
             [auction-end-time-time-picker
              {:value time
               :on-change #(swap! form-data assoc :auction-offering.end-time/time %2)}]])
-         [:div
-          {:style styles/margin-top-gutter-less}
-          (if auction?
-            "You will be able to edit parameters of this auction as long as there are no bids."
-            "You will be able to edit offering price even after creation.")]
-         [:div
-          {:style styles/margin-top-gutter-less}
-          "IMPORTANT: After you create offering contract, you will need to transfer name ownership into it "
-          "in order to display it in search and for others being able to buy it. You will be notified once the contract "
-          "is ready, or you can do it from " [a {:route :route.user/my-offerings} "My Offerings"] " page later."]
+         (when-not editing?
+           [:div
+            {:style styles/margin-top-gutter-less}
+            (if auction?
+              "You will be able to edit parameters of this auction as long as there are no bids."
+              "You will be able to edit offering price even after creation.")])
+         (when-not editing?
+           [:div
+            {:style styles/margin-top-gutter-less}
+            "IMPORTANT: After you create offering contract, you will need to transfer name ownership into it "
+            "in order to display it in search and for others being able to buy it. You will be notified once the contract "
+            "is ready, or you can do it from " [a {:route :route.user/my-offerings} "My Offerings"] " page later."])
          [row
           {:end "xs"
            :style styles/margin-top-gutter-more}
           [raised-transaction-button
            {:primary true
-            :label "Create Offering"
+            :label (if editing? "Save Changes" "Create Offering")
             :full-width @xs?
-            :disabled (or (not= ownership-status :owner)
+            :disabled (or (and (not editing?)
+                               (not= ownership-status :owner))
                           (not (pos-ether-value? price))
-                          (not (pos-ether-value? min-bid-increase)))
+                          (not (or (not auction?)
+                                   (pos-ether-value? min-bid-increase))))
             :on-click (fn []
-                        (let [event-name (if auction? :auction-offering-factory/create-offering
-                                                      :buy-now-offering-factory/create-offering)
-                              data (cond-> @form-data
-                                     true (update :offering/name str constants/registrar-root)
-                                     auction? (assoc :auction-offering/end-time
-                                                     (date+time->date-time date time))
-                                     auction? (update :auction-offering/extension-duration
-                                                      hours->seconds))]
-                          (dispatch [event-name data])
+                        (dispatch [(get-submit-event type editing?) (form-data->transaction-data @form-data)])
+                        (when-not editing?
                           (swap! form-data assoc :offering/name "")))}]]]))))
 
+(defn loading-placeholder []
+  [:div
+   [list-item-placeholder
+    {:style styles/margin-top-gutter}]
+   [list-item-placeholder
+    {:style styles/margin-top-gutter}]
+   [list-item-placeholder
+    {:style styles/margin-top-gutter}]])
+
+(defn no-permission-error [text]
+  [row
+   {:style {:height 150}
+    :middle "xs"
+    :center "xs"}
+   text])
+
 (defmethod page :route.offerings/edit []
-  [side-nav-menu-center-layout
-   [paper
-    [:h1 "Edit Offering"]]])
+  (let [route-params (subscribe [:district0x/route-params])]
+    (fn []
+      (let [{:keys [:offering/address]} @route-params
+            offering-loaded? @(subscribe [:offering/loaded? address])
+            offering @(subscribe [:offering-registry/offering address])]
+        [side-nav-menu-center-layout
+         [paper
+          [:h1 "Edit Offering"]
+
+          (cond
+            (not offering-loaded?)
+            [loading-placeholder]
+
+            (not @(subscribe [:offering/active-address-original-owner? address]))
+            [no-permission-error
+             "This offering wasn't created from your address, therefore you can't edit it."]
+
+            (:offering/new-owner offering)
+            [no-permission-error
+             "This offering was already bought by " [a {:route :route.user/purchases
+                                                        :route-params (:offering/new-owner offering)}
+                                                     (:offering/new-owner offering)]]
+
+            (and (= (:offering/type offering) :auction-offering)
+                 (pos? (:auction-offering/bid-count offering)))
+            [no-permission-error
+             "This auction already has some bids, so it can't be edited anymore"]
+
+            :else
+            [offering-form
+             {:editing? true
+              :offering (transaction-data->form-data offering)}])]]))))
 
 (defmethod page :route.offerings/create []
   [side-nav-menu-center-layout

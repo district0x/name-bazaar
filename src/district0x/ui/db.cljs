@@ -12,7 +12,7 @@
    :ui-disabled? false
    :snackbar {:open? false
               :message ""
-              :auto-hide-duration 5000
+              :auto-hide-duration 6000
               :on-request-close #(dispatch [:district0x.snackbar/close])}
    :dialog {:open? false
             :modal false
@@ -29,8 +29,7 @@
    :transaction-log-settings {:from-active-address-only? false}
    :transactions {}
    :transaction-ids-chronological '()
-   :transaction-ids-by-form {}
-   })
+   :transaction-ids-by-form {}})
 
 
 

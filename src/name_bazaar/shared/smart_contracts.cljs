@@ -3,13 +3,13 @@
 (def smart-contracts 
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
-  :address "0xa22d3841f9eaaa0b14e92e9bf0bc3e4cc895dc65"},
+  :address "0x9b20da8b18762618a508a757dd65f2c01792ba19"},
  :buy-now-offering-library
  {:name "BuyNowOfferingLibrary",
-  :address "0x1e9130d15451645322debd69a8030ebc4c97988e"},
+  :address "0x004d973234339ccba513fa913e335ae3bf1c163f"},
  :buy-now-offering-factory
  {:name "BuyNowOfferingFactory",
-  :address "0xce07d49730f46353430da95606a4f67b0d683fb9"},
+  :address "0x34c134015689c498a7996d061b662fb27f6781a2"},
  :registrar
  {:name "Registrar",
   :address "0x542d337975c2f9b436621024df371244bd53a0af"},
@@ -18,26 +18,26 @@
   :address "0x0000000000000000000000000000000000000000"},
  :auction-offering-library
  {:name "AuctionOfferingLibrary",
-  :address "0x0298077c30bb60886c0274c1e290a9e7ae3825c9"},
+  :address "0x8cc436d80304887169dd4b31ba05781fd14713b9"},
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :ens
- {:name "ENS", :address "0x8837154a23d7f64c59b1acb655aec0f855e9db4a"},
+ {:name "ENS", :address "0xf3dd9c67bc26673828716bf426d47cb8abff4ea2"},
  :mock-registrar
  {:name "MockRegistrar",
-  :address "0xe25ea9340fcc24387c77834c255db956e0120fb6"},
+  :address "0x376d9f19a9e255ff84f14ef5c0833d00880b6666"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0xa67042ee3fc8600af4d713d65e5f52cb0575c593"},
+  :address "0x4e5474de2e6d6d3ca85c285832df4b781e1cb55b"},
  :district0x-emails
  {:name "District0xEmails",
   :address "0x0000000000000000000000000000000000000000"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0x8e649118a71e7106defc93ca19c9132100152304"},
+  :address "0x0b2f39fb0448f5e7bc6d23d8bdbcead356291938"},
  :offering-library
  {:name "OfferingLibrary",
-  :address "0x491dea27c66ad6d67759b0ad42ab7a7b2558ff90"},
+  :address "0xae79319eb700def8a7bd8a5eed0709401bed8953"},
  :auction-offering
  {:name "AuctionOffering",
   :address "0x0000000000000000000000000000000000000000"}})

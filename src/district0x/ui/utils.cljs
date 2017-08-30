@@ -107,6 +107,10 @@
   (when date
     (time-format/unparse-local (time-format/formatter "EEE, dd MMM yyyy Z") date)))
 
+(defn format-date [date]
+  (when date
+    (time-format/unparse-local (time-format/formatter "EEE, dd MMM yyyy") date)))
+
 (defn format-eth [x]
   (when x
     (.toLocaleString x js/undefined #js {:maximumFractionDigits 2})))
@@ -237,9 +241,9 @@
             (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
 
 
-(defn date+time->date-time [date time]
-  (t/date-time (.getYear date) (.getMonth date) (.getDate date)
-               (.getHours time) (.getMinutes time) (.getSeconds time)))
+(defn date+time->local-date-time [date time]
+  (t/local-date-time (.getFullYear date) (inc (.getMonth date)) (.getDate date)
+                     (.getHours time) (.getMinutes time) (.getSeconds time)))
 
 (def default-data-source-config {"text" "text" "value" "value"})
 
