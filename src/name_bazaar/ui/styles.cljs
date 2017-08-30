@@ -11,6 +11,7 @@
               #_#_:accent1-color accent1-color
               #_#_:text-color theme-blue})
 
+
 (def mui-theme (get-mui-theme {:palette palette
                                :font-family "Open Sans, sans-serif"
                                :app-bar {:height 56}
@@ -119,6 +120,9 @@
 (def display-none
   {:display :none})
 
+(def display-flex
+  {:display :flex})
+
 (def opacity-1
   {:opacity 1})
 
@@ -149,6 +153,9 @@
   {:text-decoration :none})
 
 ;; --- GENERIC STYLES END ---
+
+(def text-field-warning-color (color :orange500))
+(def text-field-success-color (color :green500))
 
 (defn search-results-list-item-height [xs?]
   (if xs? 75 52))
@@ -216,10 +223,8 @@
    :position :absolute})
 
 (def search-results-paper
-  {:min-height 800})
-
-(def search-results-paper-inner
-  {:padding 0
+  {:min-height 800
+   :padding 0
    :padding-top desktop-gutter-less})
 
 (defn offering-list-item-price [xs?]
@@ -248,4 +253,6 @@
 (def offering-list-item-bid-count-xs
   {:font-size "0.9em"})
 
+(def text-field-suffix
+  {:font-size "1.2em"})
 

@@ -15,7 +15,7 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
@@ -68,12 +68,16 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/name :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :buy-now-offering
+                {:name (gstring/format "Create %s offering" (:offering/name form-data))
+                 :contract-key :buy-now-offering-factory
                  :contract-method :create-offering
                  :form-data form-data
-                 :tx-opts {:gas 700000 :gas-price default-gas-price}
+                 :tx-opts {:gas 600000 :gas-price default-gas-price}
+                 :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
                  :args-order [:offering/name
-                              :offering/price]}]}))
+                              :offering/price]
+                 :wei-keys #{:offering/price}
+                 :on-tx-receipt [:on-offering-deployed form-data]}]}))
 
 (reg-event-fx
   :auction-offering-factory/create-offering
@@ -83,17 +87,31 @@
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:contract-key :auction-offering-factory
-                 :contract-method :create-offering
-                 :form-data form-data
-                 :tx-opts {:gas 700000 :gas-price default-gas-price}
-                 :args-order [:offering/name
-                              :offering/price
-                              :auction-offering/end-time
-                              :auction-offering/extension-duration
-                              :auction-offering/min-bid-increase]
-                 :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]}))
+    (let [form-data (update form-data :auction-offering/end-time to-epoch)]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Create %s auction" (:offering/name form-data))
+                   :contract-key :auction-offering-factory
+                   :contract-method :create-offering
+                   :form-data form-data
+                   :tx-opts {:gas 800000 :gas-price default-gas-price}
+                   :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
+                   :args-order [:offering/name
+                                :offering/price
+                                :auction-offering/end-time
+                                :auction-offering/extension-duration
+                                :auction-offering/min-bid-increase]
+                   :wei-keys #{:offering/price :auction-offering/min-bid-increase}
+                   :on-tx-receipt [:on-offering-deployed form-data]}]})))
+
+(reg-event-fx
+  :on-offering-deployed
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering/name]}]]
+    {:dispatch [:district0x.snackbar/show-message-redirect-action
+                {:message (str "Offering for " name " was deployed!")
+                 :route :route.user/my-offerings
+                 :routes constants/routes
+                 :action-text "See My Offerings"}]}))
 
 (reg-event-fx
   :buy-now-offering/buy
@@ -105,7 +123,7 @@
                  :contract-method :buy
                  :form-data form-data
                  :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offering/detail form-data)
+                 :result-href (path-for :route.offerings/detail form-data)
                  :tx-opts {:gas 100000
                            :gas-price default-gas-price
                            :value (eth->wei (:offering/price form-data))}
@@ -116,11 +134,13 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :buy-now-offering
+                {:name (gstring/format "Edit %s offering" (get-offering-name db (:offering/address form-data)))
+                 :contract-key :buy-now-offering
                  :contract-method :set-settings
                  :form-data form-data
                  :contract-address (:offering/address form-data)
                  :args-order [:offering/price]
+                 :result-href (path-for :route.offerings/detail form-data)
                  :tx-opts {:gas 250000 :gas-price default-gas-price}
                  :form-id (select-keys form-data [:offering/address])
                  :wei-keys #{:offering/price}}]}))
@@ -135,7 +155,7 @@
                  :contract-method :bid
                  :form-data form-data
                  :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offering/detail form-data)
+                 :result-href (path-for :route.offerings/detail form-data)
                  :tx-opts {:gas 100000
                            :gas-price default-gas-price
                            :value (eth->wei (:offering/price form-data))}
@@ -147,11 +167,13 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/address :auction-offering/transfer-price?]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :auction-offering
+                {:name (gstring/format "Finalize auction %s" (get-offering-name db (:offering/address form-data)))
+                 :contract-key :auction-offering
                  :contract-method :finalize
                  :form-data form-data
                  :contract-address (:offering/address form-data)
                  :args-order [:auction-offering/transfer-price?]
+                 :result-href (path-for :route.offerings/detail form-data)
                  :tx-opts {:gas 300000
                            :gas-price default-gas-price
                            :value (:offering/price form-data)}
@@ -177,22 +199,25 @@
                    :form-data form-data
                    :contract-address (:offering/address form-data)
                    :args-order [:auction-offering/bidder]
-                   :result-href (path-for :route.offering/detail form-data)
+                   :result-href (path-for :route.offerings/detail form-data)
                    :tx-opts {:gas 150000 :gas-price default-gas-price}
                    :form-id (select-keys form-data [:offering/address])}]})))
 
 (reg-event-fx
   :auction-offering/set-settings
-  [interceptors (validate-first-arg (s/keys :req [:offering/price
+  [interceptors (validate-first-arg (s/keys :req [:offering/address
+                                                  :offering/price
                                                   :auction-offering/end-time
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :auction-offering
+                {:name (gstring/format "Edit %s auction" (get-offering-name db (:offering/address form-data)))
+                 :contract-key :auction-offering
                  :contract-method :set-settings
                  :form-data form-data
                  :contract-address (:offering/address form-data)
+                 :result-href (path-for :route.offerings/detail form-data)
                  :args-order [:offering/price
                               :auction-offering/end-time
                               :auction-offering/extension-duration
@@ -207,10 +232,13 @@
   [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :buy-now-offering
+                {:name (gstring/format "Reclaim ownership from %s offering"
+                                       (get-offering-name db (:offering/address form-data)))
+                 :contract-key :buy-now-offering
                  :contract-method :reclaim-ownership
                  :form-data form-data
                  :contract-address (:offering/address form-data)
+                 :result-href (path-for :route.offerings/detail form-data)
                  :form-id (select-keys form-data [:offering/address])
                  :tx-opts {:gas 200000 :gas-price default-gas-price}}]}))
 
@@ -223,10 +251,12 @@
     (let [form-data (cond-> form-data
                       (:ens.record/name form-data) (assoc :ens.record/node (namehash (:ens.record/name form-data))))]
       {:dispatch [:district0x/make-transaction
-                  {:contract-key :ens
+                  {:name (gstring/format "Set ENS owner for %s" (:ens.record/name form-data))
+                   :contract-key :ens
                    :contract-method :set-owner
                    :form-data form-data
                    :args-order [:ens.record/node :ens.record/owner]
+                   :result-href (path-for :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}}]})))
 
@@ -235,22 +265,41 @@
   [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
   (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
-                {:contract-key :offering-requests
+                {:name (gstring/format "Request for %s" (:ens.record/name form-data))
+                 :contract-key :offering-requests
                  :contract-method :add-request
                  :form-data form-data
                  :args-order [:ens.record/name]
+                 :result-href (path-for :route.ens-record/detail form-data)
                  :form-id (select-keys form-data [:ens.record/name])
                  :tx-opts {:gas 100000 :gas-price default-gas-price}}]}))
+
+(reg-event-fx
+  :registrar/transfer
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
+  (fn [{:keys [:db]} [form-data]]
+    {:dispatch [:district0x/make-transaction
+                {:name (gstring/format "Transfer %s ownership" (str (:ens.record/label form-data)
+                                                                    constants/registrar-root))
+                 :contract-key :registrar
+                 :contract-method :register
+                 :form-data form-data
+                 :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
+                 :args-order [:ens.record/label-hash]
+                 :tx-opts {:gas 000 :gas-price default-gas-price}}]}))
 
 (reg-event-fx
   :mock-registrar/register
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
+    (let [ens-record-name (str (:ens.record/label form-data) constants/registrar-root)
+          form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
       {:dispatch [:district0x/make-transaction
-                  {:contract-key :mock-registrar
+                  {:name (gstring/format "Register %s" ens-record-name)
+                   :contract-key :mock-registrar
                    :contract-method :register
                    :form-data form-data
+                   :result-href (path-for :route.ens-record/detail {:ens.record/name ens-record-name})
                    :args-order [:ens.record/label-hash]
                    :tx-opts {:gas 700000 :gas-price default-gas-price}}]})))
 
@@ -415,15 +464,16 @@
   interceptors
   (fn [{:keys [:db]} [label-hash]]
     (let [deed-address (get-in db [:registrar/entries label-hash :registrar.entry.deed/address])]
-      {:web3-fx.contract/constant-fns
-       {:fns [{:instance (get-instance db :deed deed-address)
-               :method :value
-               :on-success [:registrar-entry-deed-value-loaded label-hash]
-               :on-error [:district0x.log/error]}
-              {:instance (get-instance db :deed deed-address)
-               :method :owner
-               :on-success [:registrar-entry-deed-owner-loaded label-hash]
-               :on-error [:district0x.log/error]}]}})))
+      (when-not (empty-address? deed-address)
+        {:web3-fx.contract/constant-fns
+         {:fns [{:instance (get-instance db :deed deed-address)
+                 :method :value
+                 :on-success [:registrar-entry-deed-value-loaded label-hash]
+                 :on-error [:district0x.log/error]}
+                {:instance (get-instance db :deed deed-address)
+                 :method :owner
+                 :on-success [:registrar-entry-deed-owner-loaded label-hash]
+                 :on-error [:district0x.log/error]}]}}))))
 
 (reg-event-fx
   :registrar-entry-deed-value-loaded
@@ -437,7 +487,8 @@
   :registrar-entry-deed-owner-loaded
   interceptors
   (fn [{:keys [:db]} [label-hash deed-owner]]
-    {:db (assoc-in db [:registrar/entries label-hash :registrar.entry.deed/owner] deed-owner)}))
+    {:db (assoc-in db [:registrar/entries label-hash :registrar.entry.deed/owner]
+                   (when-not (empty-address? deed-owner) deed-owner))}))
 
 (reg-event-fx
   :search-ens-record-offerings

@@ -5,7 +5,7 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [epoch->long empty-address?]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
     [district0x.ui.components.text-field :refer [ether-field-with-currency]]
-    [district0x.ui.components.transaction-button :refer [transaction-raised-button]]
+    [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code truncate current-component-mui-theme format-time-duration-units format-local-datetime time-ago]]
     [name-bazaar.shared.utils :refer [calculate-min-bid name-label]]
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
@@ -23,7 +23,7 @@
 (defn open-offering-detail-button [{:keys [:offering/address]}]
   [:div
    [a
-    {:route :route.offering/detail
+    {:route :route.offerings/detail
      :route-params {:offering/address address}
      :style styles/text-decor-none}
     "Open Offering Detail"]])
@@ -100,7 +100,7 @@
         [ui/raised-button
          {:primary true
           :label "Edit"
-          :href (path-for :route.offering/edit {:offering/address address})
+          :href (path-for :route.offerings/edit {:offering/address address})
           :disabled (and (= type :auction-offering) (pos? bid-count))}]
         (when-not (false? @(subscribe [:offering/node-owner? address]))
           (into [:div] children)))
@@ -115,7 +115,7 @@
       :style styles/full-height}
      [transaction-form
       {:offering offering}
-      [transaction-raised-button
+      [raised-transaction-button
        {:primary true
         :label "Buy"
         :pending? @(subscribe [:buy-now-offering/buy-tx-pending? address])
@@ -203,7 +203,7 @@
               :full-width @xs?
               :on-change (fn [_ value valid?]
                            (reset! bid-form {:value value :valid? valid?}))}]
-            [transaction-raised-button
+            [raised-transaction-button
              {:primary true
               :label "Bid"
               :full-width @xs?

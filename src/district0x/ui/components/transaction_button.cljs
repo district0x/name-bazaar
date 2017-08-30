@@ -16,7 +16,7 @@
          {:disabled true
           :label pending-label})))])
 
-(defn transaction-raised-button [props]
+(defn raised-transaction-button [props]
   [transaction-button (assoc props :raised-button? true)])
 
 

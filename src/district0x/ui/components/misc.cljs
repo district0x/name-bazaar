@@ -17,23 +17,37 @@
 (defmulti page identity)
 
 (defn paper []
+  (let [xs? (subscribe [:district0x/window-xs-width?])]
+    (fn [props & children]
+      (let [[props children] (parse-props-children props children)
+            {:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
+            gutter (if @xs? desktopGutterLess desktopGutter)]
+        (into
+          [ui/paper
+           (r/merge-props
+             {:style {:padding gutter
+                      :margin-bottom gutter}}
+             (dissoc props))]
+          children)))))
+
+(defn paper-with-loader []
   (let [xs-width? (subscribe [:district0x/window-xs-width?])
         connection-error? (subscribe [:district0x/blockchain-connection-error?])]
     (fn [props & children]
-      (let [[{:keys [:inner-style :use-loader?] :as props} children] (parse-props-children props children)
+      (let [[{:keys [:inner-style] :as props} children] (parse-props-children props children)
             {:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
             gutter (if @xs-width? desktopGutterLess desktopGutter)]
         [ui/paper
-         (dissoc props :loading? :inner-style :use-loader?)
-         (when use-loader?
-           [ui/linear-progress {:mode :indeterminate
-                                :style {:visibility (if (and (:loading? props)
-                                                             (not @connection-error?))
-                                                      :visible
-                                                      :hidden)}}])
+         (r/merge-props
+           {:style {:margin-bottom gutter}}
+           (dissoc props :loading? :inner-style))
+         [ui/linear-progress {:mode :indeterminate
+                              :style {:visibility (if (and (:loading? props)
+                                                           (not @connection-error?))
+                                                    :visible
+                                                    :hidden)}}]
          (into [] (concat [:div {:style (merge {:word-wrap :break-word
-                                                :padding gutter
-                                                :margin-bottom gutter}
+                                                :padding gutter}
                                                (:inner-style props))}]
                           children))]))))
 
@@ -89,17 +103,17 @@
        {:mui-theme mui-theme}
        (if-not @ui-disabled?
          (into content
-               [[ui/snackbar (-> @snackbar
-                               (set/rename-keys {:open? :open}))]])
+               [[ui/snackbar (print.foo/look (-> @snackbar
+                                (set/rename-keys {:open? :open})))]])
          [:div "UI is disabled"])])))
 
 (defn nav-menu-item []
-  (let [active-address (subscribe [:district0x/active-address])
-        routes (subscribe [:district0x/routes])]
-    (fn [{:keys [:route :route-params :with-active-address-only?] :as props} & children]
+  (let [active-address (subscribe [:district0x/active-address])]
+    (fn [{:keys [:route :route-params :with-active-address-only? :routes :key] :as props} & children]
       (into [ui/list-item
              (r/merge-props
-               (merge {}
+               (merge (when-not key
+                        {:key route})
                       (when (and with-active-address-only?
                                  @active-address)
                         {:style {:display :none}})
@@ -107,8 +121,8 @@
                         {:href (d0x-ui-utils/path-for
                                  {:route route
                                   :route-params route-params
-                                  :routes @routes})}))
-               (dissoc props :route :route-params :with-active-address-only?))]
+                                  :routes routes})}))
+               (dissoc props :route :route-params :routes :with-active-address-only?))]
             children))))
 
 (defn side-nav-menu []

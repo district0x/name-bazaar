@@ -5,7 +5,7 @@
     [reagent.core :as r]))
 
 (defn placeholder-masker [{:keys [:height :top :bottom :left-offset-perc :left-offset-perc-min :left-offset-perc-max
-                                  :full-width?]
+                                  full-width]
                            :as props}]
   (let [left-offset-perc (if (and left-offset-perc-min left-offset-perc-max)
                            (+ left-offset-perc-min (rand-int (- left-offset-perc-max left-offset-perc-min)))
@@ -17,11 +17,11 @@
                         {:height height
                          :top top
                          :bottom bottom}
-                        (when full-width?
+                        (when full-width
                           {:width "100%"})
                         (when left-offset-perc
                           {:width (str (- 100 left-offset-perc) "%") :left (str left-offset-perc "%")}))}
-         (dissoc props :height :top :bottom :left-offset-perc :left-offset-perc-min :left-offset-perc-max :full-width?))])))
+         (dissoc props :height :top :bottom :left-offset-perc :left-offset-perc-min :left-offset-perc-max :full-width))])))
 
 (defn list-item-placeholder []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
@@ -30,11 +30,11 @@
        (r/merge-props
          {:style (styles/placeholder-animated-background @xs?)}
          props)
-       [placeholder-masker {:height 3 :top 0 :full-width? true}]
+       [placeholder-masker {:height 3 :top 0 :full-width true}]
        [placeholder-masker {:height 13 :left-offset-perc 12}]
-       [placeholder-masker {:height 7 :top 12 :full-width? true}]
+       [placeholder-masker {:height 7 :top 12 :full-width true}]
        [placeholder-masker {:height 20 :top 18 :left-offset-perc-min 20 :left-offset-perc-max 40}]
        (when @xs?
-         [placeholder-masker {:height 5 :top 37 :full-width? true}])
+         [placeholder-masker {:height 5 :top 37 :full-width true}])
        (when @xs?
          [placeholder-masker {:height 20 :top 40 :left-offset-perc-min 40 :left-offset-perc-max 70}])])))

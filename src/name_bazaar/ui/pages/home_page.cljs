@@ -33,7 +33,7 @@
 
                                 (map? value)
                                 (dispatch [:district0x.location/nav-to
-                                           :route.offering/detail
+                                           :route.offerings/detail
                                            {:offering/address (:value value)}
                                            constants/routes]))))
           :on-update-input (fn [value]
@@ -50,4 +50,4 @@
      [row
       [misc/a {:route :route.offerings/search} "Search Offerings"]]
      [row
-      [misc/a {:route :route.offering/create} "Create new offering"]]]]])
+      [misc/a {:route :route.offerings/create} "Create new offering"]]]]])

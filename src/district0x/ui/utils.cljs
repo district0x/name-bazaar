@@ -158,8 +158,7 @@
 (defn format-time-duration-units [milis]
   (let [{:keys [:seconds :minutes :hours :days]} (time-duration-units milis)]
     (reduce (fn [acc [unit amount]]
-              (if (or (pos? amount)
-                      (= unit :seconds))
+              (if (pos? amount)
                 (str acc (format-time-duration-unit unit amount) " ")
                 acc))
             ""
@@ -236,6 +235,11 @@
             js/Math.floor
             int
             (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
+
+
+(defn date+time->date-time [date time]
+  (t/date-time (.getYear date) (.getMonth date) (.getDate date)
+               (.getHours time) (.getMinutes time) (.getSeconds time)))
 
 (def default-data-source-config {"text" "text" "value" "value"})
 

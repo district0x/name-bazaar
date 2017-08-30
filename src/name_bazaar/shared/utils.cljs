@@ -64,14 +64,6 @@
 (defn parse-offering-requests-counts [nodes counts]
   (zipmap nodes (map #(hash-map :offering-request/requesters-count (bn/->number %)) counts)))
 
-(def ens-record-props [:ens.record/owner :ens.record/resolver :ens.record/ttl])
-
-(defn parse-ens-record [node ens-record & [{:keys [:parse-dates?]}]]
-  (when ens-record
-    (-> (zipmap ens-record-props ens-record)
-      (update :ens.record/ttl bn/->number)
-      (assoc :ens.record/node node))))
-
 (def registrar-entry-states
   {0 :registrar.entry.state/open
    1 :registrar.entry.state/auction

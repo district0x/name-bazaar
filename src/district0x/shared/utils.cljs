@@ -44,8 +44,10 @@
 (defn epoch->long [x]
   (* x 1000))
 
+(def zero-address "0x0000000000000000000000000000000000000000")
+
 (defn zero-address? [x]
-  (or (= x "0x0000000000000000000000000000000000000000")
+  (or (= x zero-address)
       (= x "0x")))
 
 (defn empty-address? [x]
@@ -79,8 +81,8 @@
     (catch :default e
       false)))
 
-(defn pos-ether-value? [x & [props]]
-  (and (non-neg-ether-value? x props)
+(defn pos-ether-value? [x & [opts]]
+  (and (non-neg-ether-value? x opts)
        (or (and (string? x)
                 (pos? (parse-float x)))
            (and (number? x)

@@ -133,6 +133,13 @@
 (s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :distinct true))
 (s/def ::offerings-select-fields (partial combination-of? #{:address :node :version :name}))
 
+(defn prepare-order-by [order-by]
+  (map (fn [order-by-item]
+         (if (= order-by-item [:end-time :asc])
+           [(if-null :end-time js/Number.MAX_VALUE) :asc]   ;; Put nulls at the end
+           order-by-item))
+       order-by))
+
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :name :min-price :max-price :buy-now? :auction?
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-special-chars? :exclude-numbers?
@@ -176,15 +183,13 @@
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
-              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by order-by
-                                                                          #_ [[(if-null (first order-by) js/Number.MAX_VALUE)
-                                                                            (second order-by)]]))
+              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by (prepare-order-by order-by)))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
 
 (s/def ::offering-requests-order-by-column (partial contains? #{:requesters-count}))
 (s/def ::offering-requests-order-by-item (s/tuple ::offering-requests-order-by-column ::order-by-dir))
-(s/def ::offering-requests-order-by (s/coll-of ::offering-requests-order-by-item :kind vector? :distinct true))
+(s/def ::offering-requests-order-by (s/coll-of ::offering-requests-order-by-item :distinct true))
 (s/def ::offering-requests-select-fields (partial combination-of? #{:node :name :requesters-count}))
 
 (defn search-offering-requests [db {:keys [:limit :offset :name :name-position

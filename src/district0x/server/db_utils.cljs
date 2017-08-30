@@ -40,7 +40,7 @@
                                                    (-> res
                                                      (js->clj :keywordize-keys true)
                                                      (->> (transform-keys cs/->kebab-case-keyword)))
-                                                    false))))
+                                                   false))))
     port))
 
 (defn db-all [db sql-map & [{:keys [:port :total-count?]
@@ -54,7 +54,7 @@
                                           (log-error err)
                                           (put! total-count-ch (aget res "count(*)")))))
       (put! total-count-ch false))
-    (.all db (print.foo/look query) (clj->js values) (fn [err res]
+    (.all db query (clj->js values) (fn [err res]
                                       (log-error err)
                                       (put! port (->> (js->clj (or res []) :keywordize-keys true)
                                                    (map (partial transform-keys cs/->kebab-case-keyword))))))

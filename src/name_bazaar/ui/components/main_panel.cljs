@@ -15,6 +15,7 @@
     [name-bazaar.ui.pages.offering-detail-page]
     [name-bazaar.ui.pages.offering-requests-search-page]
     [name-bazaar.ui.pages.offerings-search-page]
+    [name-bazaar.ui.pages.register-name-page]
     [name-bazaar.ui.pages.user-bids-page]
     [name-bazaar.ui.pages.user-offerings-page]
     [name-bazaar.ui.pages.user-purchases-page]

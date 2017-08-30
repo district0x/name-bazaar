@@ -2,13 +2,13 @@
   (:require
     [cljs-react-material-ui.reagent :as ui]
     [clojure.string :as string]
-    [district0x.shared.utils :as d0x-shared-utils]
-    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [non-neg-ether-value?]]
+    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col paper page]]
     [district0x.ui.components.text-field :refer [text-field ether-field integer-field ether-field-with-currency]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code]]
     [medley.core :as medley]
     [name-bazaar.ui.components.icons :as icons]
-    [name-bazaar.ui.components.misc :refer [a side-nav-menu-layout]]
+    [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.components.search-results.offering-list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
@@ -178,27 +178,28 @@
 (defn price-text-fields []
   (let [search-params (subscribe [:search-params/offerings-main-search])]
     (fn [{:keys [:min-price-text-field-props :max-price-text-field-props]}]
-      [row-with-cols
-       [col
-        {:xs 6}
-        [ether-field
-         (r/merge-props
-           {:floating-label-text "Min. Price"
-            :full-width true
-            :allow-empty? true
-            :value (:min-price @search-params)
-            :on-change #(dispatch [:set-params-and-search-offerings-main-search {:min-price %2} {:add-to-query? true}])}
-           min-price-text-field-props)]]
-       [col
-        {:xs 6}
-        [ether-field
-         (r/merge-props
-           {:floating-label-text "Max. Price"
-            :full-width true
-            :allow-empty? true
-            :value (:max-price @search-params)
-            :on-change #(dispatch [:set-params-and-search-offerings-main-search {:max-price %2} {:add-to-query? true}])}
-           max-price-text-field-props)]]])))
+      (let [{:keys [:min-price :max-price]} @search-params]
+        [row-with-cols
+         [col
+          {:xs 6}
+          [text-field
+           (r/merge-props
+             {:floating-label-text "Min. Price"
+              :full-width true
+              :value min-price
+              :error-text (when-not (non-neg-ether-value? min-price {:allow-empty? true}) " ")
+              :on-change #(dispatch [:set-params-and-search-offerings-main-search {:min-price %2} {:add-to-query? true}])}
+             min-price-text-field-props)]]
+         [col
+          {:xs 6}
+          [text-field
+           (r/merge-props
+             {:floating-label-text "Max. Price"
+              :full-width true
+              :value max-price
+              :error-text (when-not (non-neg-ether-value? max-price {:allow-empty? true}) " ")
+              :on-change #(dispatch [:set-params-and-search-offerings-main-search {:max-price %2} {:add-to-query? true}])}
+             max-price-text-field-props)]]]))))
 
 (defn length-text-fields []
   (let [search-params (subscribe [:search-params/offerings-main-search])]
@@ -262,7 +263,6 @@
 
 (defn search-params-panel []
   [paper
-   {:inner-style {:padding-top 0}}
    [row-with-cols
     {:bottom "xs"
      :between "xs"}
@@ -361,8 +361,7 @@
     (fn []
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [paper
-         {:inner-style styles/search-results-paper-inner
-          :style styles/search-results-paper}
+         {:style styles/search-results-paper}
          [search-results-infinite-list
           {:total-count total-count
            :offset (:offset params)
@@ -381,9 +380,8 @@
 (defmethod page :route.offerings/search []
   (let [xs-sm? (subscribe [:district0x/window-xs-sm-width?])]
     (fn []
-      [side-nav-menu-layout
-       [center-layout
-        (if @xs-sm?
-          [search-params-panel-mobile]
-          [search-params-panel])
-        [offerings-search-results]]])))
+      [side-nav-menu-center-layout
+       (if @xs-sm?
+         [search-params-panel-mobile]
+         [search-params-panel])
+       [offerings-search-results]])))

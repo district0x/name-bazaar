@@ -4,7 +4,7 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address?]]
     [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
@@ -30,9 +30,68 @@
     (:ens/records db)))
 
 (reg-sub
+  :ens/record
+  :<- [:ens/records]
+  (fn [records [_ node]]
+    (get records node)))
+
+(reg-sub
+  :ens.record/loaded?
+  (fn [[_ node]]
+    (subscribe [:ens/record node]))
+  (fn [ens-record]
+    (boolean (:ens.record/owner ens-record))))
+
+(reg-sub
+  :active-address-ens.record/owner?
+  (fn [[_ node]]
+    [(subscribe [:district0x/active-address])
+     (subscribe [:ens/record node])])
+  (fn [[active-address ens-record]]
+    (= active-address (:ens.record/owner ens-record))))
+
+(reg-sub
+  :my-addresses-ens.record/owner?
+  (fn [[_ node]]
+    [(subscribe [:district0x/my-addresses])
+     (subscribe [:ens/record node])])
+  (fn [[my-addresses ens-record]]
+    (contains? (set my-addresses) (:ens.record/owner ens-record))))
+
+(reg-sub
   :registrar/entries
   (fn [db]
     (:registrar/entries db)))
+
+(reg-sub
+  :registrar/entry
+  :<- [:registrar/entries]
+  (fn [entries [_ label-hash]]
+    (get entries label-hash)))
+
+(reg-sub
+  :registrar.entry.deed/loaded?
+  (fn [[_ labe-hash]]
+    (subscribe [:registrar/entry labe-hash]))
+  (fn [registrar-entry]
+    (boolean (or (zero-address? (:registrar.entry.deed/address registrar-entry))
+                 (:registrar.entry.deed/value registrar-entry)))))
+
+(reg-sub
+  :active-address-registrar.entry.deed/owner?
+  (fn [[_ label-hash]]
+    [(subscribe [:district0x/active-address])
+     (subscribe [:registrar/entry label-hash])])
+  (fn [[active-address registrar-entry]]
+    (= active-address (:registrar.entry.deed/owner registrar-entry))))
+
+(reg-sub
+  :my-addresses-registrar.entry.deed/owner?
+  (fn [[_ label-hash]]
+    [(subscribe [:district0x/my-addresses])
+     (subscribe [:registrar/entry label-hash])])
+  (fn [[my-addresses registrar-entry]]
+    (contains? (set my-addresses) (:registrar.entry.deed/address registrar-entry))))
 
 (reg-sub
   :offerings-search-params-drawer-open?

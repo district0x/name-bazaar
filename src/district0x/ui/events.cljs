@@ -642,18 +642,12 @@
 (reg-event-fx
   :district0x.snackbar/show-message-redirect-action
   interceptors
-  (fn [{:keys [db]} [message route route-params routes]]
+  (fn [{:keys [db]} [{:keys [:message :route :route-params :routes :action]}]]
     {:db (update db :snackbar merge
                  {:open? true
                   :message message
-                  :action "SHOW ME"
+                  :action (or action "SHOW ME")
                   :on-action-touch-tap #(dispatch [:district0x.location/nav-to route route-params routes])})}))
-
-(reg-event-db
-  :district0x.dialog/close
-  interceptors
-  (fn [db _]
-    (assoc-in db [:dialog :open?] false)))
 
 (reg-event-db
   :district0x.menu-drawer/set

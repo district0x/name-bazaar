@@ -107,25 +107,42 @@
         :error-text (when-not (validator value (select-keys props [:allow-empty?]))
                       (or value-error-text " "))})]))
 
+(defn text-field-with-suffix-layout [props & children]
+  (let [[props [field suffix-label]] (parse-props-children props children)]
+    [:span
+     {:style {:display :flex
+              :width (if (:full-width props) "100%" 256)}}
+     [:div
+      {:style {:flex-grow 1}}
+      field]
+     [:span
+      {:style {:margin-left (current-component-mui-theme "spacing" "desktopGutterMini")
+               :margin-top 40}}
+      suffix-label]]))
+
+(defn text-field-with-suffix [{:keys [full-width] :as props} suffix-element]
+  [text-field-with-suffix-layout
+   {:full-width full-width}
+   [text-field
+    (r/merge-props
+      {:full-width true}
+      (dissoc props :full-width))]
+   suffix-element])
+
 (defn ether-field-with-currency [{:keys [:container-props :currency-props :currency-code :full-width]
                                   :as props
                                   :or {currency-code "ETH"}}]
-  [:span
-   (r/merge-props
-     {:style {:display :flex
-              :width (if full-width "100%" 256)
-              :align-items :flex-end}}
-     container-props)
+  [text-field-with-suffix-layout
+   {:full-width full-width}
    [ether-field
     (r/merge-props
-      {:style {:flex-grow 1}}
+      {:full-width true}
       (dissoc props :container-props :currency-props :currency-code :full-width))]
-   [:span
+   [:div
     (r/merge-props
       {:style {:font-size "1.4em"
                :font-weight 300
-               :margin-bottom 11
-               :margin-left (current-component-mui-theme "spacing" "desktopGutterMini")}}
+               :margin-top -3}}
       currency-props)
     currency-code]])
 

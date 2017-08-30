@@ -80,7 +80,7 @@
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
 (s/def :registrar.entry/state keyword)
-(s/def :registrar.entry/registration-date date?)
+(s/def :registrar.entry/registration-date (s/nilable date?))
 (s/def :registrar.entry/value not-neg?)
 (s/def :registrar.entry/highest-bid not-neg?)
 (s/def :registrar.entry.deed/address address?)

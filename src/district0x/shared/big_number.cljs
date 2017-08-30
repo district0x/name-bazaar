@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [pos? neg? abs int? zero? - + * / mod])
   (:require
     [goog.date.Date]
-    [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
+    [cljs-time.coerce :refer [from-long to-local-date-time]]
     [cljs-time.core :as t :refer [date-time to-default-time-zone]]))
 
 (defn big-number? [x]
@@ -169,7 +169,7 @@
 
 (defn ->date-time [x]
   (when (pos? x)
-    (to-default-time-zone (to-date-time (->number (* x 1000))))))
+    (to-default-time-zone (from-long (->number (* x 1000))))))
 
 
 

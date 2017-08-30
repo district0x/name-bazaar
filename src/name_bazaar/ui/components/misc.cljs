@@ -42,61 +42,72 @@
           {}
           [[d0x-misc/nav-menu-item
             {:primary-text "Offerings"
-             :key :route.offerings/search
-             :route :route.offerings/search}]
+             :route :route.offerings/search
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "Latest"
              :key :route.offerings.search/latest
              :route :route.offerings/search
+             :routes constants/routes
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Most Active"
              :key :route.offerings.search/most-active
              :route :route.offerings/search
+             :routes constants/routes
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Ending Soon"
              :key :route.offerings.search/ending-soon
              :route :route.offerings/search
+             :routes constants/routes
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Requests"
-             :key :route.offering-requests/search
-             :route :route.offering-requests/search}]
+             :route :route.offering-requests/search
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "Watched Names"
-             :key :route/watched-names
-             :route :route/watched-names}]
+             :route :route/watched-names
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "Create Offering"
-             :key :route.offering/create
-             :route :route.offering/create}]
+             :route :route.offerings/create
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "My Offerings"
-             :key :route.user/my-offerings
-             :route :route.user/my-offerings}]
+             :route :route.user/my-offerings
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "My Purchases"
-             :key :route.user/my-purchases
-             :route :route.user/my-purchases}]
+             :route :route.user/my-purchases
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "My Bids"
-             :key :route.user/my-bids
-             :route :route.user/my-bids}]
+             :route :route.user/my-bids
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "My Settings"
-             :key :route.user/my-settings
-             :route :route.user/my-settings}]
+             :route :route.user/my-settings
+             :routes constants/routes}]
+           [d0x-misc/nav-menu-item
+            {:primary-text "Register Name"
+             :route :route.mock-registrar/register
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "How it works"
-             :key :route/how-it-works
-             :route :route/how-it-works}]
+             :route :route/how-it-works
+             :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "About"
-             :key :route/about
-             :route :route/about}]]]
+             :route :route/about
+             :routes constants/routes}]]]
          [d0x-misc/main-app-bar
           {:icon-element-right (r/as-element [main-app-bar-right-elements])}]]
         children))
+
+(defn side-nav-menu-center-layout [& children]
+  [side-nav-menu-layout
+   (into [center-layout] children)])
 
 
