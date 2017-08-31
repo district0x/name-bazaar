@@ -135,7 +135,9 @@
 
 (defn time-remaining [from-time to-time]
   (let [milis-difference (- (to-long to-time) (to-long from-time))]
-    (time-duration-units milis-difference)))
+    (if (pos? milis-difference)
+      (time-duration-units milis-difference)
+      {:seconds 0 :minutes 0 :hours 0 :days 0})))
 
 (defn time-biggest-unit [{:keys [:seconds :minutes :hours :days]}]
   (cond

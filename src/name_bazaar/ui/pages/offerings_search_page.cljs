@@ -9,8 +9,8 @@
     [medley.core :as medley]
     [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
+    [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
-    [name-bazaar.ui.components.search-results.offering-list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [etherscan-ens-url]]
@@ -347,7 +347,6 @@
 
 (defn search-params-panel-mobile []
   [paper
-   {:inner-style {:padding-top 0}}
    [search-params-drawer-mobile]
    [keyword-text-field]
    [order-by-select-field]

@@ -44,25 +44,34 @@
 (defn- auction-offering? [db offering-address]
   (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :auction-offering))
 
+(defn- route->initial-effects [{:keys [:handler :route-params :query-params]}]
+  (condp = handler
+    :route.offerings/search
+    {:dispatch [:set-params-and-search-offerings-main-search
+                (merge
+                  (get-in default-db [:search-results/offerings-main-search :params])
+                  (parse-query-params query-params :route.offerings/search))
+                {:clear-existing-items? true
+                 :clear-existing-params? true}]}
+
+    :route.offerings/edit
+    {:dispatch [:load-offerings [(:offering/address route-params)]]}
+
+    :route.offerings/detail
+    {:async-flow {:first-dispatch [:load-offerings [(:offering/address route-params)]]
+                  :rules [{:when :seen?
+                           :events [:offering-loaded]
+                           :dispatch-n [[:load-offering-related-info (:offering/address route-params)]
+                                        [:watch-offerings [(:offering/address route-params)]]]}]}}))
+
+
 (reg-event-fx
   :active-page-changed
   interceptors
   (fn [{:keys [:db]}]
-    (let [{:keys [:handler :route-params :query-params]} (:active-page db)
-          dispatch-n
-          (condp = handler
-            :route.offerings/search [[:set-params-and-search-offerings-main-search
-                                      (merge
-                                        (get-in default-db [:search-results/offerings-main-search :params])
-                                        (parse-query-params query-params :route.offerings/search))
-                                      {:clear-existing-items? true
-                                       :clear-existing-params? true}]]
-            :route.offerings/edit [[:load-offerings [(:offering/address route-params)]]]
-            [])]
-
-      {:dispatch-n (concat
-                     [[:stop-watching-all-offerings]]
-                     dispatch-n)
+    (merge
+      (route->initial-effects (:active-page db))
+      {:district0x/dispatch [:stop-watching-all-offerings]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 
 (reg-event-fx
@@ -271,12 +280,9 @@
 
 (reg-event-fx
   :ens/set-owner
-  [interceptors (validate-first-arg (s/keys :req [:ens.record/owner]
-                                            :opt [:ens.record/name
-                                                  :ens.record/node]))]
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/owner :ens.record/name]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [form-data (cond-> form-data
-                      (:ens.record/name form-data) (assoc :ens.record/node (namehash (:ens.record/name form-data))))]
+    (let [form-data (assoc form-data :ens.record/node (namehash (:ens.record/name form-data)))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Set ENS owner for %s" (:ens.record/name form-data))
                    :contract-key :ens
@@ -308,11 +314,12 @@
     {:dispatch [:district0x/make-transaction
                 {:name (gstring/format "Transfer %s ownership" (str (:ens.record/label form-data)
                                                                     constants/registrar-root))
-                 :contract-key :registrar
-                 :contract-method :register
+                 :contract-key :mock-registrar #_ :registrar ;; TODO handling mock-registrar vs registrar
+                 :contract-method :transfer
                  :form-data form-data
                  :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
                  :args-order [:ens.record/label-hash]
+                 :form-id (select-keys form-data [:ens.record/label])
                  :tx-opts {:gas 000 :gas-price default-gas-price}}]}))
 
 (reg-event-fx
@@ -674,12 +681,14 @@
 (reg-event-fx
   :load-offering-related-info
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering/address :offering/label-hash :offering/node :offering/type]}]]
-    (merge
-      {:dispatch-n [[:load-registrar-entry label-hash]
-                    [:load-ens-records [node]]]}
-      (when (= type :auction-offering)
-        {:dispatch [:load-my-addresses-auction-pending-returns address]}))))
+  (fn [{:keys [:db]} [offering-address]]
+    (let [{:keys [:offering/address :offering/label-hash :offering/node :offering/type]}
+          (get-offering db offering-address)]
+      (merge
+        {:dispatch-n [[:load-registrar-entry label-hash]
+                      [:load-ens-records [node]]]}
+        (when (= type :auction-offering)
+          {:dispatch [:load-my-addresses-auction-pending-returns address]})))))
 
 (reg-event-fx
   :watch-offerings
@@ -723,10 +732,10 @@
 (reg-event-fx
   :offering-list-item-expanded
   interceptors
-  (fn [{:keys [:db]} [offering]]
-    {:dispatch-n [[:load-offering-related-info offering]
-                  [:watch-offerings [(:offering/address offering)]]
-                  [:load-offerings [(:offering/address offering)]]]}))
+  (fn [{:keys [:db]} [{:keys [:offering/address]}]]
+    {:dispatch-n [[:load-offering-related-info address]
+                  [:watch-offerings [address]]
+                  [:load-offerings [address]]]}))
 
 (reg-event-fx
   :offering-list-item-collapsed
@@ -745,5 +754,19 @@
   interceptors
   (fn [{:keys [:db]} [key]]
     {:db (update-in db [:infinite-list :expanded-items] dissoc key)}))
+
+(reg-event-fx
+  :update-now
+  interceptors
+  (fn [{:keys [db]}]
+    {:db (assoc db :now (t/now))}))
+
+(reg-event-fx
+  :setup-update-now-interval
+  interceptors
+  (fn [{:keys [db]}]
+    {:dispatch-interval {:dispatch [:update-now]
+                         :ms 1000
+                         :db-path [:update-now-interval]}}))
 
 

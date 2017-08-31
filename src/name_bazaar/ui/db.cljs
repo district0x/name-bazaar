@@ -18,6 +18,7 @@
      :server-url  "http://localhost:6200"
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
+     :now (t/now)
 
      :offerings-search-params-drawer {:open? false}
 

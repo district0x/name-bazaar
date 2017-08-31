@@ -15,7 +15,8 @@
     [:div
      {:style (merge expandable-item-body-style
                     {:height @(subscribe [:infinite-list/expanded-item-body-height index collapsed-height])})}]
-    children))
+    (when @(subscribe [:infinite-list/item-expanded? index]) ;; This is important for performance reasons
+      children)))
 
 (defn expandable-list-item-header []
   (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled?] :as props} & children]

@@ -1,5 +1,172 @@
 (ns name-bazaar.ui.pages.offering-detail-page
-  (:require [district0x.ui.components.misc :as misc :refer [row row-with-cols col center-layout paper page]]))
+  (:require
+    [cljs-react-material-ui.reagent :as ui]
+    [cljs-time.coerce :as time-coerce :refer [to-epoch to-date]]
+    [cljs-time.core :as t]
+    [district0x.ui.components.misc :as misc :refer [row row-with-cols col paper page]]
+    [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [to-locale-string time-unit->text]]
+    [name-bazaar.shared.utils :refer [name-level]]
+    [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
+    [name-bazaar.ui.components.offering.action-form :refer [action-form]]
+    [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
+    [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
+    [name-bazaar.ui.constants :as constants]
+    [name-bazaar.ui.styles :as styles]
+    [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix offering-type->text]]
+    [re-frame.core :refer [subscribe dispatch]]
+    [reagent.core :as r]))
+
+(def offering-status->text
+  {:offering.status/active "Active"
+   :offering.status/finalized "Completed"
+   :offering.status/missing-ownership "Missing Ownership"
+   :offering.status/finished "Finished"})
+
+(defn offering-status-chip []
+  (let [route-params (subscribe [:district0x/route-params])]
+    (fn [props]
+      (let [status @(subscribe [:offering/status (:offering/address @route-params)])]
+        [ui/chip
+         (r/merge-props
+           {:background-color (styles/offering-status-chip-color status)
+            :label-color styles/offering-detail-chip-label-color
+            :label-style styles/offering-detail-chip-label}
+           props)
+         (offering-status->text status)]))))
+
+(defn offering-type-chip []
+  (let [offering (subscribe [:route-params/offering])]
+    (fn [props]
+      (let [{:keys [:offering/type]} @offering]
+        [ui/chip
+         (r/merge-props
+           {:background-color (styles/offering-type-chip-color type)
+            :label-color styles/offering-detail-chip-label-color
+            :label-style styles/offering-detail-chip-label}
+           props)
+         (offering-type->text type)]))))
+
+(defn offering-price-row []
+  (let [offering (subscribe [:route-params/offering])]
+    (fn [props]
+      (let [{:keys [:offering/type :offering/price :auction-offering/bid-count]} @offering]
+        [row-with-cols
+         (r/merge-props
+           {:center "xs"}
+           props)
+         [col
+          {:xs 12
+           :style styles/offering-detail-center-headline}
+          (cond
+            (= type :buy-now-offering) "price"
+            (pos? bid-count) "higest bid"
+            :else "starting price")]
+         [col
+          {:xs 12
+           :style styles/offering-detail-center-value}
+          (to-locale-string price 3) " ETH"]]))))
+
+(defn end-time-countdown-unit [{:keys [:amount :unit]}]
+  [:span
+   [:span
+    {:style styles/offering-detail-center-value}
+    " "
+    (when (and (not= unit :days) (< amount 10))
+      0)
+    amount " "]
+   [:span
+    {:style (merge styles/offering-detail-countdown-unit)}
+    (d0x-ui-utils/pluralize (time-unit->text unit) amount)]])
+
+(defn auction-offering-end-time-countdown-row []
+  (let [route-params (subscribe [:district0x/route-params])
+        xs? (subscribe [:district0x/window-xs-width?])]
+    (fn [props]
+      (let [{:keys [:days :hours :minutes :seconds]}
+            @(subscribe [:auction-offering/end-time-countdown (:offering/address @route-params)])]
+        [row-with-cols
+         (r/merge-props
+           {:center "xs"}
+           props)
+         [col
+          {:xs 12
+           :style styles/offering-detail-center-headline}
+          "time remaining"]
+         [col
+          {:xs 12}
+          (when (pos? days)
+            [end-time-countdown-unit
+             {:unit :days
+              :amount days}])
+          (when (or (pos? days) (pos? hours))
+            [end-time-countdown-unit
+             {:unit :hours
+              :amount hours}])
+          (when @xs? [:br])
+          (when (or (pos? days) (pos? hours) (pos? minutes))
+            [end-time-countdown-unit
+             {:unit :minutes
+              :amount minutes}])
+          (when (or (pos? days) (pos? hours) (pos? minutes) (pos? seconds))
+            [end-time-countdown-unit
+             {:unit :seconds
+              :amount seconds}])
+          ]]))))
+
+(defn offering-bid-count-row []
+  (let [offering (subscribe [:route-params/offering])]
+    (fn [props]
+      (let [{:keys [:auction-offering/bid-count]} @offering]
+        [row-with-cols
+         (r/merge-props
+           {:center "xs"}
+           props)
+         [col
+          {:xs 12
+           :style styles/offering-detail-center-headline}
+          "number of bids"]
+         [col
+          {:xs 12
+           :style styles/offering-detail-center-value}
+          bid-count]]))))
+
+(defn offering-detail []
+  (let [offering (subscribe [:route-params/offering])]
+    (fn []
+      [:div
+       [row
+        [offering-status-chip]
+        [offering-type-chip
+         {:style styles/margin-left-gutter-mini}]]
+       [row
+        [offering-general-info
+         {:offering @offering
+          :style (merge styles/margin-top-gutter-less
+                        styles/text-overflow-ellipsis)}]]
+       [offering-price-row
+        {:style styles/margin-top-gutter-more}]
+       [offering-bid-count-row
+        {:style styles/margin-top-gutter-less}]
+       [auction-offering-end-time-countdown-row
+        {:style styles/margin-top-gutter-less}]
+       [row
+        {:end "xs"
+         :style styles/margin-top-gutter}
+        [action-form
+         {:offering @offering}]]])))
 
 (defmethod page :route.offerings/detail []
-  [:div "Offering detail page"])
+  (let [route-params (subscribe [:district0x/route-params])]
+    (fn []
+      (let [{:keys [:offering/address]} @route-params
+            offering-loaded? @(subscribe [:offering/loaded? address])
+            offering @(subscribe [:offering-registry/offering address])]
+        [side-nav-menu-center-layout
+         [paper
+          [:h1
+           {:style styles/page-headline}
+           "Offering " (:offering/name offering)]
+          (if offering-loaded?
+            [offering-detail]
+            [list-item-placeholder])]]))))

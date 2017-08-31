@@ -32,3 +32,7 @@
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))
+
+(def offering-type->text
+  {:buy-now-offering "Buy Now"
+   :auction-offering "Auction"})

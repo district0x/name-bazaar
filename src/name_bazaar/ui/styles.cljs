@@ -56,6 +56,24 @@
 (def margin-top-gutter-mini
   {:margin-top desktop-gutter-mini})
 
+(def margin-left-gutter
+  {:margin-left desktop-gutter})
+
+(def margin-left-gutter-less
+  {:margin-left desktop-gutter-less})
+
+(def margin-left-gutter-mini
+  {:margin-left desktop-gutter-mini})
+
+(def margin-right-gutter
+  {:margin-right desktop-gutter})
+
+(def margin-right-gutter-less
+  {:margin-right desktop-gutter-less})
+
+(def margin-right-gutter-mini
+  {:margin-right desktop-gutter-mini})
+
 (defn margin-all [x]
   {:margin-top x
    :margin-bottom x
@@ -256,3 +274,33 @@
 (def text-field-suffix
   {:font-size "1.2em"})
 
+(def page-headline
+  {:margin-bottom desktop-gutter-less})
+
+(def offering-status-chip-color
+  {:offering.status/active (color :green500)
+   :offering.status/finalized (color :blue500)
+   :offering.status/missing-ownership (color :red700)
+   :offering.status/finished (color :light-blue600)})
+
+(def offering-detail-chip-label-color "#FFF")
+
+(def offering-detail-chip-label
+  {:font-weight :bold})
+
+(def offering-type-chip-color
+  {:buy-now-offering (color :teal600)
+   :auction-offering (color :indigo300)})
+
+(def offering-detail-center-headline
+  {:font-size "1.2em"
+   :margin-bottom desktop-gutter-mini})
+
+(def offering-detail-center-value
+  {:font-size "2.6em"
+   :font-weight 300})
+
+(def offering-detail-countdown-unit
+  {:font-size "1.4em"
+   :display :inline-block
+   :text-align :left})

@@ -133,8 +133,7 @@
           :style {:height "100%"}}
          [:div
           [transaction-status {:transaction transaction}]
-          [transaction-value {:transaction transaction}]]]
-        ]]]]))
+          [transaction-value {:transaction transaction}]]]]]]]))
 
 (defn no-transactions []
   [row

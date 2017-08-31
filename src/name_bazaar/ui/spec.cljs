@@ -116,6 +116,8 @@
 (s/def :infinite-list/expanded-items (s/map-of integer? (s/keys :req-un [:infinite-list.expanded-item/height])))
 (s/def ::infinite-list (s/keys :req-un [:infinite-list/expanded-items]))
 
+(s/def ::now date?)
+
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
@@ -129,6 +131,7 @@
                                              :search-results/similiar-offerings
                                              :search-results/bid-offerings
                                              :search-results/purchased-offerings]
-                                       :req-un [::infinite-list]
+                                       :req-un [::infinite-list
+                                                ::now]
                                        :opt-un [::offerings-search-params-drawer
                                                 ::saved-searches])))
