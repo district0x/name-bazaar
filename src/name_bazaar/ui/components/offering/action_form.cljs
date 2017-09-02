@@ -64,24 +64,44 @@
             :on-click #(dispatch transfer-event)}
            (dissoc props :offering))]))))
 
+(defn reclaim-ownership-button []
+  (let [xs? (subscribe [:district0x/window-xs-width?])]
+    (fn [{:keys [:offering]}]
+      (let [{:keys [:offering/address]} offering]
+        [raised-transaction-button
+         {:secondary true
+          :full-width @xs?
+          :label "Reclaim Ownership"
+          :pending-label "Reclaiming..."
+          :pending? @(subscribe [:offering/reclaim-ownership-tx-pending? address])
+          :style styles/margin-left-gutter-mini
+          :on-click #(dispatch [:offering/reclaim-ownership {:offering/address address}])}]))))
+
 (defn original-owner-form []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [{:keys [:offering]}]
-      (let [{:keys [:offering/address :auction-offering/bid-count]} offering
-            needs-transfer? (false? @(subscribe [:offering/node-owner? address]))]
+      (let [{:keys [:offering/address :offering/type :auction-offering/bid-count]} offering
+            needs-transfer? (false? @(subscribe [:offering/node-owner? address]))
+            editable? (or (zero? bid-count)
+                          (= type :buy-now-offering))]
         [row
          {:end "xs"
           :bottom "xs"
-          :style styles/full-height}
+          :style (merge styles/full-height
+                        styles/full-width)}
          (when needs-transfer?
            [transfer-ownership-button
-            {:offering offering
-             :style styles/margin-right-gutter-less}])
-         (when (pos? bid-count)
+            {:offering offering}])
+         (when (and (not needs-transfer?)
+                    editable?)
+           [reclaim-ownership-button
+            {:offering offering}])
+         (when editable?
            [ui/raised-button
             {:primary true
              :full-width @xs?
              :label "Edit"
+             :style styles/margin-left-gutter-mini
              :href (path-for :route.offerings/edit {:offering/address address})}])]))))
 
 (defn action-form [{:keys [:offering]}]
@@ -95,7 +115,7 @@
       @(subscribe [:offering/active-address-original-owner? address])
       [original-owner-form {:offering offering}]
 
-      (and node-owner? (= type :auction-offering))
+      (= type :auction-offering)
       [auction-form {:offering offering}]
 
       :else

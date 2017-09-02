@@ -58,11 +58,14 @@
     {:dispatch [:load-offerings [(:offering/address route-params)]]}
 
     :route.offerings/detail
-    {:async-flow {:first-dispatch [:load-offerings [(:offering/address route-params)]]
-                  :rules [{:when :seen?
-                           :events [:offering-loaded]
-                           :dispatch-n [[:load-offering-related-info (:offering/address route-params)]
-                                        [:watch-offerings [(:offering/address route-params)]]]}]}}))
+    (let [{:keys [:offering/address]} route-params]
+      {:async-flow {:first-dispatch [:load-offerings [address]]
+                    :rules [{:when :seen?
+                             :events [:offering-loaded]
+                             :dispatch-n [[:load-offering-ownership address]
+                                          [:load-my-addresses-auction-pending-returns address]
+                                          [:watch-offerings [address]]]}]}})
+    nil))
 
 
 (reg-event-fx
@@ -311,16 +314,18 @@
   :registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Transfer %s ownership" (str (:ens.record/label form-data)
-                                                                    constants/registrar-root))
-                 :contract-key :mock-registrar #_ :registrar ;; TODO handling mock-registrar vs registrar
-                 :contract-method :transfer
-                 :form-data form-data
-                 :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
-                 :args-order [:ens.record/label-hash]
-                 :form-id (select-keys form-data [:ens.record/label])
-                 :tx-opts {:gas 000 :gas-price default-gas-price}}]}))
+    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Transfer %s ownership" (str (:ens.record/label form-data)
+                                                                      constants/registrar-root))
+                   :contract-key :mock-registrar #_:registrar ;; TODO handling mock-registrar vs registrar
+                   :contract-method :transfer
+                   :form-data form-data
+                   :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
+                   :args-order [:ens.record/label-hash :ens.record/owner]
+                   :form-id (select-keys form-data [:ens.record/label])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :on-tx-receipt [:load-offering-ownership (:ens.record/owner form-data)]}]})))
 
 (reg-event-fx
   :mock-registrar/register
@@ -432,9 +437,10 @@
   :load-my-addresses-auction-pending-returns
   interceptors
   (fn [{:keys [:db]} [offering-address]]
-    {:dispatch [:load-auction-pending-returns offering-address
-                ;; Active address should be loaded first
-                (reverse (sort-by (partial = (:active-address db)) (:my-addresses db)))]}))
+    (when (auction-offering? db offering-address)
+      {:dispatch [:load-auction-pending-returns offering-address
+                  ;; Active address should be loaded first
+                  (reverse (sort-by (partial = (:active-address db)) (:my-addresses db)))]})))
 
 (reg-event-fx
   :load-auction-pending-returns
@@ -679,16 +685,14 @@
        :localstorage (merge localstorage (select-keys new-db [:saved-searches]))})))
 
 (reg-event-fx
-  :load-offering-related-info
+  :load-offering-ownership
   interceptors
   (fn [{:keys [:db]} [offering-address]]
-    (let [{:keys [:offering/address :offering/label-hash :offering/node :offering/type]}
-          (get-offering db offering-address)]
+    (let [{:keys [:offering/label-hash :offering/node :offering/name-level]} (get-offering db offering-address)]
       (merge
-        {:dispatch-n [[:load-registrar-entry label-hash]
-                      [:load-ens-records [node]]]}
-        (when (= type :auction-offering)
-          {:dispatch [:load-my-addresses-auction-pending-returns address]})))))
+        {:dispatch-n [[:load-ens-records [node]]]}
+        (when (= name-level 1)
+          {:dispatch [:load-registrar-entry label-hash]})))))
 
 (reg-event-fx
   :watch-offerings
@@ -710,9 +714,9 @@
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering :version]}]]
     (merge
-      {:dispatch-n [[:load-offerings [offering]]]}
-      (when (= :auction-offering (offering-version->type version))
-        {:dispatch [:load-my-addresses-auction-pending-returns offering]}))))
+      {:dispatch-n [[:load-offerings [offering]]
+                    [:load-offering-ownership offering]
+                    [:load-my-addresses-auction-pending-returns offering]]})))
 
 (reg-event-fx
   :stop-watching-offerings
@@ -733,7 +737,8 @@
   :offering-list-item-expanded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering/address]}]]
-    {:dispatch-n [[:load-offering-related-info address]
+    {:dispatch-n [[:load-offering-ownership address]
+                  [:load-my-addresses-auction-pending-returns address]
                   [:watch-offerings [address]]
                   [:load-offerings [address]]]}))
 

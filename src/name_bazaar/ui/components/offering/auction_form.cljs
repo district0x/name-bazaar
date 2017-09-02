@@ -65,7 +65,8 @@
             min-bid (calculate-min-bid price min-bid-increase bid-count pending-returns)]
         [row
          (r/merge-props
-           {:style styles/full-height
+           {:style (merge styles/full-height
+                          styles/full-width)
             :bottom "xs"}
            (dissoc props :offering))
          (when-not @(subscribe [:offering/active-address-original-owner? address])

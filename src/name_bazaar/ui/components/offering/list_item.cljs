@@ -13,6 +13,7 @@
     [name-bazaar.ui.components.offering.action-form :refer [action-form]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
+    [name-bazaar.ui.components.offering.warnings :refer [non-ascii-characters-warning missing-ownership-warning sub-level-name-warning]]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [etherscan-ens-url path-for offering-type->text]]
     [re-frame.core :refer [subscribe dispatch]]
@@ -40,34 +41,6 @@
     {:style styles/text-decor-none
      :on-click #(dispatch [:watched-names/add name])}
     "Add to Watched Names"]])
-
-(defn non-ascii-characters-warning [props]
-  [:div
-   (r/merge-props
-     {:style styles/warning-color}
-     (dissoc props))
-   "WARNING: This name contains non-latin characters. Some of these characters may look same or "
-   "very similar to their standard latin counterparts. If you're unsure what this means, please contact "
-   "our team."])
-
-(defn not-node-owner-warning [props]
-  [:div
-   (r/merge-props
-     {:style styles/warning-color}
-     props)
-   "WARNING: Original owner removed or haven't transferred ownership of this name from offering contract. "
-   "For this reason buying or bidding for this name is not possible."])
-
-(defn sub-level-name-warning [{:keys [:offering/name] :as props}]
-  (let [parent-name (string/replace name (name-label name) "")]
-    [:div
-     (r/merge-props
-       {:style styles/warning-color}
-       props)
-     "WARNING: This is not top level name. Beware, that owner of " parent-name " will be always able to take this "
-     "name back. Buy only when you trust a owner of " parent-name "."]))
-
-
 
 (defn offering-expanded-body []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
@@ -98,8 +71,8 @@
          [col
           {:xs 12}
           (cond
-            (and (false? @(subscribe [:offering/node-owner? address])) (empty-address? new-owner))
-            [not-node-owner-warning]
+            @(subscribe [:offering/show-missing-ownership-warning? address])
+            [missing-ownership-warning]
 
             (> name-level 1)
             [sub-level-name-warning
@@ -110,7 +83,9 @@
 
          [col
           {:xs 12
-           :style styles/margin-top-gutter-mini}
+           :style (merge styles/margin-top-gutter-mini
+                         styles/text-right
+                         styles/full-width)}
           [action-form
            {:offering offering}]]]))))
 

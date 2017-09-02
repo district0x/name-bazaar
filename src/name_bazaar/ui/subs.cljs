@@ -4,7 +4,7 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
-    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address?]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]
     [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining]]
     [goog.string :as gstring]
     [goog.string.format]
@@ -224,6 +224,12 @@
   first)
 
 (reg-sub
+  :offering/reclaim-ownership-tx-pending?
+  (fn [[_ offering-address]]
+    (subscribe [:district0x/tx-pending? :buy-now-offering :reclaim-ownership {:offering/address offering-address}]))
+  identity)
+
+(reg-sub
   :offering/node-owner?
   (fn [[_ offering-address]]
     [(subscribe [:offering/ens-record offering-address])
@@ -234,6 +240,14 @@
       (= offering-address
          (:ens.record/owner ens-record)
          (:registrar.entry.deed/owner registrar-entry)))))
+
+(reg-sub
+  :offering/show-missing-ownership-warning?
+  (fn [[_ offering-address]]
+    [(subscribe [:offering-registry/offering offering-address])
+     (subscribe [:offering/node-owner? offering-address])])
+  (fn [[{:keys [:offering/new-owner]} node-owner?] [_ offering-address]]
+    (and (false? node-owner?) (empty-address? new-owner))))
 
 (reg-sub
   :offering/status

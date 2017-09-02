@@ -10,6 +10,7 @@
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.offering.action-form :refer [action-form]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
+    [name-bazaar.ui.components.offering.warnings :refer [non-ascii-characters-warning missing-ownership-warning sub-level-name-warning]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
@@ -80,56 +81,72 @@
     (d0x-ui-utils/pluralize (time-unit->text unit) amount)]])
 
 (defn auction-offering-end-time-countdown-row []
-  (let [route-params (subscribe [:district0x/route-params])
-        xs? (subscribe [:district0x/window-xs-width?])]
+  (let [xs? (subscribe [:district0x/window-xs-width?])
+        offering (subscribe [:route-params/offering])]
     (fn [props]
-      (let [{:keys [:days :hours :minutes :seconds]}
-            @(subscribe [:auction-offering/end-time-countdown (:offering/address @route-params)])]
-        [row-with-cols
-         (r/merge-props
-           {:center "xs"}
-           props)
-         [col
-          {:xs 12
-           :style styles/offering-detail-center-headline}
-          "time remaining"]
-         [col
-          {:xs 12}
-          (when (pos? days)
-            [end-time-countdown-unit
-             {:unit :days
-              :amount days}])
-          (when (or (pos? days) (pos? hours))
-            [end-time-countdown-unit
-             {:unit :hours
-              :amount hours}])
-          (when @xs? [:br])
-          (when (or (pos? days) (pos? hours) (pos? minutes))
-            [end-time-countdown-unit
-             {:unit :minutes
-              :amount minutes}])
-          (when (or (pos? days) (pos? hours) (pos? minutes) (pos? seconds))
-            [end-time-countdown-unit
-             {:unit :seconds
-              :amount seconds}])
-          ]]))))
+      (let [{:keys [:offering/address :offering/type]} @offering
+            {:keys [:days :hours :minutes :seconds]}
+            @(subscribe [:auction-offering/end-time-countdown address])]
+        (when (= type :auction-offering)
+          [row-with-cols
+           (r/merge-props
+             {:center "xs"}
+             props)
+           [col
+            {:xs 12
+             :style styles/offering-detail-center-headline}
+            "time remaining"]
+           [col
+            {:xs 12}
+            (when (pos? days)
+              [end-time-countdown-unit
+               {:unit :days
+                :amount days}])
+            (when (or (pos? days) (pos? hours))
+              [end-time-countdown-unit
+               {:unit :hours
+                :amount hours}])
+            (when @xs? [:br])
+            (when (or (pos? days) (pos? hours) (pos? minutes))
+              [end-time-countdown-unit
+               {:unit :minutes
+                :amount minutes}])
+            (when (or (pos? days) (pos? hours) (pos? minutes) (pos? seconds))
+              [end-time-countdown-unit
+               {:unit :seconds
+                :amount seconds}])]])))))
 
 (defn offering-bid-count-row []
   (let [offering (subscribe [:route-params/offering])]
     (fn [props]
-      (let [{:keys [:auction-offering/bid-count]} @offering]
-        [row-with-cols
-         (r/merge-props
-           {:center "xs"}
-           props)
-         [col
-          {:xs 12
-           :style styles/offering-detail-center-headline}
-          "number of bids"]
-         [col
-          {:xs 12
-           :style styles/offering-detail-center-value}
-          bid-count]]))))
+      (let [{:keys [:offering/type :auction-offering/bid-count]} @offering]
+        (when (= type :auction-offering)
+          [row-with-cols
+           (r/merge-props
+             {:center "xs"}
+             props)
+           [col
+            {:xs 12
+             :style styles/offering-detail-center-headline}
+            "number of bids"]
+           [col
+            {:xs 12
+             :style styles/offering-detail-center-value}
+            bid-count]])))))
+
+(defn warnings [{:keys [:offering] :as props}]
+  (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/name-level]} offering]
+    [:div
+     (r/merge-props
+       {:style styles/full-width}
+       (dissoc props :offering))
+     (when @(subscribe [:offering/show-missing-ownership-warning? address])
+       [missing-ownership-warning])
+     (when (> name-level 1)
+       [sub-level-name-warning
+        {:offering/name name}])
+     (when contains-non-ascii?
+       [non-ascii-characters-warning])]))
 
 (defn offering-detail []
   (let [offering (subscribe [:route-params/offering])]
@@ -144,6 +161,9 @@
          {:offering @offering
           :style (merge styles/margin-top-gutter-less
                         styles/text-overflow-ellipsis)}]]
+       [warnings
+        {:offering @offering
+         :style styles/margin-top-gutter-less}]
        [offering-price-row
         {:style styles/margin-top-gutter-more}]
        [offering-bid-count-row
@@ -151,8 +171,7 @@
        [auction-offering-end-time-countdown-row
         {:style styles/margin-top-gutter-less}]
        [row
-        {:end "xs"
-         :style styles/margin-top-gutter}
+        {:style styles/margin-top-gutter-more}
         [action-form
          {:offering @offering}]]])))
 

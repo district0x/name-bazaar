@@ -11,7 +11,7 @@
     [row
      {:end "xs"
       :bottom "xs"
-      :style styles/full-height}
+      :style (merge styles/full-height styles/full-width)}
      [raised-transaction-button
       {:primary true
        :label "Buy"
