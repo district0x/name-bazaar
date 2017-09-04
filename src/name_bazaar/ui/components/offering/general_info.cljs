@@ -46,13 +46,25 @@
 (defn offering-created-on-line [{:keys [:offering/created-on]}]
   [:div
    {:style styles/text-overflow-ellipsis}
-   "Created on " (format-local-datetime created-on)
+   "Created on: " (format-local-datetime created-on)
    "(" (time-ago created-on) ")"])
 
 (defn offering-name-line [{:keys [:offering/name]}]
   [:div "Name: " [a {:route :route.ens-record/detail
                      :route-params {:ens.record/name name}}
                   name]])
+
+(defn offering-auction-end-time-line [{:keys [:offering]}]
+  (let [{:keys [:offering/address :auction-offering/end-time]} offering
+        ended? @(subscribe [:auction-offering/end-time-ended? address])
+        time-remaining-biggest-unit @(subscribe [:auction-offering/end-time-countdown-biggest-unit address])]
+    [:div
+     (if ended?
+       "Ended on: "
+       "Ends on: ")
+     (format-local-datetime end-time)
+     (when-not ended?
+       [:span " (" time-remaining-biggest-unit " left)"])]))
 
 (defn offering-general-info [{:keys [:offering] :as props}]
   (let [{:keys [:offering/name :offering/created-on :offering/address :offering/original-owner
@@ -66,7 +78,8 @@
      [offering-created-on-line
       {:offering/created-on created-on}]
      (when (= type :auction-offering)
-       [:div "Ends on " (format-local-datetime end-time)])
+       [offering-auction-end-time-line
+        {:offering offering}])
      (when (= type :auction-offering)
        [:div "Min. Bid Increase: " (format-eth-with-code min-bid-increase)])
      (when (= type :auction-offering)

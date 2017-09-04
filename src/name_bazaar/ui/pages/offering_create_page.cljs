@@ -161,7 +161,7 @@
     (fn [{:keys [:value] :as props}]
       [ui/date-picker
        (r/merge-props
-         {:min-date (time-coerce/to-date (t/plus (t/now) (t/hours 1)))
+         {:min-date (time-coerce/to-date (t/now))
           :floating-label-text "End Date"
           :text-field-style (if @xs? {:width "100%"} {})
           :format-date (fn [x]
@@ -175,7 +175,8 @@
        (r/merge-props
          {:floating-label-text "End Time"
           :text-field-style (if @xs? {:width "100%"} {})
-          :minutes-step 10}
+          ;:minutes-step 10
+          }
          props)])))
 
 (defn- form-data->transaction-data [offering]

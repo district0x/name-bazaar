@@ -90,5 +90,7 @@
    (let [min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
      (bn/->number (bn/- (bn/+ (web3/to-big-number price) min-bid-increase) pending-returns)))))
 
+(def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
+
 
 

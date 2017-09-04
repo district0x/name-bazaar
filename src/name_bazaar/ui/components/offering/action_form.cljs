@@ -7,9 +7,10 @@
     [district0x.ui.components.text-field :refer [ether-field-with-currency]]
     [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code truncate]]
-    [name-bazaar.shared.utils :refer [calculate-min-bid name-label]]
+    [name-bazaar.shared.utils :refer [calculate-min-bid name-label emergency-state-new-owner]]
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
     [name-bazaar.ui.components.misc :refer [a]]
+    [name-bazaar.ui.components.offering.auction-finalize-button :refer [auction-finalize-button]]
     [name-bazaar.ui.components.offering.auction-form :refer [auction-form]]
     [name-bazaar.ui.components.offering.buy-now-form :refer [buy-now-form]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
@@ -28,6 +29,9 @@
          {:style styles/offering-list-item-new-owner-info}
          (dissoc props :offering/new-owner))
        (cond
+         (= new-owner emergency-state-new-owner)
+         "This offering was cancelled by NameBazaar due to emergency."
+
          (= new-owner @active-address)
          "Congratulations, you bought this offering!"
 
@@ -82,6 +86,7 @@
     (fn [{:keys [:offering]}]
       (let [{:keys [:offering/address :offering/type :auction-offering/bid-count]} offering
             needs-transfer? (false? @(subscribe [:offering/node-owner? address]))
+            offering-status @(subscribe [:offering/status address])
             editable? (or (zero? bid-count)
                           (= type :buy-now-offering))]
         [row
@@ -96,6 +101,10 @@
                     editable?)
            [reclaim-ownership-button
             {:offering offering}])
+         (when (and (not editable?)
+                    (= offering-status :offering.status/auction-ended))
+           [auction-finalize-button
+            {:offering offering}])
          (when editable?
            [ui/raised-button
             {:primary true
@@ -105,9 +114,7 @@
              :href (path-for :route.offerings/edit {:offering/address address})}])]))))
 
 (defn action-form [{:keys [:offering]}]
-  (let [{:keys [:offering/address :offering/new-owner :offering/type :auction-offering/bid-count]} offering
-        node-owner? @(subscribe [:offering/node-owner? address])]
-
+  (let [{:keys [:offering/address :offering/new-owner :offering/type :auction-offering/bid-count]} offering]
     (cond
       new-owner
       [new-owner-info {:offering/new-owner new-owner}]

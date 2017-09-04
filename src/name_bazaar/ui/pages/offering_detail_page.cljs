@@ -19,10 +19,11 @@
     [reagent.core :as r]))
 
 (def offering-status->text
-  {:offering.status/active "Active"
+  {:offering.status/emergency "Emergency Cancel"
+   :offering.status/active "Active"
    :offering.status/finalized "Completed"
    :offering.status/missing-ownership "Missing Ownership"
-   :offering.status/finished "Finished"})
+   :offering.status/auction-ended "Finished"})
 
 (defn offering-status-chip []
   (let [route-params (subscribe [:district0x/route-params])]
@@ -85,7 +86,7 @@
         offering (subscribe [:route-params/offering])]
     (fn [props]
       (let [{:keys [:offering/address :offering/type]} @offering
-            {:keys [:days :hours :minutes :seconds]}
+            {:keys [:days :hours :minutes :seconds] :as time-remaining}
             @(subscribe [:auction-offering/end-time-countdown address])]
         (when (= type :auction-offering)
           [row-with-cols
@@ -114,7 +115,11 @@
             (when (or (pos? days) (pos? hours) (pos? minutes) (pos? seconds))
               [end-time-countdown-unit
                {:unit :seconds
-                :amount seconds}])]])))))
+                :amount seconds}])
+            (when (every? zero? (vals time-remaining))
+              [:span
+               {:style styles/offering-detail-center-value}
+               "finished"])]])))))
 
 (defn offering-bid-count-row []
   (let [offering (subscribe [:route-params/offering])]

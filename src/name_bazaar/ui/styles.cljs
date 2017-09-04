@@ -278,10 +278,11 @@
   {:margin-bottom desktop-gutter-less})
 
 (def offering-status-chip-color
-  {:offering.status/active (color :green500)
+  {:offering.status/emergency (color :red700)
+   :offering.status/active (color :green500)
    :offering.status/finalized (color :blue500)
    :offering.status/missing-ownership (color :red700)
-   :offering.status/finished (color :light-blue600)})
+   :offering.status/auction-ended (color :light-blue600)})
 
 (def offering-detail-chip-label-color "#FFF")
 

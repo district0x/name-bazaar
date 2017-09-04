@@ -5,10 +5,11 @@
     [cljs-web3.core :as web3]
     [clojure.set :as set]
     [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining time-biggest-unit format-time-duration-unit]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
+    [name-bazaar.shared.utils :refer [emergency-state-new-owner]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [parse-query-params]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
@@ -46,12 +47,14 @@
   (fn [records [_ node]]
     (get records node)))
 
+(defn- ens-record-loaded? [ens-record]
+  (boolean (:ens.record/owner ens-record)))
+
 (reg-sub
   :ens.record/loaded?
   (fn [[_ node]]
     (subscribe [:ens/record node]))
-  (fn [ens-record]
-    (boolean (:ens.record/owner ens-record))))
+  ens-record-loaded?)
 
 (reg-sub
   :active-address-ens.record/owner?
@@ -80,13 +83,15 @@
   (fn [entries [_ label-hash]]
     (get entries label-hash)))
 
+(defn- registrar-entry-deed-loaded? [registrar-entry]
+  (boolean (or (zero-address? (:registrar.entry.deed/address registrar-entry))
+               (:registrar.entry.deed/value registrar-entry))))
+
 (reg-sub
   :registrar.entry.deed/loaded?
-  (fn [[_ labe-hash]]
-    (subscribe [:registrar/entry labe-hash]))
-  (fn [registrar-entry]
-    (boolean (or (zero-address? (:registrar.entry.deed/address registrar-entry))
-                 (:registrar.entry.deed/value registrar-entry)))))
+  (fn [[_ label-hash]]
+    (subscribe [:registrar/entry label-hash]))
+  registrar-entry-deed-loaded?)
 
 (reg-sub
   :active-address-registrar.entry.deed/owner?
@@ -144,11 +149,22 @@
 (reg-sub
   :offering/loaded?
   (fn [[_ offering-address]]
-    (subscribe [:offering-registry/offering offering-address]))
-  (fn [offering]
-    (and (:offering/name offering)
-         (or (= (:offering/type offering) :buy-now-offering)
-             (:auction-offering/end-time offering)))))
+    [(subscribe [:offering-registry/offering offering-address])
+     (subscribe [:registrar/entries])
+     (subscribe [:ens/records])])
+  (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/type
+                :offering/name-level]}
+        registrar-entries ens-records]]
+    (let [registrar-entry (get registrar-entries label-hash)
+          ens-record (get ens-records node)]
+      (and (seq name)
+           (or (= type :buy-now-offering)
+               end-time)
+           (or (and (= name-level 1)
+                    (registrar-entry-deed-loaded? registrar-entry)
+                    (ens-record-loaded? ens-record))
+               (and (not= name-level 1)
+                    (ens-record-loaded? ens-record)))))))
 
 (reg-sub
   :auction-offering/end-time-countdown
@@ -157,6 +173,21 @@
      (subscribe [:now])])
   (fn [[offering now]]
     (time-remaining now (:auction-offering/end-time offering))))
+
+(reg-sub
+  :auction-offering/end-time-countdown-biggest-unit
+  (fn [[_ offering-address]]
+    (subscribe [:auction-offering/end-time-countdown offering-address]))
+  (fn [time-remaining]
+    (apply format-time-duration-unit (time-biggest-unit time-remaining))))
+
+(reg-sub
+  :auction-offering/end-time-ended?
+  (fn [[_ offering-address]]
+    [(subscribe [:offering-registry/offering offering-address])
+     (subscribe [:now])])
+  (fn [[{:keys [:auction-offering/end-time]} now]]
+    (t/after? now end-time)))
 
 (reg-sub
   :auction-offering/active-address-pending-returns
@@ -214,7 +245,7 @@
 (reg-sub
   :registrar/transfer-tx-pending?
   (fn [[_ ens-record-label]]
-    [(subscribe [:district0x/tx-pending? :mock-registrar #_ :registrar :transfer {:ens.record/label ens-record-label}])])
+    [(subscribe [:district0x/tx-pending? :mock-registrar #_:registrar :transfer {:ens.record/label ens-record-label}])])
   first)
 
 (reg-sub
@@ -227,6 +258,12 @@
   :offering/reclaim-ownership-tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :buy-now-offering :reclaim-ownership {:offering/address offering-address}]))
+  identity)
+
+(reg-sub
+  :auction-offering/finalize-tx-pending?
+  (fn [[_ offering-address]]
+    (subscribe [:district0x/tx-pending? :auction-offering :finalize {:offering/address offering-address}]))
   identity)
 
 (reg-sub
@@ -257,9 +294,10 @@
      (subscribe [:now])])
   (fn [[{:keys [:offering/new-owner :auction-offering/end-time :offering/type]} node-owner? now]]
     (cond
-      new-owner :offering.status/finalized
+      (= new-owner emergency-state-new-owner) :offering.status/emergency
+      (not (empty-address? new-owner)) :offering.status/finalized
       (not node-owner?) :offering.status/missing-ownership
-      (and (= type :auction-offering) (t/after? now end-time)) :offering.status/finished
+      (and (= type :auction-offering) (t/after? now end-time)) :offering.status/auction-ended
       :else :offering.status/active)))
 
 (reg-sub
