@@ -8,7 +8,7 @@ contract OfferingRegistry is UsedByFactories {
     event onOfferingChanged(address indexed offering, uint version);
     event onOfferingBid(address offering, uint version, address bidder, uint value, uint datetime);
 
-    mapping(address => bool) isOffering;
+    mapping(address => bool) public isOffering;
 
     function addOffering(address _offering, bytes32 node, address owner, uint version)
         onlyFactory
