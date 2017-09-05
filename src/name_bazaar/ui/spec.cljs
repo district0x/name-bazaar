@@ -100,13 +100,8 @@
 (s/def :watched-names/ens-records (s/coll-of (s/keys :req [:ens.record/name :ens.record/node])))
 (s/def :watched-names/new-name string?)
 
-(s/def :search-results/offerings-main-search :db/search-results)
-(s/def :search-results/offering-requests-main-search :db/search-results)
-(s/def :search-results/name-offerings :db/search-results)
-(s/def :search-results/user-offerings :db/search-results)
-(s/def :search-results/similiar-offerings :db/search-results)
-(s/def :search-results/bid-offerings :db/search-results)
-(s/def :search-results/purchased-offerings :db/search-results)
+
+(s/def ::search-results (s/map-of keyword? (s/map-of keyword? :db/search-results)))
 
 (s/def ::offerings-search-params-drawer :db/drawer)
 (s/def ::saved-searches (s/map-of keyword? (s/map-of string? string?)))
@@ -122,16 +117,9 @@
                                :district0x.ui/db
                                (s/keys :req [:ens/records
                                              :offering-registry/offerings
-                                             :offering-requests/requests
-
-                                             :search-results/offerings-main-search
-                                             :search-results/offering-requests-main-search
-                                             :search-results/name-offerings
-                                             :search-results/user-offerings
-                                             :search-results/similiar-offerings
-                                             :search-results/bid-offerings
-                                             :search-results/purchased-offerings]
+                                             :offering-requests/requests]
                                        :req-un [::infinite-list
-                                                ::now]
-                                       :opt-un [::offerings-search-params-drawer
-                                                ::saved-searches])))
+                                                ::now
+                                                ::search-results
+                                                ::saved-searches
+                                                ::offerings-search-params-drawer])))

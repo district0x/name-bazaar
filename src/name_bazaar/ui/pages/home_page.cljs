@@ -12,7 +12,7 @@
 
 (defn autocomplete-search-bar []
   (let [search-params (r/atom {:offering/name ""})
-        search-results (subscribe [:search-results/home-page-autocomplete])]
+        search-results (subscribe [:offerings/home-page-autocomplete])]
     (fn []
       (let [{:keys [:items]} @search-results]
         [ui/auto-complete
@@ -39,7 +39,7 @@
           :on-update-input (fn [value]
                              (swap! search-params assoc :offering/name value)
                              (when (>= (count value) 3)
-                               (dispatch [:search-home-page-autocomplete @search-params])))}]))))
+                               (dispatch [:offerings.home-page-autocomplete/search @search-params])))}]))))
 
 (defmethod page :route/home []
   [center-layout

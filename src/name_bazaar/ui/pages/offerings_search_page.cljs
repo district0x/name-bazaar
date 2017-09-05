@@ -18,25 +18,25 @@
     [reagent.core :as r]))
 
 (defn keyword-text-field []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [props]
       [text-field
        (r/merge-props
          {:floating-label-text "Keyword"
           :full-width true
           :value (:name @search-params)
-          :on-change #(dispatch [:set-params-and-search-offerings-main-search {:name %2} {:add-to-query? true}])}
+          :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}
          props)])))
 
 (defn keyword-position-select-field []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [props]
       [ui/select-field
        (r/merge-props
          {:full-width true
           :hint-text "Keyword Position"
           :value (:name-position @search-params)
-          :on-change #(dispatch [:set-params-and-search-offerings-main-search {:name-position %3} {:add-to-query? true}])}
+          :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}
          props)
        (for [[val text] [[:contain "Contains"] [:start "Starts with"] [:end "Ends with"]]]
          [ui/menu-item
@@ -122,7 +122,7 @@
           (icons/bookmark-outline)])])))
 
 (defn offering-type-checkbox-group []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:buy-now-checkbox-props :auction-checkbox-props]}]
       [:div
        {:style styles/full-width}
@@ -130,17 +130,17 @@
         (r/merge-props
           {:label "Buy Now Offerings"
            :checked (boolean (:buy-now? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:buy-now? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:buy-now? %2} {:add-to-query? true}])}
           buy-now-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Auction Offerings"
            :checked (boolean (:auction? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:auction? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:auction? %2} {:add-to-query? true}])}
           auction-checkbox-props)]])))
 
 (defn name-level-checkbox-group []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:top-level-checkbox-props :subname-checkbox-props]}]
       [:div
        {:style styles/full-width}
@@ -148,17 +148,17 @@
         (r/merge-props
           {:label "Top Level Names"
            :checked (boolean (:top-level-names? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:top-level-names? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:top-level-names? %2} {:add-to-query? true}])}
           top-level-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Subnames"
            :checked (boolean (:sub-level-names? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:sub-level-names? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:sub-level-names? %2} {:add-to-query? true}])}
           subname-checkbox-props)]])))
 
 (defn exclude-chars-checkbox-group []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:exclude-numbers-checkbox-props :exclude-spec-chars-checkbox-props]}]
       [:div
        {:style styles/full-width}
@@ -166,17 +166,17 @@
         (r/merge-props
           {:label "Exclude Numbers"
            :checked (boolean (:exclude-numbers? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:exclude-numbers? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:exclude-numbers? %2} {:add-to-query? true}])}
           exclude-numbers-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Exclude Special Char."
            :checked (boolean (:exclude-special-chars? @search-params))
-           :on-check #(dispatch [:set-params-and-search-offerings-main-search {:exclude-special-chars? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:exclude-special-chars? %2} {:add-to-query? true}])}
           exclude-spec-chars-checkbox-props)]])))
 
 (defn price-text-fields []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:min-price-text-field-props :max-price-text-field-props]}]
       (let [{:keys [:min-price :max-price]} @search-params]
         [row-with-cols
@@ -188,7 +188,7 @@
               :full-width true
               :value min-price
               :error-text (when-not (non-neg-ether-value? min-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:set-params-and-search-offerings-main-search {:min-price %2} {:add-to-query? true}])}
+              :on-change #(dispatch [:offerings.main-search/set-params-and-search {:min-price %2} {:add-to-query? true}])}
              min-price-text-field-props)]]
          [col
           {:xs 6}
@@ -198,11 +198,11 @@
               :full-width true
               :value max-price
               :error-text (when-not (non-neg-ether-value? max-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:set-params-and-search-offerings-main-search {:max-price %2} {:add-to-query? true}])}
+              :on-change #(dispatch [:offerings.main-search/set-params-and-search {:max-price %2} {:add-to-query? true}])}
              max-price-text-field-props)]]]))))
 
 (defn length-text-fields []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:min-length-text-field-props :max-length-text-field-props]}]
       [row-with-cols
        [col
@@ -213,7 +213,7 @@
             :full-width true
             :allow-empty? true
             :value (:min-length @search-params)
-            :on-change #(dispatch [:set-params-and-search-offerings-main-search {:min-length %2} {:add-to-query? true}])}
+            :on-change #(dispatch [:offerings.main-search/set-params-and-search {:min-length %2} {:add-to-query? true}])}
            min-length-text-field-props)]]
        [col
         {:xs 6}
@@ -223,7 +223,7 @@
             :full-width true
             :allow-empty? true
             :value (:max-length @search-params)
-            :on-change #(dispatch [:set-params-and-search-offerings-main-search {:max-length %2} {:add-to-query? true}])}
+            :on-change #(dispatch [:offerings.main-search/set-params-and-search {:max-length %2} {:add-to-query? true}])}
            max-length-text-field-props)]]])))
 
 (def offerings-order-by-options
@@ -234,7 +234,7 @@
    [[:end-time :asc] "Ending Soon"]])
 
 (defn order-by-select-field []
-  (let [search-params (subscribe [:search-params/offerings-main-search])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [{:keys [:on-change] :as props}]
       [ui/select-field
        (r/merge-props
@@ -244,7 +244,7 @@
                        (first (:order-by-dirs @search-params))])
           :on-change (fn [e index]
                        (let [[order-by-column order-by-dir] (first (nth offerings-order-by-options index))]
-                         (dispatch [:set-params-and-search-offerings-main-search
+                         (dispatch [:offerings.main-search/set-params-and-search
                                     {:order-by-columns [(name order-by-column)]
                                      :order-by-dirs [(name order-by-dir)]}
                                     {:add-to-query? true}])))}
@@ -313,7 +313,7 @@
       [ui/drawer
        {:open-secondary true
         :open @open?
-        :on-request-change #(dispatch [:set-offerings-search-params-drawer %])}
+        :on-request-change #(dispatch [:offerings.search-params-drawer/set %])}
        [:div
         {:style styles/offering-search-params-drawer-mobile}
         [row
@@ -337,7 +337,7 @@
           {:full-width true
            :primary true
            :label "Close"
-           :on-click #(dispatch [:set-offerings-search-params-drawer false])}]]
+           :on-click #(dispatch [:offerings.search-params-drawer/set false])}]]
         [row
          {:style styles/margin-top-gutter-less}
          [ui/flat-button
@@ -356,7 +356,7 @@
 
 
 (defn offerings-search-results []
-  (let [search-results (subscribe [:search-results/offerings-main-search])]
+  (let [search-results (subscribe [:offerings/main-search])]
     (fn []
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [paper
@@ -367,7 +367,7 @@
            :loading? loading?
            :no-items-text "No offerings found matching your search criteria"
            :on-next-load (fn [offset limit]
-                           (dispatch [:set-params-and-search-offerings-main-search {:offset offset :limit limit}]))}
+                           (dispatch [:offerings.main-search/set-params-and-search {:offset offset :limit limit}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item

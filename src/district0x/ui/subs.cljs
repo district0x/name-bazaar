@@ -103,11 +103,6 @@
     (db form-key)))
 
 (reg-sub
-  :district0x/search-results
-  (fn [db [_ search-results-key]]
-    (db search-results-key)))
-
-(reg-sub
   :district0x/contracts-not-found?
   (fn [db _]
     (:contracts-not-found? db)))

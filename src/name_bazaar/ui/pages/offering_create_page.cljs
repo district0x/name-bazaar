@@ -35,10 +35,10 @@
       (not loaded?)
       :loading
 
-      (not @(subscribe [:active-address-ens.record/owner? node]))
+      (not @(subscribe [:ens.record/active-address-owner? node]))
       :not-ens-record-owner
 
-      (not @(subscribe [:active-address-registrar.entry.deed/owner? label-hash]))
+      (not @(subscribe [:registrar.entry.deed/active-address-owner? label-hash]))
       :not-deed-owner
 
       :else :owner)))
@@ -71,9 +71,9 @@
              {:on-change (fn [e value]
                            (let [[full-name node] (label->full-name+node value)]
                              (on-change e value)
-                             (dispatch [:load-ens-records [node]])
+                             (dispatch [:ens.records/load [node]])
                              (when (= 1 (name-level full-name))
-                               (dispatch [:load-registrar-entry (sha3 value)]))))}))
+                               (dispatch [:registrar.entry/load (sha3 value)]))))}))
          [:span
           {:style styles/text-field-suffix}
           constants/registrar-root]]))))

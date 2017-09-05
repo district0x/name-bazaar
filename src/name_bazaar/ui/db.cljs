@@ -15,7 +15,7 @@
   (merge
     district0x.ui.db/default-db
     {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
-     :server-url  "http://localhost:6200"
+     :server-url "http://localhost:6200"
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :now (t/now)
@@ -27,32 +27,34 @@
      :ens/records {}
      :registrar/entries {}
 
-     :search-results/home-page-autocomplete {:loading? false
-                                             :ids []
-                                             :params {:limit 5
-                                                      :node-owner? true}}
-
-     :search-results/offerings-main-search {:loading? false
-                                            :ids []
-                                            :params {:name-position :contain
-                                                     :buy-now? true
-                                                     :auction? true
-                                                     :top-level-names? true
-                                                     :exclude-special-chars? true
-                                                     :node-owner? true
-                                                     :min-end-time-now? true
-                                                     :order-by-columns [:created-on]
-                                                     :order-by-dirs [:desc]
-                                                     :offset 0
-                                                     :limit constants/infinite-lists-init-load-limit}}
-
-     :search-results/offering-requests-main-search {:loading? false :ids []}
-
-     :search-results/name-offerings {:loading? false :ids []}
-     :search-results/user-offerings {:loading? false :ids []}
-     :search-results/similiar-offerings {:loading? false :ids []}
-     :search-results/bid-offerings {:loading? false :ids []}
-     :search-results/purchased-offerings {:loading? false :ids []}
+     :search-results
+     {:offerings {:home-page-autocomplete {:ids []
+                                           :params {:limit 5
+                                                    :node-owner? true}}
+                  :main-search {:ids []
+                                :params {:name-position :contain
+                                         :buy-now? true
+                                         :auction? true
+                                         :top-level-names? true
+                                         :exclude-special-chars? true
+                                         :node-owner? true
+                                         :min-end-time-now? true
+                                         :order-by-columns [:created-on]
+                                         :order-by-dirs [:desc]
+                                         :offset 0
+                                         :limit constants/infinite-lists-init-load-limit}}
+                  :ens-record-offerings {:ids []
+                                         :params {}}
+                  :user-offerings {:ids []
+                                   :params {}}
+                  :similiar-offerings {:ids []
+                                       :params {}}
+                  :user-bids-offerings {:ids []
+                                        :params {}}
+                  :user-purchases-offerings {:ids []
+                                             :params {}}}
+      :offering-requests {:main-search {:ids []
+                                        :params {}}}}
 
      :saved-searches {:offerings-search {}}
 

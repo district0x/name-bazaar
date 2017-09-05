@@ -57,7 +57,7 @@
   ens-record-loaded?)
 
 (reg-sub
-  :active-address-ens.record/owner?
+  :ens.record/active-address-owner?
   (fn [[_ node]]
     [(subscribe [:district0x/active-address])
      (subscribe [:ens/record node])])
@@ -65,7 +65,7 @@
     (= active-address (:ens.record/owner ens-record))))
 
 (reg-sub
-  :my-addresses-ens.record/owner?
+  :ens.record/my-addresses-contain-owner?
   (fn [[_ node]]
     [(subscribe [:district0x/my-addresses])
      (subscribe [:ens/record node])])
@@ -94,7 +94,7 @@
   registrar-entry-deed-loaded?)
 
 (reg-sub
-  :active-address-registrar.entry.deed/owner?
+  :registrar.entry.deed/active-address-owner?
   (fn [[_ label-hash]]
     [(subscribe [:district0x/active-address])
      (subscribe [:registrar/entry label-hash])])
@@ -102,7 +102,7 @@
     (= active-address (:registrar.entry.deed/owner registrar-entry))))
 
 (reg-sub
-  :my-addresses-registrar.entry.deed/owner?
+  :registrar.entry.deed/my-addresses-contain-owner?
   (fn [[_ label-hash]]
     [(subscribe [:district0x/my-addresses])
      (subscribe [:registrar/entry label-hash])])
@@ -301,26 +301,31 @@
       :else :offering.status/active)))
 
 (reg-sub
+  :search-results
+  (fn [db [_ db-path]]
+    (get-in db (concat [:search-results] db-path))))
+
+(reg-sub
   :search-results/offerings
   (fn [[_ search-results-key]]
-    [(subscribe [:district0x/search-results search-results-key])
+    [(subscribe [:search-results [:offerings search-results-key]])
      (subscribe [:offering-registry/offerings])])
   (fn [[search-results offerings]]
     (assoc search-results :items (map offerings (:ids search-results)))))
 
 (reg-sub
-  :search-results/home-page-autocomplete
-  :<- [:search-results/offerings :search-results/home-page-autocomplete]
+  :offerings/home-page-autocomplete
+  :<- [:search-results/offerings :home-page-autocomplete]
   identity)
 
 (reg-sub
-  :search-results/offerings-main-search
-  :<- [:search-results/offerings :search-results/offerings-main-search]
+  :offerings/main-search
+  :<- [:search-results/offerings :main-search]
   identity)
 
 (reg-sub
-  :search-params/offerings-main-search
-  :<- [:search-results/offerings-main-search]
+  :offerings.main-search/params
+  :<- [:offerings/main-search]
   :params)
 
 (reg-sub

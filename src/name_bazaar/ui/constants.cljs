@@ -3,8 +3,10 @@
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as t]
     [district0x.shared.utils :refer [collify]]
+    [district0x.ui.spec-interceptors :refer [validate-db]]
     [district0x.ui.utils :refer [parse-boolean-string parse-kw-coll-query-params parse-int-or-nil parse-float-or-nil]]
-    [medley.core :as medley]))
+    [medley.core :as medley]
+    [re-frame.core :as re-frame :refer [trim-v]]))
 
 (def contracts-version "1.0.0")
 (def registrar-root ".eth")
@@ -47,3 +49,5 @@
         ["about" :route/about]
         ["how-it-works" :route/how-it-works]
         [true :route/home]]])
+
+(def interceptors [trim-v (validate-db :name-bazaar.ui.db/db)])

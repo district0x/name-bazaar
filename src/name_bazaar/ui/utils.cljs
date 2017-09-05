@@ -36,3 +36,18 @@
 (def offering-type->text
   {:buy-now-offering "Buy Now"
    :auction-offering "Auction"})
+
+(defn get-node-name [db node]
+  (get-in db [:ens/records node :ens.record/name]))
+
+(defn get-offering-name [db offering-address]
+  (get-in db [:offering-registry/offerings offering-address :offering/name]))
+
+(defn get-offering [db offering-address]
+  (get-in db [:offering-registry/offerings offering-address]))
+
+(defn auction-offering? [db offering-address]
+  (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :auction-offering))
+
+(defn get-offering-search-results [db search-results-key]
+  (get-in db [:search-results :offerings search-results-key]))

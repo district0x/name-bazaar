@@ -36,7 +36,7 @@
           :disabled (empty? @label)
           :full-width @xs?
           :on-click (fn []
-                      (dispatch [:mock-registrar/register {:ens.record/label @label}])
+                      (dispatch [:registrar/register {:ens.record/label @label}])
                       (reset! label ""))}]]])))
 
 (defmethod page :route.mock-registrar/register []

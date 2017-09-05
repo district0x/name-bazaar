@@ -553,12 +553,12 @@
 (reg-event-fx
   :district0x.search-results/load
   interceptors
-  (fn [{:keys [db]} [{:keys [:http-xhrio :params :search-results-key clear-existing-items? :append? :endpoint :on-success
+  (fn [{:keys [db]} [{:keys [:http-xhrio :params :search-results-path :clear-existing-items? :append? :endpoint :on-success
                              :id-key]
                       :as opts}]]
-    {:db (update db search-results-key merge (merge {:loading? true}
-                                                    (when clear-existing-items?
-                                                      {:ids []})))
+    {:db (update-in db search-results-path merge (merge {:loading? true}
+                                                        (when clear-existing-items?
+                                                          {:ids []})))
      :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
                                              :endpoint endpoint
                                              :params params
@@ -567,16 +567,16 @@
 (reg-event-fx
   :district0x.search-results/loaded
   interceptors
-  (fn [{:keys [db]} [{:keys [:search-results-key :params :id-key :on-success :append?]}
+  (fn [{:keys [db]} [{:keys [:search-results-path :params :id-key :on-success :append?]}
                      {:keys [:items :total-count] :as response}]]
     (let [ids (if id-key (map #(get % id-key)) items)
           existing-ids (if append?
-                         (get-in db [search-results-key :ids])
+                         (get-in db (concat search-results-path [:ids]))
                          [])]
       (merge
-        {:db (update db search-results-key merge {:loading? false
-                                                  :ids (concat existing-ids ids)
-                                                  :total-count total-count})}
+        {:db (update-in db search-results-path merge {:loading? false
+                                                      :ids (concat existing-ids ids)
+                                                      :total-count total-count})}
         (when on-success
           {:dispatch (vec (concat on-success [ids items response]))})))))
 
