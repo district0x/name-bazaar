@@ -14,13 +14,13 @@
   (into
     [:div
      {:style (merge expandable-item-body-style
-                    {:height @(subscribe [:infinite-list/expanded-item-body-height index collapsed-height])})}]
-    (when @(subscribe [:infinite-list/item-expanded? index]) ;; This is important for performance reasons
+                    {:height @(subscribe [:infinite-list.item/expanded-body-height index collapsed-height])})}]
+    (when @(subscribe [:infinite-list.item/expanded? index]) ;; This is important for performance reasons
       children)))
 
 (defn expandable-list-item-header []
   (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled?] :as props} & children]
-    (let [expanded? @(subscribe [:infinite-list/item-expanded? index])]
+    (let [expanded? @(subscribe [:infinite-list.item/expanded? index])]
       (into
         [:div
          {:style (merge expandable-item-header-style
@@ -30,10 +30,10 @@
                         (if expanded?
                           (do
                             (on-collapse)
-                            (dispatch [:infinite-list/collapse-item index]))
+                            (dispatch [:infinite-list.item/collapse index]))
                           (do
                             (on-expand)
-                            (dispatch [:infinite-list/expand-item index expanded-height])))))}]
+                            (dispatch [:infinite-list.item/expand index expanded-height])))))}]
         children))))
 
 (defn expandable-list-item [{:keys [:index :on-collapse :on-expand :expanded-height :collapsed-height :expand-disabled?]}

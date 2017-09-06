@@ -15,7 +15,7 @@
      [raised-transaction-button
       {:primary true
        :label "Buy"
-       :pending? @(subscribe [:buy-now-offering/buy-tx-pending? address])
+       :pending? @(subscribe [:buy-now-offering.buy/tx-pending? address])
        :pending-label "Buying..."
        :disabled (not node-owner?)
        :on-click #(dispatch [:buy-now-offering/buy {:offering/address address

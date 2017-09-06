@@ -1,4 +1,4 @@
-(ns name-bazaar.ui.events.ens
+(ns name-bazaar.ui.events.ens-events
   (:require
     [cljs.spec.alpha :as s]
     [clojure.set :as set]

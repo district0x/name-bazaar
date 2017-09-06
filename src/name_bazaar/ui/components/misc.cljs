@@ -28,7 +28,7 @@
           {:style styles/active-address-balance}])
        (when (and @xs-sm? (= (:handler @active-page) :route.offerings/search))
          [ui/icon-button
-          {:on-click #(dispatch [:offerings.search-params-drawer/set true])}
+          {:on-click #(dispatch [:offerings.main-search.drawer/set-open true])}
           (icons/filter {:color "#FFF"})])
        [transaction-log
         {:icon-menu-props {:style {:margin-right styles/desktop-gutter-mini}}}]

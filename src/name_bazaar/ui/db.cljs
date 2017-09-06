@@ -20,10 +20,10 @@
      :smart-contracts smart-contracts
      :now (t/now)
 
-     :offerings-search-params-drawer {:open? false}
+     :offerings-main-search-drawer {:open? false}
 
-     :offering-registry/offerings {}
-     :offering-requests/requests {}
+     :offerings {}
+     :offering-requests {}
      :ens/records {}
      :registrar/entries {}
 
@@ -54,7 +54,11 @@
                   :user-purchases-offerings {:ids []
                                              :params {}}}
       :offering-requests {:main-search {:ids []
-                                        :params {}}}}
+                                        :params {:name-position :contain
+                                                 :order-by-columns [:requesters-count]
+                                                 :order-by-dirs [:desc]
+                                                 :offset 0
+                                                 :limit constants/infinite-lists-init-load-limit}}}}
 
      :saved-searches {:offerings-search {}}
 

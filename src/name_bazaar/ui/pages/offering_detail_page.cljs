@@ -38,7 +38,7 @@
          (offering-status->text status)]))))
 
 (defn offering-type-chip []
-  (let [offering (subscribe [:route-params/offering])]
+  (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
       (let [{:keys [:offering/type]} @offering]
         [ui/chip
@@ -50,7 +50,7 @@
          (offering-type->text type)]))))
 
 (defn offering-price-row []
-  (let [offering (subscribe [:route-params/offering])]
+  (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
       (let [{:keys [:offering/type :offering/price :auction-offering/bid-count]} @offering]
         [row-with-cols
@@ -83,7 +83,7 @@
 
 (defn auction-offering-end-time-countdown-row []
   (let [xs? (subscribe [:district0x/window-xs-width?])
-        offering (subscribe [:route-params/offering])]
+        offering (subscribe [:offerings/route-offering])]
     (fn [props]
       (let [{:keys [:offering/address :offering/type]} @offering
             {:keys [:days :hours :minutes :seconds] :as time-remaining}
@@ -122,7 +122,7 @@
                "finished"])]])))))
 
 (defn offering-bid-count-row []
-  (let [offering (subscribe [:route-params/offering])]
+  (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
       (let [{:keys [:offering/type :auction-offering/bid-count]} @offering]
         (when (= type :auction-offering)
@@ -154,7 +154,7 @@
        [non-ascii-characters-warning])]))
 
 (defn offering-detail []
-  (let [offering (subscribe [:route-params/offering])]
+  (let [offering (subscribe [:offerings/route-offering])]
     (fn []
       [:div
        [row
@@ -185,7 +185,7 @@
     (fn []
       (let [{:keys [:offering/address]} @route-params
             offering-loaded? @(subscribe [:offering/loaded? address])
-            offering @(subscribe [:offering-registry/offering address])]
+            offering @(subscribe [:offering address])]
         [side-nav-menu-center-layout
          [paper
           [:h1

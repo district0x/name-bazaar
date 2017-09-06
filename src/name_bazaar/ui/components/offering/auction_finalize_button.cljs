@@ -13,7 +13,7 @@
           :full-width @xs?
           :label "Finalize"
           :pending-label "Finalizing..."
-          :pending? @(subscribe [:auction-offering/finalize-tx-pending? address])
+          :pending? @(subscribe [:auction-offering.finalize/tx-pending? address])
           :style styles/margin-left-gutter-mini
           :on-click #(dispatch [:auction-offering/finalize {:offering/address address
                                                             :auction-offering/transfer-price? true}])}]))))

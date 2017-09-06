@@ -1,4 +1,4 @@
-(ns name-bazaar.ui.events.offering-requests
+(ns name-bazaar.ui.events.offering-requests-events
   (:require
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
@@ -63,7 +63,7 @@
   interceptors
   (fn [{:keys [:db]} [nodes counts]]
     (let [counts (map (comp (partial hash-map :offering-request/requesters-count) bn/->number) counts)]
-      {:db (update-in db :offering-requests/requests
+      {:db (update-in db :offering-requests
                       (partial merge-with merge)
                       (parse-offering-requests-counts nodes counts))})))
 
@@ -95,7 +95,7 @@
     (let [[addrs-requested addrs-not-requested] (->> (zipmap addresses has-requested-vals)
                                                   (split-with second)
                                                   (map (partial map first)))]
-      {:db (update-in db [:offering-requests/requests node :offering-request/requesters]
+      {:db (update-in db [:offering-requests node :offering-request/requesters]
                       (fn [requesters]
                         (-> (set requesters)
                           (set/difference addrs-not-requested)

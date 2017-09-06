@@ -1,4 +1,4 @@
-(ns name-bazaar.ui.events.offerings
+(ns name-bazaar.ui.events.offerings-events
   (:require
     [cljs-time.coerce :refer [to-epoch]]
     [cljs.spec.alpha :as s]
@@ -151,7 +151,7 @@
     (let [form-data (if-not (:auction-offering/bidder form-data)
                       (assoc form-data :auction-offering/bidder (:active-address db))
                       form-data)
-          pending-returns (get-in db [:offering-registry/offerings
+          pending-returns (get-in db [:offerings
                                       address
                                       :auction-offering/pending-returns
                                       (:auction-offering/bidder form-data)])]
@@ -221,7 +221,7 @@
     (let [{:keys [:offering/node :offering/name :offering/label-hash] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
-                    (update-in [:offering-registry/offerings offering-address] merge offering)
+                    (update-in [:offerings offering-address] merge offering)
                     (update-in [:ens/records node] merge {:ens.record/node node
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
@@ -244,7 +244,7 @@
   interceptors
   (fn [{:keys [:db]} [offering-address auction-offering]]
     (let [offering (parse-auction-offering auction-offering {:parse-dates? true :convert-to-ether? true})]
-      {:db (update-in db [:offering-registry/offerings offering-address] merge offering)})))
+      {:db (update-in db [:offerings offering-address] merge offering)})))
 
 (reg-event-fx
   :offerings.auction.my-addresses-pending-returns/load
@@ -272,7 +272,7 @@
   interceptors
   (fn [{:keys [:db]} [offering-address address pending-returns]]
     {:db (assoc-in db
-                   [:offering-registry/offerings offering-address :auction-offering/pending-returns address]
+                   [:offerings offering-address :auction-offering/pending-returns address]
                    (d0x-shared-utils/wei->eth->num pending-returns))}))
 
 
@@ -326,7 +326,7 @@
     {:dispatch [:offerings/stop-watching (keys (:offerings/watched db))]}))
 
 (reg-event-fx
-  :offerings/list-item-expanded
+  :offerings.list-item/expanded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering/address]}]]
     {:dispatch-n [[:offerings.ownership/load address]
@@ -335,7 +335,7 @@
                   [:offerings/load [address]]]}))
 
 (reg-event-fx
-  :offerings/list-item-collapsed
+  :offerings.list-item/collapsed
   interceptors
   (fn [{:keys [:db]} [offering]]
     {:dispatch [:offerings/stop-watching [(:offering/address offering)]]}))
@@ -344,7 +344,7 @@
   :offerings.search-params-drawer/set
   interceptors
   (fn [{:keys [:db]} [open?]]
-    {:db (assoc-in db [:offerings-search-params-drawer :open?] open?)}))
+    {:db (assoc-in db [:offerings-main-search-drawer :open?] open?)}))
 
 (reg-event-fx
   :offerings.main-search/search
@@ -380,3 +380,15 @@
   (fn [{:keys [:db]} [search-params]]
     {:dispatch [:offerings/search {:search-results-path [:search-results :offerings :home-page-autocomplete]
                                    :params search-params}]}))
+
+(reg-event-fx
+  :offerings.saved-searches/add
+  interceptors
+  (fn [{:keys [:db]} [query-string saved-search-name]]
+    {:dispatch [:saved-searches/add :offerings-search query-string saved-search-name]}))
+
+(reg-event-fx
+  :offerings.saved-searches/remove
+  interceptors
+  (fn [{:keys [:db]} [query-string]]
+    {:dispatch [:saved-searches/remove :offerings-search query-string]}))

@@ -32,31 +32,31 @@
 (s/def :auction-offering/bidder address?)
 (s/def :auction-offering/pending-returns (s/map-of address? not-neg?))
 
-(s/def :offering-registry/offering (s/keys :opt [:offering/node
-                                                 :offering/name
-                                                 :offering/original-owner
-                                                 :offering/new-owner
-                                                 :offering/registrar
-                                                 :offering/offering-registry
-                                                 :offering/emergency-multisig
-                                                 :offering/version
-                                                 :offering/label-hash
-                                                 :offering/type
-                                                 :offering/created-on
-                                                 :offering/transferred-on
-                                                 :offering/price
-                                                 :offering/name-level
-                                                 :offering/label-length
-                                                 :offering/contains-number?
-                                                 :offering/contains-special-char?
-                                                 :offering/contains-non-ascii?
-                                                 :auction-offering/end-time
-                                                 :auction-offering/extension-duration
-                                                 :auction-offering/min-bid-increase
-                                                 :auction-offering/highest-bidder
-                                                 :auction-offering/bid-count]))
+(s/def ::offering (s/keys :opt [:offering/node
+                                :offering/name
+                                :offering/original-owner
+                                :offering/new-owner
+                                :offering/registrar
+                                :offering/offering-registry
+                                :offering/emergency-multisig
+                                :offering/version
+                                :offering/label-hash
+                                :offering/type
+                                :offering/created-on
+                                :offering/transferred-on
+                                :offering/price
+                                :offering/name-level
+                                :offering/label-length
+                                :offering/contains-number?
+                                :offering/contains-special-char?
+                                :offering/contains-non-ascii?
+                                :auction-offering/end-time
+                                :auction-offering/extension-duration
+                                :auction-offering/min-bid-increase
+                                :auction-offering/highest-bidder
+                                :auction-offering/bid-count]))
 
-(s/def :offering-registry/offerings (s/map-of :offering/address :offering-registry/offering))
+(s/def ::offerings (s/map-of :offering/address ::offering))
 
 (s/def :offering-request/requesters (s/coll-of address? :kind set?))
 (s/def :offering-request/requesters-count not-neg?)
@@ -64,7 +64,7 @@
 (s/def :offering-requests/request (s/keys :opt [:offering-request/requesters-count
                                                 :offering-request/requesters]))
 
-(s/def :offering-requests/requests (s/map-of sha3? :offering-requests/request))
+(s/def ::offering-requests (s/map-of :ens.record/node :offering-requests/request))
 
 (s/def :ens.record/node sha3?)
 (s/def :ens.record/label string?)
@@ -103,7 +103,7 @@
 
 (s/def ::search-results (s/map-of keyword? (s/map-of keyword? :db/search-results)))
 
-(s/def ::offerings-search-params-drawer :db/drawer)
+(s/def ::offerings-main-search-drawer :db/drawer)
 (s/def ::saved-searches (s/map-of keyword? (s/map-of string? string?)))
 
 
@@ -116,10 +116,11 @@
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
-                                             :offering-registry/offerings
-                                             :offering-requests/requests]
-                                       :req-un [::infinite-list
+                                             :registrar/entries]
+                                       :req-un [::offerings
+                                                ::offering-requests
+                                                ::infinite-list
                                                 ::now
                                                 ::search-results
                                                 ::saved-searches
-                                                ::offerings-search-params-drawer])))
+                                                ::offerings-main-search-drawer])))

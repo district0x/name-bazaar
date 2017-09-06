@@ -45,7 +45,7 @@
            :primary-text text}])])))
 
 (defn saved-searches-select-field []
-  (let [saved-searches (subscribe [:saved-searches :offerings-search])
+  (let [saved-searches (subscribe [:offerings/saved-searches])
         query-string (subscribe [:district0x/query-string])]
     (fn [props]
       [ui/select-field
@@ -97,20 +97,20 @@
 (defn save-search-button []
   (let [dialog-open? (r/atom false)
         query-string (subscribe [:district0x/query-string])
-        saved-search-active? (subscribe [:saved-search-active? :offerings-search])]
+        saved-search-active? (subscribe [:offerings.saved-search/active?])]
     (fn [props]
       [:div
        [save-search-dialog
         {:open @dialog-open?
          :on-cancel #(reset! dialog-open? false)
          :on-confirm (fn [saved-search-name]
-                       (dispatch [:saved-searches/add :offerings-search @query-string saved-search-name])
+                       (dispatch [:offerings.saved-searches/add @query-string saved-search-name])
                        (reset! dialog-open? false))}]
        (if @saved-search-active?
          [ui/icon-button
           (r/merge-props
             {:tooltip "Delete this saved search"
-             :on-click #(dispatch [:saved-searches/remove :offerings-search @query-string])}
+             :on-click #(dispatch [:offerings.saved-searches/remove @query-string])}
             props)
           (icons/bookmark-remove)]
          [ui/icon-button
@@ -308,12 +308,12 @@
       [reset-search-icon-button]]]]])
 
 (defn search-params-drawer-mobile []
-  (let [open? (subscribe [:offerings-search-params-drawer-open?])]
+  (let [open? (subscribe [:offerings.main-search.drawer/open?])]
     (fn []
       [ui/drawer
        {:open-secondary true
         :open @open?
-        :on-request-change #(dispatch [:offerings.search-params-drawer/set %])}
+        :on-request-change #(dispatch [:offerings.main-search.drawer/set-open %])}
        [:div
         {:style styles/offering-search-params-drawer-mobile}
         [row
@@ -337,7 +337,7 @@
           {:full-width true
            :primary true
            :label "Close"
-           :on-click #(dispatch [:offerings.search-params-drawer/set false])}]]
+           :on-click #(dispatch [:offerings.main-search.drawer/set-open false])}]]
         [row
          {:style styles/margin-top-gutter-less}
          [ui/flat-button

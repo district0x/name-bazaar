@@ -278,15 +278,6 @@
                         (when-not editing?
                           (swap! form-data assoc :offering/name "")))}]]]))))
 
-(defn loading-placeholder []
-  [:div
-   [list-item-placeholder
-    {:style styles/margin-top-gutter}]
-   [list-item-placeholder
-    {:style styles/margin-top-gutter}]
-   [list-item-placeholder
-    {:style styles/margin-top-gutter}]])
-
 (defn no-permission-error [text]
   [row
    {:style {:height 150}
@@ -299,14 +290,15 @@
     (fn []
       (let [{:keys [:offering/address]} @route-params
             offering-loaded? @(subscribe [:offering/loaded? address])
-            offering @(subscribe [:offering-registry/offering address])]
+            offering @(subscribe [:offering address])]
         [side-nav-menu-center-layout
          [paper
           [:h1 "Edit Offering"]
 
           (cond
             (not offering-loaded?)
-            [loading-placeholder]
+            [list-item-placeholder
+             {:style styles/margin-top-gutter}]
 
             (not @(subscribe [:offering/active-address-original-owner? address]))
             [no-permission-error

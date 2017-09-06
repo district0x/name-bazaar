@@ -25,7 +25,7 @@
          [:div
           "You have pending returns: " (format-eth-with-code pending-returns)
           ". ("
-          (if-not @(subscribe [:auction-offering/withdraw-tx-pending? address])
+          (if-not @(subscribe [:auction-offering.withdraw/tx-pending? address])
             [:a
              {:on-click #(dispatch [:auction-offering/withdraw {:offering/address address}])}
              "withdraw"]
@@ -103,7 +103,7 @@
               {:primary true
                :label "Bid"
                :full-width @xs?
-               :pending? @(subscribe [:auction-offering/bid-tx-pending? address])
+               :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
                :pending-label "Bidding..."
                :style (merge
                         (if-not @xs?

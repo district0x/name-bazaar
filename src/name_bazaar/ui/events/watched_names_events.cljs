@@ -1,4 +1,4 @@
-(ns name-bazaar.ui.events.watched-names
+(ns name-bazaar.ui.events.watched-names-events
   (:require
     [cljs.spec.alpha :as s]
     [clojure.set :as set]

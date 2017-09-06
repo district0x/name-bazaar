@@ -55,9 +55,9 @@
             node (namehash name)
             [transfer-event pending-sub] (if (= name-level 1)
                                            [[:registrar/transfer {:ens.record/label label :ens.record/owner address}]
-                                            [:registrar/transfer-tx-pending? label]]
+                                            [:registrar.transfer/tx-pending? label]]
                                            [[:ens/set-owner {:ens.record/name name :ens.record/owner address}]
-                                            [:ens/set-owner-tx-pending? node]])]
+                                            [:ens.set-owner/tx-pending? node]])]
         [raised-transaction-button
          (r/merge-props
            {:secondary true
@@ -77,7 +77,7 @@
           :full-width @xs?
           :label "Reclaim Ownership"
           :pending-label "Reclaiming..."
-          :pending? @(subscribe [:offering/reclaim-ownership-tx-pending? address])
+          :pending? @(subscribe [:offering.reclaim-ownership/tx-pending? address])
           :style styles/margin-left-gutter-mini
           :on-click #(dispatch [:offering/reclaim-ownership {:offering/address address}])}]))))
 

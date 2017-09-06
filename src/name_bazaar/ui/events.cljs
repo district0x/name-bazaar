@@ -26,14 +26,14 @@
     [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-registrar-entry offering-version->type]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.db :refer [default-db]]
-    [name-bazaar.ui.events.ens]
-    [name-bazaar.ui.events.infinite-list]
-    [name-bazaar.ui.events.offering-requests]
-    [name-bazaar.ui.events.offerings]
-    [name-bazaar.ui.events.registrar]
-    [name-bazaar.ui.events.watched-names]
+    [name-bazaar.ui.events.ens-events]
+    [name-bazaar.ui.events.infinite-list-events]
+    [name-bazaar.ui.events.offering-requests-events]
+    [name-bazaar.ui.events.offerings-events]
+    [name-bazaar.ui.events.registrar-events]
+    [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering auction-offering? get-offering-search-results]]
+    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering auction-offering? get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]}]
@@ -46,8 +46,19 @@
                 {:clear-existing-items? true
                  :clear-existing-params? true}]}
 
+    :route.offering-requests/search
+    {:dispatch [:offering-requests.main-search/set-params-and-search
+                (merge
+                  (:params (get-offering-search-results default-db :main-search))
+                  (parse-query-params query-params :route.offering-requests/search))
+                {:clear-existing-items? true
+                 :clear-existing-params? true}]}
+
     :route.offerings/edit
-    {:dispatch [:offerings/load [(:offering/address route-params)]]}
+    {:async-flow {:first-dispatch [:offerings/load [(:offering/address route-params)]]
+                  :rules [{:when :seen?
+                           :events [:offerings/loaded]
+                           :dispatch-n [[:offerings.ownership/load (:offering/address route-params)]]}]}}
 
     :route.offerings/detail
     (let [{:keys [:offering/address]} route-params]

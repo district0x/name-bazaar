@@ -41,13 +41,23 @@
   (get-in db [:ens/records node :ens.record/name]))
 
 (defn get-offering-name [db offering-address]
-  (get-in db [:offering-registry/offerings offering-address :offering/name]))
+  (get-in db [:offerings offering-address :offering/name]))
 
 (defn get-offering [db offering-address]
-  (get-in db [:offering-registry/offerings offering-address]))
+  (get-in db [:offerings offering-address]))
 
 (defn auction-offering? [db offering-address]
-  (= (get-in db [:offering-registry/offerings offering-address :offering/type]) :auction-offering))
+  (= (get-in db [:offerings offering-address :offering/type]) :auction-offering))
 
 (defn get-offering-search-results [db search-results-key]
   (get-in db [:search-results :offerings search-results-key]))
+
+(defn get-offering-requests-search-results [db search-results-key]
+  (get-in db [:search-results :offering-requests search-results-key]))
+
+(defn registrar-entry-deed-loaded? [registrar-entry]
+  (boolean (or (d0x-shared-utils/zero-address? (:registrar.entry.deed/address registrar-entry))
+               (:registrar.entry.deed/value registrar-entry))))
+
+(defn ens-record-loaded? [ens-record]
+  (boolean (:ens.record/owner ens-record)))

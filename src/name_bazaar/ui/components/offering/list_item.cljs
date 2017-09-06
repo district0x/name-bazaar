@@ -109,8 +109,8 @@
             {:strs [desktopGutterMini desktopGutterLess]} (current-component-mui-theme "spacing")]
         [expandable-list-item
          {:index key
-          :on-collapse #(dispatch [:offerings/list-item-collapsed offering])
-          :on-expand #(dispatch [:offerings/list-item-expanded offering])
+          :on-collapse #(dispatch [:offerings.list-item/collapsed offering])
+          :on-expand #(dispatch [:offerings.list-item/expanded offering])
           :collapsed-height (styles/search-results-list-item-height @xs?)
           :expanded-height (if (= type :auction-offering)
                              (styles/auction-offering-list-item-expanded-height @xs?)
