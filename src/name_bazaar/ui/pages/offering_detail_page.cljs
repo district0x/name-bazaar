@@ -149,9 +149,11 @@
        [missing-ownership-warning])
      (when (> name-level 1)
        [sub-level-name-warning
-        {:offering/name name}])
+        {:offering/name name
+         :style styles/margin-top-gutter-mini}])
      (when contains-non-ascii?
-       [non-ascii-characters-warning])]))
+       [non-ascii-characters-warning
+        {:style styles/margin-top-gutter-mini}])]))
 
 (defn offering-detail []
   (let [offering (subscribe [:offerings/route-offering])]

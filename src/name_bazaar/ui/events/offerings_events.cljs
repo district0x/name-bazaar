@@ -11,7 +11,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.utils :as d0x-ui-utils]))
 
@@ -39,7 +39,9 @@
                                                   :auction-offering/extension-duration
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [form-data (update form-data :auction-offering/end-time to-epoch)]
+    (let [form-data (-> form-data
+                      (update :offering/name normalize)
+                      (update :auction-offering/end-time to-epoch))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Create %s auction" (:offering/name form-data))
                    :contract-key :auction-offering-factory

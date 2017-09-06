@@ -13,7 +13,7 @@
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
-    [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix]]
+    [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix valid-ens-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -69,11 +69,12 @@
                 :floating-label-style {:color error-color}})
              (dissoc props :ownership-status)
              {:on-change (fn [e value]
-                           (let [[full-name node] (label->full-name+node value)]
-                             (on-change e value)
-                             (dispatch [:ens.records/load [node]])
-                             (when (= 1 (name-level full-name))
-                               (dispatch [:registrar.entry/load (sha3 value)]))))}))
+                           (when (valid-ens-name? value)
+                             (let [[full-name node] (label->full-name+node value)]
+                               (on-change e value)
+                               (dispatch [:ens.records/load [node]])
+                               (when (= 1 (name-level full-name))
+                                 (dispatch [:registrar.entry/load (sha3 value)])))))}))
          [:span
           {:style styles/text-field-suffix}
           constants/registrar-root]]))))

@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address]]
     [cljs-web3.core :as web3]))
 
 (defn offering-version->type [version]
@@ -56,7 +56,7 @@
   (when auction-offering
     (-> (zipmap auction-offering-props auction-offering)
       (update :auction-offering/end-time (if parse-dates? bn/->date-time bn/->number))
-      (update :auction-offering/winning-bidder #(when-not (d0x-shared-utils/zero-address? %) %))
+      (update :auction-offering/winning-bidder #(when-not (zero-address? %) %))
       (update :auction-offering/extension-duration bn/->number)
       (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
       (update :auction-offering/bid-count bn/->number))))
@@ -78,6 +78,7 @@
 (defn parse-registrar-entry [entry & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when entry
     (-> (zipmap registrar-entry-props entry)
+      (update :registrar.entry.deed/address #(if (= % "0x") zero-address %))
       (update :registrar.entry/state (comp registrar-entry-states bn/->number))
       (update :registrar.entry/registration-date (if parse-dates? bn/->date-time bn/->number))
       (update :registrar.entry/value bn/->number)

@@ -3,7 +3,7 @@
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan alts! timeout]]
     [district0x.server.state :as state]
     [district0x.server.utils :refer [watch-event-once]]
     [district0x.shared.utils :refer [rand-str rand-nth-except]]
@@ -19,6 +19,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
+(def normalize (aget (js/require "eth-ens-namehash") "normalize"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
 (def names-per-account 10)
@@ -29,16 +30,16 @@
       (dotimes [address-index total-accounts]
         (dotimes [_ names-per-account]
           (let [owner (state/my-address server-state address-index)
-                label (str (rand-str 5 {:lowercase-only? true}))
+                label (normalize (rand-str 5))
                 name (str label "." registrar/root-node)
                 node (namehash name)
                 ;offering-type :auction-offering
                 offering-type (rand-nth [:buy-now-offering :auction-offering])
                 price (web3/to-wei (/ (inc (rand-int 10)) 10) :ether)
                 buyer (rand-nth-except owner (state/my-addresses server-state))
-                request-name (if (zero? (rand-int 2)) name (str (rand-str 1 {:lowercase-only? true})
-                                                                "."
-                                                                registrar/root-node))]
+                request-name (if (zero? (rand-int 2)) name (normalize (str (rand-str 1)
+                                                                           "."
+                                                                           registrar/root-node)))]
 
             (<! (registrar/register! server-state {:ens.record/label label} {:from owner}))
 
@@ -59,21 +60,24 @@
                     {:from owner})))
 
 
-            (let [[_ {{:keys [:offering]} :args}] (<! (offering-registry/on-offering-added-once server-state
-                                                                                                {:node node
-                                                                                                 :owner owner}))]
-              (<! (registrar/transfer! server-state
-                                       {:ens.record/label label :ens.record/owner offering}
-                                       {:from owner}))
+            (let [[[_ {{:keys [:offering]} :args}]] (alts! [(offering-registry/on-offering-added-once server-state
+                                                                                                      {:node node
+                                                                                                       :owner owner})
+                                                            (timeout 1000)])]
+              (if offering
+                (do
+                  (<! (registrar/transfer! server-state
+                                           {:ens.record/label label :ens.record/owner offering}
+                                           {:from owner}))
 
-              (when (= offering-type :auction-offering)
-                (<! (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
+                  (when (= offering-type :auction-offering)
+                    (<! (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
 
-              #_(when true #_(zero? (rand-int 2))
-                  (if (= offering-type :buy-now-offering)
-                    (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
-                    (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
+                  #_ (when true #_(zero? (rand-int 2))
+                    (if (= offering-type :buy-now-offering)
+                      (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
+                      (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer}))))
 
-              ))))
+                (.error js/console "Offering for" label "wasn't created"))))))
       (>! ch true))
     ch))

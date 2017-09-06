@@ -7,15 +7,21 @@
     [goog.string.format]
     [name-bazaar.ui.constants :as constants]))
 
-(defn sha3 [& args]
-  (apply js/SoliditySha3.sha3 args))
-
 (defn namehash [name]
-  (if (empty? name)
-    "0x0000000000000000000000000000000000000000000000000000000000000000"
-    (let [[label & rest] (string/split name ".")]
-      (sha3 (namehash (string/join "." rest))
-            (sha3 label)))))
+  (js/EthEnsNamehash.hash name))
+
+(defn normalize [name]
+  (js/EthEnsNamehash.normalize name))
+
+(defn sha3 [x]
+  (str "0x" (js/keccak_256 x)))
+
+(defn valid-ens-name? [name]
+  (try
+    (normalize name)
+    true
+    (catch js/Error e
+      false)))
 
 (defn strip-eth-suffix [s]
   (if (and (string? s) (string/ends-with? s ".eth"))
@@ -60,4 +66,4 @@
                (:registrar.entry.deed/value registrar-entry))))
 
 (defn ens-record-loaded? [ens-record]
-  (boolean (:ens.record/owner ens-record)))
+  (boolean ens-record))

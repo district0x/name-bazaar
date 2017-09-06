@@ -10,7 +10,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]))
 
@@ -35,8 +35,9 @@
   :registrar/register
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [ens-record-name (str (:ens.record/label form-data) constants/registrar-root)
-          form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
+    (let [label (normalize (:ens.record/label form-data))
+          ens-record-name (str label constants/registrar-root)
+          form-data (assoc form-data :ens.record/label-hash (sha3 label))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Register %s" ens-record-name)
                    :contract-key :mock-registrar

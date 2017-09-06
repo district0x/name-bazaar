@@ -185,8 +185,7 @@
   (let [chars-between #(map char (range (.charCodeAt %1) (inc (.charCodeAt %2))))
         chars (concat (when-not lowercase-only? (chars-between \0 \9))
                       (chars-between \a \z)
-                      (when-not lowercase-only? (chars-between \A \Z))
-                      (when-not lowercase-only? [\_]))
+                      (when-not lowercase-only? (chars-between \A \Z)))
         password (take n (repeatedly #(rand-nth chars)))]
     (reduce str password)))
 
