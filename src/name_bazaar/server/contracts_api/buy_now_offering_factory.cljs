@@ -16,7 +16,7 @@
                                         opts)))
 
 (defn registrar [server-state]
-  (web3-eth-async/contract-call (state/instance :buy-now-offering-factory) :mock-registrar))
+  (web3-eth-async/contract-call (state/instance :buy-now-offering-factory) :registrar))
 
 (defn offering-registry [server-state]
   (web3-eth-async/contract-call (state/instance :buy-now-offering-factory) :offering-registry))
