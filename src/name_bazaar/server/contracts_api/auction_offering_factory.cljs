@@ -22,11 +22,11 @@
 
 
 (defn registrar [server-state]
-  (web3-eth-async/contract-call (state/instance :auction-offering-factory) :registrar))
+  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :registrar))
 
 (defn offering-registry [server-state]
-  (web3-eth-async/contract-call (state/instance :auction-offering-factory) :offering-registry))
+  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-registry))
 
 (defn offering-requests [server-state]
-  (web3-eth-async/contract-call (state/instance :auction-offering-factory) :offering-requests))
+  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-requests))
 

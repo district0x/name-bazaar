@@ -45,5 +45,5 @@
     ch))
 
 (defn ens [server-state]
-  (web3-eth-async/contract-call (state/instance :mock-registrar) :ens))
+  (web3-eth-async/contract-call (state/instance server-state :mock-registrar) :ens))
 
