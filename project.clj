@@ -7,7 +7,7 @@
                  ;[district0x "0.1.10"]
                  [cljs-http "0.1.43"]
                  [cljs-react-material-ui "0.2.48"]
-                 [cljs-web3 "0.19.0-0-4"]
+                 [cljs-web3 "0.19.0-0-5"]
                  [cljsjs/prop-types "15.5.10-0"]
                  [cljsjs/react "15.6.1-1"]
                  [cljsjs/react-dom "15.6.1-1"]
