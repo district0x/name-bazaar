@@ -10,6 +10,7 @@
     [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
+    [name-bazaar.ui.components.search-fields.keyword-text-field :refer [keyword-text-field]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
@@ -17,14 +18,12 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
-(defn keyword-text-field []
+(defn offering-name-keyword-text-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [props]
-      [text-field
+      [keyword-text-field
        (r/merge-props
-         {:floating-label-text "Keyword"
-          :full-width true
-          :value (:name @search-params)
+         {:value (:name @search-params)
           :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}
          props)])))
 
@@ -268,7 +267,7 @@
      :between "xs"}
     [col
      {:md 5}
-     [keyword-text-field]]
+     [offering-name-keyword-text-field]]
     [col
      {:md 3}
      [row
@@ -348,7 +347,7 @@
 (defn search-params-panel-mobile []
   [paper
    [search-params-drawer-mobile]
-   [keyword-text-field]
+   [offering-name-keyword-text-field]
    [order-by-select-field]
    [row
     [saved-searches-select-field]

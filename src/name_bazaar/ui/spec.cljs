@@ -19,6 +19,7 @@
 (s/def :offering/transferred-on (s/nilable date?))
 (s/def :offering/price not-neg?)
 (s/def :offering/name-level not-neg?)
+(s/def :offering/top-level-name? boolean?)
 (s/def :offering/label-length not-neg?)
 (s/def :offering/contains-number? boolean?)
 (s/def :offering/contains-special-char? boolean?)
@@ -46,6 +47,7 @@
                                 :offering/transferred-on
                                 :offering/price
                                 :offering/name-level
+                                :offering/top-level-name?
                                 :offering/label-length
                                 :offering/contains-number?
                                 :offering/contains-special-char?

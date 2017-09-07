@@ -184,8 +184,12 @@
 (defn buy-now-offering-list-item-expanded-height [xs?]
   (if xs? 400 260))
 
+(defn offering-request-list-item-expanded-height [xs?]
+  (if xs? 360 290))
+
 (defn search-results-list-item [xs?]
-  {:padding-top desktop-gutter-mini
+  {:width "100%"
+   :padding-top desktop-gutter-mini
    :padding-bottom desktop-gutter-mini
    :padding-left (if xs? desktop-gutter-mini desktop-gutter-less)
    :padding-right (if xs? desktop-gutter-mini desktop-gutter-less)})
@@ -256,7 +260,7 @@
 (def offering-list-item-bid-count
   {:font-size "1.05em"})
 
-(def offering-list-item-name
+(def list-item-ens-record-name
   {:font-size "1.3em"
    :overflow :hidden
    :text-overflow :ellipsis
@@ -305,3 +309,12 @@
   {:font-size "1.4em"
    :display :inline-block
    :text-align :left})
+
+(def name-general-info-headline
+  {:font-size "1.1em"
+   :font-weight :bold})
+
+(defn list-item-body-links-container [xs?]
+  (merge margin-bottom-gutter-mini
+         (if xs? text-left
+                 text-right)))

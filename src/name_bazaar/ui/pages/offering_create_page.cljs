@@ -8,7 +8,7 @@
     [district0x.ui.components.text-field :refer [text-field-with-suffix ether-field-with-currency]]
     [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
     [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme date+time->local-date-time]]
-    [name-bazaar.shared.utils :refer [name-level]]
+    [name-bazaar.shared.utils :refer [top-level-name?]]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
@@ -25,7 +25,7 @@
   (let [[full-name node] (label->full-name+node value)
         label-hash (sha3 value)
         loaded? (and @(subscribe [:ens.record/loaded? node])
-                     (if (= 1 (name-level full-name))
+                     (if (top-level-name? full-name)
                        @(subscribe [:registrar.entry.deed/loaded? label-hash])
                        true))]
     (cond
@@ -73,7 +73,7 @@
                              (let [[full-name node] (label->full-name+node value)]
                                (on-change e value)
                                (dispatch [:ens.records/load [node]])
-                               (when (= 1 (name-level full-name))
+                               (when (top-level-name? full-name)
                                  (dispatch [:registrar.entry/load (sha3 value)])))))}))
          [:span
           {:style styles/text-field-suffix}

@@ -3,6 +3,7 @@
     [cljsjs.react-infinite]
     [medley.core :as medley]
     [re-frame.core :refer [subscribe dispatch]]
+    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col]]
     [reagent.core :as r]))
 
 (def react-infinite (r/adapt-react-class js/Infinite))
@@ -22,17 +23,20 @@
   (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled?] :as props} & children]
     (let [expanded? @(subscribe [:infinite-list.item/expanded? index])]
       (into
-        [:div
-         {:style (merge expandable-item-header-style
+        [row
+         {:middle "xs"
+          :style (merge expandable-item-header-style
                         {:height collapsed-height})
           :on-click (fn []
                       (when-not expand-disabled?
                         (if expanded?
                           (do
-                            (on-collapse)
+                            (when (fn? on-collapse)
+                              (on-collapse))
                             (dispatch [:infinite-list.item/collapse index]))
                           (do
-                            (on-expand)
+                            (when (fn? on-expand)
+                              (on-expand))
                             (dispatch [:infinite-list.item/expand index expanded-height])))))}]
         children))))
 
@@ -45,7 +49,8 @@
      :expanded-height expanded-height
      :on-collapse on-collapse
      :on-expand on-expand
-     :expand-disabled? expand-disabled?}
+     :expand-disabled? expand-disabled?
+     :collapsed-height collapsed-height}
     header]
    [expandable-list-item-body
     {:index index

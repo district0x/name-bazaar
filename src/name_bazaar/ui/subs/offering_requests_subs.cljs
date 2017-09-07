@@ -9,6 +9,12 @@
     (:offering-requests db)))
 
 (reg-sub
+  :offering-request
+  :<- [:offering-requests]
+  (fn [offering-requests [_ node]]
+    (get offering-requests node)))
+
+(reg-sub
   :offering-requests/search-results
   (fn [[_ search-results-key]]
     [(subscribe [:search-results [:offering-requests search-results-key]])
@@ -25,4 +31,18 @@
   :offering-requests.main-search/params
   :<- [:offering-requests/main-search]
   :params)
+
+(reg-sub
+  :offering-request/active-address-has-requested?
+  (fn [[_ node]]
+    [(subscribe [:offering-request node])
+     (subscribe [:district0x/active-address])])
+  (fn [[{:keys [:offering-request/requesters]} active-address]]
+    (contains? requesters active-address)))
+
+(reg-sub
+  :offering-requests.add-request/tx-pending?
+  (fn [[_ ens-record-name]]
+    (subscribe [:district0x/tx-pending? :offering-requests :add-request {:ens.record/name ens-record-name}]))
+  identity)
 

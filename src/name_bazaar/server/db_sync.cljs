@@ -67,12 +67,13 @@
 
 (defn on-new-requests [server-state err {{:keys [:node :name]} :args}]
   (go
-    (let [requests-count (first (second (<! (offering-requests/requests-counts server-state {:offering-requests/nodes [node]}))))]
+    (let [{:keys [:offering-request/requesters-count]}
+          (second (<! (offering-requests/get-request server-state {:offering-request/node node})))]
       (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
                                                              :offering-request/name name
-                                                             :offering-request/requesters-count requests-count}))))
+                                                             :offering-request/requesters-count requesters-count}))))
 
-(defn on-request-added [server-state err {{:keys [:node :name requesters-count]} :args}]
+(defn on-request-added [server-state err {{:keys [:node :name :requesters-count]} :args}]
   (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
                                                          :offering-request/name name
                                                          :offering-request/requesters-count (bn/->number requesters-count)}))

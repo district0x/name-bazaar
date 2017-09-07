@@ -39,17 +39,17 @@
      (subscribe [:registrar/entries])
      (subscribe [:ens/records])])
   (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/type
-                :offering/name-level]}
+                :offering/top-level-name?]}
         registrar-entries ens-records]]
     (let [registrar-entry (get registrar-entries label-hash)
           ens-record (get ens-records node)]
       (and (seq name)
            (or (= type :buy-now-offering)
                end-time)
-           (or (and (= name-level 1)
+           (or (and top-level-name?
                     (registrar-entry-deed-loaded? registrar-entry)
                     (ens-record-loaded? ens-record))
-               (and (not= name-level 1)
+               (and (not top-level-name?)
                     (ens-record-loaded? ens-record)))))))
 
 (reg-sub
@@ -180,20 +180,20 @@
 (reg-sub
   :buy-now-offering.buy/tx-pending?
   (fn [[_ offering-address]]
-    [(subscribe [:district0x/tx-pending? :buy-now-offering :buy {:offering/address offering-address}])])
-  first)
+    (subscribe [:district0x/tx-pending? :buy-now-offering :buy {:offering/address offering-address}]))
+  identity)
 
 (reg-sub
   :auction-offering.bid/tx-pending?
   (fn [[_ offering-address]]
-    [(subscribe [:district0x/tx-pending? :auction-offering :bid {:offering/address offering-address}])])
-  first)
+    (subscribe [:district0x/tx-pending? :auction-offering :bid {:offering/address offering-address}]))
+  identity)
 
 (reg-sub
   :auction-offering.withdraw/tx-pending?
   (fn [[_ offering-address]]
-    [(subscribe [:district0x/tx-pending? :auction-offering :withdraw {:offering/address offering-address}])])
-  first)
+    (subscribe [:district0x/tx-pending? :auction-offering :withdraw {:offering/address offering-address}]))
+  identity)
 
 (reg-sub
   :offering.reclaim-ownership/tx-pending?

@@ -205,8 +205,8 @@
               name (merge-where [:like :name (str (name-position name (keyword name-position)) "." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
-              (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge {:order-by order-by}))
-            {:port (sql-results-chan select-fields)
-             :total-count? total-count?})))
+              (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge-order-by order-by))
+            {:total-count? total-count?
+             :port (sql-results-chan select-fields)})))
 
 

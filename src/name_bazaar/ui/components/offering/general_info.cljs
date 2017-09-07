@@ -3,7 +3,7 @@
     [cljs-react-material-ui.reagent :as ui]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils :refer [epoch->long empty-address?]]
-    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
+    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col paper page]]
     [district0x.ui.components.text-field :refer [ether-field-with-currency]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code format-time-duration-units format-local-datetime time-ago]]
     [name-bazaar.ui.components.misc :refer [a]]

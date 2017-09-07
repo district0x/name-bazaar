@@ -3,6 +3,7 @@
     [cljs-react-material-ui.reagent :as ui]
     [cljsjs.react-flexbox-grid]
     [clojure.set :as set]
+    [district0x.shared.utils :refer [empty-address?]]
     [district0x.ui.utils :as d0x-ui-utils :refer [current-component-mui-theme parse-props-children create-with-default-props]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
@@ -58,13 +59,15 @@
 
 (defn etherscan-link [props & children]
   (let [[{:keys [:address :tx-hash] :as props} children] (parse-props-children props children)]
-    [:a (r/merge-props
-          {:href (cond
-                   address (d0x-ui-utils/etherscan-url address)
-                   tx-hash (d0x-ui-utils/etherscan-tx-url tx-hash))
-           :target :_blank}
-          (dissoc props :address :tx-hash))
-     (if children children address)]))
+    (if (empty-address? address)
+      [:span (if children children address)]
+      [:a (r/merge-props
+            {:href (cond
+                     address (d0x-ui-utils/etherscan-url address)
+                     tx-hash (d0x-ui-utils/etherscan-tx-url tx-hash))
+             :target :_blank}
+            (dissoc props :address :tx-hash))
+       (if children children address)])))
 
 (defn watch [{:keys [:value :call-on-mount?]
               :or {call-on-mount? true}}]

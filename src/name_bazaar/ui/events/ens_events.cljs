@@ -31,16 +31,23 @@
 (reg-event-fx
   :ens.records/load
   interceptors
-  (fn [{:keys [:db]} [nodes]]
-    {:web3-fx.contract/constant-fns
-     {:fns (for [node nodes]
-             ;; Can't load all fields at once because it's private at ENS contract, so we load
-             ;; just owner, because that's basically all what we need
-             {:instance (get-instance db :ens)
-              :method :owner
-              :args [node]
-              :on-success [:ens.records.owner/loaded node]
-              :on-error [:district0x.log/error]})}}))
+  (fn [{:keys [:db]} [nodes {:keys [:load-resolver?]}]]
+    (let [instance (get-instance db :ens)]
+      {:web3-fx.contract/constant-fns
+       {:fns (concat
+               (for [node nodes]
+                 {:instance instance
+                  :method :owner
+                  :args [node]
+                  :on-success [:ens.records.owner/loaded node]
+                  :on-error [:district0x.log/error]})
+               (when load-resolver?
+                 (for [node nodes]
+                   {:instance instance
+                    :method :resolver
+                    :args [node]
+                    :on-success [:ens.records.resolver/loaded node]
+                    :on-error [:district0x.log/error]})))}})))
 
 (reg-event-fx
   :ens.records.owner/loaded
@@ -49,3 +56,11 @@
     {:db (assoc-in db [:ens/records node :ens.record/owner] (if (= owner "0x")
                                                               d0x-shared-utils/zero-address
                                                               owner))}))
+
+(reg-event-fx
+  :ens.records.resolver/loaded
+  interceptors
+  (fn [{:keys [:db]} [node resolver]]
+    {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
+                                                                 d0x-shared-utils/zero-address
+                                                                 resolver))}))

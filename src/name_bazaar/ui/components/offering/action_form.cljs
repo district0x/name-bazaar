@@ -50,10 +50,10 @@
 (defn transfer-ownership-button []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [{:keys [:offering] :as props}]
-      (let [{:keys [:offering/address :offering/name :offering/name-level]} offering
+      (let [{:keys [:offering/address :offering/name :offering/top-level-name?]} offering
             label (name-label name)
             node (namehash name)
-            [transfer-event pending-sub] (if (= name-level 1)
+            [transfer-event pending-sub] (if top-level-name?
                                            [[:registrar/transfer {:ens.record/label label :ens.record/owner address}]
                                             [:registrar.transfer/tx-pending? label]]
                                            [[:ens/set-owner {:ens.record/name name :ens.record/owner address}]

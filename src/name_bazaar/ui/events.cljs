@@ -49,7 +49,7 @@
     :route.offering-requests/search
     {:dispatch [:offering-requests.main-search/set-params-and-search
                 (merge
-                  (:params (get-offering-search-results default-db :main-search))
+                  (:params (get-offering-requests-search-results default-db :main-search))
                   (parse-query-params query-params :route.offering-requests/search))
                 {:clear-existing-items? true
                  :clear-existing-params? true}]}
@@ -94,6 +94,20 @@
     (let [new-db (medley/dissoc-in db [:saved-searches saved-searches-key query-string])]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:saved-searches]))})))
+
+(reg-event-fx
+  :search-results/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params {:keys [:add-to-query? :clear-existing-params? :search-params-db-path
+                                            :search-dispatch]
+                                     :as search-opts}]]
+    (if add-to-query?
+      {:dispatch [:district0x.location/add-to-query search-params]}
+      (let [new-db (if clear-existing-params?
+                     (assoc-in db search-params-db-path search-params)
+                     (update-in db search-params-db-path merge search-params))]
+        {:db new-db
+         :dispatch (into search-dispatch [(get-in new-db search-params-db-path) search-opts])}))))
 
 (reg-event-fx
   :update-now

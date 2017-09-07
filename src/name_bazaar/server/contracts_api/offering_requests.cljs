@@ -3,10 +3,10 @@
     [cljs-web3.async.eth :as web3-eth-async]
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
-    [district0x.shared.big-number :as bn]
     [district0x.server.effects :as effects]
     [district0x.server.state :as state]
-    ))
+    [district0x.shared.big-number :as bn]
+    [name-bazaar.shared.utils :refer [parse-offering-request]]))
 
 (defn on-request-added [server-state & args]
   (apply web3-eth/contract-call (state/instance server-state :offering-requests) :on-request-added args))
@@ -26,10 +26,10 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-(defn requests-counts [server-state {:keys [:offering-requests/nodes]}]
+(defn get-request [server-state {:keys [:offering-request/node]}]
   (web3-eth-async/contract-call
     (chan 1 (map (fn [[err res]]
-                   [err (map bn/->number res)])))
+                   [err (parse-offering-request res)])))
     (state/instance server-state :offering-requests)
-    :get-requests-counts
-    nodes))
+    :get-request
+    node))

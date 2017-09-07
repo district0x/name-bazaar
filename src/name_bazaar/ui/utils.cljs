@@ -5,7 +5,8 @@
     [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.ui.constants :as constants]))
+    [name-bazaar.ui.constants :as constants]
+    [name-bazaar.shared.utils :refer [name-label]]))
 
 (defn namehash [name]
   (js/EthEnsNamehash.hash name))
@@ -15,6 +16,8 @@
 
 (defn sha3 [x]
   (str "0x" (js/keccak_256 x)))
+
+(def name->label-hash (comp sha3 name-label))
 
 (defn valid-ens-name? [name]
   (try
@@ -66,4 +69,12 @@
                (:registrar.entry.deed/value registrar-entry))))
 
 (defn ens-record-loaded? [ens-record]
-  (boolean ens-record))
+  (boolean (:ens.record/owner ens-record)))
+
+(def registrar-entry-state->text
+  {:registrar.entry.state/open "Open For Bids"
+   :registrar.entry.state/auction "Initial Auction Ongoing"
+   :registrar.entry.state/owned "Owned"
+   :registrar.entry.state/forbidden "Forbidden"
+   :registrar.entry.state/reveal "Reveal Period"
+   :registrar.entry.state/not-yet-available "Not Yet Available"})

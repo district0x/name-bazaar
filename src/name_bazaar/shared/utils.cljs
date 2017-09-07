@@ -28,6 +28,9 @@
 (defn name-level [s]
   (count (re-seq #"\." s)))
 
+(defn top-level-name? [name]
+  (and name (= 1 (name-level name))))
+
 (def offering-props [:offering/offering-registry :offering/registrar :offering/node :offering/name :offering/label-hash
                      :offering/original-owner :offering/emergency-multisig :offering/version :offering/created-on
                      :offering/new-owner :offering/price])
@@ -43,6 +46,7 @@
         (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
         (assoc :offering/name-level (name-level (:offering/name offering)))
+        (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
         (assoc :offering/label-length (label-length (:offering/name offering)))
         (assoc :offering/contains-number? (contains-number? (:offering/name offering)))
         (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
@@ -61,8 +65,12 @@
       (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
       (update :auction-offering/bid-count bn/->number))))
 
-(defn parse-offering-requests-counts [nodes counts]
-  (zipmap nodes (map #(hash-map :offering-request/requesters-count (bn/->number %)) counts)))
+(def offering-request-props [:offering-request/name :offering-request/requesters-count])
+
+(defn parse-offering-request [offering-request]
+  (when offering-request
+    (-> (zipmap offering-request-props offering-request)
+      (update :offering-request/requesters-count bn/->number))))
 
 (def registrar-entry-states
   {0 :registrar.entry.state/open

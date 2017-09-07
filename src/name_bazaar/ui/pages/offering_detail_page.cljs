@@ -140,14 +140,14 @@
             bid-count]])))))
 
 (defn warnings [{:keys [:offering] :as props}]
-  (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/name-level]} offering]
+  (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/top-level-name?]} offering]
     [:div
      (r/merge-props
        {:style styles/full-width}
        (dissoc props :offering))
      (when @(subscribe [:offering/show-missing-ownership-warning? address])
        [missing-ownership-warning])
-     (when (> name-level 1)
+     (when (not top-level-name?)
        [sub-level-name-warning
         {:offering/name name
          :style styles/margin-top-gutter-mini}])

@@ -16,7 +16,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     mapping(bytes32 => Requests) public requests;
 
     event onNewRequests(bytes32 node, string name);
-    event onRequestAdded(bytes32 node, string name, address requester, uint requestsCount);
+    event onRequestAdded(bytes32 node, string name, address requester, uint requestersCount);
     event onRequestsCleared(bytes32 node);
 
     function addRequest(string name) {
@@ -43,27 +43,12 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         }
     }
 
-    function getRequestsCounts(bytes32[] nodes) constant returns(uint[] counts) {
-        counts = new uint[](nodes.length);
-        for(uint i = 0; i < nodes.length; i++) {
-            counts[i] = requests[nodes[i]].requesters.length;
-        }
-        return counts;
+    function getRequest(bytes32 node) constant public returns(string, uint) {
+        var request = requests[node];
+        return (request.name, request.requesters.length);
     }
 
-    function getRequests(bytes32[] nodes) constant returns(string names, uint[] counts) {
-        counts = new uint[](nodes.length);
-        for(uint i = 0; i < nodes.length; i++) {
-            names = names.toSlice()
-                         .concat(requests[nodes[i]].name.toSlice())
-                         .toSlice()
-                         .concat("<-DELIM->".toSlice());
-            counts[i] = requests[nodes[i]].requesters.length;
-        }
-        return (names, counts);
-    }
-
-    function hasRequested(bytes32 node, address[] addresses) constant returns(bool[] _hasRequested) {
+    function hasRequested(bytes32 node, address[] addresses) constant public returns(bool[] _hasRequested) {
         _hasRequested = new bool[](addresses.length);
         for(uint i = 0; i < addresses.length; i++) {
             _hasRequested[i] = requests[node].hasRequested[addresses[i]];

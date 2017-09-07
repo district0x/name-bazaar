@@ -196,6 +196,31 @@
                    :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]})))
 
 (reg-event-fx
+  :offering/set-settings-tx-receipt
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering/name :offering/address]}]]
+    {:dispatch [:district0x.snackbar/show-message-redirect-action
+                {:message (str "Offering for " name " was updated!")
+                 :route :route.offerings/detail
+                 :route-params {:offering/address address}
+                 :routes constants/routes}]}))
+
+(reg-event-fx
+  :offering/reclaim-ownership
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
+  (fn [{:keys [:db]} [form-data]]
+    {:dispatch [:district0x/make-transaction
+                {:name (gstring/format "Reclaim ownership from %s offering"
+                                       (get-offering-name db (:offering/address form-data)))
+                 :contract-key :buy-now-offering
+                 :contract-method :reclaim-ownership
+                 :form-data form-data
+                 :contract-address (:offering/address form-data)
+                 :result-href (path-for :route.offerings/detail form-data)
+                 :form-id (select-keys form-data [:offering/address])
+                 :tx-opts {:gas 200000 :gas-price default-gas-price}}]}))
+
+(reg-event-fx
   :offerings/search
   interceptors
   (fn [{:keys [:db]} [opts]]
@@ -282,10 +307,10 @@
   :offerings.ownership/load
   interceptors
   (fn [{:keys [:db]} [offering-address]]
-    (let [{:keys [:offering/label-hash :offering/node :offering/name-level]} (get-offering db offering-address)]
+    (let [{:keys [:offering/label-hash :offering/node :offering/top-level-name?]} (get-offering db offering-address)]
       (merge
         {:dispatch-n [[:ens.records/load [node]]]}
-        (when (= name-level 1)
+        (when top-level-name?
           {:dispatch [:registrar.entry/load label-hash]})))))
 
 (reg-event-fx
@@ -365,16 +390,12 @@
 (reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params {:keys [:add-to-query? :clear-existing-params?] :as search-opts}]]
-    (if add-to-query?
-      {:dispatch [:district0x.location/add-to-query search-params]}
-      (let [new-db (if clear-existing-params?
-                     (assoc-in db [:search-results :offerings :main-search :params] search-params)
-                     (update-in db [:search-results :offerings :main-search :params] merge search-params))]
-        {:db new-db
-         :dispatch [:offerings.main-search/search
-                    (get-in new-db [:search-results :offerings :main-search :params])
-                    search-opts]}))))
+  (fn [{:keys [:db]} [search-params search-opts]]
+    {:dispatch [:search-results/set-params-and-search
+                search-params
+                (merge search-opts
+                       {:search-params-db-path [:search-results :offerings :main-search :params]
+                        :search-dispatch [:offerings.main-search/search]})]}))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search

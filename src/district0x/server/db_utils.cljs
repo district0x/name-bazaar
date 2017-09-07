@@ -52,7 +52,9 @@
       (let [[query & values] (sql/format (->count-query sql-map))]
         (.get db query (clj->js values) (fn [err res]
                                           (log-error err)
-                                          (put! total-count-ch (aget res "count(*)")))))
+                                          (if err
+                                            (put! total-count-ch 0)
+                                            (put! total-count-ch (aget res "count(*)"))))))
       (put! total-count-ch false))
     (.all db query (clj->js values) (fn [err res]
                                       (log-error err)
