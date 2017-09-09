@@ -38,13 +38,13 @@
     [(subscribe [:offering offering-address])
      (subscribe [:registrar/entries])
      (subscribe [:ens/records])])
-  (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/type
+  (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/buy-now?
                 :offering/top-level-name?]}
         registrar-entries ens-records]]
     (let [registrar-entry (get registrar-entries label-hash)
           ens-record (get ens-records node)]
       (and (seq name)
-           (or (= type :buy-now-offering)
+           (or buy-now?
                end-time)
            (or (and top-level-name?
                     (registrar-entry-deed-loaded? registrar-entry)
@@ -73,7 +73,7 @@
     [(subscribe [:offering offering-address])
      (subscribe [:now])])
   (fn [[{:keys [:auction-offering/end-time]} now]]
-    (t/after? now end-time)))
+    (and end-time (t/after? now end-time))))
 
 (reg-sub
   :auction-offering/active-address-pending-returns
@@ -136,13 +136,24 @@
     [(subscribe [:offering offering-address])
      (subscribe [:offering/node-owner? offering-address])
      (subscribe [:now])])
-  (fn [[{:keys [:offering/new-owner :auction-offering/end-time :offering/type]} node-owner? now]]
+  (fn [[{:keys [:offering/new-owner :auction-offering/end-time :offering/auction?]} node-owner? now]]
     (cond
       (= new-owner emergency-state-new-owner) :offering.status/emergency
       (not (empty-address? new-owner)) :offering.status/finalized
       (not node-owner?) :offering.status/missing-ownership
-      (and (= type :auction-offering) (t/after? now end-time)) :offering.status/auction-ended
+      (and auction? (t/after? now end-time)) :offering.status/auction-ended
       :else :offering.status/active)))
+
+(reg-sub
+  :offering/active?
+  (fn [[_ offering-address]]
+    [(subscribe [:offering offering-address])
+     (subscribe [:offering/node-owner? offering-address])
+     (subscribe [:auction-offering/end-time-ended? offering-address])])
+  (fn [[{:keys [:offering/buy-now?]} node-owner? end-time-ended?]]
+    (and node-owner?
+         (or buy-now?
+             (not end-time-ended?)))))
 
 (reg-sub
   :offerings/search-results
@@ -170,6 +181,11 @@
 (reg-sub
   :offerings/main-search
   :<- [:offerings/search-results :main-search]
+  identity)
+
+(reg-sub
+  :offerings/ens-record-offerings
+  :<- [:offerings/search-results :ens-record-offerings]
   identity)
 
 (reg-sub

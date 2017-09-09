@@ -37,11 +37,14 @@
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
-    (let [offering (zipmap offering-props offering)]
+    (let [offering (zipmap offering-props offering)
+          offering-type (offering-version->type (:offering/version offering))]
       (-> offering
         (assoc :offering/address offering-address)
         (update :offering/version bn/->number)
-        (assoc :offering/type (offering-version->type (:offering/version offering)))
+        (assoc :offering/type offering-type)
+        (assoc :offering/auction? (= offering-type :auction-offering))
+        (assoc :offering/buy-now? (= offering-type :buy-now-offering))
         (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
         (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))

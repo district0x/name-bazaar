@@ -16,13 +16,18 @@
    "very similar to their standard latin counterparts. If you're unsure what this means, please contact "
    "our team."])
 
-(defn missing-ownership-warning [props]
-  [:div
-   (r/merge-props
-     {:style styles/warning-color}
-     props)
-   "WARNING: Original owner removed or haven't transferred ownership of this name from offering contract. "
-   "For this reason buying or bidding for this name is not possible."])
+(defn missing-ownership-warning []
+  (let [active-address (subscribe [:district0x/active-address])]
+    (fn [{:keys [:offering/original-owner] :as props}]
+      [:div
+       (r/merge-props
+         {:style styles/warning-color}
+         (dissoc props :offering/original-owner))
+       "WARNING: " (if (= @active-address original-owner)
+                     "You"
+                     "Original owner")
+       " haven't transferred or removed ownership of this name from the offering contract. "
+       "Buying or bidding is not possible until the offering contract has ownership."])))
 
 (defn sub-level-name-warning [{:keys [:offering/name] :as props}]
   (let [parent-name (string/replace name (name-label name) "")]

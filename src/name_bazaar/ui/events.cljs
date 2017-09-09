@@ -23,7 +23,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [parse-offering parse-auction-offering parse-registrar-entry offering-version->type]]
+    [name-bazaar.shared.utils :refer [top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.db :refer [default-db]]
     [name-bazaar.ui.events.ens-events]
@@ -33,7 +33,7 @@
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering auction-offering? get-offering-search-results get-offering-requests-search-results]]
+    [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]}]
@@ -68,6 +68,15 @@
                              :dispatch-n [[:offerings.ownership/load address]
                                           [:offerings.auction.my-addresses-pending-returns/load address]
                                           [:offerings/watch [address]]]}]}})
+
+    :route.ens-record/detail
+    {:dispatch-n [[:name/load-all-details (:ens.record/name route-params)]
+                  [:offerings.ens-record-offerings/set-params-and-search
+                   (merge (:params (get-offering-search-results default-db :ens-record-offerings))
+                          {:node (namehash (:ens.record/name route-params))})
+                   {:clear-existing-items? true
+                    :clear-existing-params? true}]]}
+
     nil))
 
 (reg-event-fx
@@ -78,6 +87,16 @@
       (route->initial-effects (:active-page db))
       {:district0x/dispatch [:offerings/stop-watching-all]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
+
+(reg-event-fx
+  :name/load-all-details
+  interceptors
+  (fn [{:keys [:db]} [name]]
+    (let [node (namehash name)]
+      (merge {:dispatch-n [[:ens.records/load [node] {:load-resolver? true}]
+                           [:offering-requests.has-requested/load node (:my-addresses db)]]}
+             (when (top-level-name? name)
+               {:dispatch [:registrar.entry/load (name->label-hash name)]})))))
 
 (reg-event-fx
   :saved-searches/add

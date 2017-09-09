@@ -40,10 +40,12 @@
 (defn offering-type-chip []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
-      (let [{:keys [:offering/type]} @offering]
+      (let [{:keys [:offering/auction?]} @offering]
         [ui/chip
          (r/merge-props
-           {:background-color (styles/offering-type-chip-color type)
+           {:background-color (if auction?
+                                styles/offering-auction-chip-color
+                                styles/offering-buy-now-chip-color)
             :label-color styles/offering-detail-chip-label-color
             :label-style styles/offering-detail-chip-label}
            props)
@@ -52,7 +54,7 @@
 (defn offering-price-row []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
-      (let [{:keys [:offering/type :offering/price :auction-offering/bid-count]} @offering]
+      (let [{:keys [:offering/buy-now? :offering/price :auction-offering/bid-count]} @offering]
         [row-with-cols
          (r/merge-props
            {:center "xs"}
@@ -61,7 +63,7 @@
           {:xs 12
            :style styles/offering-detail-center-headline}
           (cond
-            (= type :buy-now-offering) "price"
+            buy-now? "price"
             (pos? bid-count) "higest bid"
             :else "starting price")]
          [col
@@ -85,10 +87,10 @@
   (let [xs? (subscribe [:district0x/window-xs-width?])
         offering (subscribe [:offerings/route-offering])]
     (fn [props]
-      (let [{:keys [:offering/address :offering/type]} @offering
+      (let [{:keys [:offering/address :offering/auction?]} @offering
             {:keys [:days :hours :minutes :seconds] :as time-remaining}
             @(subscribe [:auction-offering/end-time-countdown address])]
-        (when (= type :auction-offering)
+        (when auction?
           [row-with-cols
            (r/merge-props
              {:center "xs"}
@@ -124,8 +126,8 @@
 (defn offering-bid-count-row []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
-      (let [{:keys [:offering/type :auction-offering/bid-count]} @offering]
-        (when (= type :auction-offering)
+      (let [{:keys [:offering/auction? :auction-offering/bid-count]} @offering]
+        (when auction?
           [row-with-cols
            (r/merge-props
              {:center "xs"}
@@ -140,13 +142,14 @@
             bid-count]])))))
 
 (defn warnings [{:keys [:offering] :as props}]
-  (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/top-level-name?]} offering]
+  (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/top-level-name? :offering/original-owner]} offering]
     [:div
      (r/merge-props
        {:style styles/full-width}
        (dissoc props :offering))
      (when @(subscribe [:offering/show-missing-ownership-warning? address])
-       [missing-ownership-warning])
+       [missing-ownership-warning
+        {:offering/original-owner original-owner}])
      (when (not top-level-name?)
        [sub-level-name-warning
         {:offering/name name

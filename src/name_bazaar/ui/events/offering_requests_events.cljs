@@ -9,8 +9,9 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash normalize name->label-hash parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
+    [name-bazaar.ui.utils :refer [namehash normalize name->label-hash parse-query-params path-for get-node-name get-offering-name get-offering]]
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [medley.core :as medley]))
 
 (reg-event-fx
   :offering-requests/add-request
@@ -39,7 +40,7 @@
                   {:search-results-path [:search-results :offering-requests :main-search]
                    :endpoint "/offering-requests"
                    :on-success [:offering-requests/load]}
-                  opts)]}))
+                  (assoc-in opts [:params :total-count?] true))]}))
 
 (reg-event-fx
   :offering-requests/load
@@ -77,9 +78,9 @@
   :offering-requests.has-requested/loaded
   interceptors
   (fn [{:keys [:db]} [node addresses has-requested-vals]]
-    (let [[addrs-requested addrs-not-requested] (->> (zipmap addresses has-requested-vals)
-                                                  (split-with second)
-                                                  (map (partial map first)))]
+    (let [{addrs-requested true addrs-not-requested false} (->> (zipmap addresses has-requested-vals)
+                                                             (group-by second)
+                                                             (medley/map-vals keys))]
       {:db (update-in db [:offering-requests node :offering-request/requesters]
                       (fn [requesters]
                         (-> (set requesters)
@@ -111,8 +112,5 @@
 (reg-event-fx
   :offering-requests.list-item/expanded
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering-request/name :offering-request/node]}]]
-    (merge {:dispatch-n [[:ens.records/load [node] {:load-resolver? true}]
-                         [:offering-requests.has-requested/load node (:my-addresses db)]]}
-           (when (top-level-name? name)
-             {:dispatch [:registrar.entry/load (name->label-hash name)]}))))
+  (fn [{:keys [:db]} [{:keys [:offering-request/name]}]]
+    {:dispatch [:name/load-all-details name]}))

@@ -10,7 +10,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]))
 

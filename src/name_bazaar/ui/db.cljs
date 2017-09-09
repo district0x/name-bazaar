@@ -44,7 +44,10 @@
                                          :offset 0
                                          :limit constants/infinite-lists-init-load-limit}}
                   :ens-record-offerings {:ids []
-                                         :params {}}
+                                         :params {:order-by-columns [:created-on]
+                                                  :order-by-dirs [:desc]
+                                                  :offset 0
+                                                  :limit constants/infinite-lists-init-load-limit}}
                   :user-offerings {:ids []
                                    :params {}}
                   :similiar-offerings {:ids []

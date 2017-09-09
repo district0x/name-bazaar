@@ -11,7 +11,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering auction-offering?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-node-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.utils :as d0x-ui-utils]))
 
@@ -245,14 +245,14 @@
   :offerings/loaded
   interceptors
   (fn [{:keys [:db]} [offering-address offering]]
-    (let [{:keys [:offering/node :offering/name :offering/label-hash] :as offering}
+    (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
                     (update-in [:offerings offering-address] merge offering)
                     (update-in [:ens/records node] merge {:ens.record/node node
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
-             (when (= (:offering/type offering) :auction-offering)
+             (when auction?
                {:dispatch-n [[:offerings.auction/load [offering-address]]]})))))
 
 (reg-event-fx
@@ -277,7 +277,7 @@
   :offerings.auction.my-addresses-pending-returns/load
   interceptors
   (fn [{:keys [:db]} [offering-address]]
-    (when (auction-offering? db offering-address)
+    (when (:offering/auction? (get-offering db offering-address))
       {:dispatch [:offerings.auction.pending-returns/load offering-address
                   ;; Active address should be loaded first
                   (reverse (sort-by (partial = (:active-address db)) (:my-addresses db)))]})))
@@ -388,6 +388,17 @@
                   opts)]}))
 
 (reg-event-fx
+  :offerings.ens-record-offerings/search
+  interceptors
+  (fn [{:keys [:db]} [search-params opts]]
+    {:dispatch [:offerings/search
+                (merge
+                  {:search-results-path [:search-results :offerings :ens-record-offerings]
+                   :append? true
+                   :params search-params}
+                  opts)]}))
+
+(reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params search-opts]]
@@ -396,6 +407,16 @@
                 (merge search-opts
                        {:search-params-db-path [:search-results :offerings :main-search :params]
                         :search-dispatch [:offerings.main-search/search]})]}))
+
+(reg-event-fx
+  :offerings.ens-record-offerings/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params search-opts]]
+    {:dispatch [:search-results/set-params-and-search
+                search-params
+                (merge search-opts
+                       {:search-params-db-path [:search-results :offerings :ens-record-offerings :params]
+                        :search-dispatch [:offerings.ens-record-offerings/search]})]}))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search

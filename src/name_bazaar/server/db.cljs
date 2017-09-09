@@ -148,7 +148,8 @@
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
-        max-price (js/parseInt max-price)]
+        max-price (js/parseInt max-price)
+        name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offerings]
@@ -196,13 +197,14 @@
                                            :order-by :root-name :select-fields :total-count?]
                                     :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:node])]
+        select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:node])
+        name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offering-requests]
                      :offset offset
                      :limit limit}
-              name (merge-where [:like :name (str (name-position name (keyword name-position)) "." root-name)])
+              name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)
               (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge-order-by order-by))

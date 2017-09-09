@@ -180,23 +180,21 @@
           }
          props)])))
 
-(defn- form-data->transaction-data [offering]
-  (let [auction? (= (:offering/type offering) :auction-offering)]
-    (cond-> offering
-      true (update :offering/name str constants/registrar-root)
-      auction? (assoc :auction-offering/end-time
-                      (date+time->local-date-time (:auction-offering.end-time/date offering)
-                                                  (:auction-offering.end-time/time offering)))
-      auction? (update :auction-offering/extension-duration
-                       hours->seconds))))
+(defn- form-data->transaction-data [{:keys [:offering/auction?] :as offering}]
+  (cond-> offering
+    true (update :offering/name str constants/registrar-root)
+    auction? (assoc :auction-offering/end-time
+                    (date+time->local-date-time (:auction-offering.end-time/date offering)
+                                                (:auction-offering.end-time/time offering)))
+    auction? (update :auction-offering/extension-duration
+                     hours->seconds)))
 
-(defn- transaction-data->form-data [offering]
-  (let [auction? (= (:offering/type offering) :auction-offering)]
-    (cond-> offering
-      true (update :offering/name strip-eth-suffix)
-      auction? (assoc :auction-offering.end-time/date (to-date (:auction-offering/end-time offering)))
-      auction? (assoc :auction-offering.end-time/time (to-date (:auction-offering/end-time offering)))
-      auction? (update :auction-offering/extension-duration seconds->hours))))
+(defn- transaction-data->form-data [{:keys [:offering/auction?] :as offering}]
+  (cond-> offering
+    true (update :offering/name strip-eth-suffix)
+    auction? (assoc :auction-offering.end-time/date (to-date (:auction-offering/end-time offering)))
+    auction? (assoc :auction-offering.end-time/time (to-date (:auction-offering/end-time offering)))
+    auction? (update :auction-offering/extension-duration seconds->hours)))
 
 (defn- get-submit-event [offering-type editing?]
   (if (= offering-type :buy-now-offering)
@@ -311,7 +309,7 @@
                                                         :route-params (:offering/new-owner offering)}
                                                      (:offering/new-owner offering)]]
 
-            (and (= (:offering/type offering) :auction-offering)
+            (and (:offering/auction? offering)
                  (pos? (:auction-offering/bid-count offering)))
             [no-permission-error
              "This auction already has some bids, so it can't be edited anymore"]

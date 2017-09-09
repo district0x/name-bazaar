@@ -17,7 +17,7 @@
           :next-load-limit constants/infinite-lists-next-load-limit
           :collapsed-item-height (styles/search-results-list-item-height @xs?)
           :loading-spinner-delegate (r/as-element [:div
-                                                   {:style (styles/search-results-list-item @xs?)}
+                                                   {:style (styles/search-results-list-item-placeholder @xs?)}
                                                    [list-item-placeholder]])
           :no-items-element (r/as-element [:div
                                            {:style styles/search-results-no-items}

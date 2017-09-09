@@ -21,8 +21,8 @@
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [props & children]
       (let [[props children] (parse-props-children props children)
-            {:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
-            gutter (if @xs? desktopGutterLess desktopGutter)]
+            {:strs [gutter gutterXs]} (current-component-mui-theme "paper")
+            gutter (if (and gutterXs @xs?) gutterXs gutter)]
         (into
           [ui/paper
            (r/merge-props
@@ -32,12 +32,12 @@
           children)))))
 
 (defn paper-with-loader []
-  (let [xs-width? (subscribe [:district0x/window-xs-width?])
+  (let [xs? (subscribe [:district0x/window-xs-width?])
         connection-error? (subscribe [:district0x/blockchain-connection-error?])]
     (fn [props & children]
       (let [[{:keys [:inner-style] :as props} children] (parse-props-children props children)
-            {:strs [desktopGutter desktopGutterLess]} (current-component-mui-theme "spacing")
-            gutter (if @xs-width? desktopGutterLess desktopGutter)]
+            {:strs [gutter gutterXs]} (current-component-mui-theme "paper")
+            gutter (if (and gutterXs @xs?) gutterXs gutter)]
         [ui/paper
          (r/merge-props
            {:style {:margin-bottom gutter}}

@@ -33,7 +33,7 @@
           [col
            {:xs 6 :sm 3}
            [:div
-            {:style (styles/offering-list-item-price @xs?)}
+            {:style (styles/offering-list-item-header-last-col @xs?)}
             requesters-count (pluralize " request" requesters-count)]]]]))))
 
 (defn offering-request-list-item []
@@ -49,4 +49,5 @@
          [offering-request-list-item-header
           {:offering-request offering-request}]
          [ens-name-details
-          {:ens.record/name name}]]))))
+          {:show-name-detail-link? true
+           :ens.record/name name}]]))))

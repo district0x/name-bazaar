@@ -55,9 +55,6 @@
 (defn get-offering [db offering-address]
   (get-in db [:offerings offering-address]))
 
-(defn auction-offering? [db offering-address]
-  (= (get-in db [:offerings offering-address :offering/type]) :auction-offering))
-
 (defn get-offering-search-results [db search-results-key]
   (get-in db [:search-results :offerings search-results-key]))
 

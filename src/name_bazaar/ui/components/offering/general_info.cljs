@@ -68,7 +68,7 @@
 
 (defn offering-general-info [{:keys [:offering] :as props}]
   (let [{:keys [:offering/name :offering/created-on :offering/address :offering/original-owner
-                :offering/type :auction-offering/end-time :auction-offering/min-bid-increase
+                :offering/auction? :auction-offering/end-time :auction-offering/min-bid-increase
                 :auction-offering/extension-duration :auction-offering/winning-bidder]} offering
         registrar-entry @(subscribe [:offering/registrar-entry address])]
     [:div
@@ -77,12 +77,12 @@
       {:offering/name name}]
      [offering-created-on-line
       {:offering/created-on created-on}]
-     (when (= type :auction-offering)
+     (when auction?
        [offering-auction-end-time-line
         {:offering offering}])
-     (when (= type :auction-offering)
+     (when auction?
        [:div "Min. Bid Increase: " (format-eth-with-code min-bid-increase)])
-     (when (= type :auction-offering)
+     (when auction?
        [:div "Time Extension: "
         (d0x-ui-utils/format-time-duration-units (epoch->long extension-duration))])
      (when (= type :auction-offering)

@@ -16,7 +16,7 @@
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.styles :as styles]
-    [name-bazaar.ui.utils :refer [etherscan-ens-url path-for offering-type->text namehash]]
+    [name-bazaar.ui.utils :refer [namehash sha3 etherscan-ens-url path-for offering-type->text]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -52,7 +52,10 @@
     (fn [{:keys [:offering] :as props}]
       (let [{:keys [:offering/address :offering/name :offering/top-level-name?]} offering
             label (name-label name)
+            label-hash (sha3 label)
             node (namehash name)
+            active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
+            active-address-deed-owner? @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])
             [transfer-event pending-sub] (if top-level-name?
                                            [[:registrar/transfer {:ens.record/label label :ens.record/owner address}]
                                             [:registrar.transfer/tx-pending? label]]
@@ -65,6 +68,11 @@
             :label "Transfer Ownership"
             :pending-label "Transferring..."
             :pending? @(subscribe pending-sub)
+            :disabled (or (and top-level-name?
+                               (or (not active-address-ens-owner?)
+                                   (not active-address-deed-owner?)))
+                          (and (not top-level-name?)
+                               (not active-address-ens-owner?)))
             :on-click #(dispatch transfer-event)}
            (dissoc props :offering))]))))
 
@@ -84,11 +92,10 @@
 (defn original-owner-form []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [{:keys [:offering]}]
-      (let [{:keys [:offering/address :offering/type :auction-offering/bid-count]} offering
+      (let [{:keys [:offering/address :offering/buy-now? :auction-offering/bid-count]} offering
             needs-transfer? (false? @(subscribe [:offering/node-owner? address]))
             offering-status @(subscribe [:offering/status address])
-            editable? (or (zero? bid-count)
-                          (= type :buy-now-offering))]
+            editable? (or buy-now? (zero? bid-count))]
         [row
          {:end "xs"
           :bottom "xs"
@@ -114,7 +121,7 @@
              :href (path-for :route.offerings/edit {:offering/address address})}])]))))
 
 (defn action-form [{:keys [:offering]}]
-  (let [{:keys [:offering/address :offering/new-owner :offering/type :auction-offering/bid-count]} offering]
+  (let [{:keys [:offering/address :offering/new-owner :offering/auction? :auction-offering/bid-count]} offering]
     (cond
       new-owner
       [new-owner-info {:offering/new-owner new-owner}]
@@ -122,7 +129,7 @@
       @(subscribe [:offering/active-address-original-owner? address])
       [original-owner-form {:offering offering}]
 
-      (= type :auction-offering)
+      auction?
       [auction-form {:offering offering}]
 
       :else

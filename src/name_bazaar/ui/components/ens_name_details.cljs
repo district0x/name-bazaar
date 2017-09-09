@@ -39,9 +39,11 @@
 
 (defn ens-name-details []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:ens.record/name]}]
+    (fn [{:keys [:ens.record/name :show-name-detail-link?] :as props}]
       [row-with-cols
-       {:style (styles/search-results-list-item-body @xs?)}
+       (r/merge-props
+         {:style (styles/search-results-list-item-body @xs?)}
+         (dissoc props :ens.record/name :show-name-detail-link?))
        [col
         {:xs 12 :sm 8 :style styles/margin-bottom-gutter-mini}
         [ens-record-general-info
@@ -52,8 +54,9 @@
            {:ens.record/name name}])]
        [col
         {:xs 12 :sm 4 :style (styles/list-item-body-links-container @xs?)}
-        [name-detail-link
-         {:ens.record/name name}]
+        (when show-name-detail-link?
+          [name-detail-link
+           {:ens.record/name name}])
         [ens-record-etherscan-link
          {:ens.record/name name}]
         [add-to-watched-names-button

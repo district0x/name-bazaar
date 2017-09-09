@@ -9,6 +9,8 @@
     [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.offering-request.list-item :refer [offering-request-list-item]]
+    [name-bazaar.ui.components.search-fields.keyword-position-select-field :refer [keyword-position-select-field]]
+    [name-bazaar.ui.components.search-fields.keyword-text-field :refer [keyword-text-field]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
@@ -16,25 +18,32 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
-(defn keyword-text-field []
+(defn offering-requests-keyword-text-field []
   (let [search-params (subscribe [:offering-requests.main-search/params])]
-    (fn [props]
-      [text-field
-       (r/merge-props
-         {:floating-label-text "Keyword"
-          :full-width true
-          :value (:name @search-params)
-          :on-change #(dispatch [:offering-requests.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}
-         props)])))
+    (fn []
+      [keyword-text-field
+       {:value (:name @search-params)
+        :on-change #(dispatch [:offering-requests.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}])))
+
+(defn offering-requests-keyword-position-select-field []
+  (let [search-params (subscribe [:offering-requests.main-search/params])]
+    (fn []
+      [keyword-position-select-field
+       {:value (:name-position @search-params)
+        :on-change #(dispatch [:offering-requests.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}])))
 
 (defn search-params-panel []
   [paper
    [row-with-cols
+    {:bottom "xs"}
     [col
      {:xs 12 :sm 9}
-     [keyword-text-field]]
+     [offering-requests-keyword-text-field]]
     [col
-     {:xs 12 :sm 3}]]])
+     {:xs 12 :sm 3}
+     [row
+      {:bottom "xs"}
+      [offering-requests-keyword-position-select-field]]]]])
 
 (defn offering-requests-search-results []
   (let [search-results (subscribe [:offering-requests/main-search])]

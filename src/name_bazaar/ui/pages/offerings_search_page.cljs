@@ -10,7 +10,9 @@
     [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
+    [name-bazaar.ui.components.search-fields.keyword-position-select-field :refer [keyword-position-select-field]]
     [name-bazaar.ui.components.search-fields.keyword-text-field :refer [keyword-text-field]]
+    [name-bazaar.ui.components.search-fields.offerings-order-by-select-field :refer [offerings-order-by-select-field]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
@@ -18,30 +20,19 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
-(defn offering-name-keyword-text-field []
+(defn offerings-keyword-text-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [props]
+    (fn []
       [keyword-text-field
-       (r/merge-props
-         {:value (:name @search-params)
-          :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}
-         props)])))
+       {:value (:name @search-params)
+        :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}])))
 
-(defn keyword-position-select-field []
+(defn offerings-keyword-position-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [props]
-      [ui/select-field
-       (r/merge-props
-         {:full-width true
-          :hint-text "Keyword Position"
-          :value (:name-position @search-params)
-          :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}
-         props)
-       (for [[val text] [[:contain "Contains"] [:start "Starts with"] [:end "Ends with"]]]
-         [ui/menu-item
-          {:key val
-           :value val
-           :primary-text text}])])))
+    (fn []
+      [keyword-position-select-field
+       {:value (:name-position @search-params)
+        :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}])))
 
 (defn saved-searches-select-field []
   (let [saved-searches (subscribe [:offerings/saved-searches])
@@ -225,34 +216,19 @@
             :on-change #(dispatch [:offerings.main-search/set-params-and-search {:max-length %2} {:add-to-query? true}])}
            max-length-text-field-props)]]])))
 
-(def offerings-order-by-options
-  [[[:created-on :desc] "Newest"]
-   [[:bid-count :desc] "Most Active"]
-   [[:price :desc] "Most Expensive"]
-   [[:price :asc] "Cheapest"]
-   [[:end-time :asc] "Ending Soon"]])
-
 (defn order-by-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:on-change] :as props}]
-      [ui/select-field
+    (fn [props]
+      [offerings-order-by-select-field
        (r/merge-props
-         {:full-width true
-          :hint-text "Order By"
-          :value (str [(first (:order-by-columns @search-params))
-                       (first (:order-by-dirs @search-params))])
-          :on-change (fn [e index]
-                       (let [[order-by-column order-by-dir] (first (nth offerings-order-by-options index))]
-                         (dispatch [:offerings.main-search/set-params-and-search
-                                    {:order-by-columns [(name order-by-column)]
-                                     :order-by-dirs [(name order-by-dir)]}
-                                    {:add-to-query? true}])))}
-         props)
-       (for [[val text] offerings-order-by-options]
-         [ui/menu-item
-          {:key (str val)                                   ; hack, because material-ui selectfield
-           :value (str val)                                 ; doesn't support non-primitive values
-           :primary-text text}])])))
+         {:order-by-column (first (:order-by-columns @search-params))
+          :order-by-dir (first (:order-by-dirs @search-params))
+          :on-change (fn [order-by-column order-by-dir]
+                       (dispatch [:offerings.main-search/set-params-and-search
+                                  {:order-by-columns [(name order-by-column)]
+                                   :order-by-dirs [(name order-by-dir)]}
+                                  {:add-to-query? true}]))}
+         props)])))
 
 (defn reset-search-icon-button []
   [ui/icon-button
@@ -267,12 +243,12 @@
      :between "xs"}
     [col
      {:md 5}
-     [offering-name-keyword-text-field]]
+     [offerings-keyword-text-field]]
     [col
      {:md 3}
      [row
       {:bottom "xs"}
-      [keyword-position-select-field]]]
+      [offerings-keyword-position-select-field]]]
     [col
      {:md 4}
      [row
@@ -316,7 +292,7 @@
        [:div
         {:style styles/offering-search-params-drawer-mobile}
         [row
-         [keyword-position-select-field]]
+         [offerings-keyword-position-select-field]]
         [row
          [price-text-fields]]
         [row
@@ -347,7 +323,7 @@
 (defn search-params-panel-mobile []
   [paper
    [search-params-drawer-mobile]
-   [offering-name-keyword-text-field]
+   [offerings-keyword-text-field]
    [order-by-select-field]
    [row
     [saved-searches-select-field]
@@ -371,9 +347,7 @@
             (for [[i offering] (medley/indexed items)]
               [offering-list-item
                {:key i
-                :offering offering
-                :show-bid-count? true
-                :show-time-left? true}]))]]))))
+                :offering offering}]))]]))))
 
 (defmethod page :route.offerings/search []
   (let [xs-sm? (subscribe [:district0x/window-xs-sm-width?])]

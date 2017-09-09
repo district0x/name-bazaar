@@ -18,6 +18,8 @@
 (s/def :offering/created-on date?)
 (s/def :offering/transferred-on (s/nilable date?))
 (s/def :offering/price not-neg?)
+(s/def :offering/auction? boolean?)
+(s/def :offering/buy-now? boolean?)
 (s/def :offering/name-level not-neg?)
 (s/def :offering/top-level-name? boolean?)
 (s/def :offering/label-length not-neg?)
@@ -43,6 +45,8 @@
                                 :offering/version
                                 :offering/label-hash
                                 :offering/type
+                                :offering/auction?
+                                :offering/buy-now?
                                 :offering/created-on
                                 :offering/transferred-on
                                 :offering/price

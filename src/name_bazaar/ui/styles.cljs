@@ -16,6 +16,7 @@
                                :font-family "Open Sans, sans-serif"
                                :app-bar {:height 56}
                                :ripple {:color primary1-color}
+                               :paper {:gutter 16}
                                #_#_:svg-icon {:color primary1-color}
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}
@@ -194,6 +195,12 @@
    :padding-left (if xs? desktop-gutter-mini desktop-gutter-less)
    :padding-right (if xs? desktop-gutter-mini desktop-gutter-less)})
 
+(defn search-results-list-item-placeholder [xs?]
+  (let [{:keys [:padding-left :padding-right] :as list-item} (search-results-list-item xs?)]
+    (merge
+      list-item
+      {:width (str "calc(100% - " (+ padding-left padding-right) ")")})))
+
 (def search-results-no-items
   {:text-align :center
    :width "100%"
@@ -244,15 +251,28 @@
   {:background-color "#FFF"
    :position :absolute})
 
+(def page-headline
+  {:margin-bottom desktop-gutter-less})
+
 (def search-results-paper
   {:min-height 800
    :padding 0
    :padding-top desktop-gutter-less})
 
-(defn offering-list-item-price [xs?]
+(def search-results-paper-headline
+  (merge page-headline
+         margin-left-gutter-less))
+
+(defn offering-list-item-header-last-col [xs?]
   {:width "100%"
    :text-align (if xs? :left :right)
-   :font-size (if xs? "1.2em" "1.3em")})
+   :margin-top (if xs? 2 0)})
+
+(defn offering-list-item-price [xs?]
+  {:font-size (if xs? "1.1em" "1.3em")})
+
+(def offering-list-item-price-leading-text
+  {:font-size "0.9em"})
 
 (def offering-list-item-time-left
   {:font-size "1.05em"})
@@ -278,9 +298,6 @@
 (def text-field-suffix
   {:font-size "1.2em"})
 
-(def page-headline
-  {:margin-bottom desktop-gutter-less})
-
 (def offering-status-chip-color
   {:offering.status/emergency (color :red700)
    :offering.status/active (color :green500)
@@ -290,12 +307,13 @@
 
 (def offering-detail-chip-label-color "#FFF")
 
+(def offering-active-chip-color )
+
 (def offering-detail-chip-label
   {:font-weight :bold})
 
-(def offering-type-chip-color
-  {:buy-now-offering (color :teal600)
-   :auction-offering (color :indigo300)})
+(def offering-buy-now-chip-color (color :teal600))
+(def offering-auction-chip-color (color :indigo300))
 
 (def offering-detail-center-headline
   {:font-size "1.2em"
@@ -318,3 +336,11 @@
   (merge margin-bottom-gutter-mini
          (if xs? text-left
                  text-right)))
+
+(def small-chip-label
+  {:font-size 12
+   :line-height "22px"
+   :padding-left 9
+   :padding-right 9
+   :font-weight :bold
+   :color "#FFF"})
