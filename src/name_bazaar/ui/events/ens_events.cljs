@@ -3,15 +3,16 @@
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-node-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.shared.utils :as d0x-shared-utils]))
+    [district0x.shared.utils :as d0x-shared-utils]
+    [medley.core :as medley]))
 
 (reg-event-fx
   :ens/set-owner
@@ -50,6 +51,18 @@
                     :on-error [:district0x.log/error]})))}})))
 
 (reg-event-fx
+  :ens.records.active-offerings/load
+  interceptors
+  (fn [{:keys [:db]} [nodes]]
+    (when (seq nodes)
+      {:dispatch [:district0x.server/http-get {:endpoint "/offerings"
+                                               :params {:nodes nodes
+                                                        :select-fields [:node :address]
+                                                        :node-owner? true}
+                                               :on-success [:ens.records.active-offerings/loaded nodes]
+                                               :on-failure [:district0x.log/error]}]})))
+
+(reg-event-fx
   :ens.records.owner/loaded
   interceptors
   (fn [{:keys [:db]} [node owner]]
@@ -64,3 +77,15 @@
     {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
                                                                  d0x-shared-utils/zero-address
                                                                  resolver))}))
+
+(reg-event-fx
+  :ens.records.active-offerings/loaded
+  interceptors
+  (fn [{:keys [:db]} [all-nodes {active-offerings :items}]]
+    ;; active-offerings contains only nodes that have active offerings, all other nodes need to
+    ;; reset active-offering, so we don't display outdated info
+    (let [emptied-active-offerings (reduce #(assoc %1 %2 {:ens.record/active-offering nil}) {} all-nodes)
+          active-offerings (reduce #(assoc %1 (:node %2) {:ens.record/active-offering (:address %2)})
+                                   emptied-active-offerings
+                                   active-offerings)]
+      {:db (update db :ens/records merge-in active-offerings)})))

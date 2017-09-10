@@ -271,6 +271,10 @@
 (defn offering-list-item-price [xs?]
   {:font-size (if xs? "1.1em" "1.3em")})
 
+(defn offering-requests-list-item-count [xs?]
+  (merge (offering-list-item-header-last-col xs?)
+         {:font-size (if xs? "1.1em" "1.3em")}))
+
 (def offering-list-item-price-leading-text
   {:font-size "0.9em"})
 
@@ -307,7 +311,7 @@
 
 (def offering-detail-chip-label-color "#FFF")
 
-(def offering-active-chip-color )
+(def offering-active-chip-color)
 
 (def offering-detail-chip-label
   {:font-weight :bold})
@@ -344,3 +348,6 @@
    :padding-right 9
    :font-weight :bold
    :color "#FFF"})
+
+(def add-to-watched-names-button
+  {:margin-top -13})

@@ -46,8 +46,11 @@
   {:buy-now-offering "Buy Now"
    :auction-offering "Auction"})
 
-(defn get-node-name [db node]
+(defn get-ens-record-name [db node]
   (get-in db [:ens/records node :ens.record/name]))
+
+(defn get-ens-record-active-offering [db node]
+  (get-in db [:ens/records node :ens.record/active-offering]))
 
 (defn get-offering-name [db offering-address]
   (get-in db [:offerings offering-address :offering/name]))

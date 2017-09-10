@@ -140,7 +140,7 @@
            order-by-item))
        order-by))
 
-(defn search-offerings [db {:keys [:original-owner :new-owner :node :name :min-price :max-price :buy-now? :auction?
+(defn search-offerings [db {:keys [:original-owner :new-owner :node :nodes :name :min-price :max-price :buy-now? :auction?
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-special-chars? :exclude-numbers?
                                    :limit :offset :order-by :select-fields :root-name :total-count? :bidder]
@@ -181,6 +181,7 @@
               exclude-special-chars? (merge-where [:= :contains-special-char false])
               exclude-numbers? (merge-where [:= :contains-number false])
               node (merge-where [:= :node node])
+              nodes (merge-where [:in :node (collify nodes)])
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
               name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
               name (merge-order-by :name)

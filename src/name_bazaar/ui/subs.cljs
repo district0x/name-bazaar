@@ -16,6 +16,7 @@
     [name-bazaar.ui.subs.offering-requests-subs]
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.registrar-subs]
+    [name-bazaar.ui.subs.watched-names-subs]
     [name-bazaar.ui.utils :refer [parse-query-params]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
@@ -36,18 +37,6 @@
      (subscribe [:district0x/query-string])])
   (fn [[saved-searches query-string]]
     (boolean (get saved-searches query-string))))
-
-#_(reg-sub
-    :search-form/watched-names
-    :<- [:district0x/db :search-form/watched-names]
-    :<- [:ens/records]
-    :<- [:offerings]
-    (fn [watched-ens-records ens-records offerings]
-      (map (fn [ens-record]
-             (-> ens-record
-               (merge (ens-records (:ens.record/node ens-record)))
-               (update :ens.record/last-offering offerings)))
-           watched-ens-records)))
 
 (reg-sub
   :search-results

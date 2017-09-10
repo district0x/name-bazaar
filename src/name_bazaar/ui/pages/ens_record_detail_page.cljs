@@ -36,7 +36,7 @@
             {:keys [:items :loading? :params :total-count]} @search-results]
         [paper
          {:style (merge styles/search-results-paper
-                        {:min-height 0})}
+                        {:min-height 200})}
          [:h1
           {:style styles/search-results-paper-headline}
           name " Offerings"]

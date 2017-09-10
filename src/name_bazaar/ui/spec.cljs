@@ -77,11 +77,13 @@
 (s/def :ens.record/label-hash sha3?)
 (s/def :ens.record/owner address?)
 (s/def :ens.record/name string?)
+(s/def :ens.record/active-offering (s/nilable :offering/address))
 
 (s/def :ens/record (s/keys :opt [:ens.record/owner
                                  :ens.record/label
                                  :ens.record/label-hash
-                                 :ens.record/name]))
+                                 :ens.record/name
+                                 :ens.record/active-offering]))
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
@@ -103,9 +105,9 @@
 
 (s/def :registrar/entries (s/map-of :ens.record/label-hash :registrar/entry))
 
-(s/def :watched-names/ens-records (s/coll-of (s/keys :req [:ens.record/name :ens.record/node])))
-(s/def :watched-names/new-name string?)
-
+(s/def :watched-names/order (s/coll-of :ens.record/node))
+(s/def ::watched-names (s/keys :req [:ens/records]
+                               :req-un [:watched-names/order]))
 
 (s/def ::search-results (s/map-of keyword? (s/map-of keyword? :db/search-results)))
 
@@ -114,7 +116,7 @@
 
 
 (s/def :infinite-list.expanded-item/height not-neg?)
-(s/def :infinite-list/expanded-items (s/map-of integer? (s/keys :req-un [:infinite-list.expanded-item/height])))
+(s/def :infinite-list/expanded-items (s/map-of any? (s/keys :req-un [:infinite-list.expanded-item/height])))
 (s/def ::infinite-list (s/keys :req-un [:infinite-list/expanded-items]))
 
 (s/def ::now date?)
@@ -126,6 +128,7 @@
                                        :req-un [::offerings
                                                 ::offering-requests
                                                 ::infinite-list
+                                                ::watched-names
                                                 ::now
                                                 ::search-results
                                                 ::saved-searches

@@ -77,6 +77,9 @@
                    {:clear-existing-items? true
                     :clear-existing-params? true}]]}
 
+    :route/watched-names
+    {:dispatch [:watched-names/load-all]}
+
     nil))
 
 (reg-event-fx

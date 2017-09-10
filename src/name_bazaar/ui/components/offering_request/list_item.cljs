@@ -33,7 +33,7 @@
           [col
            {:xs 6 :sm 3}
            [:div
-            {:style (styles/offering-list-item-header-last-col @xs?)}
+            {:style (styles/offering-requests-list-item-count @xs?)}
             requesters-count (pluralize " request" requesters-count)]]]]))))
 
 (defn offering-request-list-item []

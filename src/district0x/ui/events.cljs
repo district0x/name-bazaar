@@ -539,7 +539,8 @@
 (reg-event-fx
   :district0x.server/http-get
   interceptors
-  (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :endpoint]} :as opts]]
+  (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :on-failure :endpoint]
+                      :or {on-failure [:district0x.log/error]}} :as opts]]
     {:http-xhrio (merge
                    {:method :get
                     :timeout 20000

@@ -64,5 +64,5 @@
                                                  :limit constants/infinite-lists-init-load-limit}}}}
 
      :saved-searches {:offerings-search {}}
-
+     :watched-names {:ens/records {} :order []}
      :infinite-list {:expanded-items {}}}))
