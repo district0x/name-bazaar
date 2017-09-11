@@ -142,8 +142,9 @@
 
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :nodes :name :min-price :max-price :buy-now? :auction?
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
-                                   :top-level-names? :sub-level-names? :exclude-special-chars? :exclude-numbers?
-                                   :limit :offset :order-by :select-fields :root-name :total-count? :bidder]
+                                   :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
+                                   :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
+                                   :bidder]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
@@ -180,6 +181,7 @@
                                                                      [:> :name-level 1])])
               exclude-special-chars? (merge-where [:= :contains-special-char false])
               exclude-numbers? (merge-where [:= :contains-number false])
+              exclude-node (merge-where [:<> :node exclude-node])
               node (merge-where [:= :node node])
               nodes (merge-where [:in :node (collify nodes)])
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])

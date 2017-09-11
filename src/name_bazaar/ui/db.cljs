@@ -50,8 +50,12 @@
                                                   :limit constants/infinite-lists-init-load-limit}}
                   :user-offerings {:ids []
                                    :params {}}
-                  :similiar-offerings {:ids []
-                                       :params {}}
+                  :similar-offerings {:ids []
+                                      :params {:name-position :end
+                                               :node-owner? true
+                                               :min-end-time-now? true
+                                               :offset 0
+                                               :limit constants/infinite-lists-init-load-limit}}
                   :user-bids-offerings {:ids []
                                         :params {}}
                   :user-purchases-offerings {:ids []

@@ -189,6 +189,11 @@
   identity)
 
 (reg-sub
+  :offerings/similar-offerings
+  :<- [:offerings/search-results :similar-offerings]
+  identity)
+
+(reg-sub
   :offerings.main-search/params
   :<- [:offerings/main-search]
   :params)

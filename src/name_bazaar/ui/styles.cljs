@@ -202,9 +202,11 @@
       {:width (str "calc(100% - " (+ padding-left padding-right) ")")})))
 
 (def search-results-no-items
-  {:text-align :center
-   :width "100%"
-   :font-size "1.1em"})
+  (merge
+    margin-top-gutter-more
+    {:text-align :center
+     :width "100%"
+     :font-size "1.1em"}))
 
 (defn search-results-list-item-body [xs?]
   {:padding (if xs? desktop-gutter-mini desktop-gutter-less)
@@ -258,6 +260,10 @@
   {:min-height 800
    :padding 0
    :padding-top desktop-gutter-less})
+
+(def search-results-paper-secondary
+  (merge search-results-paper
+         {:min-height 200}))
 
 (def search-results-paper-headline
   (merge page-headline

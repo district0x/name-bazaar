@@ -50,10 +50,8 @@
 (defn transfer-ownership-button []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [{:keys [:offering] :as props}]
-      (let [{:keys [:offering/address :offering/name :offering/top-level-name?]} offering
-            label (name-label name)
-            label-hash (sha3 label)
-            node (namehash name)
+      (let [{:keys [:offering/address :offering/name :offering/top-level-name? :offering/label
+                    :offering/label-hash :offering/node]} offering
             active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
             active-address-deed-owner? @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])
             [transfer-event pending-sub] (if top-level-name?

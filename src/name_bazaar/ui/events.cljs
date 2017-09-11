@@ -40,17 +40,13 @@
   (condp = handler
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
-                (merge
-                  (:params (get-offering-search-results default-db :main-search))
-                  (parse-query-params query-params :route.offerings/search))
+                (parse-query-params query-params :route.offerings/search)
                 {:clear-existing-items? true
                  :clear-existing-params? true}]}
 
     :route.offering-requests/search
     {:dispatch [:offering-requests.main-search/set-params-and-search
-                (merge
-                  (:params (get-offering-requests-search-results default-db :main-search))
-                  (parse-query-params query-params :route.offering-requests/search))
+                (parse-query-params query-params :route.offering-requests/search)
                 {:clear-existing-items? true
                  :clear-existing-params? true}]}
 
@@ -67,13 +63,15 @@
                              :events [:offerings/loaded]
                              :dispatch-n [[:offerings.ownership/load address]
                                           [:offerings.auction.my-addresses-pending-returns/load address]
-                                          [:offerings/watch [address]]]}]}})
+                                          [:offerings/watch [address]]
+                                          [:offerings.similar-offerings/set-params-and-search
+                                           {:offering/address address}
+                                           {:clear-existing-items? true}]]}]}})
 
     :route.ens-record/detail
     {:dispatch-n [[:name/load-all-details (:ens.record/name route-params)]
                   [:offerings.ens-record-offerings/set-params-and-search
-                   (merge (:params (get-offering-search-results default-db :ens-record-offerings))
-                          {:node (namehash (:ens.record/name route-params))})
+                   {:node (namehash (:ens.record/name route-params))}
                    {:clear-existing-items? true
                     :clear-existing-params? true}]]}
 
@@ -120,14 +118,18 @@
 (reg-event-fx
   :search-results/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params {:keys [:add-to-query? :clear-existing-params? :search-params-db-path
-                                            :search-dispatch]
+  (fn [{:keys [:db]} [search-params {:keys [:add-to-query? :clear-existing-params? :clear-existing-items?
+                                            :search-params-db-path :search-dispatch :reset-infinite-scroll?]
                                      :as search-opts}]]
     (if add-to-query?
       {:dispatch [:district0x.location/add-to-query search-params]}
-      (let [new-db (if clear-existing-params?
-                     (assoc-in db search-params-db-path search-params)
-                     (update-in db search-params-db-path merge search-params))]
+      (let [default-search-params (get-in default-db search-params-db-path)
+            new-db (if clear-existing-params?
+                     (assoc-in db search-params-db-path (merge default-search-params
+                                                               search-params))
+                     (update-in db search-params-db-path merge search-params (when clear-existing-items?
+                                                                               (select-keys default-search-params
+                                                                                            [:offset :limit]))))]
         {:db new-db
          :dispatch (into search-dispatch [(get-in new-db search-params-db-path) search-opts])}))))
 

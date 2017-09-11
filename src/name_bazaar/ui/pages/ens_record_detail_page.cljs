@@ -7,6 +7,7 @@
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.search-fields.offerings-order-by-select-field :refer [offerings-order-by-select-field]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
+    [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
@@ -35,8 +36,7 @@
       (let [{:keys [:ens.record/name]} @route-params
             {:keys [:items :loading? :params :total-count]} @search-results]
         [paper
-         {:style (merge styles/search-results-paper
-                        {:min-height 200})}
+         {:style styles/search-results-paper-secondary}
          [:h1
           {:style styles/search-results-paper-headline}
           name " Offerings"]

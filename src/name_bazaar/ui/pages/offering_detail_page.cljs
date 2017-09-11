@@ -10,13 +10,16 @@
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.components.offering.action-form :refer [action-form]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
+    [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.warnings :refer [non-ascii-characters-warning missing-ownership-warning sub-level-name-warning]]
+    [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix offering-type->text]]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [medley.core :as medley]))
 
 (def offering-status->text
   {:offering.status/emergency "Emergency Cancel"
@@ -40,7 +43,7 @@
 (defn offering-type-chip []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn [props]
-      (let [{:keys [:offering/auction?]} @offering]
+      (let [{:keys [:offering/auction? :offering/type]} @offering]
         [ui/chip
          (r/merge-props
            {:background-color (if auction?
@@ -185,6 +188,28 @@
         [action-form
          {:offering @offering}]]])))
 
+(defn similar-offerings []
+  (let [search-results (subscribe [:offerings/similar-offerings])]
+    (fn []
+      (let [{:keys [:items :loading? :params :total-count]} @search-results]
+        [paper
+         {:style styles/search-results-paper-secondary}
+         [:h1
+          {:style styles/search-results-paper-headline}
+          "Similar Offerings"]
+         [search-results-infinite-list
+          {:total-count total-count
+           :offset (:offset params)
+           :loading? loading?
+           :no-items-text "No similar offerings found"
+           :on-next-load (fn [offset limit]
+                           (dispatch [:offerings.ens-record-offerings/set-params-and-search {:offset offset :limit limit}]))}
+          (doall
+            (for [[i offering] (medley/indexed items)]
+              [offering-list-item
+               {:key i
+                :offering offering}]))]]))))
+
 (defmethod page :route.offerings/detail []
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
@@ -198,4 +223,5 @@
            "Offering " (:offering/name offering)]
           (if offering-loaded?
             [offering-detail]
-            [list-item-placeholder])]]))))
+            [list-item-placeholder])]
+         [similar-offerings]]))))

@@ -22,9 +22,6 @@
 (defn contains-non-ascii? [s]
   (not (boolean (re-matches #"[ -~]*" (name-label s)))))
 
-(defn label-length [s]
-  (count (name-label s)))
-
 (defn name-level [s]
   (count (re-seq #"\." s)))
 
@@ -38,7 +35,8 @@
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
     (let [offering (zipmap offering-props offering)
-          offering-type (offering-version->type (:offering/version offering))]
+          offering-type (offering-version->type (:offering/version offering))
+          label (name-label (:offering/name offering))]
       (-> offering
         (assoc :offering/address offering-address)
         (update :offering/version bn/->number)
@@ -50,7 +48,8 @@
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
         (assoc :offering/name-level (name-level (:offering/name offering)))
         (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
-        (assoc :offering/label-length (label-length (:offering/name offering)))
+        (assoc :offering/label label)
+        (assoc :offering/label-length (count label))
         (assoc :offering/contains-number? (contains-number? (:offering/name offering)))
         (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
         (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))))))

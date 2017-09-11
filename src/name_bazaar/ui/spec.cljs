@@ -11,6 +11,7 @@
 (s/def :offering/offering-registry address?)
 (s/def :offering/emergency-multisig address?)
 (s/def :offering/original-owner address?)
+(s/def :offering/label string?)
 (s/def :offering/label-hash sha3?)
 (s/def :offering/new-owner (s/nilable address?))
 (s/def :offering/version int?)
@@ -43,6 +44,7 @@
                                 :offering/offering-registry
                                 :offering/emergency-multisig
                                 :offering/version
+                                :offering/label
                                 :offering/label-hash
                                 :offering/type
                                 :offering/auction?

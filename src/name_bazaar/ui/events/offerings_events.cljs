@@ -13,7 +13,8 @@
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.ui.utils :as d0x-ui-utils]))
+    [district0x.ui.utils :as d0x-ui-utils]
+    [clojure.string :as string]))
 
 (reg-event-fx
   :buy-now-offering-factory/create-offering
@@ -399,6 +400,27 @@
                   opts)]}))
 
 (reg-event-fx
+  :offerings.similar-offerings/search
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:offering/address] :as search-params} opts]]
+    (let [{:keys [:offering/label :offering/name :offering/node :offering/top-level-name?]} (get-offering db address)
+          subnames (if top-level-name?
+                     ""
+                     (-> name
+                       (string/replace (str label ".") "")
+                       (string/replace constants/registrar-root "")))
+          name-pattern (str (subs label 0 3) "%" subnames)]
+      {:dispatch [:offerings/search
+                  (merge
+                    {:search-results-path [:search-results :offerings :similar-offerings]
+                     :append? true
+                     :params (-> search-params
+                               (assoc :name name-pattern)
+                               (assoc :exclude-node node)
+                               (dissoc :offering/address search-params))}
+                    opts)]})))
+
+(reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params search-opts]]
@@ -417,6 +439,16 @@
                 (merge search-opts
                        {:search-params-db-path [:search-results :offerings :ens-record-offerings :params]
                         :search-dispatch [:offerings.ens-record-offerings/search]})]}))
+
+(reg-event-fx
+  :offerings.similar-offerings/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params search-opts]]
+    {:dispatch [:search-results/set-params-and-search
+                search-params
+                (merge search-opts
+                       {:search-params-db-path [:search-results :offerings :similar-offerings :params]
+                        :search-dispatch [:offerings.similar-offerings/search]})]}))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search
