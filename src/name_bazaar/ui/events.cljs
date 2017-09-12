@@ -36,7 +36,7 @@
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
-(defn- route->initial-effects [{:keys [:handler :route-params :query-params]}]
+(defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
   (condp = handler
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
@@ -66,7 +66,8 @@
                                           [:offerings/watch [address]]
                                           [:offerings.similar-offerings/set-params-and-search
                                            {:offering/address address}
-                                           {:clear-existing-items? true}]]}]}})
+                                           {:clear-existing-items? true
+                                            :clear-existing-params? true}]]}]}})
 
     :route.ens-record/detail
     {:dispatch-n [[:name/load-all-details (:ens.record/name route-params)]
@@ -78,6 +79,21 @@
     :route/watched-names
     {:dispatch [:watched-names/load-all]}
 
+    :route.user/purchases
+    {:dispatch [:offerings.user-purchases/set-params-and-search
+                {:new-owner (:user/address route-params)}
+                {:clear-existing-items? true
+                 :clear-existing-params? true}]}
+
+    :route.user/my-purchases
+    {:dispatch [:offerings.user-purchases/set-params-and-search
+                {:new-owner (:active-address db)}
+                {:clear-existing-items? true
+                 :clear-existing-params? true}]
+     :forward-events {:register :active-address-changed
+                      :events #{:district0x/set-active-address}
+                      :dispatch-to [:active-page-changed]}}
+
     nil))
 
 (reg-event-fx
@@ -85,7 +101,8 @@
   interceptors
   (fn [{:keys [:db]}]
     (merge
-      (route->initial-effects (:active-page db))
+      {:forward-events {:unregister :active-address-changed}}
+      (route->initial-effects (:active-page db) db)
       {:district0x/dispatch [:offerings/stop-watching-all]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 

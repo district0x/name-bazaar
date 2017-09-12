@@ -4,7 +4,7 @@
     [clojure.string :as string]
     [district0x.shared.utils :refer [empty-address?]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col paper]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code format-local-datetime]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code format-local-datetime time-ago]]
     [name-bazaar.ui.components.add-to-watched-names-button :refer [add-to-watched-names-button]]
     [name-bazaar.ui.components.ens-record.etherscan-link :refer [ens-record-etherscan-link]]
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
@@ -30,7 +30,7 @@
 
 (defn offering-expanded-body []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:offering]}]
+    (fn [{:keys [:offering :hide-action-form?]}]
       (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
                     :offering/original-owner]} offering
             show-missing-ownership-warning? @(subscribe [:offering/show-missing-ownership-warning? address])]
@@ -63,13 +63,14 @@
             contains-non-ascii?
             [non-ascii-characters-warning])]
 
-         [col
-          {:xs 12
-           :style (merge styles/margin-top-gutter-mini
-                         styles/text-right
-                         styles/full-width)}
-          [action-form
-           {:offering offering}]]]))))
+         (when-not hide-action-form?
+           [col
+            {:xs 12
+             :style (merge styles/margin-top-gutter-mini
+                           styles/text-right
+                           styles/full-width)}
+            [action-form
+             {:offering offering}]])]))))
 
 (defn auction-bid-count [{:keys [:auction-offering/bid-count]}]
   (when bid-count
@@ -87,9 +88,10 @@
 
 (defn offering-list-item-header []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:offering :show-created-on? :show-sold-for? :show-bought-for? :show-active?]}]
+    (fn [{:keys [:offering :show-created-on? :show-sold-for? :show-bought-for? :show-finalized-on? :show-active?]}]
       (let [{:keys [:offering/address :offering/auction? :offering/name :offering/price :offering/created-on
-                    :offering/new-owner :auction-offering/bid-count :auction-offering/end-time]} offering]
+                    :offering/type :offering/finalized-on :offering/new-owner :auction-offering/bid-count
+                    :auction-offering/end-time]} offering]
         [:div
          {:style (styles/search-results-list-item @xs?)}
          (when-not address
@@ -111,18 +113,23 @@
              [:div
               {:style styles/list-item-ens-record-name}
               name])]
-          (when (and (not @xs?) auction?)
+          (when (and (not @xs?) (not show-finalized-on?) auction?)
             [col
              {:sm 2
               :style styles/text-center}
              [auction-bid-count
               {:auction-offering/bid-count bid-count}]])
-          (when (and (not @xs?) auction?)
+          (when (and (not @xs?) (not show-finalized-on?) auction?)
             [col
              {:sm 2
               :style styles/text-center}
              [auction-time-remaining
               {:auction-offering/end-time end-time}]])
+          (when (and (not @xs?) show-finalized-on?)
+            [col
+             {:sm 4
+              :style styles/text-center}
+             (time-ago finalized-on)])
           [col
            {:xs 4 :sm 3}
            [:div
@@ -150,7 +157,7 @@
               {:bottom "xs"
                :end "xs"
                :style styles/full-height}
-              (when auction?
+              (when (and auction? (not show-finalized-on?))
                 [:div
                  [auction-bid-count
                   {:auction-offering/bid-count bid-count}]
@@ -163,16 +170,19 @@
                 [offering-active-chip
                  {:style styles/margin-left-gutter-mini}])
               (when (and (or show-sold-for? show-bought-for?)
+                         (not show-finalized-on?)
                          (not (empty-address? new-owner)))
                 (cond
                   show-sold-for? [offering-sold-chip
                                   {:style styles/margin-left-gutter-mini}]
                   show-bought-for? [offering-bought-chip
-                                    {:style styles/margin-left-gutter-mini}]))]])]]))))
+                                    {:style styles/margin-left-gutter-mini}]))
+              (when show-finalized-on?
+                (time-ago finalized-on))]])]]))))
 
 (defn offering-list-item []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:offering :expanded? :on-expand :key :header-props]}]
+    (fn [{:keys [:offering :expanded? :on-expand :key :header-props :body-props]}]
       (let [{:keys [:offering/address :offering/auction?]} offering]
         [expandable-list-item
          {:index key
@@ -187,4 +197,5 @@
           (merge {:offering offering}
                  header-props)]
          [offering-expanded-body
-          {:offering offering}]]))))
+          (merge {:offering offering}
+                 body-props)]]))))

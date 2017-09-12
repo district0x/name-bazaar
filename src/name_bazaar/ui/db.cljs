@@ -56,10 +56,13 @@
                                                :min-end-time-now? true
                                                :offset 0
                                                :limit constants/infinite-lists-init-load-limit}}
-                  :user-bids-offerings {:ids []
-                                        :params {}}
-                  :user-purchases-offerings {:ids []
-                                             :params {}}}
+                  :user-bids {:ids []
+                              :params {}}
+                  :user-purchases {:ids []
+                                   :params {:order-by-columns [:finalized-on]
+                                            :order-by-dirs [:desc]
+                                            :offset 0
+                                            :limit constants/infinite-lists-init-load-limit}}}
       :offering-requests {:main-search {:ids []
                                         :params {:name-position :contain
                                                  :order-by-columns [:requesters-count]

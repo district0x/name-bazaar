@@ -49,6 +49,12 @@
    "Created on: " (format-local-datetime created-on)
    "(" (time-ago created-on) ")"])
 
+(defn offering-finalized-on-line [{:keys [:offering/finalized-on]}]
+  [:div
+   {:style styles/text-overflow-ellipsis}
+   "Finalized on: " (format-local-datetime finalized-on)
+   "(" (time-ago finalized-on) ")"])
+
 (defn offering-name-line [{:keys [:offering/name]}]
   [:div "Name: " [a {:route :route.ens-record/detail
                      :route-params {:ens.record/name name}}
@@ -68,8 +74,9 @@
 
 (defn offering-general-info [{:keys [:offering] :as props}]
   (let [{:keys [:offering/name :offering/created-on :offering/address :offering/original-owner
-                :offering/auction? :auction-offering/end-time :auction-offering/min-bid-increase
-                :auction-offering/extension-duration :auction-offering/winning-bidder]} offering
+                :offering/finalized-on :offering/auction? :auction-offering/end-time
+                :auction-offering/min-bid-increase :auction-offering/extension-duration
+                :auction-offering/winning-bidder]} offering
         registrar-entry @(subscribe [:offering/registrar-entry address])]
     [:div
      (dissoc props :offering)
@@ -88,6 +95,9 @@
      (when (= type :auction-offering)
        [auction-offering-winning-bidder-line
         {:auction-offering/winning-bidder winning-bidder}])
+     (when finalized-on
+       [offering-finalized-on-line
+        {:offering/finalized-on finalized-on}])
      [offering-original-owner-line
       {:offering/original-owner original-owner
        :offering/address address}]

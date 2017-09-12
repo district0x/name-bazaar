@@ -17,7 +17,7 @@
 (s/def :offering/version int?)
 (s/def :offering/type keyword?)
 (s/def :offering/created-on date?)
-(s/def :offering/transferred-on (s/nilable date?))
+(s/def :offering/finalized-on (s/nilable date?))
 (s/def :offering/price not-neg?)
 (s/def :offering/auction? boolean?)
 (s/def :offering/buy-now? boolean?)
@@ -50,7 +50,7 @@
                                 :offering/auction?
                                 :offering/buy-now?
                                 :offering/created-on
-                                :offering/transferred-on
+                                :offering/finalized-on
                                 :offering/price
                                 :offering/name-level
                                 :offering/top-level-name?

@@ -184,6 +184,11 @@
   identity)
 
 (reg-sub
+  :offerings.main-search/params
+  :<- [:offerings/main-search]
+  :params)
+
+(reg-sub
   :offerings/ens-record-offerings
   :<- [:offerings/search-results :ens-record-offerings]
   identity)
@@ -194,9 +199,9 @@
   identity)
 
 (reg-sub
-  :offerings.main-search/params
-  :<- [:offerings/main-search]
-  :params)
+  :offerings/user-purchases
+  :<- [:offerings/search-results :user-purchases]
+  identity)
 
 (reg-sub
   :buy-now-offering.buy/tx-pending?

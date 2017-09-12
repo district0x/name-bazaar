@@ -28,6 +28,7 @@
                           new_owner CHAR(42) DEFAULT NULL,
                           version UNSIGNED INTEGER NOT NULL,
                           price UNSIGNED BIG INT NOT NULL,
+                          finalized_on UNSIGNED INTEGER DEFAULT NULL,
                           name_level UNSIGNED INTEGER DEFAULT 0,
                           label_length UNSIGNED INTEGER DEFAULT 0,
                           contains_number BOOLEAN NOT NULL DEFAULT false,
@@ -79,13 +80,13 @@
                     :offering/new-owner
                     :offering/version
                     :offering/price
+                    :offering/finalized-on
                     :offering/name-level
                     :offering/label-length
                     :offering/contains-number?
                     :offering/contains-special-char?
                     :offering/node-owner?
                     :auction-offering/end-time
-                    :auction-offering/bid-count
                     :auction-offering/bid-count])
 
 (defn upsert-offering! [db values]
@@ -128,7 +129,7 @@
 
 
 (s/def ::order-by-dir (partial contains? #{:desc :asc}))
-(s/def ::offering-order-by-column (partial contains? #{:price :end-time :created-on :bid-count}))
+(s/def ::offering-order-by-column (partial contains? #{:price :end-time :created-on :bid-count :finalized-on}))
 (s/def ::offerings-order-by-item (s/tuple ::offering-order-by-column ::order-by-dir))
 (s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :distinct true))
 (s/def ::offerings-select-fields (partial combination-of? #{:address :node :version :name}))

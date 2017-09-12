@@ -421,6 +421,17 @@
                     opts)]})))
 
 (reg-event-fx
+  :offerings.user-purchases/search
+  interceptors
+  (fn [{:keys [:db]} [search-params opts]]
+    {:dispatch [:offerings/search
+                (merge
+                  {:search-results-path [:search-results :offerings :user-purchases]
+                   :append? true
+                   :params search-params}
+                  opts)]}))
+
+(reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params search-opts]]
@@ -449,6 +460,16 @@
                 (merge search-opts
                        {:search-params-db-path [:search-results :offerings :similar-offerings :params]
                         :search-dispatch [:offerings.similar-offerings/search]})]}))
+
+(reg-event-fx
+  :offerings.user-purchases/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params search-opts]]
+    {:dispatch [:search-results/set-params-and-search
+                search-params
+                (merge search-opts
+                       {:search-params-db-path [:search-results :offerings :user-purchases :params]
+                        :search-dispatch [:offerings.user-purchases/search]})]}))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search

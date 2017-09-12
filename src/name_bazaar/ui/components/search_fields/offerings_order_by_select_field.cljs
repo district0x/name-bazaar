@@ -8,7 +8,9 @@
    :offering.order-by/most-active [[:bid-count :desc] "Most Active"]
    :offering.order-by/most-expensive [[:price :desc] "Most Expensive"]
    :offering.order-by/cheapest [[:price :asc] "Cheapest"]
-   :offering.order-by/ending-soon [[:end-time :asc] "Ending Soon"]})
+   :offering.order-by/ending-soon [[:end-time :asc] "Ending Soon"]
+   :offering.order-by/finalized-newest [[:finalized-on :desc] "Newest"]
+   :offering.order-by/finalized-oldest [[:finalized-on :asc] "Oldest"]})
 
 (defn offerings-order-by-select-field [{:keys [:on-change :options :order-by-column :order-by-dir] :as props}]
   (let [options (if options (select-keys offerings-order-by-options options) offerings-order-by-options)

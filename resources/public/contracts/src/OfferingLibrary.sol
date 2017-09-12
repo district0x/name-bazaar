@@ -17,6 +17,7 @@ library OfferingLibrary {
         uint createdOn;
         address newOwner;
         uint price;
+        uint finalizedOn;
     }
 
     event onTransfer(address newOwner, uint price, uint datetime);
@@ -60,27 +61,11 @@ library OfferingLibrary {
         fireOnChanged(self);
     }
 
-    // Security method in case user transfers other name to this contract than it's supposed to be
-    function claimOwnership(
-        Offering storage self,
-        bytes32 node,
-        bytes32 labelHash,
-        address _address,
-        bool doRegistrarTransfer
-    ) {
-        require(isSenderEmergencyMultisig(self));
-        require(self.node != node);
-        if (doRegistrarTransfer) {
-            self.registrar.transfer(self.labelHash, _address);
-        } else {
-            self.registrar.ens().setOwner(self.node, _address);
-        }
-    }
-
     function transferOwnership(Offering storage self, address _newOwner, uint _price) {
         require(!wasEmergencyCancelled(self));
         require(!wasOwnershipTransferred(self));
         self.newOwner = _newOwner;
+        self.finalizedOn = now;
         doTransferOwnership(self, _newOwner);
         onTransfer(_newOwner, _price, now);
         fireOnChanged(self);

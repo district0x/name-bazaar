@@ -30,7 +30,7 @@
 
 (def offering-props [:offering/offering-registry :offering/registrar :offering/node :offering/name :offering/label-hash
                      :offering/original-owner :offering/emergency-multisig :offering/version :offering/created-on
-                     :offering/new-owner :offering/price])
+                     :offering/new-owner :offering/price :offering/finalized-on])
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
@@ -45,6 +45,7 @@
         (assoc :offering/buy-now? (= offering-type :buy-now-offering))
         (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
         (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
+        (update :offering/finalized-on (if parse-dates? bn/->date-time bn/->number))
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
         (assoc :offering/name-level (name-level (:offering/name offering)))
         (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))

@@ -37,11 +37,6 @@ contract Offering {
         offering.reclaimOwnership();
     }
 
-    // Security method in case user transfers other name to this contract than it's supposed to be
-    function claimOwnership(bytes32 node, bytes32 labelHash, address _address, bool doRegistrarTransfer) {
-        offering.claimOwnership(node, labelHash, _address, doRegistrarTransfer);
-    }
-
     function setOfferingRegistry(address _offeringRegistry) {
         offering.setOfferingRegistry(_offeringRegistry);
     }
