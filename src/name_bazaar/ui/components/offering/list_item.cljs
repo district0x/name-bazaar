@@ -10,7 +10,7 @@
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
     [name-bazaar.ui.components.misc :refer [a]]
     [name-bazaar.ui.components.offering.action-form :refer [action-form]]
-    [name-bazaar.ui.components.offering.chips :refer [offering-active-chip offering-sold-chip offering-bought-chip]]
+    [name-bazaar.ui.components.offering.chips :refer [offering-active-chip offering-sold-chip offering-bought-chip offering-auction-winning-chip offering-auction-pending-returns-chip]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
     [name-bazaar.ui.components.offering.warnings :refer [non-ascii-characters-warning missing-ownership-warning sub-level-name-warning]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
@@ -86,9 +86,44 @@
        (str (d0x-ui-utils/format-time-remaining-biggest-unit end-time) " left")
        "finished")]))
 
+(defn offering-header-price []
+  (let [xs? (subscribe [:district0x/window-xs-width?])]
+    (fn [{:keys [:offering]}]
+      [:span
+       {:style (styles/offering-list-item-price @xs?)}
+       (format-eth-with-code (:offering/price offering))])))
+
+(defn offering-header-active-chip [{:keys [:offering] :as props}]
+  (when @(subscribe [:offering/active? (:offering/address offering)])
+    [offering-active-chip (dissoc props :offering)]))
+
+(defn offering-header-auction-winning-chip [{:keys [:offering] :as props}]
+  (when @(subscribe [:auction-offering/active-address-winning-bidder? (:offering/address offering)])
+    [offering-auction-winning-chip
+     (r/merge-props
+       {:won? (t/after? (:auction-offering/end-time offering) (t/now))}
+       (dissoc props :offering))]))
+
+(defn offering-header-auction-pending-returns-chip [{:keys [:offering] :as props}]
+  (when (pos? @(subscribe [:auction-offering/active-address-pending-returns (:offering/address offering)]))
+    [offering-auction-pending-returns-chip
+     (dissoc props :offering)]))
+
+(defn offering-auction-status-xs [{:keys [:offering]}]
+  [:div
+   [auction-bid-count
+    {:auction-offering/bid-count (:auction-offering/bid-count offering)}]
+   [:span
+    {:style {:margin-right 3}}
+    ", "]
+   [auction-time-remaining
+    {:auction-offering/end-time (:auction-offering/end-time offering)}]])
+
+
 (defn offering-list-item-header []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:offering :show-created-on? :show-sold-for? :show-bought-for? :show-finalized-on? :show-active?]}]
+    (fn [{:keys [:offering :show-created-on? :show-sold-for? :show-bought-for? :show-finalized-on? :show-active?
+                 :show-auction-winning? :show-auction-pending-returns?]}]
       (let [{:keys [:offering/address :offering/auction? :offering/name :offering/price :offering/created-on
                     :offering/type :offering/finalized-on :offering/new-owner :auction-offering/bid-count
                     :auction-offering/end-time]} offering]
@@ -131,12 +166,14 @@
               :style styles/text-center}
              (time-ago finalized-on)])
           [col
-           {:xs 4 :sm 3}
+           {:xs 3 :sm 3}
            [:div
             {:style (styles/offering-list-item-header-last-col @xs?)}
-            (when (and (not @xs?) show-active? @(subscribe [:offering/active? address]))
-              [offering-active-chip
-               {:style {:margin-right 5}}])
+            (when (and show-active?
+                       (not @xs?))
+              [offering-header-active-chip
+               {:offering offering
+                :style {:margin-right 5}}])
             (when (and
                     (not @xs?)
                     (or show-sold-for? show-bought-for?)
@@ -146,29 +183,39 @@
                (cond
                  show-sold-for? "sold for "
                  show-bought-for? "bought for ")])
-            [:span
-             {:style (styles/offering-list-item-price @xs?)}
-             (format-eth-with-code price)]]]
+
+            (when (and show-auction-winning?
+                       (not @xs?))
+              [offering-header-auction-winning-chip
+               {:offering offering
+                :style {:margin-right 5}}])
+
+            (when (and show-auction-pending-returns?
+                       (not @xs?))
+              [offering-header-auction-pending-returns-chip
+               {:offering offering
+                :style {:margin-right 5}}])
+
+            [offering-header-price
+             {:offering offering}]]]
+
           (when @xs?
             [col
-             {:xs 8
+             {:xs 9
               :style styles/offering-list-item-bid-count-xs}
              [row
               {:bottom "xs"
                :end "xs"
                :style styles/full-height}
               (when (and auction? (not show-finalized-on?))
-                [:div
-                 [auction-bid-count
-                  {:auction-offering/bid-count bid-count}]
-                 [:span
-                  {:style {:margin-right 3}}
-                  ", "]
-                 [auction-time-remaining
-                  {:auction-offering/end-time end-time}]])
-              (when (and show-active? @(subscribe [:offering/active? address]))
-                [offering-active-chip
-                 {:style styles/margin-left-gutter-mini}])
+                [offering-auction-status-xs
+                 {:offering offering}])
+
+              (when (and show-active?)
+                [offering-header-active-chip
+                 {:offering offering
+                  :style styles/margin-left-gutter-mini}])
+
               (when (and (or show-sold-for? show-bought-for?)
                          (not show-finalized-on?)
                          (not (empty-address? new-owner)))
@@ -177,6 +224,17 @@
                                   {:style styles/margin-left-gutter-mini}]
                   show-bought-for? [offering-bought-chip
                                     {:style styles/margin-left-gutter-mini}]))
+
+              (when show-auction-pending-returns?
+                [offering-header-auction-pending-returns-chip
+                 {:offering offering
+                  :style styles/margin-left-gutter-mini}])
+
+              (when show-auction-winning?
+                [offering-header-auction-winning-chip
+                 {:offering offering
+                  :style styles/margin-left-gutter-mini}])
+
               (when show-finalized-on?
                 (time-ago finalized-on))]])]]))))
 

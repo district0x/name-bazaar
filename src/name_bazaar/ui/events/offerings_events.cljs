@@ -279,21 +279,30 @@
   interceptors
   (fn [{:keys [:db]} [offering-address]]
     (when (:offering/auction? (get-offering db offering-address))
-      {:dispatch [:offerings.auction.pending-returns/load offering-address
+      {:dispatch [:offerings.auction.pending-returns/load [offering-address]
                   ;; Active address should be loaded first
                   (reverse (sort-by (partial = (:active-address db)) (:my-addresses db)))]})))
 
 (reg-event-fx
+  :offerings.auction.active-address-pending-returns/load
+  interceptors
+  (fn [{:keys [:db]} [offering-addresses]]
+    {:dispatch [:offerings.auction.pending-returns/load offering-addresses [(:active-address db)]]}))
+
+(reg-event-fx
   :offerings.auction.pending-returns/load
   interceptors
-  (fn [{:keys [:db]} [offering-address addresses]]
+  (fn [{:keys [:db]} [offering-addresses user-addresses]]
     {:web3-fx.contract/constant-fns
-     {:fns (for [address addresses]
-             {:instance (get-instance db :auction-offering offering-address)
-              :method :pending-returns
-              :args [address]
-              :on-success [:offerings.auction.pending-returns/loaded offering-address address]
-              :on-error [:district0x.log/error]})}}))
+     {:fns (flatten
+             (for [offering-address offering-addresses]
+               (let [instance (get-instance db :auction-offering offering-address)]
+                 (for [user-address user-addresses]
+                   {:instance instance
+                    :method :pending-returns
+                    :args [user-address]
+                    :on-success [:offerings.auction.pending-returns/loaded offering-address user-address]
+                    :on-error [:district0x.log/error]}))))}}))
 
 (reg-event-fx
   :offerings.auction.pending-returns/loaded
@@ -451,6 +460,9 @@
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
+                                     :on-success
+                                     [:district0x/dispatch-n [[:offerings/load]
+                                                              [:offerings.auction.active-address-pending-returns/load]]]
                                      :params (cond-> search-params
                                                (and winning? (not outbid?))
                                                (assoc :winning-bidder bidder)

@@ -61,7 +61,9 @@
                   :user-bids {:ids []
                               :params {:order-by-columns [:end-time]
                                        :order-by-dirs [:asc]
-                                       :min-end-time-now? true
+                                       :min-end-time-now? false
+                                       :winning? true
+                                       :outbid? true
                                        :auction? true
                                        :offset 0
                                        :limit constants/infinite-lists-init-load-limit}}
