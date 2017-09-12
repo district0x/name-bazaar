@@ -65,5 +65,5 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       [user-purchases
-       {:title (str (truncate (:user/address @route-params) 8) " Purchases")
+       {:title (str (truncate (:user/address @route-params) 10) " Purchases")
         :no-items-text "This user hasn't purchased any names yet"}])))

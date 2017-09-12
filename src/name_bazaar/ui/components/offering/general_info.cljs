@@ -21,6 +21,16 @@
        :route-params {:user/address original-owner}}
     original-owner]])
 
+(defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address]}]
+  [:div
+   {:style styles/text-overflow-ellipsis}
+   "Purchased by"
+   (when @(subscribe [:offering/active-address-new-owner? address]) " (You)")
+   ": "
+   [a {:route :route.user/purchases
+       :route-params {:user/address new-owner}}
+    new-owner]])
+
 (defn offering-address-line [{:keys [:offering/address]}]
   [:div
    {:style styles/text-overflow-ellipsis}
@@ -74,7 +84,7 @@
 
 (defn offering-general-info [{:keys [:offering] :as props}]
   (let [{:keys [:offering/name :offering/created-on :offering/address :offering/original-owner
-                :offering/finalized-on :offering/auction? :auction-offering/end-time
+                :offering/new-owner :offering/finalized-on :offering/auction? :auction-offering/end-time
                 :auction-offering/min-bid-increase :auction-offering/extension-duration
                 :auction-offering/winning-bidder]} offering
         registrar-entry @(subscribe [:offering/registrar-entry address])]
@@ -92,7 +102,7 @@
      (when auction?
        [:div "Time Extension: "
         (d0x-ui-utils/format-time-duration-units (epoch->long extension-duration))])
-     (when (= type :auction-offering)
+     (when (and auction? (not finalized-on))
        [auction-offering-winning-bidder-line
         {:auction-offering/winning-bidder winning-bidder}])
      (when finalized-on
@@ -101,6 +111,10 @@
      [offering-original-owner-line
       {:offering/original-owner original-owner
        :offering/address address}]
+     (when-not (empty-address? new-owner)
+       [offering-new-owner-line
+        {:offering/new-owner new-owner
+         :offering/address address}])
      [offering-address-line
       {:offering/address address}]
      [registrar-entry-deed-value-line
