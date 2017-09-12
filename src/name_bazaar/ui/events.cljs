@@ -41,14 +41,12 @@
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
                 (parse-query-params query-params :route.offerings/search)
-                {:clear-existing-items? true
-                 :clear-existing-params? true}]}
+                {:reset-params? true}]}
 
     :route.offering-requests/search
     {:dispatch [:offering-requests.main-search/set-params-and-search
                 (parse-query-params query-params :route.offering-requests/search)
-                {:clear-existing-items? true
-                 :clear-existing-params? true}]}
+                {:reset-params? true}]}
 
     :route.offerings/edit
     {:async-flow {:first-dispatch [:offerings/load [(:offering/address route-params)]]
@@ -66,15 +64,13 @@
                                           [:offerings/watch [address]]
                                           [:offerings.similar-offerings/set-params-and-search
                                            {:offering/address address}
-                                           {:clear-existing-items? true
-                                            :clear-existing-params? true}]]}]}})
+                                           {:reset-params? true}]]}]}})
 
     :route.ens-record/detail
     {:dispatch-n [[:name/load-all-details (:ens.record/name route-params)]
                   [:offerings.ens-record-offerings/set-params-and-search
                    {:node (namehash (:ens.record/name route-params))}
-                   {:clear-existing-items? true
-                    :clear-existing-params? true}]]}
+                   {:reset-params? true}]]}
 
     :route/watched-names
     {:dispatch [:watched-names/load-all]}
@@ -82,17 +78,29 @@
     :route.user/purchases
     {:dispatch [:offerings.user-purchases/set-params-and-search
                 {:new-owner (:user/address route-params)}
-                {:clear-existing-items? true
-                 :clear-existing-params? true}]}
+                {:reset-params? true}]}
 
     :route.user/my-purchases
     {:dispatch [:offerings.user-purchases/set-params-and-search
                 {:new-owner (:active-address db)}
-                {:clear-existing-items? true
-                 :clear-existing-params? true}]
+                {:reset-params? true}]
      :forward-events {:register :active-address-changed
                       :events #{:district0x/set-active-address}
                       :dispatch-to [:active-page-changed]}}
+
+    :route.user/bids
+    {:dispatch [:offerings.user-bids/set-params-and-search
+                {:bidder (:user/address route-params)}
+                {:reset-params? true}]}
+
+    :route.user/my-bids
+    {:dispatch [:offerings.user-bids/set-params-and-search
+                {:bidder (:active-address db)}
+                {:reset-params? true}]
+     :forward-events {:register :active-address-changed
+                      :events #{:district0x/set-active-address}
+                      :dispatch-to [:active-page-changed]}}
+
 
     nil))
 
@@ -131,24 +139,6 @@
     (let [new-db (medley/dissoc-in db [:saved-searches saved-searches-key query-string])]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:saved-searches]))})))
-
-(reg-event-fx
-  :search-results/set-params-and-search
-  interceptors
-  (fn [{:keys [:db]} [search-params {:keys [:add-to-query? :clear-existing-params? :clear-existing-items?
-                                            :search-params-db-path :search-dispatch :reset-infinite-scroll?]
-                                     :as search-opts}]]
-    (if add-to-query?
-      {:dispatch [:district0x.location/add-to-query search-params]}
-      (let [default-search-params (get-in default-db search-params-db-path)
-            new-db (if clear-existing-params?
-                     (assoc-in db search-params-db-path (merge default-search-params
-                                                               search-params))
-                     (update-in db search-params-db-path merge search-params (when clear-existing-items?
-                                                                               (select-keys default-search-params
-                                                                                            [:offset :limit]))))]
-        {:db new-db
-         :dispatch (into search-dispatch [(get-in new-db search-params-db-path) search-opts])}))))
 
 (reg-event-fx
   :update-now

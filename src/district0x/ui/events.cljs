@@ -554,11 +554,11 @@
 (reg-event-fx
   :district0x.search-results/load
   interceptors
-  (fn [{:keys [db]} [{:keys [:http-xhrio :params :search-results-path :clear-existing-items? :append? :endpoint :on-success
+  (fn [{:keys [db]} [{:keys [:http-xhrio :params :search-results-path :append? :endpoint :on-success
                              :id-key]
                       :as opts}]]
     {:db (update-in db search-results-path merge (merge {:loading? true}
-                                                        (when clear-existing-items?
+                                                        (when-not append?
                                                           {:ids []})))
      :dispatch [:district0x.server/http-get {:http-xhrio http-xhrio
                                              :endpoint endpoint

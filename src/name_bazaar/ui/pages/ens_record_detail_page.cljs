@@ -26,8 +26,7 @@
           :on-change (fn [order-by-column order-by-dir]
                        (dispatch [:offerings.ens-record-offerings/set-params-and-search
                                   {:order-by-columns [order-by-column]
-                                   :order-by-dirs [order-by-dir]}
-                                  {:clear-existing-items? true}]))}]))))
+                                   :order-by-dirs [order-by-dir]}]))}]))))
 
 (defn ens-record-offerings []
   (let [route-params (subscribe [:district0x/route-params])
@@ -50,7 +49,9 @@
            :loading? loading?
            :no-items-text "No offerings were created for this name yet"
            :on-next-load (fn [offset limit]
-                           (dispatch [:offerings.ens-record-offerings/set-params-and-search {:offset offset :limit limit}]))}
+                           (dispatch [:offerings.ens-record-offerings/set-params-and-search
+                                      {:offset offset :limit limit}
+                                      {:append? true}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item

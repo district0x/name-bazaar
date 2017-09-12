@@ -5,8 +5,9 @@
     [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
+    [name-bazaar.shared.utils :refer [name-label]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.shared.utils :refer [name-label]]))
+    [name-bazaar.ui.db :refer [default-db]]))
 
 (defn namehash [name]
   (js/EthEnsNamehash.hash name))
@@ -63,6 +64,23 @@
 
 (defn get-offering-requests-search-results [db search-results-key]
   (get-in db [:search-results :offering-requests search-results-key]))
+
+(defn get-similar-offering-pattern [{:keys [:offering/label :offering/name :offering/node :offering/top-level-name?]}]
+  (let [subnames (if top-level-name?
+                   ""
+                   (-> name
+                     (string/replace (str label ".") "")
+                     (string/replace constants/registrar-root "")))]
+    (str (subs label 0 3) "%" subnames)))
+
+(defn update-search-results-params [db params-db-path new-params {:keys [:append? :reset-params?]}]
+  (let [default-search-params (get-in default-db params-db-path)
+        search-params (cond-> default-search-params
+                        (not reset-params?) (merge (get-in db params-db-path))
+                        (not append?) (merge (select-keys default-search-params [:offset :limit]))
+                        true (merge new-params))]
+    {:db (assoc-in db params-db-path search-params)
+     :search-params search-params}))
 
 (defn registrar-entry-deed-loaded? [registrar-entry]
   (boolean (or (d0x-shared-utils/zero-address? (:registrar.entry.deed/address registrar-entry))

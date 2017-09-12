@@ -32,7 +32,7 @@
                                            :params {:limit 5
                                                     :node-owner? true}}
                   :main-search {:ids []
-                                :params {:name-position :contain
+                                :params {:name-position :any
                                          :buy-now? true
                                          :auction? true
                                          :top-level-names? true
@@ -51,20 +51,27 @@
                   :user-offerings {:ids []
                                    :params {}}
                   :similar-offerings {:ids []
-                                      :params {:name-position :end
+                                      :params {:order-by-columns [:name-relevance]
+                                               :order-by-dirs [:desc]
+                                               :name-position :end
                                                :node-owner? true
                                                :min-end-time-now? true
                                                :offset 0
                                                :limit constants/infinite-lists-init-load-limit}}
                   :user-bids {:ids []
-                              :params {}}
+                              :params {:order-by-columns [:end-time]
+                                       :order-by-dirs [:asc]
+                                       :min-end-time-now? true
+                                       :auction? true
+                                       :offset 0
+                                       :limit constants/infinite-lists-init-load-limit}}
                   :user-purchases {:ids []
                                    :params {:order-by-columns [:finalized-on]
                                             :order-by-dirs [:desc]
                                             :offset 0
                                             :limit constants/infinite-lists-init-load-limit}}}
       :offering-requests {:main-search {:ids []
-                                        :params {:name-position :contain
+                                        :params {:name-position :any
                                                  :order-by-columns [:requesters-count]
                                                  :order-by-dirs [:desc]
                                                  :offset 0

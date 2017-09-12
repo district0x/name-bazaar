@@ -203,7 +203,9 @@
            :loading? loading?
            :no-items-text "No similar offerings found"
            :on-next-load (fn [offset limit]
-                           (dispatch [:offerings.ens-record-offerings/set-params-and-search {:offset offset :limit limit}]))}
+                           (dispatch [:offerings.similar-offerings/set-params-and-search
+                                      {:offset offset :limit limit}
+                                      {:append? true}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item

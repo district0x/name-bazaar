@@ -11,7 +11,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.utils :as d0x-ui-utils]
     [clojure.string :as string]))
@@ -375,58 +375,12 @@
     {:db (assoc-in db [:offerings-main-search-drawer :open?] open?)}))
 
 (reg-event-fx
-  :offerings.main-search/search
+  :offerings.user-bids/search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
     {:dispatch [:offerings/search
                 (merge
-                  {:search-results-path [:search-results :offerings :main-search]
-                   :append? true
-                   :params (d0x-shared-utils/update-multi
-                             search-params
-                             [:min-price :max-price]
-                             d0x-shared-utils/safe-eth->wei->num)}
-                  opts)]}))
-
-(reg-event-fx
-  :offerings.ens-record-offerings/search
-  interceptors
-  (fn [{:keys [:db]} [search-params opts]]
-    {:dispatch [:offerings/search
-                (merge
-                  {:search-results-path [:search-results :offerings :ens-record-offerings]
-                   :append? true
-                   :params search-params}
-                  opts)]}))
-
-(reg-event-fx
-  :offerings.similar-offerings/search
-  interceptors
-  (fn [{:keys [:db]} [{:keys [:offering/address] :as search-params} opts]]
-    (let [{:keys [:offering/label :offering/name :offering/node :offering/top-level-name?]} (get-offering db address)
-          subnames (if top-level-name?
-                     ""
-                     (-> name
-                       (string/replace (str label ".") "")
-                       (string/replace constants/registrar-root "")))
-          name-pattern (str (subs label 0 3) "%" subnames)]
-      {:dispatch [:offerings/search
-                  (merge
-                    {:search-results-path [:search-results :offerings :similar-offerings]
-                     :append? true
-                     :params (-> search-params
-                               (assoc :name name-pattern)
-                               (assoc :exclude-node node)
-                               (dissoc :offering/address search-params))}
-                    opts)]})))
-
-(reg-event-fx
-  :offerings.user-purchases/search
-  interceptors
-  (fn [{:keys [:db]} [search-params opts]]
-    {:dispatch [:offerings/search
-                (merge
-                  {:search-results-path [:search-results :offerings :user-purchases]
+                  {:search-results-path [:search-results :offerings :user-bids]
                    :append? true
                    :params search-params}
                   opts)]}))
@@ -434,42 +388,78 @@
 (reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params search-opts]]
-    {:dispatch [:search-results/set-params-and-search
-                search-params
-                (merge search-opts
-                       {:search-params-db-path [:search-results :offerings :main-search :params]
-                        :search-dispatch [:offerings.main-search/search]})]}))
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :main-search]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :params (d0x-shared-utils/update-multi
+                                               search-params
+                                               [:min-price :max-price]
+                                               d0x-shared-utils/safe-eth->wei->num)}]})))
 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params search-opts]]
-    {:dispatch [:search-results/set-params-and-search
-                search-params
-                (merge search-opts
-                       {:search-params-db-path [:search-results :offerings :ens-record-offerings :params]
-                        :search-dispatch [:offerings.ens-record-offerings/search]})]}))
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :ens-record-offerings]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :params search-params}]})))
 
 (reg-event-fx
   :offerings.similar-offerings/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params search-opts]]
-    {:dispatch [:search-results/set-params-and-search
-                search-params
-                (merge search-opts
-                       {:search-params-db-path [:search-results :offerings :similar-offerings :params]
-                        :search-dispatch [:offerings.similar-offerings/search]})]}))
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :similar-offerings]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
+          offering (get-offering db (:offering/address search-params))]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :params (-> search-params
+                                               (assoc :name (get-similar-offering-pattern offering))
+                                               (assoc :exclude-node (:offering/node offering))
+                                               (dissoc :offering/address search-params))}]})))
 
 (reg-event-fx
   :offerings.user-purchases/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params search-opts]]
-    {:dispatch [:search-results/set-params-and-search
-                search-params
-                (merge search-opts
-                       {:search-params-db-path [:search-results :offerings :user-purchases :params]
-                        :search-dispatch [:offerings.user-purchases/search]})]}))
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :user-purchases]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :params search-params}]})))
+
+(reg-event-fx
+  :offerings.user-bids/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :user-bids]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
+          {:keys [:winning? :outbid? :bidder]} search-params]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :params (cond-> search-params
+                                               (and winning? (not outbid?))
+                                               (assoc :winning-bidder bidder)
+
+                                               (and outbid? (not winning?))
+                                               (assoc :exclude-winning-bidder bidder)
+
+                                               true
+                                               (dissoc :winning? :outbid?))}]})))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search

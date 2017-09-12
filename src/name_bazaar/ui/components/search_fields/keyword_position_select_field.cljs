@@ -7,9 +7,9 @@
   [ui/select-field
    (r/merge-props
      {:full-width true
-      :hint-text "Keyword Position"}
+      :floating-label-text "Keyword Position"}
      props)
-   (for [[val text] [[:contain "Contains"] [:start "Starts with"] [:end "Ends with"]]]
+   (for [[val text] [[:any "Any"] [:start "Start"] [:end "End"]]]
      [ui/menu-item
       {:key val
        :value val

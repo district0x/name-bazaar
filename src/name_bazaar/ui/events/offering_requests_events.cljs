@@ -9,7 +9,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash normalize name->label-hash parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [medley.core :as medley]))
 
@@ -89,25 +89,16 @@
                           set)))})))
 
 (reg-event-fx
-  :offering-requests.main-search/search
-  interceptors
-  (fn [{:keys [:db]} [search-params opts]]
-    {:dispatch [:offering-requests/search
-                (merge
-                  {:search-results-path [:search-results :offering-requests :main-search]
-                   :append? true
-                   :params search-params}
-                  opts)]}))
-
-(reg-event-fx
   :offering-requests.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params search-opts]]
-    {:dispatch [:search-results/set-params-and-search
-                search-params
-                (merge search-opts
-                       {:search-params-db-path [:search-results :offering-requests :main-search :params]
-                        :search-dispatch [:offering-requests.main-search/search]})]}))
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offering-requests :main-search]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
+      {:db db
+       :dispatch [:offering-requests/search {:search-results-path search-results-path
+                                             :append? (:append? opts)
+                                             :params search-params}]})))
 
 (reg-event-fx
   :offering-requests.list-item/expanded

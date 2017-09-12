@@ -24,8 +24,7 @@
           :on-change (fn [order-by-column order-by-dir]
                        (dispatch [:offerings.user-purchases/set-params-and-search
                                   {:order-by-columns [order-by-column]
-                                   :order-by-dirs [order-by-dir]}
-                                  {:clear-existing-items? true}]))}]))))
+                                   :order-by-dirs [order-by-dir]}]))}]))))
 
 (defn user-purchases []
   (let [search-results (subscribe [:offerings/user-purchases])]
@@ -46,7 +45,8 @@
             :loading? loading?
             :no-items-text no-items-text
             :on-next-load (fn [offset limit]
-                            (dispatch [:offerings.user-purchases/set-params-and-search {:offset offset :limit limit}]))}
+                            (dispatch [:offerings.user-purchases/set-params-and-search
+                                       {:offset offset :limit limit} {:append? true}]))}
            (doall
              (for [[i offering] (medley/indexed items)]
                [offering-list-item

@@ -35,7 +35,8 @@
                           contains_special_char BOOLEAN NOT NULL DEFAULT false,
                           node_owner BOOLEAN NOT NULL DEFAULT false,
                           end_time UNSIGNED INTEGER DEFAULT NULL,
-                          bid_count UNSIGNED INTEGER DEFAULT 0
+                          bid_count UNSIGNED INTEGER DEFAULT 0,
+                          winning_bidder CHAR(42) DEFAULT NULL
                           )" log-error)
                    (.run db "CREATE INDEX created_on_index ON offerings (created_on)" log-error)
                    (.run db "CREATE INDEX name_index ON offerings (name)" log-error)
@@ -43,6 +44,7 @@
                    (.run db "CREATE INDEX original_owner_index ON offerings (original_owner)" log-error)
                    (.run db "CREATE INDEX new_owner_index ON offerings (new_owner)" log-error)
                    (.run db "CREATE INDEX price_index ON offerings (price)" log-error)
+                   (.run db "CREATE INDEX finalized_on_index ON offerings (finalized_on)" log-error)
                    (.run db "CREATE INDEX end_time_index ON offerings (end_time)" log-error)
                    (.run db "CREATE INDEX name_level_index ON offerings (name_level)" log-error)
                    (.run db "CREATE INDEX label_length_index ON offerings (label_length)" log-error)
@@ -51,6 +53,7 @@
                    (.run db "CREATE INDEX node_owner_index ON offerings (node_owner)" log-error)
                    (.run db "CREATE INDEX version_index ON offerings (version)" log-error)
                    (.run db "CREATE INDEX bid_count_index ON offerings (bid_count)" log-error)
+                   (.run db "CREATE INDEX winning_bidder_index ON offerings (winning_bidder)" log-error)
 
                    (.run db "CREATE TABLE bids (
                           bidder CHAR(42) NOT NULL,
@@ -69,8 +72,7 @@
                           )" log-error)
 
                    (.run db "CREATE INDEX requesters_count_index ON offering_requests (requesters_count)" log-error)
-                   (.run db "CREATE INDEX offering_requests_name_index ON offering_requests (name)" log-error)
-                   )))
+                   (.run db "CREATE INDEX offering_requests_name_index ON offering_requests (name)" log-error))))
 
 (def offering-keys [:offering/address
                     :offering/created-on
@@ -87,7 +89,8 @@
                     :offering/contains-special-char?
                     :offering/node-owner?
                     :auction-offering/end-time
-                    :auction-offering/bid-count])
+                    :auction-offering/bid-count
+                    :auction-offering/winning-bidder])
 
 (defn upsert-offering! [db values]
   (db-run! db {:insert-or-replace-into :offerings
@@ -122,35 +125,39 @@
 
 (defn- name-pattern [name name-position]
   (condp = name-position
-    :contain (str "%" name "%")
+    :any (str "%" name "%")
     :start (str name "%")
     :end (str "%" name)
     (str "%" name "%")))
 
 
 (s/def ::order-by-dir (partial contains? #{:desc :asc}))
-(s/def ::offering-order-by-column (partial contains? #{:price :end-time :created-on :bid-count :finalized-on}))
+(s/def ::offering-order-by-column (partial contains? #{:price :end-time :created-on :bid-count :finalized-on :name-relevance}))
 (s/def ::offerings-order-by-item (s/tuple ::offering-order-by-column ::order-by-dir))
 (s/def ::offerings-order-by (s/coll-of ::offerings-order-by-item :distinct true))
 (s/def ::offerings-select-fields (partial combination-of? #{:address :node :version :name}))
 
-(defn prepare-order-by [order-by]
-  (map (fn [order-by-item]
-         (if (= order-by-item [:end-time :asc])
-           [(if-null :end-time js/Number.MAX_VALUE) :asc]   ;; Put nulls at the end
-           order-by-item))
-       order-by))
+(defn prepare-order-by [order-by {:keys [:name :root-name]}]
+  (remove nil?
+          (map (fn [order-by-item]
+                 (condp = order-by-item
+                   [:end-time :asc] [(if-null :end-time js/Number.MAX_VALUE) :asc] ;; Put nulls at the end
+                   [:name-relevance :desc] (when (seq name) (order-by-closest-like :name name {:suffix (str "." root-name)}))
+                   order-by-item))
+               order-by)))
 
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :nodes :name :min-price :max-price :buy-now? :auction?
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder]
+                                   :bidder :winning-bidder :exclude-winning-bidder]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
         max-price (js/parseInt max-price)
+        min-length (js/parseInt min-length)
+        max-length (js/parseInt max-length)
         name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
@@ -161,13 +168,15 @@
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
-              min-length (merge-where [:>= :label-length min-length])
-              max-length (merge-where [:<= :label-length max-length])
+              (not (js/isNaN min-length)) (merge-where [:>= :label-length min-length])
+              (not (js/isNaN max-length)) (merge-where [:<= :label-length max-length])
               min-end-time-now? (merge-where [:or
                                               [:>= :end-time (to-epoch (t/now))]
                                               [:= :end-time nil]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder bidder])
+              winning-bidder (merge-where [:= :winning-bidder winning-bidder])
+              exclude-winning-bidder (merge-where [:<> :winning-bidder exclude-winning-bidder])
               version (merge-where [:= :version version])
               (boolean? node-owner?) (merge-where [:= :node-owner node-owner?])
               (or buy-now? auction?) (merge-where [:or
@@ -186,9 +195,8 @@
               node (merge-where [:= :node node])
               nodes (merge-where [:in :node (collify nodes)])
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
-              name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
-              name (merge-order-by :name)
-              (and (not name) (s/valid? ::offerings-order-by order-by)) (merge-order-by (prepare-order-by order-by)))
+              (s/valid? ::offerings-order-by order-by) (merge-order-by (prepare-order-by order-by {:name name
+                                                                                                   :root-name root-name})))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
 
@@ -209,9 +217,7 @@
                      :offset offset
                      :limit limit}
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])
-              name (merge-order-by (order-by-closest-like :name name {:suffix (str "." root-name)}))
-              name (merge-order-by :name)
-              (and (not name) (s/valid? ::offering-requests-order-by order-by)) (merge-order-by order-by))
+              (s/valid? ::offering-requests-order-by order-by) (merge-order-by order-by))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
 

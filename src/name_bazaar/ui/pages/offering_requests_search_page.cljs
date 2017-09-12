@@ -23,14 +23,14 @@
     (fn []
       [keyword-text-field
        {:value (:name @search-params)
-        :on-change #(dispatch [:offering-requests.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name %2}])}])))
 
 (defn offering-requests-keyword-position-select-field []
   (let [search-params (subscribe [:offering-requests.main-search/params])]
     (fn []
       [keyword-position-select-field
        {:value (:name-position @search-params)
-        :on-change #(dispatch [:offering-requests.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name-position %3}])}])))
 
 (defn search-params-panel []
   [paper
@@ -57,7 +57,9 @@
            :loading? loading?
            :no-items-text "No offering requests found matching your search criteria"
            :on-next-load (fn [offset limit]
-                           (dispatch [:offering-requests.main-search/set-params-and-search {:offset offset :limit limit}]))}
+                           (dispatch [:offering-requests.main-search/set-params-and-search
+                                      {:offset offset :limit limit}
+                                      {:append? true}]))}
           (doall
             (for [[i offering-request] (medley/indexed items)]
               [offering-request-list-item

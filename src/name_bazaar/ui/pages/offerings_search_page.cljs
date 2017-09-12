@@ -25,14 +25,14 @@
     (fn []
       [keyword-text-field
        {:value (:name @search-params)
-        :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name %2} {:add-to-query? true}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name %2}])}])))
 
 (defn offerings-keyword-position-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
     (fn []
       [keyword-position-select-field
        {:value (:name-position @search-params)
-        :on-change #(dispatch [:offerings.main-search/set-params-and-search {:name-position %3} {:add-to-query? true}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name-position %3}])}])))
 
 (defn saved-searches-select-field []
   (let [saved-searches (subscribe [:offerings/saved-searches])
@@ -42,7 +42,7 @@
        (r/merge-props
          (merge
            {:style styles/saved-searches-select-field
-            :hint-text "Saved Searches"
+            :floating-label-text "Saved Searches"
             :on-change #(dispatch [:district0x.location/set-query %3])}
            (when (get @saved-searches @query-string)
              {:value @query-string}))
@@ -120,13 +120,13 @@
         (r/merge-props
           {:label "Buy Now Offerings"
            :checked (boolean (:buy-now? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:buy-now? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:buy-now? %2}])}
           buy-now-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Auction Offerings"
            :checked (boolean (:auction? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:auction? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:auction? %2}])}
           auction-checkbox-props)]])))
 
 (defn name-level-checkbox-group []
@@ -138,13 +138,13 @@
         (r/merge-props
           {:label "Top Level Names"
            :checked (boolean (:top-level-names? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:top-level-names? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:top-level-names? %2}])}
           top-level-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Subnames"
            :checked (boolean (:sub-level-names? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:sub-level-names? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:sub-level-names? %2}])}
           subname-checkbox-props)]])))
 
 (defn exclude-chars-checkbox-group []
@@ -156,13 +156,13 @@
         (r/merge-props
           {:label "Exclude Numbers"
            :checked (boolean (:exclude-numbers? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:exclude-numbers? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:exclude-numbers? %2}])}
           exclude-numbers-checkbox-props)]
        [ui/checkbox
         (r/merge-props
           {:label "Exclude Special Char."
            :checked (boolean (:exclude-special-chars? @search-params))
-           :on-check #(dispatch [:offerings.main-search/set-params-and-search {:exclude-special-chars? %2} {:add-to-query? true}])}
+           :on-check #(dispatch [:district0x.location/add-to-query {:exclude-special-chars? %2}])}
           exclude-spec-chars-checkbox-props)]])))
 
 (defn price-text-fields []
@@ -178,7 +178,7 @@
               :full-width true
               :value min-price
               :error-text (when-not (non-neg-ether-value? min-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:offerings.main-search/set-params-and-search {:min-price %2} {:add-to-query? true}])}
+              :on-change #(dispatch [:district0x.location/add-to-query {:min-price %2}])}
              min-price-text-field-props)]]
          [col
           {:xs 6}
@@ -188,7 +188,7 @@
               :full-width true
               :value max-price
               :error-text (when-not (non-neg-ether-value? max-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:offerings.main-search/set-params-and-search {:max-price %2} {:add-to-query? true}])}
+              :on-change #(dispatch [:district0x.location/add-to-query {:max-price %2}])}
              max-price-text-field-props)]]]))))
 
 (defn length-text-fields []
@@ -203,7 +203,7 @@
             :full-width true
             :allow-empty? true
             :value (:min-length @search-params)
-            :on-change #(dispatch [:offerings.main-search/set-params-and-search {:min-length %2} {:add-to-query? true}])}
+            :on-change #(dispatch [:district0x.location/add-to-query {:min-length %2}])}
            min-length-text-field-props)]]
        [col
         {:xs 6}
@@ -213,22 +213,30 @@
             :full-width true
             :allow-empty? true
             :value (:max-length @search-params)
-            :on-change #(dispatch [:offerings.main-search/set-params-and-search {:max-length %2} {:add-to-query? true}])}
+            :on-change #(dispatch [:district0x.location/add-to-query {:max-length %2}])}
            max-length-text-field-props)]]])))
 
 (defn order-by-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
     (fn [props]
-      [offerings-order-by-select-field
-       (r/merge-props
-         {:order-by-column (first (:order-by-columns @search-params))
-          :order-by-dir (first (:order-by-dirs @search-params))
-          :on-change (fn [order-by-column order-by-dir]
-                       (dispatch [:offerings.main-search/set-params-and-search
-                                  {:order-by-columns [(name order-by-column)]
-                                   :order-by-dirs [(name order-by-dir)]}
-                                  {:add-to-query? true}]))}
-         props)])))
+      (let [searching-by-name? (not (empty? (:name @search-params)))]
+        [offerings-order-by-select-field
+         (r/merge-props
+           {:order-by-column (first (:order-by-columns @search-params))
+            :order-by-dir (first (:order-by-dirs @search-params))
+            :options [:offering.order-by/newest
+                      :offering.order-by/most-active
+                      :offering.order-by/most-expensive
+                      :offering.order-by/cheapest
+                      :offering.order-by/ending-soon
+                      :offering.order-by/most-relevant]
+            ;:disabled searching-by-name?
+            ;:value-key (when searching-by-name? :offering.order-by/most-relevant)
+            :on-change (fn [order-by-column order-by-dir]
+                         (dispatch [:district0x.location/add-to-query
+                                    {:order-by-columns [(name order-by-column)]
+                                     :order-by-dirs [(name order-by-dir)]}]))}
+           props)]))))
 
 (defn reset-search-icon-button []
   [ui/icon-button
@@ -342,7 +350,9 @@
            :loading? loading?
            :no-items-text "No offerings found matching your search criteria"
            :on-next-load (fn [offset limit]
-                           (dispatch [:offerings.main-search/set-params-and-search {:offset offset :limit limit}]))}
+                           (dispatch [:offerings.main-search/set-params-and-search
+                                      {:offset offset :limit limit}
+                                      {:append? true}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item

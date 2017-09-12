@@ -211,6 +211,16 @@
   identity)
 
 (reg-sub
+  :offerings/user-bids
+  :<- [:offerings/search-results :user-bids]
+  identity)
+
+(reg-sub
+  :offerings/user-offerings
+  :<- [:offerings/search-results :user-offerings]
+  identity)
+
+(reg-sub
   :buy-now-offering.buy/tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :buy-now-offering :buy {:offering/address offering-address}]))
