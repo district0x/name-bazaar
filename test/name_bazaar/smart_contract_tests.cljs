@@ -10,7 +10,7 @@
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
     [district0x.server.effects :as d0x-effects]
     [district0x.server.state :as state :refer [*server-state* contract-address]]
-    [district0x.server.utils :as d0x-server-utils :refer [tx-sent?]]
+    [district0x.server.utils :as d0x-server-utils :refer [tx-sent? tx-failed?]]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei wei->eth]]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
@@ -88,6 +88,12 @@
                    (is (tx-sent? (<! (registrar/transfer! ss
                                                        {:ens.record/label "abc" :ens.record/owner offering}
                                                        {:from (state/my-address 0)}))))
+                   (is (tx-failed?
+                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.10001)
+                                                                                               :from (state/my-address 1)}))))
+                   (is (tx-failed?
+                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.09999)
+                                                                                    :from (state/my-address 1)}))))
                    (is (tx-sent?
                           (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
                                                                                       :from (state/my-address 1)}))))))
