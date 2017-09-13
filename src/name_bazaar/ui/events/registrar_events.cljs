@@ -29,7 +29,7 @@
                    :args-order [:ens.record/label-hash :ens.record/owner]
                    :form-id (select-keys form-data [:ens.record/label])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
-                   :on-tx-receipt [:offerings.ownership/load (:ens.record/owner form-data)]}]})))
+                   :on-tx-receipt [:offerings.ownership/load [(:ens.record/owner form-data)]]}]})))
 
 (reg-event-fx
   :registrar/register
@@ -50,15 +50,17 @@
                                    (str "Name " ens-record-name " was successfully registered")]}]})))
 
 (reg-event-fx
-  :registrar.entry/load
+  :registrar.entries/load
   interceptors
-  (fn [{:keys [:db]} [label-hash]]
-    {:web3-fx.contract/constant-fns
-     {:fns [{:instance (get-instance db :mock-registrar)
-             :method :entries
-             :args [label-hash]
-             :on-success [:registrar.entry/loaded label-hash]
-             :on-error [:district0x.log/error]}]}}))
+  (fn [{:keys [:db]} [label-hashes]]
+    (let [instance (get-instance db :mock-registrar)]
+      {:web3-fx.contract/constant-fns
+       {:fns (for [label-hash label-hashes]
+               {:instance instance
+                :method :entries
+                :args [label-hash]
+                :on-success [:registrar.entry/loaded label-hash]
+                :on-error [:district0x.log/error]})}})))
 
 (reg-event-fx
   :registrar.entry/loaded

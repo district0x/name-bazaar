@@ -130,7 +130,7 @@
          (:registrar.entry.deed/owner registrar-entry)))))
 
 (reg-sub
-  :offering/show-missing-ownership-warning?
+  :offering/missing-ownership?
   (fn [[_ offering-address]]
     [(subscribe [:offering offering-address])
      (subscribe [:offering/node-owner? offering-address])])

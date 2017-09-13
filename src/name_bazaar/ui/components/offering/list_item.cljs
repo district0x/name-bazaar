@@ -1,6 +1,7 @@
 (ns name-bazaar.ui.components.offering.list-item
   (:require
     [cljs-react-material-ui.reagent :as ui]
+    [cljs-time.core :as t]
     [clojure.string :as string]
     [district0x.shared.utils :refer [empty-address?]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col paper]]
@@ -10,15 +11,14 @@
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
     [name-bazaar.ui.components.misc :refer [a]]
     [name-bazaar.ui.components.offering.action-form :refer [action-form]]
-    [name-bazaar.ui.components.offering.chips :refer [offering-active-chip offering-sold-chip offering-bought-chip offering-auction-winning-chip offering-auction-pending-returns-chip]]
+    [name-bazaar.ui.components.offering.chips :refer [offering-active-chip offering-sold-chip offering-bought-chip offering-auction-winning-chip offering-auction-pending-returns-chip offering-missing-ownership-chip]]
     [name-bazaar.ui.components.offering.general-info :refer [offering-general-info]]
     [name-bazaar.ui.components.offering.warnings :refer [non-ascii-characters-warning missing-ownership-warning sub-level-name-warning]]
     [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [etherscan-ens-url path-for offering-type->text]]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]
-    [cljs-time.core :as t]))
+    [reagent.core :as r]))
 
 (defn offering-detail-link [{:keys [:offering/address]}]
   [:div
@@ -33,7 +33,7 @@
     (fn [{:keys [:offering :hide-action-form?]}]
       (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
                     :offering/original-owner]} offering
-            show-missing-ownership-warning? @(subscribe [:offering/show-missing-ownership-warning? address])]
+            show-missing-ownership-warning? @(subscribe [:offering/missing-ownership? address])]
         [row-with-cols
          {:style (styles/search-results-list-item-body @xs?)}
          [col
@@ -109,6 +109,11 @@
     [offering-auction-pending-returns-chip
      (dissoc props :offering)]))
 
+(defn offering-header-missing-ownership-chip [{:keys [:offering] :as props}]
+  (when @(subscribe [:offering/missing-ownership? (:offering/address offering)])
+    [offering-missing-ownership-chip
+     (dissoc props :offering)]))
+
 (defn offering-auction-status-xs [{:keys [:offering]}]
   [:div
    [auction-bid-count
@@ -123,7 +128,7 @@
 (defn offering-list-item-header []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [{:keys [:offering :show-created-on? :show-sold-for? :show-bought-for? :show-finalized-on? :show-active?
-                 :show-auction-winning? :show-auction-pending-returns?]}]
+                 :show-auction-winning? :show-auction-pending-returns? :show-missing-ownership?]}]
       (let [{:keys [:offering/address :offering/auction? :offering/name :offering/price :offering/created-on
                     :offering/type :offering/finalized-on :offering/new-owner :auction-offering/bid-count
                     :auction-offering/end-time]} offering]
@@ -196,6 +201,12 @@
                {:offering offering
                 :style {:margin-right 5}}])
 
+            (when (and show-missing-ownership?
+                       (not @xs?))
+              [offering-header-missing-ownership-chip
+               {:offering offering
+                :style {:margin-right 5}}])
+
             [offering-header-price
              {:offering offering}]]]
 
@@ -232,6 +243,11 @@
 
               (when show-auction-winning?
                 [offering-header-auction-winning-chip
+                 {:offering offering
+                  :style styles/margin-left-gutter-mini}])
+
+              (when show-missing-ownership?
+                [offering-header-missing-ownership-chip
                  {:offering offering
                   :style styles/margin-left-gutter-mini}])
 

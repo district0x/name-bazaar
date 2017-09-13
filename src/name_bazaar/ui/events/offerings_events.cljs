@@ -3,18 +3,18 @@
     [cljs-time.coerce :refer [to-epoch]]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
+    [clojure.string :as string]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.ui.utils :as d0x-ui-utils]
-    [clojure.string :as string]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
   :buy-now-offering-factory/create-offering
@@ -233,19 +233,19 @@
 
 (reg-event-fx
   :offerings/load
-  interceptors
-  (fn [{:keys [:db]} [offering-addresses]]
+  [interceptors (conform-args (s/cat :opts (s/? map?) :offering-addresses sequential? :rest (s/* any?)))]
+  (fn [{:keys [:db]} [{:keys [:opts :offering-addresses]}]]
     {:web3-fx.contract/constant-fns
      {:fns (for [offering-address offering-addresses]
              {:instance (get-instance db :buy-now-offering offering-address)
               :method :offering
-              :on-success [:offerings/loaded offering-address]
+              :on-success [:offerings/loaded offering-address opts]
               :on-error [:district0x.log/error]})}}))
 
 (reg-event-fx
   :offerings/loaded
   interceptors
-  (fn [{:keys [:db]} [offering-address offering]]
+  (fn [{:keys [:db]} [offering-address {:keys [:load-ownership?]} offering]]
     (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
@@ -254,7 +254,9 @@
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
              (when auction?
-               {:dispatch-n [[:offerings.auction/load [offering-address]]]})))))
+               {:dispatch-n [[:offerings.auction/load [offering-address]]]})
+             (when load-ownership?
+               {:dispatch [:offerings.ownership/load [offering-address]]})))))
 
 (reg-event-fx
   :offerings.auction/load
@@ -316,12 +318,14 @@
 (reg-event-fx
   :offerings.ownership/load
   interceptors
-  (fn [{:keys [:db]} [offering-address]]
-    (let [{:keys [:offering/label-hash :offering/node :offering/top-level-name?]} (get-offering db offering-address)]
-      (merge
-        {:dispatch-n [[:ens.records/load [node]]]}
-        (when top-level-name?
-          {:dispatch [:registrar.entry/load label-hash]})))))
+  (fn [{:keys [:db]} [offering-addresses]]
+    (let [offerings (vals (select-keys (:offerings db) offering-addresses))
+          nodes (map :offering/node offerings)
+          label-hashes (->> offerings
+                         (filter :offering/top-level-name?)
+                         (map :offering/label-hash))]
+      {:dispatch-n [[:ens.records/load nodes]
+                    [:registrar.entries/load label-hashes]]})))
 
 (reg-event-fx
   :offerings/watch
@@ -344,7 +348,7 @@
   (fn [{:keys [:db]} [{:keys [:offering :version]}]]
     (merge
       {:dispatch-n [[:offerings/load [offering]]
-                    [:offerings.ownership/load offering]
+                    [:offerings.ownership/load [offering]]
                     [:offerings.auction.my-addresses-pending-returns/load offering]]})))
 
 (reg-event-fx
@@ -366,7 +370,7 @@
   :offerings.list-item/expanded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering/address]}]]
-    {:dispatch-n [[:offerings.ownership/load address]
+    {:dispatch-n [[:offerings.ownership/load [address]]
                   [:offerings.auction.my-addresses-pending-returns/load address]
                   [:offerings/watch [address]]
                   [:offerings/load [address]]]}))
@@ -447,6 +451,25 @@
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
+                                     :params search-params}]})))
+
+(reg-event-fx
+  :offerings.user-offerings/set-params-and-search
+  interceptors
+  (fn [{:keys [:db]} [search-params opts]]
+    (let [search-results-path [:search-results :offerings :user-offerings]
+          search-params-path (conj search-results-path :params)
+          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
+          {:keys [:open? :finalized?]} search-params
+          search-params (cond-> search-params
+                          (and open? finalized?) (dissoc :finalized?)
+                          (and open? (not finalized?)) (assoc :finalized? false)
+                          (and (not open?) finalized?) (assoc :finalized? true)
+                          true (dissoc :open?))]
+      {:db db
+       :dispatch [:offerings/search {:search-results-path search-results-path
+                                     :append? (:append? opts)
+                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
                                      :params search-params}]})))
 
 (reg-event-fx

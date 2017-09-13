@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.pages.user-bids-page
   (:require
+    [cljs-react-material-ui.reagent :as ui]
     [district0x.ui.components.misc :as misc :refer [row row-with-cols col center-layout paper page]]
     [district0x.ui.utils :refer [truncate]]
     [medley.core :as medley]
@@ -8,8 +9,7 @@
     [name-bazaar.ui.components.search-fields.offerings-order-by-select-field :refer [offerings-order-by-select-field]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.styles :as styles]
-    [re-frame.core :refer [subscribe dispatch]]
-    [cljs-react-material-ui.reagent :as ui]))
+    [re-frame.core :refer [subscribe dispatch]]))
 
 (defn user-bids-order-by-select-field []
   (let [xs? (subscribe [:district0x/window-xs-width?])

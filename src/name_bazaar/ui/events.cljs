@@ -36,6 +36,11 @@
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
+
+(def active-address-changed-forwarding {:register :active-address-changed
+                                        :events #{:district0x/set-active-address}
+                                        :dispatch-to [:active-page-changed]})
+
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
   (condp = handler
     :route.offerings/search
@@ -52,14 +57,14 @@
     {:async-flow {:first-dispatch [:offerings/load [(:offering/address route-params)]]
                   :rules [{:when :seen?
                            :events [:offerings/loaded]
-                           :dispatch-n [[:offerings.ownership/load (:offering/address route-params)]]}]}}
+                           :dispatch-n [[:offerings.ownership/load [(:offering/address route-params)]]]}]}}
 
     :route.offerings/detail
     (let [{:keys [:offering/address]} route-params]
       {:async-flow {:first-dispatch [:offerings/load [address]]
                     :rules [{:when :seen?
                              :events [:offerings/loaded]
-                             :dispatch-n [[:offerings.ownership/load address]
+                             :dispatch-n [[:offerings.ownership/load [address]]
                                           [:offerings.auction.my-addresses-pending-returns/load address]
                                           [:offerings/watch [address]]
                                           [:offerings.similar-offerings/set-params-and-search
@@ -84,9 +89,7 @@
     {:dispatch [:offerings.user-purchases/set-params-and-search
                 {:new-owner (:active-address db)}
                 {:reset-params? true}]
-     :forward-events {:register :active-address-changed
-                      :events #{:district0x/set-active-address}
-                      :dispatch-to [:active-page-changed]}}
+     :forward-events active-address-changed-forwarding}
 
     :route.user/bids
     {:dispatch [:offerings.user-bids/set-params-and-search
@@ -97,10 +100,18 @@
     {:dispatch [:offerings.user-bids/set-params-and-search
                 {:bidder (:active-address db)}
                 {:reset-params? true}]
-     :forward-events {:register :active-address-changed
-                      :events #{:district0x/set-active-address}
-                      :dispatch-to [:active-page-changed]}}
+     :forward-events active-address-changed-forwarding}
 
+    :route.user/offerings
+    {:dispatch [:offerings.user-offerings/set-params-and-search
+                {:original-owner (:user/address route-params)}
+                {:reset-params? true}]}
+
+    :route.user/my-offerings
+    {:dispatch [:offerings.user-offerings/set-params-and-search
+                {:original-owner (:active-address db)}
+                {:reset-params? true}]
+     :forward-events active-address-changed-forwarding}
 
     nil))
 
@@ -122,7 +133,7 @@
       (merge {:dispatch-n [[:ens.records/load [node] {:load-resolver? true}]
                            [:offering-requests.has-requested/load node (:my-addresses db)]]}
              (when (top-level-name? name)
-               {:dispatch [:registrar.entry/load (name->label-hash name)]})))))
+               {:dispatch [:registrar.entries/load [(name->label-hash name)]]})))))
 
 (reg-event-fx
   :saved-searches/add

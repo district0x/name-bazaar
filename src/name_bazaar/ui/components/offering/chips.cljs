@@ -46,6 +46,13 @@
          "pend. r."
          "pending ret.")])))
 
+(defn offering-missing-ownership-chip [props]
+  [small-chip
+   (r/merge-props
+     {:background-color (styles/offering-status-chip-color :offering.status/missing-ownership)}
+     props)
+   "ownership"])
+
 
 
 

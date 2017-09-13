@@ -230,8 +230,6 @@
                       :offering.order-by/cheapest
                       :offering.order-by/ending-soon
                       :offering.order-by/most-relevant]
-            ;:disabled searching-by-name?
-            ;:value-key (when searching-by-name? :offering.order-by/most-relevant)
             :on-change (fn [order-by-column order-by-dir]
                          (dispatch [:district0x.location/add-to-query
                                     {:order-by-columns [(name order-by-column)]

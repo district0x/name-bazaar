@@ -150,7 +150,7 @@
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder]
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized?]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
         select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
@@ -178,6 +178,8 @@
               winning-bidder (merge-where [:= :winning-bidder winning-bidder])
               exclude-winning-bidder (merge-where [:<> :winning-bidder exclude-winning-bidder])
               version (merge-where [:= :version version])
+              (false? finalized?) (merge-where [:= :finalized-on 0])
+              (true? finalized?) (merge-where [:<> :finalized-on 0])
               (boolean? node-owner?) (merge-where [:= :node-owner node-owner?])
               (or buy-now? auction?) (merge-where [:or
                                                    (when buy-now?

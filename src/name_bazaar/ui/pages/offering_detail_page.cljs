@@ -24,9 +24,9 @@
 (def offering-status->text
   {:offering.status/emergency "Emergency Cancel"
    :offering.status/active "Active"
-   :offering.status/finalized "Finalized"
+   :offering.status/finalized "Completed"
    :offering.status/missing-ownership "Missing Ownership"
-   :offering.status/auction-ended "Finished"})
+   :offering.status/auction-ended "Auction Ended"})
 
 (defn offering-status-chip []
   (let [route-params (subscribe [:district0x/route-params])]
@@ -150,7 +150,7 @@
      (r/merge-props
        {:style styles/full-width}
        (dissoc props :offering))
-     (when @(subscribe [:offering/show-missing-ownership-warning? address])
+     (when @(subscribe [:offering/missing-ownership? address])
        [missing-ownership-warning
         {:offering/original-owner original-owner}])
      (when (not top-level-name?)

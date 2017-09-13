@@ -49,7 +49,12 @@
                                                   :offset 0
                                                   :limit constants/infinite-lists-init-load-limit}}
                   :user-offerings {:ids []
-                                   :params {}}
+                                   :params {:open? true
+                                            :finalized? true
+                                            :order-by-columns [:created-on]
+                                            :order-by-dirs [:desc]
+                                            :offset 0
+                                            :limit constants/infinite-lists-init-load-limit}}
                   :similar-offerings {:ids []
                                       :params {:order-by-columns [:name-relevance]
                                                :order-by-dirs [:desc]

@@ -74,7 +74,7 @@
                                (on-change e value)
                                (dispatch [:ens.records/load [node]])
                                (when (top-level-name? full-name)
-                                 (dispatch [:registrar.entry/load (sha3 value)])))))}))
+                                 (dispatch [:registrar.entries/load [(sha3 value)]])))))}))
          [:span
           {:style styles/text-field-suffix}
           constants/registrar-root]]))))

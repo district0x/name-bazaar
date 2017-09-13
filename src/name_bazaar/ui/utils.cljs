@@ -79,7 +79,9 @@
                         (not reset-params?) (merge (get-in db params-db-path))
                         (not append?) (merge (select-keys default-search-params [:offset :limit]))
                         true (merge new-params))]
-    {:db (assoc-in db params-db-path search-params)
+    {:db (cond-> db
+           (not append?) (assoc-in [:infinite-list :expanded-items] {})
+           true (assoc-in params-db-path search-params))
      :search-params search-params}))
 
 (defn registrar-entry-deed-loaded? [registrar-entry]
