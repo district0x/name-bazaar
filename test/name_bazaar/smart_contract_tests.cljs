@@ -5,7 +5,7 @@
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth :refer [contract-call]]
     [cljs-web3.evm :as web3-evm]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan timeout alts!]]
     [cljs.nodejs :as nodejs]
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
     [district0x.server.effects :as d0x-effects]
@@ -73,17 +73,36 @@
 
 (deftest create-offering
   (async done
-    (go
-      (let [ss @*server-state*]
-        (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
-        (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
-                                                                     {:offering/name "abc.eth"
-                                                                      :offering/price (eth->wei 0.1)}
-                                                                     {:from (state/my-address 0)}))))
+         (let [ss @*server-state*]
+           (go
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :owner (state/my-address 0)})
+                           (timeout 1000)])]
+               (is (not (nil? offering)))
+               (if offering
+                 (do
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                       {:ens.record/label "abc" :ens.record/owner offering}
+                                                       {:from (state/my-address 0)}))))
+                   (is (tx-sent?
+                          (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                      :from (state/my-address 1)}))))))
+               (done)))
+           (go
+             (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
+             (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                          {:offering/name "abc.eth"
+                                                                           :offering/price (eth->wei 0.1)}
+                                                                          {:from (state/my-address 0)}))))
+             
+             ;; TODO more
 
-        ;; TODO more
 
-        (done)))))
+             ))))
 
 
 
