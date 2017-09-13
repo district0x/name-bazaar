@@ -77,6 +77,10 @@
                                                                        (state/contract-address @server-state-atom :offering-requests)
                                                                        emergency-multisig]})))
 
+(defn deploy-district0x-emails! [server-state-atom default-opts]
+  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
+                                                               {:contract-key :district0x-emails})))
+
 (defn deploy-smart-contracts! [server-state-atom & [deploy-opts]]
   (let [ch (chan)
         deploy-opts (merge default-deploy-opts deploy-opts)]
@@ -98,6 +102,8 @@
                                                                   (state/active-address @server-state-atom)}))
       (<! (deploy-auction-factory! server-state-atom deploy-opts {:offering-factory/emergency-multisig
                                                                   (state/active-address @server-state-atom)}))
+
+      (<! (deploy-district0x-emails! server-state-atom deploy-opts))
 
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-registry}))
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-requests}))

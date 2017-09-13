@@ -26,6 +26,7 @@
      :offering-requests {}
      :ens/records {}
      :registrar/entries {}
+     :district0x-emails {}
 
      :search-results
      {:offerings {:home-page-autocomplete {:ids []

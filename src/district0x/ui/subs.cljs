@@ -1,5 +1,6 @@
 (ns district0x.ui.subs
   (:require
+    [cemerick.url :as url]
     [cljs-time.coerce :refer [from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
@@ -7,8 +8,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [re-frame.core :refer [reg-sub]]
-    [cemerick.url :as url]))
+    [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
   :district0x/db
@@ -194,6 +194,24 @@
           transactions
           :block-hash
           empty?)))))
+
+(reg-sub
+  :district0x-emails.set-email/tx-pending?
+  (fn [[_ address]]
+    (subscribe [:district0x/tx-pending? :district0x-emails :set-email {:district0x-emails/address address}]))
+  identity)
+
+(reg-sub
+  :district0x-emails
+  (fn [db]
+    (:district0x-emails db)))
+
+(reg-sub
+  :district0x-emails/active-address-has-email?
+  :<- [:district0x/active-address]
+  :<- [:district0x-emails]
+  (fn [[active-address district-emails]]
+    (not (empty? (get district-emails active-address)))))
 
 
 

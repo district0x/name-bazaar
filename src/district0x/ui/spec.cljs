@@ -76,13 +76,13 @@
 (s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/tx-opts
                                                                      :transaction/hash
                                                                      :transaction/status
-                                                                     :transaction/name
-                                                                     :transaction/result-href]
+                                                                     :transaction/name]
                                                             :opts-un [:transaction/form-id
                                                                       :transaction/block-hash
                                                                       :transaction/gas-used
                                                                       :transaction/gas
                                                                       :transaction/value
+                                                                      :transaction/result-href
                                                                       :transaction/created-on])))
 (s/def :db/transaction-ids-chronological (s/coll-of :transaction/hash :kind list?))
 (s/def :db/transaction-ids-by-form (s/map-of :contract/key
@@ -114,6 +114,8 @@
 (s/def :district0x-emails/email string?)
 (s/def :district0x-emails/address address?)
 
+(s/def ::district0x-emails (s/map-of :district0x-emails/address :district0x-emails/email))
+
 (s/def :district0x.ui/db (s/keys :req-un [:db/active-address
                                           :db/blockchain-connection-error?
                                           :db/contracts-not-found?
@@ -134,4 +136,5 @@
                                           :db/conversion-rates
                                           :db/load-conversion-rates-interval
                                           :db/load-node-addresses?
-                                          :form.district0x-emails/set-email]))
+                                          :form.district0x-emails/set-email
+                                          ::district0x-emails]))

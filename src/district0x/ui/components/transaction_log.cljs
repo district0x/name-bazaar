@@ -111,8 +111,8 @@
                  (or tx-item-border-bottom-style border-bottom-style))
         :inner-div-style {:padding 10}
         :on-click (fn [e]
-                    (when-not (and (instance? js/HTMLAnchorElement (aget e "target"))
-                                   result-href)
+                    (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
+                               result-href)
                       (set! (.-hash js/location) result-href)))}
        container-props)
      [:div

@@ -339,12 +339,12 @@
   [interceptors (validate-first-arg (s/keys :req-un [:transaction/form-data
                                                      :transaction/tx-opts
                                                      :transaction/contract-key
-                                                     :transaction/name
-                                                     :transaction/result-href]
+                                                     :transaction/name]
                                             :opt-un [:transaction/args-order
                                                      :transaction/contract-address
                                                      :transaction/wei-keys
-                                                     :transaction/form-id]))]
+                                                     :transaction/form-id
+                                                     :transaction/result-href]))]
   (fn [{:keys [db]} [{:keys [:form-data :form-id :args-order :contract-key :wei-keys
                              :contract-key :contract-method :contract-address :on-success] :as props}]]
     (let [{:keys [:web3 :active-address]} db
@@ -501,17 +501,39 @@
 
 (reg-event-fx
   :district0x-emails/set-email
-  [interceptors (validate-first-arg (s/keys :req [:district0x-emails/email :district0x-emails/address]))]
+  [interceptors (validate-first-arg (s/keys :req [:district0x-emails/email] :opt [:district0x-emails/address]))]
   (fn [{:keys [:db]} [form-data submit-props]]
-    {:dispatch [:district0x/make-transaction
-                (merge
-                  {:contract-key :district0x-emails
-                   :contract-method :set-email
-                   :form-data form-data
-                   :args-order [:district0x-emails/email]
-                   :form-id (select-keys form-data [:district0x-emails/address])
-                   :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
-                  submit-props)]}))
+    (let [form-data (if-not (:district0x-emails/address form-data)
+                      (assoc form-data :district0x-emails/address (:active-address db))
+                      form-data)]
+      {:dispatch [:district0x/make-transaction
+                  (merge
+                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
+                     :contract-key :district0x-emails
+                     :contract-method :set-email
+                     :form-data form-data
+                     :args-order [:district0x-emails/email]
+                     :form-id (select-keys form-data [:district0x-emails/address])
+                     :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
+                    submit-props)]})))
+
+(reg-event-fx
+  :district0x-emails/load
+  interceptors
+  (fn [{:keys [:db]} [address]]
+    (let [instance (get-instance db :district0x-emails)]
+      {:web3-fx.contract/constant-fns
+       {:fns [{:instance instance
+               :method :emails
+               :args [address]
+               :on-success [:district0x-emails/loaded address]
+               :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+  :district0x-emails/loaded
+  interceptors
+  (fn [{:keys [:db]} [address email]]
+    {:db (assoc-in db [:district0x-emails address] email)}))
 
 (reg-event-fx
   :district0x.contract/event-watch-once

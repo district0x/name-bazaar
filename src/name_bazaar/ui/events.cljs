@@ -113,6 +113,11 @@
                 {:reset-params? true}]
      :forward-events active-address-changed-forwarding}
 
+    :route.user/my-settings
+    {:dispatch [:district0x-emails/load (:active-address db)]
+     :forward-events active-address-changed-forwarding}
+
+
     nil))
 
 (reg-event-fx

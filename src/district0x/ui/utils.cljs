@@ -1,19 +1,20 @@
 (ns district0x.ui.utils
   (:require
+    [bidi.bidi :as bidi]
     [cemerick.url :as url]
+    [cljs-react-material-ui.reagent :as ui]
     [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
     [cljs-time.core :as t :refer [date-time to-default-time-zone]]
     [cljs-time.format :as time-format]
     [clojure.set :as set]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils]
+    [goog.format.EmailAddress :as email-address]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]
-    [reagent.core :as r]
-    [bidi.bidi :as bidi]
-    [cljs-react-material-ui.reagent :as ui]))
+    [reagent.core :as r]))
 
 (defn color-emphasize [& args]
   (apply js/MaterialUIUtils.colorManipulator.emphasize args))
@@ -75,6 +76,12 @@
   ([s max-length] (valid-length? s max-length 0))
   ([s max-length min-length]
    (and (string? s) (<= (or min-length 0) (count (string/trim s)) max-length))))
+
+(defn valid-email? [s & [{:keys [:allow-empty?]}]]
+  (let [valid? (email-address/isValidAddress s)]
+    (if allow-empty?
+      (or (empty? s) valid?)
+      valid?)))
 
 (defn pluralize [text count]
   (str text (when (not= count 1) "s")))
