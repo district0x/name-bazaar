@@ -26,15 +26,16 @@
 (defn list-item-placeholder []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
     (fn [props]
-      [:div
-       (r/merge-props
-         {:style (styles/placeholder-animated-background @xs?)}
-         props)
-       [placeholder-masker {:height 3 :top 0 :full-width true}]
-       [placeholder-masker {:height 13 :left-offset-perc 12}]
-       [placeholder-masker {:height 7 :top 12 :full-width true}]
-       [placeholder-masker {:height 20 :top 18 :left-offset-perc-min 20 :left-offset-perc-max 40}]
-       (when @xs?
-         [placeholder-masker {:height 5 :top 37 :full-width true}])
-       (when @xs?
-         [placeholder-masker {:height 20 :top 40 :left-offset-perc-min 40 :left-offset-perc-max 70}])])))
+      (let [xs? (if (:xs? props) true @xs?)]
+        [:div
+         (r/merge-props
+           {:style (styles/placeholder-animated-background xs?)}
+           (dissoc props :xs?))
+         [placeholder-masker {:height 3 :top 0 :full-width true}]
+         [placeholder-masker {:height 13 :left-offset-perc 12}]
+         [placeholder-masker {:height 7 :top 12 :full-width true}]
+         [placeholder-masker {:height 20 :top 18 :left-offset-perc-min 20 :left-offset-perc-max 40}]
+         (when xs?
+           [placeholder-masker {:height 5 :top 37 :full-width true}])
+         (when xs?
+           [placeholder-masker {:height 20 :top 40 :left-offset-perc-min 40 :left-offset-perc-max 70}])]))))

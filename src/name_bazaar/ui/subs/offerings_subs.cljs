@@ -221,6 +221,21 @@
   identity)
 
 (reg-sub
+  :offerings/home-page-newest
+  :<- [:offerings/search-results :home-page-newest]
+  identity)
+
+(reg-sub
+  :offerings/home-page-most-active
+  :<- [:offerings/search-results :home-page-most-active]
+  identity)
+
+(reg-sub
+  :offerings/home-page-ending-soon
+  :<- [:offerings/search-results :home-page-ending-soon]
+  identity)
+
+(reg-sub
   :buy-now-offering.buy/tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :buy-now-offering :buy {:offering/address offering-address}]))

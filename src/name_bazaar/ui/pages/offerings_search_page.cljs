@@ -294,7 +294,7 @@
       [ui/drawer
        {:open-secondary true
         :open @open?
-        :on-request-change #(dispatch [:offerings.main-search.drawer/set-open %])}
+        :on-request-change #(dispatch [:offerings.search-params-drawer/set %])}
        [:div
         {:style styles/offering-search-params-drawer-mobile}
         [row
@@ -318,7 +318,7 @@
           {:full-width true
            :primary true
            :label "Close"
-           :on-click #(dispatch [:offerings.main-search.drawer/set-open false])}]]
+           :on-click #(dispatch [:offerings.search-params-drawer/set false])}]]
         [row
          {:style styles/margin-top-gutter-less}
          [ui/flat-button

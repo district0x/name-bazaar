@@ -29,9 +29,10 @@
      :district0x-emails {}
 
      :search-results
-     {:offerings {:home-page-autocomplete {:ids []
-                                           :params {:limit 5
-                                                    :node-owner? true}}
+     {:offerings {:home-page-autocomplete {:ids []}
+                  :home-page-newest {:ids []}
+                  :home-page-most-active {:ids []}
+                  :home-page-ending-soon {:ids []}
                   :main-search {:ids []
                                 :params {:name-position :any
                                          :buy-now? true
@@ -42,11 +43,13 @@
                                          :min-end-time-now? true
                                          :order-by-columns [:created-on]
                                          :order-by-dirs [:desc]
+                                         :total-count? true
                                          :offset 0
                                          :limit constants/infinite-lists-init-load-limit}}
                   :ens-record-offerings {:ids []
                                          :params {:order-by-columns [:created-on]
                                                   :order-by-dirs [:desc]
+                                                  :total-count? true
                                                   :offset 0
                                                   :limit constants/infinite-lists-init-load-limit}}
                   :user-offerings {:ids []
@@ -54,6 +57,7 @@
                                             :finalized? true
                                             :order-by-columns [:created-on]
                                             :order-by-dirs [:desc]
+                                            :total-count? true
                                             :offset 0
                                             :limit constants/infinite-lists-init-load-limit}}
                   :similar-offerings {:ids []
@@ -62,6 +66,7 @@
                                                :name-position :end
                                                :node-owner? true
                                                :min-end-time-now? true
+                                               :total-count? true
                                                :offset 0
                                                :limit constants/infinite-lists-init-load-limit}}
                   :user-bids {:ids []
@@ -71,17 +76,20 @@
                                        :winning? true
                                        :outbid? true
                                        :auction? true
+                                       :total-count? true
                                        :offset 0
                                        :limit constants/infinite-lists-init-load-limit}}
                   :user-purchases {:ids []
                                    :params {:order-by-columns [:finalized-on]
                                             :order-by-dirs [:desc]
+                                            :total-count? true
                                             :offset 0
                                             :limit constants/infinite-lists-init-load-limit}}}
       :offering-requests {:main-search {:ids []
                                         :params {:name-position :any
                                                  :order-by-columns [:requesters-count]
                                                  :order-by-dirs [:desc]
+                                                 :total-count? true
                                                  :offset 0
                                                  :limit constants/infinite-lists-init-load-limit}}}}
 

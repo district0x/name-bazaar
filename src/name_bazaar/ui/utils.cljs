@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.utils
   (:require
+    [cemerick.url :as url]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -27,6 +28,11 @@
     (catch js/Error e
       false)))
 
+(defn ensure-registrar-root [name]
+  (if-not (string/ends-with? name constants/registrar-root)
+    (str name constants/registrar-root)
+    name))
+
 (defn strip-eth-suffix [s]
   (if (and (string? s) (string/ends-with? s ".eth"))
     (subs s 0 (- (count s) 4))
@@ -35,10 +41,22 @@
 (defn parse-query-params [query-params route-key]
   (d0x-shared-utils/apply-parsers query-params (constants/query-params-parsers route-key)))
 
-(defn path-for [route route-params]
+(defn path-for [route & [route-params]]
   (d0x-ui-utils/path-for {:route route
                           :route-params route-params
                           :routes constants/routes}))
+
+(def offerings-newest-url (str (path-for :route.offerings/search) "?"
+                               (url/map->query {:order-by-columns [(name :created-on)]
+                                                :order-by-dirs [(name :desc)]})))
+
+(def offerings-most-active-url (str (path-for :route.offerings/search) "?"
+                                    (url/map->query {:order-by-columns [(name :bid-count)]
+                                                     :order-by-dirs [(name :desc)]})))
+
+(def offerings-ending-soon-url (str (path-for :route.offerings/search) "?"
+                                    (url/map->query {:order-by-columns [(name :end-time)]
+                                                     :order-by-dirs [(name :asc)]})))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))

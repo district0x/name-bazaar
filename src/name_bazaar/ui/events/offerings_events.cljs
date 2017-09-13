@@ -229,7 +229,7 @@
                 (merge
                   {:endpoint "/offerings"
                    :on-success [:offerings/load]}
-                  (assoc-in opts [:params :total-count?] true))]}))
+                  opts)]}))
 
 (reg-event-fx
   :offerings/load
@@ -500,8 +500,32 @@
   :offerings.home-page-autocomplete/search
   interceptors
   (fn [{:keys [:db]} [search-params]]
-    {:dispatch [:offerings/search {:search-results-path [:search-results :offerings :home-page-autocomplete]
-                                   :params search-params}]}))
+    (let [search-results-path [:search-results :offerings :home-page-autocomplete]]
+      {:dispatch [:offerings/search {:search-results-path search-results-path
+                                     :params (merge
+                                               {:name-position :any
+                                                :offset 0
+                                                :limit 5
+                                                :node-owner? true}
+                                               search-params)}]})))
+
+(reg-event-fx
+  :offerings.home-page/search
+  interceptors
+  (fn [{:keys [:db]}]
+    (let [common-params {:limit 5 :node-owner? true :min-end-time-now? true}]
+      {:dispatch-n [[:offerings/search {:search-results-path [:search-results :offerings :home-page-newest]
+                                        :params (merge common-params
+                                                       {:order-by-columns [:created-on]
+                                                        :order-by-dirs [:desc]})}]
+                    [:offerings/search {:search-results-path [:search-results :offerings :home-page-most-active]
+                                        :params (merge common-params
+                                                       {:order-by-columns [:bid-count]
+                                                        :order-by-dirs [:desc]})}]
+                    [:offerings/search {:search-results-path [:search-results :offerings :home-page-ending-soon]
+                                        :params (merge common-params
+                                                       {:order-by-columns [:end-time]
+                                                        :order-by-dirs [:desc]})}]]})))
 
 (reg-event-fx
   :offerings.saved-searches/add

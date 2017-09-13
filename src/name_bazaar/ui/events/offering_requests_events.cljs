@@ -40,7 +40,7 @@
                   {:search-results-path [:search-results :offering-requests :main-search]
                    :endpoint "/offering-requests"
                    :on-success [:offering-requests/load]}
-                  (assoc-in opts [:params :total-count?] true))]}))
+                  opts)]}))
 
 (reg-event-fx
   :offering-requests/load

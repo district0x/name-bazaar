@@ -20,7 +20,8 @@
       children)))
 
 (defn expandable-list-item-header []
-  (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled?] :as props} & children]
+  (fn [{:keys [:index :expanded-height :collapsed-height :on-collapse :on-expand :expand-disabled? :on-click] :as props}
+       & children]
     (let [expanded? @(subscribe [:infinite-list.item/expanded? index])]
       (into
         [row
@@ -28,6 +29,8 @@
           :style (merge expandable-item-header-style
                         {:height collapsed-height})
           :on-click (fn []
+                      (when (fn? on-click)
+                        (on-click index))
                       (when-not expand-disabled?
                         (if expanded?
                           (do
@@ -40,7 +43,8 @@
                             (dispatch [:infinite-list.item/expand index expanded-height])))))}]
         children))))
 
-(defn expandable-list-item [{:keys [:index :on-collapse :on-expand :expanded-height :collapsed-height :expand-disabled?]}
+(defn expandable-list-item [{:keys [:index :on-collapse :on-expand :expanded-height :collapsed-height :expand-disabled?
+                                    :on-click]}
                             header body]
   [:div
    {:style expandable-item-style}
@@ -50,12 +54,14 @@
      :on-collapse on-collapse
      :on-expand on-expand
      :expand-disabled? expand-disabled?
-     :collapsed-height collapsed-height}
+     :collapsed-height collapsed-height
+     :on-click on-click}
     header]
-   [expandable-list-item-body
-    {:index index
-     :collapsed-height collapsed-height}
-    body]])
+   (when-not expand-disabled?
+     [expandable-list-item-body
+      {:index index
+       :collapsed-height collapsed-height}
+      body])])
 
 (defn infinite-list [{:keys [:initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
                              :collapsed-item-height :on-infinite-load :on-initial-load :on-next-load

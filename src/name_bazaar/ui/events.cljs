@@ -117,6 +117,9 @@
     {:dispatch [:district0x-emails/load (:active-address db)]
      :forward-events active-address-changed-forwarding}
 
+    :route/home
+    {:dispatch [:offerings.home-page/search]}
+
 
     nil))
 
