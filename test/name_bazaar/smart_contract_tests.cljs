@@ -74,6 +74,14 @@
 (deftest create-buy-now-offering
   (async done
          (let [ss @*server-state*]
+           #_(go
+             (let [res;;[_ res-chan]
+                   (alts! [(ens/on-transfer-once ss
+                                            nil);;{:new-owner (state/my-address 1)}
+                           (timeout 1000)])]
+               (println "TRANSFER")
+               )
+             )
            (go
              (let [[[_ {{:keys [:offering]} :args}]]
                    (alts! [(offering-registry/on-offering-added-once ss
@@ -100,7 +108,9 @@
                    (is (tx-failed?
                         (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
                                                                                     :from (state/my-address 1)}))))))
-               (done)))
+
+               (done)
+               ))
            (go
              (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
              (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
