@@ -8,6 +8,7 @@
     [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
+    [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -46,21 +47,15 @@
              :routes constants/routes}]
            [d0x-misc/nav-menu-item
             {:primary-text "Latest"
-             :key :route.offerings.search/latest
-             :route :route.offerings/search
-             :routes constants/routes
+             :href offerings-newest-url
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Most Active"
-             :key :route.offerings.search/most-active
-             :route :route.offerings/search
-             :routes constants/routes
+             :href offerings-most-active-url
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Ending Soon"
-             :key :route.offerings.search/ending-soon
-             :route :route.offerings/search
-             :routes constants/routes
+             :href offerings-ending-soon-url
              :nested-level 1}]
            [d0x-misc/nav-menu-item
             {:primary-text "Requests"
