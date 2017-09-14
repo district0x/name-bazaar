@@ -26,7 +26,7 @@
        "WARNING: " (if (= @active-address original-owner)
                      "You"
                      "Original owner")
-       " haven't transferred or removed ownership of this name from the offering contract. "
+       " haven't transferred ownership of this name into the offering contract. "
        "Buying or bidding is not possible until the offering contract has ownership."])))
 
 (defn sub-level-name-warning [{:keys [:offering/name] :as props}]

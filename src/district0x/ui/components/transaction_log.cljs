@@ -34,21 +34,23 @@
    "TRANSACTION LOG"])
 
 (defn settings []
-  (let [settings (subscribe [:district0x/transaction-log-settings])]
+  (let [settings (subscribe [:district0x.transaction-log/settings])
+        single-address? (subscribe [:district0x.my-addresses/single-address?])]
     (fn [{:keys [:container-props :from-active-address-only-toggle-props]}]
       (let [{:keys [:from-active-address-only?]} @settings]
         [:div
          (r/merge-props
            {:style toggle-settings-style}
            container-props)
-         [ui/toggle
-          (r/merge-props
-            {:label "Show transactions from active address only"
-             :label-position "right"
-             :label-style {:font-size 12}
-             :on-toggle #(dispatch [:district0x.transaction-log-settings/set :from-active-address-only? %2])
-             :toggled from-active-address-only?}
-            from-active-address-only-toggle-props)]]))))
+         (when-not @single-address?
+           [ui/toggle
+            (r/merge-props
+              {:label "Show transactions from active address only"
+               :label-position "right"
+               :label-style {:font-size 12}
+               :on-toggle #(dispatch [:district0x.transaction-log.settings/set :from-active-address-only? %2])
+               :toggled from-active-address-only?}
+              from-active-address-only-toggle-props)])]))))
 
 (defn transaction-time-ago [{{:keys [:created-on]} :transaction}]
   [:div {:style tx-info-line-style}
@@ -113,7 +115,8 @@
         :on-click (fn [e]
                     (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                                result-href)
-                      (set! (.-hash js/location) result-href)))}
+                      (set! (.-hash js/location) result-href)
+                      (dispatch [:district0x.transaction-log.settings/set :open? false])))}
        container-props)
      [:div
       [transaction-name {:transaction transaction}]
@@ -143,7 +146,7 @@
    "You haven't made any transactions yet."])
 
 (defn transactions []
-  (let [tx-log (subscribe [:district0x/transaction-log])]
+  (let [tx-log (subscribe [:district0x.transaction-log/transactions])]
     (fn [{:keys [:container-props] :as props}]
       (let [tx-log-items @tx-log]
         [:div
@@ -158,20 +161,24 @@
                :last? (= hash (:hash (last tx-log-items)))}])
            [no-transactions])]))))
 
-(defn transaction-log-layout [props & children]
-  (let [[props [tx-log-title tx-log-settings tx-log-items]] (d0x-ui-utils/parse-props-children props children)]
-    [ui/icon-menu
-     (r/merge-props
-       {:icon-button-element (r/as-element [ui/icon-button (bell-icon {:color "#FFF"})])
-        :anchor-origin {:horizontal "right" :vertical "top"}
-        :target-origin {:horizontal "right" :vertical "top"}
-        :style icon-menu-style
-        :list-style icon-menu-list-style
-        :max-height 600}
-       props)
-     tx-log-title
-     tx-log-settings
-     tx-log-items]))
+(defn transaction-log-layout []
+  (let [open? (subscribe [:district0x.transaction-log/open?])]
+    (fn [props & children]
+      (let [[props [tx-log-title tx-log-settings tx-log-items]] (d0x-ui-utils/parse-props-children props children)]
+        [ui/icon-menu
+         (r/merge-props
+           {:icon-button-element (r/as-element [ui/icon-button (bell-icon {:color "#FFF"})])
+            :anchor-origin {:horizontal "right" :vertical "top"}
+            :target-origin {:horizontal "right" :vertical "top"}
+            :style icon-menu-style
+            :list-style icon-menu-list-style
+            :max-height 600
+            :open @open?
+            :on-request-change #(dispatch [:district0x.transaction-log.settings/set :open? %])}
+           props)
+         tx-log-title
+         tx-log-settings
+         tx-log-items]))))
 
 (defn transaction-log [props]
   (let [active-address (subscribe [:district0x/active-address])]

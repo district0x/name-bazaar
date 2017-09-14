@@ -88,7 +88,8 @@
           (update db :active-page merge {:query-params (medley/map-keys keyword (:query current-url))
                                          :path (:path current-url)})
           (assoc db :web3 web3)
-          (assoc db :load-node-addresses? load-node-addresses?))))
+          (assoc db :load-node-addresses? load-node-addresses?)
+          (assoc-in db [:transaction-log :settings :open?] false))))
 
 (defn- has-tx-status? [tx-status {:keys [:status]}]
   (= tx-status status))
@@ -98,8 +99,9 @@
   [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
   (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
     (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)
-          not-loaded-txs (medley/filter-vals (partial has-tx-status? :tx.status/not-loaded) (:transactions db))
-          pending-txs (medley/filter-vals (partial has-tx-status? :tx.status/pending) (:transactions db))]
+          transactions (get-in db [:transaction-log :transactions])
+          not-loaded-txs (medley/filter-vals (partial has-tx-status? :tx.status/not-loaded) transactions)
+          pending-txs (medley/filter-vals (partial has-tx-status? :tx.status/pending) transactions)]
       (merge
         {:db db
          :ga/page-view [(d0x-ui-utils/current-location-hash)]
@@ -374,7 +376,7 @@
   (fn [{:keys [:db]} [{:keys [:on-tx-receipt :on-tx-receipt-n :form-data :on-error]
                        :or {on-error [:district0x.snackbar/show-transaction-error]}}
                       {:keys [:transaction-hash :gas-used] :as tx-receipt}]]
-    (let [success? (not= (get-in db [:transactions transaction-hash :gas]) gas-used)]
+    (let [success? (not= (get-in db [:transaction-log :transactions transaction-hash :gas]) gas-used)]
       (merge
         {:district0x/dispatch [:district0x/transaction-receipt-loaded tx-receipt]}
         (when (and success? on-tx-receipt)
@@ -399,7 +401,7 @@
   :district0x/transaction-loaded
   [interceptors]
   (fn [{:keys [:db]} [{:keys [:gas :hash] :as transaction}]]
-    (let [gas-used (get-in db [:transactions hash :gas-used])
+    (let [gas-used (get-in db [:transaction-log :transactions hash :gas-used])
           transaction (assoc transaction :status (if gas-used
                                                    (if (= gas-used gas)
                                                      :tx.status/failure
@@ -422,7 +424,7 @@
   :district0x/transaction-receipt-loaded
   [interceptors]
   (fn [{:keys [:db]} [{:keys [:gas-used :transaction-hash] :as tx-receipt}]]
-    (let [gas-limit (get-in db [:transactions transaction-hash :gas])
+    (let [gas-limit (get-in db [:transaction-log :transactions transaction-hash :gas])
           tx-receipt (assoc tx-receipt :status (if gas-limit
                                                  (if (= gas-limit gas-used)
                                                    :tx.status/failure
@@ -435,36 +437,36 @@
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [{:keys [:tx-opts :form-id :contract-key :contract-method] :as props}
                                     tx-hash]]
-    (let [new-db (-> db
-                   (assoc-in [:transactions tx-hash] (merge (select-keys props [:contract-method
-                                                                                :contract-key
-                                                                                :tx-opts
-                                                                                :name
-                                                                                :result-href])
-                                                            {:created-on (time-coerce/to-long (t/now))
-                                                             :hash tx-hash
-                                                             :status :tx.status/not-loaded}))
-                   (update :transaction-ids-chronological conj tx-hash)
-                   (update-in (remove nil? [:transaction-ids-by-form contract-key contract-method (:from tx-opts) form-id])
+    (let [tx-data (merge (select-keys props [:contract-method
+                                             :contract-key
+                                             :tx-opts
+                                             :name
+                                             :result-href])
+                         {:created-on (time-coerce/to-long (t/now))
+                          :hash tx-hash
+                          :status :tx.status/not-loaded})
+          new-db (-> db
+                   (assoc-in [:transaction-log :transactions tx-hash] tx-data)
+                   (update-in [:transaction-log :ids-chronological] conj tx-hash)
+                   (assoc-in [:transaction-log :settings :open?] true)
+                   (update-in (remove nil? [:transaction-log :ids-by-form contract-key contract-method (:from tx-opts) form-id])
                               conj
                               tx-hash))]
       {:db new-db
-       :localstorage (merge localstorage
-                            (select-keys new-db [:transactions
-                                                 :transaction-ids-chronological
-                                                 :transaction-ids-by-form]))})))
+       :localstorage (merge localstorage (select-keys new-db [:transaction-log]))})))
 
 (reg-event-fx
   :district0x.transactions/update
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [transaction-hash transaction]]
     (let [new-db (update-in db
-                            [:transactions transaction-hash]
+                            [:transaction-log :transactions transaction-hash]
                             merge
                             (cond-> transaction
                               true (select-keys [:block-hash :gas-used :gas :value :status])
                               (:value transaction) (update :value bn/->number)))]
-      (let [{:keys [:gas :gas-used :form-data :contract-key :contract-method]} (get-in new-db [:transactions transaction-hash])]
+      (let [{:keys [:gas :gas-used :form-data :contract-key :contract-method]}
+            (get-in new-db [:transaction-log :transactions transaction-hash])]
         (when (and gas gas-used)
           (console :log
                    (keyword contract-key contract-method)
@@ -474,25 +476,24 @@
                    form-data)))
       (merge
         {:db new-db
-         :localstorage (merge localstorage (select-keys new-db [:transactions]))}))))
+         :localstorage (merge localstorage (select-keys new-db [:transaction-log]))}))))
 
 (reg-event-fx
   :district0x.transactions/clear
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]}]
-    (let [cleared-txs (select-keys district0x.ui.db/default-db [:transactions
-                                                                :transaction-ids-chronological
-                                                                :transaction-ids-by-form])]
+    (let [cleared-txs (-> (select-keys district0x.ui.db/default-db [:transaction-log])
+                        (update :transaction-log dissoc :settings))]
       {:db (merge db cleared-txs)
        :localstorage (merge localstorage cleared-txs)})))
 
 (reg-event-fx
-  :district0x.transaction-log-settings/set
+  :district0x.transaction-log.settings/set
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [key value]]
-    (let [new-db (assoc-in db [:transaction-log-settings key] value)]
+    (let [new-db (assoc-in db [:transaction-log :settings key] value)]
       {:db new-db
-       :localstorage (merge localstorage (select-keys new-db [:transaction-log-settings]))})))
+       :localstorage (merge localstorage (select-keys new-db [:transaction-log]))})))
 
 (reg-event-fx
   :district0x/load-transaction-and-receipt

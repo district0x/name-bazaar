@@ -76,27 +76,34 @@
 (s/def :transaction/contract-address :contract/address)
 
 
-(s/def :db/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/tx-opts
-                                                                     :transaction/hash
-                                                                     :transaction/status
-                                                                     :transaction/name]
-                                                            :opts-un [:transaction/form-id
-                                                                      :transaction/block-hash
-                                                                      :transaction/gas-used
-                                                                      :transaction/gas
-                                                                      :transaction/value
-                                                                      :transaction/result-href
-                                                                      :transaction/created-on])))
-(s/def :db/transaction-ids-chronological (s/coll-of :transaction/hash :kind list?))
-(s/def :db/transaction-ids-by-form (s/map-of :contract/key
-                                             (s/map-of :contract/method
-                                                       (s/map-of :transaction/from
-                                                                 (s/or
-                                                                   :with-form-id (s/map-of :form/id :db/transaction-ids-chronological)
-                                                                   :without-form-id :db/transaction-ids-chronological)))))
+(s/def :transaction-log/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/tx-opts
+                                                                                  :transaction/hash
+                                                                                  :transaction/status
+                                                                                  :transaction/name]
+                                                                         :opts-un [:transaction/form-id
+                                                                                   :transaction/block-hash
+                                                                                   :transaction/gas-used
+                                                                                   :transaction/gas
+                                                                                   :transaction/value
+                                                                                   :transaction/result-href
+                                                                                   :transaction/created-on])))
+(s/def :transaction-log/ids-chronological (s/coll-of :transaction/hash :kind list?))
+(s/def :transaction-log/ids-by-form (s/map-of :contract/key
+                                              (s/map-of :contract/method
+                                                        (s/map-of :transaction/from
+                                                                  (s/or
+                                                                    :with-form-id (s/map-of :form/id :transaction-log/ids-chronological)
+                                                                    :without-form-id :transaction-log/ids-chronological)))))
 
-(s/def :transaction-log-settings/from-active-address-only? (s/nilable boolean?))
-(s/def :db/transaction-log-settings (s/keys :req-un [:transaction-log-settings/from-active-address-only?]))
+(s/def :transaction-log.settings/from-active-address-only? (s/nilable boolean?))
+(s/def :transaction-log.settings/open? (s/nilable boolean?))
+(s/def :transaction-log/settings (s/keys :opt-un [:transaction-log.settings/from-active-address-only?
+                                                  :transaction-log.settings/open?]))
+
+(s/def :db/transaction-log (s/keys :req-un [:transaction-log/transactions
+                                            :transaction-log/ids-by-form
+                                            :transaction-log/ids-chronological
+                                            :transaction-log/settings]))
 
 (s/def :search-params/order-by-dir (partial contains? #{:asc :desc}))
 (s/def :search-params/order-by (s/coll-of (s/tuple keyword? :search-params/order-by-dir)))
@@ -117,7 +124,7 @@
 (s/def :district0x-emails/email string?)
 (s/def :district0x-emails/address address?)
 
-(s/def ::district0x-emails (s/map-of :district0x-emails/address :district0x-emails/email))
+(s/def :db/district0x-emails (s/map-of :district0x-emails/address :district0x-emails/email))
 
 (s/def :district0x.ui/db (s/keys :req-un [:db/active-address
                                           :db/blockchain-connection-error?
@@ -129,10 +136,7 @@
                                           :db/snackbar
                                           :db/web3
                                           :db/ui-disabled?
-                                          :db/transactions
-                                          :db/transaction-ids-chronological
-                                          :db/transaction-ids-by-form
-                                          :db/transaction-log-settings]
+                                          :db/transaction-log]
                                  :opt-un [:db/active-page
                                           :db/menu-drawer
                                           :db/balances
@@ -140,4 +144,4 @@
                                           :db/load-conversion-rates-interval
                                           :db/load-node-addresses?
                                           :form.district0x-emails/set-email
-                                          ::district0x-emails]))
+                                          :db/district0x-emails]))

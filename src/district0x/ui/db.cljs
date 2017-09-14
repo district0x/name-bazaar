@@ -26,10 +26,10 @@
    :blockchain-connection-error? false
    :conversion-rates {}
    :balances {}
-   :transaction-log-settings {:from-active-address-only? false}
-   :transactions {}
-   :transaction-ids-chronological '()
-   :transaction-ids-by-form {}})
+   :transaction-log {:transactions {}
+                     :ids-chronological '()
+                     :ids-by-form {}
+                     :settings {:from-active-address-only? false}}})
 
 
 

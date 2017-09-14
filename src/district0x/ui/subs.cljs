@@ -21,6 +21,12 @@
     (:my-addresses db)))
 
 (reg-sub
+  :district0x.my-addresses/single-address?
+  :<- [:district0x/my-addresses]
+  (fn [my-addresses]
+    (= (count my-addresses) 1)))
+
+(reg-sub
   :district0x/active-address
   (fn [db _]
     (:active-address db)))
@@ -35,11 +41,6 @@
   :district0x/active-page
   (fn [db _]
     (:active-page db)))
-
-(reg-sub
-  :district0x/transaction-log-settings
-  (fn [db _]
-    (:transaction-log-settings db)))
 
 (reg-sub
   :district0x/route-params
@@ -143,46 +144,39 @@
     (:ui-disabled? db)))
 
 (reg-sub
-  :district0x/form-configs
-  (fn [db]
-    (:form-configs db)))
-
-(reg-sub
-  :district0x/transactions
-  (fn [db]
-    (:transactions db)))
-
-(reg-sub
-  :district0x/transaction-ids-chronological
-  (fn [db]
-    (:transaction-ids-chronological db)))
-
-(reg-sub
-  :district0x/transaction-ids-by-form
-  (fn [db]
-    (:transaction-ids-by-form db)))
-
-(reg-sub
   :district0x/transaction-log
-  :<- [:district0x/transactions]
-  :<- [:district0x/transaction-ids-chronological]
-  :<- [:district0x/form-configs]
-  :<- [:district0x/transaction-log-settings]
+  (fn [db]
+    (:transaction-log db)))
+
+(reg-sub
+  :district0x.transaction-log/settings
+  :<- [:district0x/transaction-log]
+  (fn [transaction-log _]
+    (get transaction-log :settings)))
+
+(reg-sub
+  :district0x.transaction-log/open?
+  :<- [:district0x.transaction-log/settings]
+  (fn [transaction-log-settings _]
+    (get transaction-log-settings :open?)))
+
+(reg-sub
+  :district0x.transaction-log/transactions
+  :<- [:district0x/transaction-log]
   :<- [:district0x/active-address]
-  (fn [[transactions transaction-ids-chronological form-configs settings active-address]]
-    (cond->> transaction-ids-chronological
-      true (map transactions)
-      true (map #(update % :created-on from-long))
-      (:from-active-address-only? settings) (filter #(= active-address (get-in % [:tx-opts :from]))))))
+  (fn [[transaction-log active-address]]
+    (let [{:keys [:transactions :ids-chronological :settings]} transaction-log]
+      (cond->> ids-chronological
+        true (map transactions)
+        true (map #(update % :created-on from-long))
+        (:from-active-address-only? settings) (filter #(= active-address (get-in % [:tx-opts :from])))))))
 
 (reg-sub
   :district0x/tx-pending?
   :<- [:district0x/active-address]
-  :<- [:district0x/transactions]
-  :<- [:district0x/transaction-ids-by-form]
-  (fn [[active-address transactions transactions-by-form] [_ contract-key contract-method form-id]]
-
-    (let [transaction-hash (first (get-in transactions-by-form
+  :<- [:district0x/transaction-log]
+  (fn [[active-address {:keys [:transactions :ids-by-form]}] [_ contract-key contract-method form-id]]
+    (let [transaction-hash (first (get-in ids-by-form
                                           (remove nil? [contract-key contract-method active-address form-id])))]
       (when transaction-hash
         (-> transaction-hash

@@ -101,7 +101,7 @@
   (when @(subscribe [:auction-offering/active-address-winning-bidder? (:offering/address offering)])
     [offering-auction-winning-chip
      (r/merge-props
-       {:won? (t/after? (:auction-offering/end-time offering) (t/now))}
+       {:won? (t/after? (t/now) (:auction-offering/end-time offering))}
        (dissoc props :offering))]))
 
 (defn offering-header-auction-pending-returns-chip [{:keys [:offering] :as props}]

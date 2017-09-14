@@ -208,17 +208,6 @@
 (defn current-component-mui-theme [& args]
   (js->clj (apply aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme" args)))
 
-(defn reg-submit-form-sub [form-key f]
-  (reg-sub
-    form-key
-    :<- [:district0x/form form-key]
-    :<- [:district0x/form-configs]
-    (fn [[form form-configs] [query-id form-id]]
-      (f [(merge (get-in form-configs [form-key :default-data])
-                 (if form-id (form form-id) form))
-          form-configs]
-         [query-id form-id]))))
-
 (defn create-icon [path]
   (fn [props]
     (r/as-element
