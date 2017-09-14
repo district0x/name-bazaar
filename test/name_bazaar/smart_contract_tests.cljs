@@ -71,7 +71,7 @@
 
         (done)))))
 
-(deftest create-offering
+(deftest create-buy-now-offering
   (async done
          (let [ss @*server-state*]
            (go
@@ -96,7 +96,10 @@
                                                                                     :from (state/my-address 1)}))))
                    (is (tx-sent?
                           (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
-                                                                                      :from (state/my-address 1)}))))))
+                                                                                      :from (state/my-address 1)}))))
+                   (is (tx-failed?
+                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                    :from (state/my-address 1)}))))))
                (done)))
            (go
              (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
@@ -110,5 +113,67 @@
 
              ))))
 
+(deftest create-auction-offering
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :owner (state/my-address 0)})
+                           (timeout 1000)])]
+               (is (not (nil? offering)))
+               (if offering
+                 (do
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 0)}))))
+                   (is (tx-failed? (<! (auction-offering/bid! ss
+                                                              {:offering/address offering}
+                                                              {:value (web3/to-wei 0.09 :ether)
+                                                               :from (state/my-address 1)}))))
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.1 :ether)
+                                                             :from (state/my-address 1)}))))
+                   (is (tx-failed? (<! (auction-offering/bid! ss
+                                                              {:offering/address offering}
+                                                              {:value (web3/to-wei 0.11 :ether)
+                                                               :from (state/my-address 2)}))))
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                              {:offering/address offering}
+                                                              {:value (web3/to-wei 0.2 :ether)
+                                                               :from (state/my-address 2)}))))
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.33 :ether)
+                                                             :from (state/my-address 3)}))))
+                   (is (= {:auction-offering/min-bid-increase 100000000000000000
+                           :auction-offering/winning-bidder (state/my-address 3)
+                           :auction-offering/bid-count 3}
+                          (select-keys (last (<! (auction-offering/get-auction-offering ss
+                                                                                        offering)))
 
+                                       [:auction-offering/min-bid-increase
+                                        :auction-offering/winning-bidder
+                                        :auction-offering/bid-count])))))
+               (done)))
+           (go
+             (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
+             (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                ss
+                                {:offering/name "abc.eth"
+                                 :offering/price (eth->wei 0.1)
+                                 :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
+                                 :auction-offering/extension-duration (rand-int 10000)
+                                 :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                {:from (state/my-address 0)}))))
+
+             ;; TODO more
+
+             ;; (done)
+
+             ))))
 
