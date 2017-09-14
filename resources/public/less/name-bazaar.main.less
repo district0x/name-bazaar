@@ -73,6 +73,10 @@ h3 {
     line-height: 1.4em;
 }
 
+input:focus {
+    outline: 0;
+}
+
 body {
   font-size: 13px;
   //line-height: 24px;
@@ -146,4 +150,15 @@ strong, b {
 .placeholder-background-masker {
     background: #fff;
     position: absolute;
+}
+
+.app-bar-search-wrapper {
+    &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+    input {
+        &:focus {
+            width: 200px !important;
+        }
+    }
 }

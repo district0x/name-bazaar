@@ -357,3 +357,32 @@
 
 (def add-to-watched-names-button
   {:margin-top -13})
+
+(def app-bar-search-input
+  {:font "inherit"
+   :padding "7px 7px 7px 40px"
+   :border 0
+   :display "block"
+   :vertical-align "middle"
+   :white-space "normal"
+   :background "none"
+   :margin 0
+   :color "#FFF"
+   :width 150
+   :transition "width .25s ease-out"})
+
+(def app-bar-search-icon
+  {:width 40
+   :height "100%"
+   :position :absolute
+   :display "flex"
+   :align-items "center"
+   :justify-content "center"
+   :cursor "pointer"
+   :z-index 999})
+
+(def app-bar-search-wrapper
+  {:position :relative
+   :border-radius 2
+   :background "rgba(255, 255, 255, 0.15)"
+   :font-weight :bold})

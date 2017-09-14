@@ -43,6 +43,7 @@
          (merge
            {:style styles/saved-searches-select-field
             :floating-label-text "Saved Searches"
+            :disabled (empty? @saved-searches)
             :on-change #(dispatch [:district0x.location/set-query %3])}
            (when (get @saved-searches @query-string)
              {:value @query-string}))
@@ -332,6 +333,7 @@
    [offerings-keyword-text-field]
    [order-by-select-field]
    [row
+    {:bottom "xs"}
     [saved-searches-select-field]
     [save-search-button]]])
 

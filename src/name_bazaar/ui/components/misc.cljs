@@ -6,6 +6,7 @@
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
     [name-bazaar.ui.components.icons :as icons]
+    [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url]]
@@ -19,11 +20,15 @@
 
 (defn main-app-bar-right-elements []
   (let [xs-sm? (subscribe [:district0x/window-xs-sm-width?])
+        xs? (subscribe [:district0x/window-xs-width?])
         active-page (subscribe [:district0x/active-page])]
     (fn []
       [row
        {:middle "xs"
         :end "xs"}
+       (when-not @xs?
+         [app-bar-search
+          {:style styles/margin-right-gutter-less}])
        (when-not @xs-sm?
          [active-address-balance
           {:style styles/active-address-balance}])
