@@ -91,6 +91,7 @@
        {:style styles/margin-top-gutter-less}
        [infinite-list
         {:collapsed-item-height (styles/search-results-list-item-height @xs?)
+         :total-count (count @watched-items)
          :no-items-element (r/as-element [:div
                                           {:style styles/search-results-no-items}
                                           "You are not watching any names"])}

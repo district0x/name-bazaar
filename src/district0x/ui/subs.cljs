@@ -86,11 +86,6 @@
     (get-in db [:menu-drawer :open?])))
 
 (reg-sub
-  :district0x/routes
-  (fn [db _]
-    (:routes db)))
-
-(reg-sub
   :district0x/active-address-balance
   :<- [:district0x/active-address]
   :<- [:district0x/balances]

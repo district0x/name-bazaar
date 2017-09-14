@@ -11,7 +11,10 @@
 (s/def :route/handler keyword?)
 (s/def :route/route-params (s/map-of keyword? (some-fn number? string?)))
 (s/def :route/query-params (s/nilable map?))
-(s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params :route/query-params]))
+(s/def :route/path string?)
+(s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params
+                                                                 :route/query-params
+                                                                 :route/path]))
 (s/def :db/window-width-size int?)
 (s/def :snackbar/open? boolean?)
 (s/def :drawer/open? boolean?)

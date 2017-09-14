@@ -111,30 +111,12 @@
                          (set/rename-keys {:open? :open}))]]
          [:div "UI is disabled"])])))
 
-(defn nav-menu-item []
-  (let [active-address (subscribe [:district0x/active-address])]
-    (fn [{:keys [:route :route-params :with-active-address-only? :routes :key] :as props} & children]
-      (into [ui/list-item
-             (r/merge-props
-               (merge (when-not key
-                        {:key route})
-                      (when (and with-active-address-only?
-                                 @active-address)
-                        {:style {:display :none}})
-                      (when route
-                        {:href (d0x-ui-utils/path-for
-                                 {:route route
-                                  :route-params route-params
-                                  :routes routes})}))
-               (dissoc props :route :route-params :routes :with-active-address-only?))]
-            children))))
-
 (defn side-nav-menu []
   (let [lg? (subscribe [:district0x/window-lg-width?])
         drawer-open? (subscribe [:district0x/menu-drawer-open?])
         active-address (subscribe [:district0x/active-address])
-        routes (subscribe [:district0x/routes])]
-    (fn [{:keys [:app-bar-props :contrainer-props :drawer-props :list-props]} nav-menu-items & children]
+        active-page (subscribe [:district0x/active-page])]
+    (fn [{:keys [:app-bar-props :contrainer-props :drawer-props :routes :list-props :list-items-props]} & children]
       [ui/drawer
        (r/merge-props
          {:docked @lg?
@@ -154,13 +136,26 @@
             (r/merge-props
               {:show-menu-icon-button false}
               app-bar-props)]
-           (into
-             [ui/selectable-list
-              (r/merge-props
-                {:style {:padding-top 0}
-                 :on-change (fn [])}
-                list-props)]
-             nav-menu-items)]]
+
+           [ui/selectable-list
+            (r/merge-props
+              {:style {:padding-top 0}
+               :on-change (fn [])
+               :value (str "#" (:path @active-page))}
+              list-props)
+            (doall
+              (for [{:keys [:href :route :route-params :key] :as item-props} list-items-props]
+                (let [href (cond
+                             href href
+                             route (d0x-ui-utils/path-for {:route route
+                                                           :route-params route-params
+                                                           :routes routes}))]
+                  [ui/list-item
+                   (r/merge-props
+                     (merge {:href href
+                             :value href
+                             :key href})
+                     (dissoc item-props :route :route-params :routes :href))])))]]]
          children)])))
 
 (defn main-app-bar []

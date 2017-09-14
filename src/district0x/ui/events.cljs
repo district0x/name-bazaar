@@ -85,7 +85,8 @@
                                (:load-node-addresses? default-db))]
     (as-> default-db db
           (d0x-shared-utils/merge-in db localstorage)
-          (assoc-in db [:active-page :query-params] (medley/map-keys keyword (:query current-url)))
+          (update db :active-page merge {:query-params (medley/map-keys keyword (:query current-url))
+                                         :path (:path current-url)})
           (assoc db :web3 web3)
           (assoc db :load-node-addresses? load-node-addresses?))))
 
@@ -123,13 +124,15 @@
   :district0x/set-active-page
   [interceptors (inject-cofx :current-url)]
   (fn [{:keys [:db :current-url]} [{:keys [:handler] :as match}]]
-    (merge
-      {:db (-> db
-             (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))}))
-             (assoc-in [:menu-drawer :open?] false))
-       :ga/page-view [(d0x-ui-utils/current-location-hash)]}
-      (when-not (= handler (:handler (:active-page db)))
-        {:window/scroll-to-top true}))))
+    (let [{:keys [:query :path]} current-url]
+      (merge
+        {:db (-> db
+               (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
+                                                 :path path}))
+               (assoc-in [:menu-drawer :open?] false))
+         :ga/page-view [(d0x-ui-utils/current-location-hash)]}
+        (when-not (= handler (:handler (:active-page db)))
+          {:window/scroll-to-top true})))))
 
 (reg-event-fx
   :district0x/load-my-addresses

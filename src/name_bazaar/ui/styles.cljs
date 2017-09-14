@@ -387,6 +387,18 @@
    :background "rgba(255, 255, 255, 0.15)"
    :font-weight :bold})
 
+(def nav-menu-item
+  {:font-size 15
+   :font-weight :bold})
+
+(def nav-menu-item-nested
+  {:font-size 14
+   :color (color :grey700)})
+
+(def nav-menu-item-inner-div
+  {:padding-top 12
+   :padding-bottom 12})
+
 (def side-nav-menu-app-bar
   {:height 120
    :padding 0})
@@ -400,4 +412,13 @@
 (def side-nav-menu-logo
   {:width 150
    :margin-top 12})
+
+(def district0x-banner-text
+  {:width "100%"
+   :font-size "0.85em"
+   :margin-bottom "10px"})
+
+(def district0x-banner-logo
+  {:width "auto"
+   :height 40})
 

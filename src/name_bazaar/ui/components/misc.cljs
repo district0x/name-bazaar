@@ -49,6 +49,64 @@
     {:src "./images/logo@2x.png"
      :style styles/side-nav-menu-logo}]])
 
+(defn district0x-banner []
+  [row
+   {:start "xs"
+    :style (merge styles/full-width
+                  styles/margin-bottom-gutter-mini
+                  styles/margin-left-gutter-less)}
+   [:div
+    {:style styles/district0x-banner-text}
+    "Part of district0x Network"]
+   [:a
+    {:href "https://district0x.io"
+     :target :_blank}
+    [:img {:alt "district0x"
+           :src "./images/district0x-logo-small.png"
+           :style styles/district0x-banner-logo}]]])
+
+(def nav-menu-items-props
+  (->> [{:primary-text "Offerings"
+         :route :route.offerings/search}
+        {:primary-text "Latest"
+         :href offerings-newest-url
+         :nested-level 1
+         :style styles/nav-menu-item-nested}
+        {:primary-text "Most Active"
+         :href offerings-most-active-url
+         :nested-level 1
+         :style styles/nav-menu-item-nested}
+        {:primary-text "Ending Soon"
+         :href offerings-ending-soon-url
+         :nested-level 1
+         :style styles/nav-menu-item-nested}
+        {:primary-text "Requests"
+         :route :route.offering-requests/search}
+        {:primary-text "Watched Names"
+         :route :route/watched-names}
+        {:primary-text "Create Offering"
+         :route :route.offerings/create}
+        {:primary-text "My Offerings"
+         :route :route.user/my-offerings}
+        {:primary-text "My Purchases"
+         :route :route.user/my-purchases}
+        {:primary-text "My Bids"
+         :route :route.user/my-bids}
+        {:primary-text "My Settings"
+         :route :route.user/my-settings}
+        {:primary-text "Register Name"
+         :route :route.mock-registrar/register}
+        {:primary-text "How it works"
+         :route :route/how-it-works}
+        {:primary-text "About"
+         :route :route/about}]
+    (map (fn [props]
+           (r/merge-props
+             {:style styles/nav-menu-item
+              :inner-div-style styles/nav-menu-item-inner-div
+              :disable-touch-ripple true}
+             props)))))
+
 (defn side-nav-menu-layout [& children]
   (into [d0x-misc/side-nav-menu-layout
          [d0x-misc/side-nav-menu
@@ -56,63 +114,10 @@
            {:style styles/side-nav-menu-app-bar
             :show-menu-icon-button true
             :icon-style-left styles/side-nav-menu-logo-wrap
-            :icon-element-left (r/as-element [side-nav-menu-logo])}}
-          [[d0x-misc/nav-menu-item
-            {:primary-text "Offerings"
-             :route :route.offerings/search
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Latest"
-             :href offerings-newest-url
-             :nested-level 1}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Most Active"
-             :href offerings-most-active-url
-             :nested-level 1}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Ending Soon"
-             :href offerings-ending-soon-url
-             :nested-level 1}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Requests"
-             :route :route.offering-requests/search
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Watched Names"
-             :route :route/watched-names
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Create Offering"
-             :route :route.offerings/create
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "My Offerings"
-             :route :route.user/my-offerings
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "My Purchases"
-             :route :route.user/my-purchases
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "My Bids"
-             :route :route.user/my-bids
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "My Settings"
-             :route :route.user/my-settings
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "Register Name"
-             :route :route.mock-registrar/register
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "How it works"
-             :route :route/how-it-works
-             :routes constants/routes}]
-           [d0x-misc/nav-menu-item
-            {:primary-text "About"
-             :route :route/about
-             :routes constants/routes}]]]
+            :icon-element-left (r/as-element [side-nav-menu-logo])}
+           :list-items-props nav-menu-items-props
+           :routes constants/routes}
+          [district0x-banner]]
          [d0x-misc/main-app-bar
           {:icon-element-right (r/as-element [main-app-bar-right-elements])}]]
         children))
