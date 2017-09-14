@@ -1,5 +1,7 @@
 (ns name-bazaar.ui.styles
-  (:require [cljs-react-material-ui.core :refer [get-mui-theme]]))
+  (:require
+    [cljs-react-material-ui.core :refer [get-mui-theme]]
+    [district0x.ui.utils :refer [color-lighten]]))
 
 (def color cljs-react-material-ui.core/color)
 
@@ -17,6 +19,7 @@
                                :app-bar {:height 56}
                                :ripple {:color primary1-color}
                                :paper {:gutter 16}
+                               :transaction-log {:highlighted (color-lighten primary1-color 0.8)}
                                #_#_:svg-icon {:color primary1-color}
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}

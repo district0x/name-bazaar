@@ -3,7 +3,7 @@
     [cljs-react-material-ui.reagent :as ui]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [create-icon]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [create-icon current-component-mui-theme]]
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
@@ -106,17 +106,21 @@
      (icon {:style tx-status-icon-style})]))
 
 (defn transaction [{:keys [:transaction :last? :container-props :border-bottom-style]}]
-  (let [{:keys [:hash :contract-key :contract-method :result-href]} transaction]
+  (let [{:keys [:hash :contract-key :contract-method :result-href :highlighted?]} transaction]
     [ui/menu-item
      (r/merge-props
-       {:style (when-not last?
-                 (or tx-item-border-bottom-style border-bottom-style))
+       {:style (merge
+                 (when highlighted?
+                   (when-let [highlighted-color (current-component-mui-theme "transactionLog" "highlighted")]
+                     {:background-color highlighted-color}))
+                 (when-not last?
+                   (or tx-item-border-bottom-style border-bottom-style)))
         :inner-div-style {:padding 10}
         :on-click (fn [e]
                     (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                                result-href)
                       (set! (.-hash js/location) result-href)
-                      (dispatch [:district0x.transaction-log.settings/set :open? false])))}
+                      (dispatch [:district0x.transaction-log/set-open false])))}
        container-props)
      [:div
       [transaction-name {:transaction transaction}]
@@ -174,7 +178,7 @@
             :list-style icon-menu-list-style
             :max-height 600
             :open @open?
-            :on-request-change #(dispatch [:district0x.transaction-log.settings/set :open? %])}
+            :on-request-change #(dispatch [:district0x.transaction-log/set-open %])}
            props)
          tx-log-title
          tx-log-settings

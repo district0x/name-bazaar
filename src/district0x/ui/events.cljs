@@ -89,7 +89,7 @@
                                          :path (:path current-url)})
           (assoc db :web3 web3)
           (assoc db :load-node-addresses? load-node-addresses?)
-          (assoc-in db [:transaction-log :settings :open?] false))))
+          (update-in db [:transaction-log :settings] merge {:open? false :highlighted-transaction nil}))))
 
 (defn- has-tx-status? [tx-status {:keys [:status]}]
   (= tx-status status))
@@ -448,12 +448,12 @@
           new-db (-> db
                    (assoc-in [:transaction-log :transactions tx-hash] tx-data)
                    (update-in [:transaction-log :ids-chronological] conj tx-hash)
-                   (assoc-in [:transaction-log :settings :open?] true)
                    (update-in (remove nil? [:transaction-log :ids-by-form contract-key contract-method (:from tx-opts) form-id])
                               conj
                               tx-hash))]
       {:db new-db
-       :localstorage (merge localstorage (select-keys new-db [:transaction-log]))})))
+       :localstorage (merge localstorage (select-keys new-db [:transaction-log]))
+       :dispatch [:district0x.transaction-log/set-open true tx-hash]})))
 
 (reg-event-fx
   :district0x.transactions/update
@@ -494,6 +494,13 @@
     (let [new-db (assoc-in db [:transaction-log :settings key] value)]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:transaction-log]))})))
+
+(reg-event-fx
+  :district0x.transaction-log/set-open
+  [interceptors (inject-cofx :localstorage)]
+  (fn [{:keys [:db]} [open? highlighted-tx]]
+    {:db (update-in db [:transaction-log :settings] merge {:open? open?
+                                                           :highlighted-transaction highlighted-tx})}))
 
 (reg-event-fx
   :district0x/load-transaction-and-receipt

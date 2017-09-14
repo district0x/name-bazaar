@@ -97,8 +97,10 @@
 
 (s/def :transaction-log.settings/from-active-address-only? (s/nilable boolean?))
 (s/def :transaction-log.settings/open? (s/nilable boolean?))
+(s/def :transaction-log.settings/highlighted-transaction (s/nilable :transaction/hash))
 (s/def :transaction-log/settings (s/keys :opt-un [:transaction-log.settings/from-active-address-only?
-                                                  :transaction-log.settings/open?]))
+                                                  :transaction-log.settings/open?
+                                                  :transaction-log.settings/highlighted-transaction]))
 
 (s/def :db/transaction-log (s/keys :req-un [:transaction-log/transactions
                                             :transaction-log/ids-by-form
