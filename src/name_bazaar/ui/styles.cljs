@@ -386,3 +386,18 @@
    :border-radius 2
    :background "rgba(255, 255, 255, 0.15)"
    :font-weight :bold})
+
+(def side-nav-menu-app-bar
+  {:height 120
+   :padding 0})
+
+(def side-nav-menu-logo-wrap
+  {:width "100%"
+   :height "100%"
+   :text-align :center
+   :margin 0})
+
+(def side-nav-menu-logo
+  {:width 150
+   :margin-top 12})
+

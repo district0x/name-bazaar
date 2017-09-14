@@ -42,10 +42,21 @@
          [active-address-select-field
           {:select-field-props {:label-style styles/active-address-select-field-label}}])])))
 
+(defn side-nav-menu-logo []
+  [a
+   {:route :route/home}
+   [:img
+    {:src "./images/logo@2x.png"
+     :style styles/side-nav-menu-logo}]])
+
 (defn side-nav-menu-layout [& children]
   (into [d0x-misc/side-nav-menu-layout
          [d0x-misc/side-nav-menu
-          {}
+          {:app-bar-props
+           {:style styles/side-nav-menu-app-bar
+            :show-menu-icon-button true
+            :icon-style-left styles/side-nav-menu-logo-wrap
+            :icon-element-left (r/as-element [side-nav-menu-logo])}}
           [[d0x-misc/nav-menu-item
             {:primary-text "Offerings"
              :route :route.offerings/search
