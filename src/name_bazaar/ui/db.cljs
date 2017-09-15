@@ -16,7 +16,7 @@
     district0x.ui.db/default-db
     {:node-url "https://mainnet.infura.io/" #_ "http://localhost:8549" #_ "http://localhost:8545"
      :load-node-addresses? false
-     :server-url #_ "http://localhost:6200" "http://52.27.20.88:6200"
+     :server-url #_ "http://localhost:6200" "https://api.namebazaar.io"
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :now (t/now)
