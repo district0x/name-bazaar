@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.components.infinite-list
   (:require
-    [cljsjs.react-infinite]
+    [react-infinite]
     [medley.core :as medley]
     [re-frame.core :refer [subscribe dispatch]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col]]
