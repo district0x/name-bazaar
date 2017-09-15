@@ -18,10 +18,10 @@
   (->> contracts
     (medley/map-vals (fn [{:keys [:name :address] :as contract}]
                        (let [abi (fetch-abi name fetch-opts)
-                             bin (fetch-bin name fetch-opts)]
+                             bin (when goog.DEBUG (fetch-bin name fetch-opts))]
                          (merge contract
-                                {:abi (fetch-abi name fetch-opts)
-                                 :bin (fetch-bin name fetch-opts)
+                                {:abi abi
+                                 :bin bin
                                  :instance (web3-eth/contract-at (:web3 @server-state-atom) abi address)}))))
     (swap! server-state-atom update :smart-contracts merge)))
 
