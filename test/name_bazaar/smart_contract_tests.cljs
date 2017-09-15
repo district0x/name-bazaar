@@ -74,14 +74,6 @@
 (deftest create-buy-now-offering
   (async done
          (let [ss @*server-state*]
-           #_(go
-             (let [res;;[_ res-chan]
-                   (alts! [(ens/on-transfer-once ss
-                                            nil);;{:new-owner (state/my-address 1)}
-                           (timeout 1000)])]
-               (println "TRANSFER")
-               )
-             )
            (go
              (let [[[_ {{:keys [:offering]} :args}]]
                    (alts! [(offering-registry/on-offering-added-once ss
@@ -91,24 +83,24 @@
                                                                       :owner (state/my-address 0)})
                            (timeout 1000)])]
                (is (not (nil? offering)))
-               (if offering
-                 (do
-                   (is (tx-sent? (<! (registrar/transfer! ss
-                                                       {:ens.record/label "abc" :ens.record/owner offering}
-                                                       {:from (state/my-address 0)}))))
-                   (is (tx-failed?
-                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.10001)
-                                                                                               :from (state/my-address 1)}))))
-                   (is (tx-failed?
-                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.09999)
-                                                                                    :from (state/my-address 1)}))))
-                   (is (tx-sent?
-                          (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
-                                                                                      :from (state/my-address 1)}))))
-                   (is (tx-failed?
-                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
-                                                                                    :from (state/my-address 1)}))))))
-
+               (when offering
+                 (is (tx-sent? (<! (registrar/transfer! ss
+                                                        {:ens.record/label "abc" :ens.record/owner offering}
+                                                        {:from (state/my-address 0)}))))
+                 (is (tx-failed?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.10001)
+                                                                                  :from (state/my-address 1)}))))
+                 (is (tx-failed?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.09999)
+                                                                                  :from (state/my-address 1)}))))
+                 (is (tx-sent?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                  :from (state/my-address 1)}))))
+                 (is (tx-failed?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                  :from (state/my-address 1)}))))
+                 (is (= (state/my-address 1) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                        "abc.eth")}))))))
                (done)
                ))
            (go
@@ -117,11 +109,13 @@
                                                                           {:offering/name "abc.eth"
                                                                            :offering/price (eth->wei 0.1)}
                                                                           {:from (state/my-address 0)}))))
-             
+
+             ;;(done)
              ;; TODO more
 
 
-             ))))
+             )))
+  )
 
 (deftest create-auction-offering
   (async done

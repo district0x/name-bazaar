@@ -88,7 +88,8 @@
   (let [ch (chan)
         TestRPC (js/require "ethereumjs-testrpc")]
     (if port
-      (let [server (.server TestRPC (clj->js (merge {:locked false} testrpc-opts)))]
+      (let [server (.server TestRPC
+                            (clj->js (merge {:locked false} testrpc-opts)))]
         (.listen server port (fn [err]
                                (if err
                                  (println err)
