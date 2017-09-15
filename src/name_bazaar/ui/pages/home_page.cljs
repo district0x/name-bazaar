@@ -57,7 +57,7 @@
                                              constants/routes]))))
             :on-update-input (fn [value]
                                (reset! search-name value)
-                               (when (>= (count value) 0 #_3)
+                               (when (>= (count value) 3)
                                  (dispatch [:offerings.home-page-autocomplete/search {:name @search-name}])))}]]
          [ui/icon-button
           {:style {:opacity 0.54}

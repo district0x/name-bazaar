@@ -1,4 +1,4 @@
-(ns components.active-address-balance
+(ns district0x.ui.components.active-address-balance
   (:require
     [district0x.ui.utils :as d0x-ui-utils]
     [re-frame.core :refer [subscribe dispatch]]

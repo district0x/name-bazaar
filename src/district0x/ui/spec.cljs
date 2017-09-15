@@ -131,6 +131,7 @@
 (s/def :district0x.ui/db (s/keys :req-un [:db/active-address
                                           :db/blockchain-connection-error?
                                           :db/contracts-not-found?
+                                          :db/load-node-addresses?
                                           :db/my-addresses
                                           :db/node-url
                                           :db/server-url
@@ -144,6 +145,5 @@
                                           :db/balances
                                           :db/conversion-rates
                                           :db/load-conversion-rates-interval
-                                          :db/load-node-addresses?
                                           :form.district0x-emails/set-email
                                           :db/district0x-emails]))

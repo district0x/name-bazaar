@@ -18,6 +18,8 @@ pom.xml.asc
 /figwheel_server.log
 /resources/public/contracts/build/*.bin
 /dev-backend/
+/dev-server/
+/server/
 /dev-tests/
 /src/name_bazaar/server/repl.cljs
 /resources/public/css/name-bazaar.main.css.map

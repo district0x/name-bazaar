@@ -18,10 +18,10 @@
   :registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))]
+    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))
+          name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Transfer %s ownership" (str (:ens.record/label form-data)
-                                                                      constants/registrar-root))
+                  {:name (gstring/format "Transfer %s ownership" name)
                    :contract-key :mock-registrar #_:registrar ;; TODO handling mock-registrar vs registrar
                    :contract-method :transfer
                    :form-data form-data
@@ -29,7 +29,9 @@
                    :args-order [:ens.record/label-hash :ens.record/owner]
                    :form-id (select-keys form-data [:ens.record/label])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
-                   :on-tx-receipt [:offerings.ownership/load [(:ens.record/owner form-data)]]}]})))
+                   :on-tx-receipt-n [[:offerings.ownership/load [(:ens.record/owner form-data)]]
+                                     [:on-tx-receipt [:district0x.snackbar/show-message
+                                                      (gstring/format "Ownership of %s was transferred" name)]]]}]})))
 
 (reg-event-fx
   :registrar/register
@@ -47,7 +49,7 @@
                    :args-order [:ens.record/label-hash]
                    :tx-opts {:gas 700000 :gas-price default-gas-price}
                    :on-tx-receipt [:district0x.snackbar/show-message
-                                   (str "Name " ens-record-name " was successfully registered")]}]})))
+                                   (gstring/format "%s was successfully registered" ens-record-name)]}]})))
 
 (reg-event-fx
   :registrar.entries/load

@@ -27,7 +27,7 @@
     [(subscribe [:district0x/active-address])
      (subscribe [:ens/record node])])
   (fn [[active-address ens-record]]
-    (= active-address (:ens.record/owner ens-record))))
+    (and active-address (= active-address (:ens.record/owner ens-record)))))
 
 (reg-sub
   :ens.record/my-addresses-contain-owner?

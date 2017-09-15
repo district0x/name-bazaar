@@ -18,6 +18,8 @@
     [reagent.core :as r]
     [district0x.ui.utils :as d0x-ui-utils]))
 
+(enable-console-print!)
+
 (defn mount-root []
   (s/check-asserts goog.DEBUG)
   (google-analytics-fx/set-enabled! (not goog.DEBUG))

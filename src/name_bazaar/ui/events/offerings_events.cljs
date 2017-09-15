@@ -84,17 +84,20 @@
   :buy-now-offering/buy
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Buy %s" (get-offering-name db (:offering/address form-data)))
-                 :contract-key :buy-now-offering
-                 :contract-method :buy
-                 :form-data form-data
-                 :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offerings/detail form-data)
-                 :tx-opts {:gas 100000
-                           :gas-price default-gas-price
-                           :value (eth->wei (:offering/price form-data))}
-                 :form-id (select-keys form-data [:offering/address])}]}))
+    (let [offering-name (get-offering-name db (:offering/address form-data))]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Buy %s" offering-name)
+                   :contract-key :buy-now-offering
+                   :contract-method :buy
+                   :form-data form-data
+                   :contract-address (:offering/address form-data)
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :tx-opts {:gas 200000
+                             :gas-price default-gas-price
+                             :value (eth->wei (:offering/price form-data))}
+                   :form-id (select-keys form-data [:offering/address])
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "You successfully bought %s!" offering-name)]}]})))
 
 (reg-event-fx
   :buy-now-offering/set-settings
@@ -117,35 +120,41 @@
   :auction-offering/bid
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Bid for %s" (get-offering-name db (:offering/address form-data)))
-                 :contract-key :auction-offering
-                 :contract-method :bid
-                 :form-data form-data
-                 :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offerings/detail form-data)
-                 :tx-opts {:gas 100000
-                           :gas-price default-gas-price
-                           :value (eth->wei (:offering/price form-data))}
-                 :wei-keys #{:offering/price}
-                 :form-id (select-keys form-data [:offering/address])}]}))
+    (let [offering-name (gstring/format "Bid for %s" (get-offering-name db (:offering/address form-data)))]
+      {:dispatch [:district0x/make-transaction
+                  {:name offering-name
+                   :contract-key :auction-offering
+                   :contract-method :bid
+                   :form-data form-data
+                   :contract-address (:offering/address form-data)
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :tx-opts {:gas 100000
+                             :gas-price default-gas-price
+                             :value (eth->wei (:offering/price form-data))}
+                   :wei-keys #{:offering/price}
+                   :form-id (select-keys form-data [:offering/address])
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Bid for %s was processed" offering-name)]}]})))
 
 (reg-event-fx
   :auction-offering/finalize
   [interceptors (validate-first-arg (s/keys :req [:offering/address :auction-offering/transfer-price?]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Finalize auction %s" (get-offering-name db (:offering/address form-data)))
-                 :contract-key :auction-offering
-                 :contract-method :finalize
-                 :form-data form-data
-                 :contract-address (:offering/address form-data)
-                 :args-order [:auction-offering/transfer-price?]
-                 :result-href (path-for :route.offerings/detail form-data)
-                 :tx-opts {:gas 120000
-                           :gas-price default-gas-price
-                           :value (:offering/price form-data)}
-                 :form-id (select-keys form-data [:offering/address])}]}))
+    (let [offering-name (get-offering-name db (:offering/address form-data))]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Finalize auction %s" offering-name)
+                   :contract-key :auction-offering
+                   :contract-method :finalize
+                   :form-data form-data
+                   :contract-address (:offering/address form-data)
+                   :args-order [:auction-offering/transfer-price?]
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :tx-opts {:gas 120000
+                             :gas-price default-gas-price
+                             :value (:offering/price form-data)}
+                   :form-id (select-keys form-data [:offering/address])
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Auction %s was finalized" offering-name)]}]})))
 
 (reg-event-fx
   :auction-offering/withdraw
@@ -157,11 +166,11 @@
           pending-returns (get-in db [:offerings
                                       address
                                       :auction-offering/pending-returns
-                                      (:auction-offering/bidder form-data)])]
+                                      (:auction-offering/bidder form-data)])
+          formatted-returns (d0x-ui-utils/format-eth pending-returns)
+          offering-name (get-offering-name db (:offering/address form-data))]
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Withdraw %s ETH from %s auction"
-                                         (d0x-ui-utils/format-eth pending-returns)
-                                         (get-offering-name db (:offering/address form-data)))
+                  {:name (gstring/format "Withdraw %s ETH from %s auction" formatted-returns offering-name)
                    :contract-key :auction-offering
                    :contract-method :withdraw
                    :form-data form-data
@@ -169,7 +178,9 @@
                    :args-order [:auction-offering/bidder]
                    :result-href (path-for :route.offerings/detail form-data)
                    :tx-opts {:gas 150000 :gas-price default-gas-price}
-                   :form-id (select-keys form-data [:offering/address])}]})))
+                   :form-id (select-keys form-data [:offering/address])
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "%s ETH was withdrawn from auction" formatted-returns)]}]})))
 
 (reg-event-fx
   :auction-offering/set-settings
@@ -210,16 +221,18 @@
   :offering/reclaim-ownership
   [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Reclaim ownership from %s offering"
-                                       (get-offering-name db (:offering/address form-data)))
-                 :contract-key :buy-now-offering
-                 :contract-method :reclaim-ownership
-                 :form-data form-data
-                 :contract-address (:offering/address form-data)
-                 :result-href (path-for :route.offerings/detail form-data)
-                 :form-id (select-keys form-data [:offering/address])
-                 :tx-opts {:gas 200000 :gas-price default-gas-price}}]}))
+    (let [offering-name (get-offering-name db (:offering/address form-data))]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Reclaim ownership from %s offering" offering-name)
+                   :contract-key :buy-now-offering
+                   :contract-method :reclaim-ownership
+                   :form-data form-data
+                   :contract-address (:offering/address form-data)
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :form-id (select-keys form-data [:offering/address])
+                   :tx-opts {:gas 200000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Ownership of %s was reclaimed" offering-name)]}]})))
 
 (reg-event-fx
   :offerings/search

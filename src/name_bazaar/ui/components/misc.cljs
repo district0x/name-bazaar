@@ -1,12 +1,13 @@
 (ns name-bazaar.ui.components.misc
   (:require
     [cljs-react-material-ui.reagent :as ui]
-    [components.active-address-balance :refer [active-address-balance]]
+    [district0x.ui.components.active-address-balance :refer [active-address-balance]]
     [district0x.ui.components.active-address-select-field :refer [active-address-select-field]]
     [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col center-layout paper page]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
-    [name-bazaar.ui.components.icons :as icons]
+    [district0x.ui.utils :refer [current-component-mui-theme]]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
+    [name-bazaar.ui.components.icons :as icons]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url]]
@@ -25,7 +26,8 @@
     (fn []
       [row
        {:middle "xs"
-        :end "xs"}
+        :end "xs"
+        :style {:height (current-component-mui-theme "appBar" "height")}}
        (when-not @xs?
          [app-bar-search
           {:style styles/margin-right-gutter-less}])
@@ -119,7 +121,8 @@
            :routes constants/routes}
           [district0x-banner]]
          [d0x-misc/main-app-bar
-          {:icon-element-right (r/as-element [main-app-bar-right-elements])}]]
+          {:icon-element-right (r/as-element [main-app-bar-right-elements])
+           :icon-style-right {:margin-top 0 :margin-bottom 0}}]]
         children))
 
 (defn side-nav-menu-center-layout [& children]

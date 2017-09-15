@@ -13,4 +13,4 @@
                                  (merge
                                    {:gas 100000
                                     :from (state/active-address server-state)}
-                                   opts)))
+                                   (select-keys opts [:from :gas-price :gas :value :data]))))

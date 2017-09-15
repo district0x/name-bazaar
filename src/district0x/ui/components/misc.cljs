@@ -58,15 +58,15 @@
          children)])
 
 (defn etherscan-link [props & children]
-  (let [[{:keys [:address :tx-hash] :as props} children] (parse-props-children props children)]
+  (let [[{:keys [:address :transaction?] :as props} children] (parse-props-children props children)]
     (if (empty-address? address)
       [:span (if children children address)]
       [:a (r/merge-props
-            {:href (cond
-                     address (d0x-ui-utils/etherscan-url address)
-                     tx-hash (d0x-ui-utils/etherscan-tx-url tx-hash))
+            {:href (d0x-ui-utils/etherscan-url address {:type (if transaction?
+                                                                :transaction
+                                                                :address)})
              :target :_blank}
-            (dissoc props :address :tx-hash))
+            (dissoc props :address :tx-hash :transaction?))
        (if children children address)])))
 
 (defn watch [{:keys [:value :call-on-mount?]

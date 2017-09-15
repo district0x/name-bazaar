@@ -13,15 +13,13 @@
                  [cljsjs/react-dom "15.6.1-1"]
                  [cljsjs/react-dom-server "15.6.1-1"]
                  [cljsjs/react-infinite "0.12.1-0"]
-                 [cljsjs/solidity-sha3 "0.4.1-0"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.0"]
                  [lein-doo "0.1.7"]
-                 [madvas/reagent-patched "0.6.1"]
+                 [madvas/reagent-patched "0.8.0-alpha1"]
                  [medley "0.8.3"]
-                 [org.clojars.akiel/async-error "0.1"]
-                 [org.clojure/clojurescript "1.9.671"]
+                 [org.clojure/clojurescript "1.9.854"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4" :exclusions [reagent]]
 
@@ -101,19 +99,30 @@
                                                :preloads [print.foo.preloads.devtools]
                                                :closure-defines {goog.DEBUG true}
                                                :external-config {:devtools/config {:features-to-install :all}}}}
-                                   {:id "dev-backend"
+                                   {:id "dev-server"
                                     :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                                    "src/district0x/server" "src/district0x/shared"]
                                     :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
                                     :compiler {:main "name-bazaar.server.dev"
-                                               :output-to "dev-backend/name-bazaar.js",
-                                               :output-dir "dev-backend",
+                                               :output-to "dev-server/name-bazaar.js",
+                                               :output-dir "dev-server",
                                                :target :nodejs,
                                                :optimizations :none,
+                                               :closure-defines {goog.DEBUG true}
                                                :source-map true}}
+                                   {:id "server"
+                                    :source-paths ["src"]
+                                    :compiler {:main "name-bazaar.server.core"
+                                               :output-to "server/name-bazaar.js",
+                                               :output-dir "server",
+                                               :target :nodejs,
+                                               :optimizations :simple,
+                                               :source-map "server/name-bazaar.js.map"
+                                               :closure-defines {goog.DEBUG false}
+                                               :pretty-print false
+                                               :pseudo-names false}}
                                    {:id "min"
-                                    :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
-                                                   "src/district0x/ui" "src/district0x/shared"]
+                                    :source-paths ["src"]
                                     :compiler {:main "name-bazaar.ui.core"
                                                :output-to "resources/public/js/compiled/app.js"
                                                :optimizations :advanced
@@ -131,6 +140,4 @@
                                                :target :nodejs,
                                                :optimizations :none,
                                                :verbose false
-                                               :source-map true}}]}}}
-
-  )
+                                               :source-map true}}]}}})

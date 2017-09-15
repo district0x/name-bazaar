@@ -44,7 +44,7 @@
            :checked (boolean (:outbid? params))
            :on-check #(dispatch [:offerings.user-bids/set-params-and-search {:outbid? %2}])}]
          [ui/checkbox
-          {:label "Include finished auctions"
+          {:label "Finished auctions"
            :checked (not (:min-end-time-now? params))
            :on-check #(dispatch [:offerings.user-bids/set-params-and-search {:min-end-time-now? (not %2)}])}]]))))
 

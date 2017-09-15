@@ -27,9 +27,11 @@
                    :args-order [:ens.record/name]
                    :result-href (path-for :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/name])
-                   :tx-opts {:gas 120000 :gas-price default-gas-price}
+                   :tx-opts {:gas 200000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:offering-requests/load [node]]
-                                     [:offering-requests.has-requested/load node (:my-addresses db)]]}]})))
+                                     [:offering-requests.has-requested/load node (:my-addresses db)]
+                                     [:district0x.snackbar/show-message
+                                      (gstring/format "Request for %s was saved" (:ens.record/name form-data))]]}]})))
 
 (reg-event-fx
   :offering-requests/search

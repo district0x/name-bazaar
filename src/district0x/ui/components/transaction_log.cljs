@@ -73,7 +73,8 @@
 (defn transaction-id [{{:keys [:hash]} :transaction}]
   [:div {:style tx-info-line-style}
    "Tx ID: " [d0x-misc/etherscan-link
-              {:tx-hash hash
+              {:address hash
+               :transaction? true
                :style tx-info-link-style}
               (d0x-ui-utils/truncate hash 20)]])
 

@@ -14,8 +14,9 @@
 (def default-db
   (merge
     district0x.ui.db/default-db
-    {:node-url #_"https://mainnet.infura.io/" "http://localhost:8549"
-     :server-url "http://localhost:6200"
+    {:node-url "https://mainnet.infura.io/" #_ "http://localhost:8549" #_ "http://localhost:8545"
+     :load-node-addresses? false
+     :server-url #_ "http://localhost:6200" "http://52.27.20.88:6200"
      :active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :now (t/now)
@@ -94,5 +95,5 @@
                                                  :limit constants/infinite-lists-init-load-limit}}}}
 
      :saved-searches {:offerings-search {}}
-     :watched-names {:ens/records {} :order []}
+     :watched-names {:ens/records {} :order '()}
      :infinite-list {:expanded-items {}}}))

@@ -4,16 +4,15 @@
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan put!]]
-    [cljs.pprint :as pprint]
+    [cljs.nodejs :as nodejs]
+    [district0x.server.state :as state]
     [district0x.server.utils :as d0x-server-utils :refer [fetch-abi fetch-bin link-library]]
-    [medley.core :as medley]
-    [district0x.server.state :as state])
+    [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def Web3 (js/require "web3"))
-(def TestRPC (js/require "ethereumjs-testrpc"))
 (def fs (js/require "fs"))
-(def sqlite3 (.verbose (js/require "sqlite3")))
+(def process (nodejs/require "process"))
 
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts
@@ -28,11 +27,11 @@
 
 (defn store-smart-contracts! [smart-contracts {:keys [:file-path :namespace]}]
   (let [smart-contracts (medley/map-vals #(dissoc % :instance :abi :bin) smart-contracts)]
-    (fs.writeFileSync (str (.cwd js/process) file-path)
-                      (str "(ns " namespace ") \n\n"
-                           "(def smart-contracts \n"
-                           (pprint/write smart-contracts :stream nil)
-                           ")"))))
+    (.writeFileSync fs (str (.cwd process) file-path)
+                    (str "(ns " namespace ") \n\n"
+                         "(def smart-contracts \n"
+                         (cljs.pprint/write smart-contracts :stream nil)
+                         ")"))))
 
 (defn link-contract-libraries [smart-contracts bin library-placeholders]
   (reduce (fn [bin [contract-key placeholder]]
@@ -51,16 +50,17 @@
     (go
       (let [deploy-ch (chan 2)
             [err Instance] (<! (apply web3-eth-async/contract-new
-                                    deploy-ch
-                                    (:web3 @server-state-atom)
-                                    abi
-                                    (into (vec args)
-                                          [(merge {:data (link-contract-libraries
-                                                           (:smart-contracts @server-state-atom)
-                                                           bin
-                                                           library-placeholders)
-                                                   :gas 4500000}
-                                                  opts)])))]
+                                      deploy-ch
+                                      (:web3 @server-state-atom)
+                                      abi
+                                      (into (vec args)
+                                            [(-> {:data (str "0x" (link-contract-libraries
+                                                                    (:smart-contracts @server-state-atom)
+                                                                    bin
+                                                                    library-placeholders))
+                                                  :gas 3000000}
+                                               (merge opts)
+                                               (select-keys [:from :to :gas-price :gas :value :data]))])))]
         (if err
           (println "Error deploying contract" contract-key err)
           (let [[err Instance] (<! deploy-ch)]              ;; Contract address is obtained only on second callback
@@ -85,7 +85,8 @@
     web3))
 
 (defn start-testrpc! [server-state-atom & [{:keys [:port :web3] :as testrpc-opts}]]
-  (let [ch (chan)]
+  (let [ch (chan)
+        TestRPC (js/require "ethereumjs-testrpc")]
     (if port
       (let [server (.server TestRPC (clj->js (merge {:locked false} testrpc-opts)))]
         (.listen server port (fn [err]
@@ -101,9 +102,12 @@
     ch))
 
 (defn create-db! [server-state]
-  (when-let [db (:db @server-state)]
-    (.close db))
-  (swap! server-state assoc :db (new sqlite3.Database ":memory:")))
+  (let [sqlite3 (if goog.DEBUG
+                  (.verbose (js/require "sqlite3"))
+                  (js/require "sqlite3"))]
+    (when-let [db (:db @server-state)]
+      (.close db))
+    (swap! server-state assoc :db (new sqlite3.Database ":memory:"))))
 
 
 (defn load-my-addresses! [server-state-atom]
@@ -119,12 +123,30 @@
   (let [ch (chan)]
     (go
       (let [[err tx-hash] (<! (apply web3-eth-async/contract-call args))
-            [_ tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state) tx-hash))]
+            filter-id (atom nil)]
+
         (if err
-          (println method err)
-          (when (:log-contract-calls? server-state)
-            (println method (.toLocaleString (:gas-used tx-receipt)))))
-        (>! ch [err tx-hash])))
+          (do
+            (println method err)
+            (>! ch [err tx-hash]))
+          (reset!
+            filter-id
+            (web3-eth/filter
+              (state/web3 server-state)
+              "latest"
+              (fn [err]
+                (when err
+                  (println err))
+                (go
+                  (let [[err tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state) tx-hash))]
+                    (when err
+                      (println method err))
+                    (when (and (:gas-used tx-receipt)
+                               (:block-number tx-receipt))
+                      (when (:log-contract-calls? server-state)
+                        (println method (.toLocaleString (:gas-used tx-receipt))))
+                      (web3-eth/stop-watching! @filter-id (fn [err] (when err (println err))))
+                      (>! ch [err tx-hash]))))))))))
     ch))
 
 

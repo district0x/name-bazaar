@@ -19,7 +19,7 @@
                                :app-bar {:height 56}
                                :ripple {:color primary1-color}
                                :paper {:gutter 16}
-                               :transaction-log {:highlighted (color-lighten primary1-color 0.8)}
+                               :transaction-log {:highlighted (color-lighten primary1-color 0.95)}
                                #_#_:svg-icon {:color primary1-color}
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}

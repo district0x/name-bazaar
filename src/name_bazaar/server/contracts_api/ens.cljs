@@ -17,7 +17,7 @@
                                  owner
                                  (merge {:gas 200000
                                          :from (state/active-address server-state)}
-                                        opts)))
+                                        (select-keys opts [:from :to :gas-price :gas :value :data]))))
 
 (defn set-owner! [server-state {:keys [:ens.record/node :ens.record/owner :ens.record/name]} & [opts]]
   (effects/logged-contract-call! server-state

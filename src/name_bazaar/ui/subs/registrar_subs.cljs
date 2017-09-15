@@ -27,7 +27,7 @@
     [(subscribe [:district0x/active-address])
      (subscribe [:registrar/entry label-hash])])
   (fn [[active-address registrar-entry]]
-    (= active-address (:registrar.entry.deed/owner registrar-entry))))
+    (and active-address (= active-address (:registrar.entry.deed/owner registrar-entry)))))
 
 (reg-sub
   :registrar.entry.deed/my-addresses-contain-owner?

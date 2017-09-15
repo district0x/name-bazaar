@@ -87,21 +87,23 @@
   :<- [:district0x/active-address]
   :<- [:offerings]
   (fn [[active-address offerings] [_ offering-address]]
-    (= active-address (get-in offerings [offering-address :auction-offering/winning-bidder]))))
+    (and
+      active-address
+      (= active-address (get-in offerings [offering-address :auction-offering/winning-bidder])))))
 
 (reg-sub
   :offering/active-address-original-owner?
   :<- [:district0x/active-address]
   :<- [:offerings]
   (fn [[active-address offerings] [_ offering-address]]
-    (= active-address (get-in offerings [offering-address :offering/original-owner]))))
+    (and active-address (= active-address (get-in offerings [offering-address :offering/original-owner])))))
 
 (reg-sub
   :offering/active-address-new-owner?
   :<- [:district0x/active-address]
   :<- [:offerings]
   (fn [[active-address offerings] [_ offering-address]]
-    (= active-address (get-in offerings [offering-address :offering/new-owner]))))
+    (and active-address (= active-address (get-in offerings [offering-address :offering/new-owner])))))
 
 (reg-sub
   :offering/registrar-entry

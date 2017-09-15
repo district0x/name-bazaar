@@ -34,7 +34,7 @@
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [node]]
     (let [new-db (-> db
-                   (update-in [:watched-names :order] (comp vec (partial remove #(= node %))))
+                   (update-in [:watched-names :order] (partial remove #(= node %)))
                    (update-in [:watched-names :ens/records] dissoc node))]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:watched-names]))})))

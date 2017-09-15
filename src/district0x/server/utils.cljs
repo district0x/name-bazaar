@@ -13,9 +13,10 @@
 (def fs (js/require "fs"))
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
+(def process (nodejs/require "process"))
 
 (defn fetch-contract [file-name & [{:keys [:contracts-path :response-format]
-                                    :or {contracts-path (str (.cwd js/process)
+                                    :or {contracts-path (str (.cwd process)
                                                              "/resources/public/contracts/build/")}}]]
   (.readFileSync fs (str contracts-path file-name) "utf-8"))
 

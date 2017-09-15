@@ -70,25 +70,15 @@
    :on-success on-success
    :on-failure on-failure})
 
-(defn localhost-node? [{:keys [:node-url]}]
-  (or (string/includes? node-url "localhost")
-      (string/includes? node-url "192.168")))
-
 (defn initialize-db [default-db localstorage current-url]
-  (let [web3 (if (and (d0x-ui-utils/provides-web3?)
-                      (not (localhost-node? default-db)))
+  (let [web3 (if (d0x-ui-utils/provides-web3?)
                (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
-               (web3/create-web3 (:node-url default-db)))
-        load-node-addresses? (if (and (nil? (:load-node-addresses? default-db))
-                                      localhost-node?)
-                               true
-                               (:load-node-addresses? default-db))]
+               (web3/create-web3 (:node-url default-db)))]
     (as-> default-db db
           (d0x-shared-utils/merge-in db localstorage)
           (update db :active-page merge {:query-params (medley/map-keys keyword (:query current-url))
                                          :path (:path current-url)})
           (assoc db :web3 web3)
-          (assoc db :load-node-addresses? load-node-addresses?)
           (update-in db [:transaction-log :settings] merge {:open? false :highlighted-transaction nil}))))
 
 (defn- has-tx-status? [tx-status {:keys [:status]}]
@@ -107,11 +97,11 @@
          :ga/page-view [(d0x-ui-utils/current-location-hash)]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
-         :district0x/dispatch-n (remove empty?
-                                        [(for [tx-hash (keys not-loaded-txs)]
-                                           [:district0x/load-transaction-and-receipt tx-hash])
-                                         (for [tx-hash (keys pending-txs)]
-                                           [:district0x/load-transaction-receipt tx-hash])])
+         :district0x/dispatch-n (concat
+                                  (for [tx-hash (keys not-loaded-txs)]
+                                    [:district0x/load-transaction-and-receipt tx-hash])
+                                  (for [tx-hash (keys pending-txs)]
+                                    [:district0x/load-transaction-receipt tx-hash]))
          ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
          :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000) :dispatch [:district0x/load-my-addresses]}]}
         (when conversion-rates
@@ -140,7 +130,7 @@
   :district0x/load-my-addresses
   interceptors
   (fn [{:keys [db]}]
-    (let [new-db (if (and (d0x-ui-utils/provides-web3?) (not (localhost-node? db)))
+    (let [new-db (if (d0x-ui-utils/provides-web3?)
                    (assoc db :web3 (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3"))))
                    db)]
       (merge
@@ -532,13 +522,14 @@
   :district0x-emails/load
   interceptors
   (fn [{:keys [:db]} [address]]
-    (let [instance (get-instance db :district0x-emails)]
-      {:web3-fx.contract/constant-fns
-       {:fns [{:instance instance
-               :method :emails
-               :args [address]
-               :on-success [:district0x-emails/loaded address]
-               :on-error [:district0x.log/error]}]}})))
+    (when address
+      (let [instance (get-instance db :district0x-emails)]
+        {:web3-fx.contract/constant-fns
+         {:fns [{:instance instance
+                 :method :emails
+                 :args [address]
+                 :on-success [:district0x-emails/loaded address]
+                 :on-error [:district0x.log/error]}]}}))))
 
 (reg-event-fx
   :district0x-emails/loaded

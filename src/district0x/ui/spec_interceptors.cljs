@@ -23,26 +23,24 @@
   (re-frame/->interceptor
     :id :validate-args
     :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
-              (if (and goog.DEBUG (s/valid? spec event))
-                context
-                (error-message event untrimmed-event spec)))))
+              (if (and goog.DEBUG (not (s/valid? spec event)))
+                (error-message event untrimmed-event spec)
+                context))))
 
 (defn validate-first-arg [spec]
   (re-frame/->interceptor
     :id :validate-args
     :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
-              (if (and goog.DEBUG (s/valid? spec (first event)))
-                context
-                (error-message (first event) untrimmed-event spec)))))
+              (if (and goog.DEBUG (not (s/valid? spec (first event))))
+                (error-message (first event) untrimmed-event spec)
+                context))))
 
 (defn conform-args [spec]
   (re-frame/->interceptor
     :id :conform-args
     :before (fn [{{:keys [:event :re-frame.std-interceptors/untrimmed-event]} :coeffects :as context}]
-              (if goog.DEBUG
-                (let [conformed (s/conform spec event)]
-                  (if (not= conformed ::s/invalid)
-                    (update context :coeffects merge (merge {:event [conformed]
-                                                             ::unconformed-event event}))
-                    (error-message event untrimmed-event spec)))
-                context))))
+              (let [conformed (s/conform spec event)]
+                (if (= conformed :cljs.spec.alpha/invalid)
+                  (error-message event untrimmed-event spec)
+                  (update context :coeffects merge (merge {:event [conformed]
+                                                           ::unconformed-event event})))))))

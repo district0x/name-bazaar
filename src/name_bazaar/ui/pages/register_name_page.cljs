@@ -6,6 +6,7 @@
     [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.styles :as styles]
+    [name-bazaar.ui.utils :refer [valid-ens-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -22,7 +23,9 @@
          {:floating-label-text "Name"
           :full-width @xs?
           :value @label
-          :on-change #(reset! label %2)}
+          :on-change (fn [_ value]
+                       (when (valid-ens-name? value)
+                         (reset! label value)))}
          [:span
           {:style styles/text-field-suffix}
           constants/registrar-root]]]
@@ -36,8 +39,10 @@
           :disabled (empty? @label)
           :full-width @xs?
           :on-click (fn []
-                      (dispatch [:registrar/register {:ens.record/label @label}])
-                      (reset! label ""))}]]])))
+                      (when (and (not (empty? @label))
+                                 (valid-ens-name? @label))
+                        (dispatch [:registrar/register {:ens.record/label @label}])
+                        (reset! label "")))}]]])))
 
 (defmethod page :route.mock-registrar/register []
   [side-nav-menu-center-layout

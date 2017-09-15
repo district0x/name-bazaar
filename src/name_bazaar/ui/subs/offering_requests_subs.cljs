@@ -38,7 +38,7 @@
     [(subscribe [:offering-request node])
      (subscribe [:district0x/active-address])])
   (fn [[{:keys [:offering-request/requesters]} active-address]]
-    (contains? requesters active-address)))
+    (and active-address (contains? requesters active-address))))
 
 (reg-sub
   :offering-requests.add-request/tx-pending?

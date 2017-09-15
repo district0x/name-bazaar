@@ -27,7 +27,9 @@
                    :args-order [:ens.record/node :ens.record/owner]
                    :result-href (path-for :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/node])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}}]})))
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Ownership of %s was transferred" (:ens.record/name form-data))]}]})))
 
 (reg-event-fx
   :ens.records/load
