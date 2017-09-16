@@ -19,7 +19,7 @@
                                :app-bar {:height 56}
                                :ripple {:color primary1-color}
                                :paper {:gutter 16}
-                               :transaction-log {:highlighted (color-lighten primary1-color 0.95)}
+                               :transaction-log {:highlighted-color (color-lighten primary1-color 0.95)}
                                #_#_:svg-icon {:color primary1-color}
                                #_#_:paper {:background-color theme-blue
                                            :color "#FFF"}
@@ -228,6 +228,11 @@
 (def active-address-select-field-label
   {:color "#FFF"})
 
+(def active-address-label
+  {:color "#FFF"
+   :font-size "1.3em"
+   :margin-right desktop-gutter-less})
+
 (def saved-searches-select-field
   {:width "calc(100% - 48px)"})
 
@@ -266,7 +271,7 @@
 
 (def search-results-paper-secondary
   (merge search-results-paper
-         {:min-height 200}))
+         {:min-height 250}))
 
 (def search-results-paper-headline
   (merge page-headline
@@ -424,4 +429,9 @@
 (def district0x-banner-logo
   {:width "auto"
    :height 40})
+
+(def home-page-offerings-paper
+  {:padding-left 0
+   :padding-right 0
+   :min-height 500})
 

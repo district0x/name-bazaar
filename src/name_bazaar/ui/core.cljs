@@ -36,10 +36,8 @@
                    {:async-flow {:first-dispatch [:district0x/load-smart-contracts {:version constants/contracts-version}]
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
-                                          :dispatch-n [[:district0x/watch-my-eth-balances]]}
-                                         {:when :seen?
-                                          :events [:district0x/smart-contracts-loaded]
-                                          :dispatch [:active-page-changed]}]}
+                                          :dispatch-n [[:district0x/watch-my-eth-balances]
+                                                       [:active-page-changed]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}

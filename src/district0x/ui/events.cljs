@@ -368,7 +368,9 @@
                       {:keys [:transaction-hash :gas-used] :as tx-receipt}]]
     (let [success? (not= (get-in db [:transaction-log :transactions transaction-hash :gas]) gas-used)]
       (merge
-        {:district0x/dispatch [:district0x/transaction-receipt-loaded tx-receipt]}
+        {:district0x/dispatch-n [[:district0x/transaction-receipt-loaded tx-receipt]
+                                 ;; MetaMask can load transaction only at receipt time, not earlier
+                                 [:district0x/load-transaction transaction-hash]]}
         (when (and success? on-tx-receipt)
           {:dispatch (vec (concat on-tx-receipt [form-data tx-receipt]))})
         (when (and success? on-tx-receipt-n)
@@ -379,25 +381,27 @@
 (reg-event-fx
   :district0x/load-transaction
   [interceptors]
-  (fn [{:keys [:db]} [transaction-hash]]
+  (fn [{:keys [:db]} [transaction-hash & a]]
     {:web3-fx.blockchain/fns
      {:web3 (:web3 db)
       :fns [{:f web3-eth/get-transaction
              :args [transaction-hash]
-             :on-success [:district0x/transaction-loaded]
+             :on-success [:district0x/transaction-loaded transaction-hash]
              :on-error [:district0x.log/error :district0x/load-transaction transaction-hash]}]}}))
 
 (reg-event-fx
   :district0x/transaction-loaded
   [interceptors]
-  (fn [{:keys [:db]} [{:keys [:gas :hash] :as transaction}]]
-    (let [gas-used (get-in db [:transaction-log :transactions hash :gas-used])
-          transaction (assoc transaction :status (if gas-used
-                                                   (if (= gas-used gas)
-                                                     :tx.status/failure
-                                                     :tx.status/success)
-                                                   :tx.status/pending))]
-      {:dispatch [:district0x.transactions/update hash transaction]})))
+  (fn [{:keys [:db]} [transaction-hash {:keys [:gas] :as transaction}]]
+    (let [gas-used (get-in db [:transaction-log :transactions transaction-hash :gas-used])
+          transaction (-> transaction
+                        (assoc :status (if (and gas gas-used)
+                                         (if (= gas-used gas)
+                                           :tx.status/failure
+                                           :tx.status/success)
+                                         :tx.status/pending))
+                        (assoc :hash transaction-hash))]
+      {:dispatch [:district0x.transactions/update transaction-hash transaction]})))
 
 (reg-event-fx
   :district0x/load-transaction-receipt

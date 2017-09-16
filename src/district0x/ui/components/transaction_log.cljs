@@ -17,7 +17,7 @@
 (def tx-value-style {:line-height "18px" :font-size "18px"})
 (def no-txs-row-style {:text-align "center" :width "100%" :font-size "12px" :color "#333" :height 300})
 (def icon-menu-style {:padding-left 0})
-(def icon-menu-list-style {:padding-top 10 :padding-left 0})
+(def icon-menu-list-style {:padding-top 10 :padding-left 0 :width 336})
 (def tx-info-line-style {:line-height "14px" :font-size "11.5px" :color "#333"})
 (def tx-info-link-style {:text-decoration :underline})
 (def tx-status-row-style {:line-height "10px" :font-size "10px"})
@@ -59,9 +59,15 @@
 (defn transaction-gas [{{:keys [:status :gas :gas-used :gas-used-cost]} :transaction}]
   [:div
    {:style tx-info-line-style}
-   (if (contains? #{:tx.status/success :tx.status/failure} status)
+   (cond
+     (contains? #{:tx.status/success :tx.status/failure} status)
      (str "Gas used: " (d0x-ui-utils/to-locale-string gas-used 0) (when gas-used-cost "($" gas-used-cost ")"))
-     (str "Gas limit: " gas))])
+
+     gas
+     (str "Gas limit: " gas)
+
+     :else
+     (str "Gas used: ..."))])
 
 (defn transaction-from [{{:keys [:tx-opts]} :transaction}]
   [:div {:style tx-info-line-style}
@@ -112,7 +118,7 @@
      (r/merge-props
        {:style (merge
                  (when highlighted?
-                   (when-let [highlighted-color (current-component-mui-theme "transactionLog" "highlighted")]
+                   (when-let [highlighted-color (current-component-mui-theme "transactionLog" "highlightedColor")]
                      {:background-color highlighted-color}))
                  (when-not last?
                    (or tx-item-border-bottom-style border-bottom-style)))

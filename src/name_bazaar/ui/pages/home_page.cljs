@@ -87,8 +87,7 @@
     :style (merge styles/margin-bottom-gutter
                   styles/text-left)}
    [paper
-    {:style {:padding-left 0
-             :padding-right 0}}
+    {:style styles/home-page-offerings-paper}
     [:h2
      {:style (merge styles/margin-bottom-gutter-less
                     styles/margin-left-gutter-mini)}
@@ -106,7 +105,8 @@
                     styles/margin-right-gutter-mini
                     styles/margin-top-gutter-mini)}
      [:a
-      {:href show-more-href}
+      {:style styles/text-decor-none
+       :href show-more-href}
       "Show more"]]]])
 
 (defn offering-boxes []

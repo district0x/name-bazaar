@@ -42,7 +42,8 @@
         {:icon-menu-props {:style {:margin-right styles/desktop-gutter-mini}}}]
        (when-not @xs-sm?
          [active-address-select-field
-          {:select-field-props {:label-style styles/active-address-select-field-label}}])])))
+          {:select-field-props {:label-style styles/active-address-select-field-label}
+           :single-address-props {:style styles/active-address-label}}])])))
 
 (defn side-nav-menu-logo []
   [a
