@@ -38,4 +38,4 @@
          (when xs?
            [placeholder-masker {:height 5 :top 37 :full-width true}])
          (when xs?
-           [placeholder-masker {:height 20 :top 40 :left-offset-perc-min 40 :left-offset-perc-max 70}])]))))
+           [placeholder-masker {:height 20 :top 40 :left-offset-perc-min 30 :left-offset-perc-max 50}])]))))

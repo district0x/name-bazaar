@@ -128,7 +128,7 @@
                    :form-data form-data
                    :contract-address (:offering/address form-data)
                    :result-href (path-for :route.offerings/detail form-data)
-                   :tx-opts {:gas 100000
+                   :tx-opts {:gas 200000
                              :gas-price default-gas-price
                              :value (eth->wei (:offering/price form-data))}
                    :wei-keys #{:offering/price}
@@ -538,7 +538,7 @@
                     [:offerings/search {:search-results-path [:search-results :offerings :home-page-ending-soon]
                                         :params (merge common-params
                                                        {:order-by-columns [:end-time]
-                                                        :order-by-dirs [:desc]})}]]})))
+                                                        :order-by-dirs [:asc]})}]]})))
 
 (reg-event-fx
   :offerings.saved-searches/add

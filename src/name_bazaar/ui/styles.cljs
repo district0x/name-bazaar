@@ -246,7 +246,7 @@
    :animation-duration "1s"
    :animation-fill-mode "forwards"
    :animation-iteration-count "infinite"
-   :animation-name "placeHolderShimmer"
+   :animation-name (if xs? "placeHolderShimmerShort" "placeHolderShimmer")
    :animation-timing-function "linear"
    :background-color "#f6f7f8"
    :background "linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%)"
