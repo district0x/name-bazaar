@@ -81,7 +81,7 @@
                                                                       (namehash
                                                                        "abc.eth")
                                                                       :owner (state/my-address 0)})
-                           (timeout 1000)])]
+                           (timeout 5000)])]
                (is (not (nil? offering)))
                (when offering
                  (is (tx-sent? (<! (registrar/transfer! ss
@@ -127,7 +127,7 @@
                                                                       (namehash
                                                                        "abc.eth")
                                                                       :owner (state/my-address 0)})
-                           (timeout 1000)])]
+                           (timeout 5000)])]
                (is (not (nil? offering)))
                (if offering
                  (do
