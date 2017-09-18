@@ -218,31 +218,31 @@
                  :routes constants/routes}]}))
 
 (reg-event-fx
-  :offering/reclaim-ownership
-  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
-  (fn [{:keys [:db]} [form-data]]
-    (let [offering-name (get-offering-name db (:offering/address form-data))]
-      {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Reclaim ownership from %s offering" offering-name)
-                   :contract-key :buy-now-offering
-                   :contract-method :reclaim-ownership
-                   :form-data form-data
-                   :contract-address (:offering/address form-data)
-                   :result-href (path-for :route.offerings/detail form-data)
-                   :form-id (select-keys form-data [:offering/address])
-                   :tx-opts {:gas 200000 :gas-price default-gas-price}
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Ownership of %s was reclaimed" offering-name)]}]})))
+ :offering/reclaim-ownership
+ [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
+ (fn [{:keys [:db]} [form-data]]
+   (let [offering-name (get-offering-name db (:offering/address form-data))]
+     {:dispatch [:district0x/make-transaction
+                 {:name (gstring/format "Reclaim ownership from %s offering" offering-name)
+                  :contract-key :buy-now-offering
+                  :contract-method :reclaim-ownership
+                  :form-data form-data
+                  :contract-address (:offering/address form-data)
+                  :result-href (path-for :route.offerings/detail form-data)
+                  :form-id (select-keys form-data [:offering/address])
+                  :tx-opts {:gas 200000 :gas-price default-gas-price}
+                  :on-tx-receipt [:district0x.snackbar/show-message
+                                  (gstring/format "Ownership of %s was reclaimed" offering-name)]}]})))
 
 (reg-event-fx
-  :offerings/search
-  interceptors
-  (fn [{:keys [:db]} [opts]]
-    {:dispatch [:district0x.search-results/load
-                (merge
-                  {:endpoint "/offerings"
-                   :on-success [:offerings/load]}
-                  opts)]}))
+ :offerings/search
+ interceptors
+ (fn [{:keys [:db]} [opts]]
+   {:dispatch [:district0x.search-results/load
+               (merge
+                {:endpoint "/offerings"
+                 :on-success [:offerings/load]}
+                opts)]}))
 
 (reg-event-fx
   :offerings/load
@@ -401,30 +401,32 @@
     {:db (assoc-in db [:offerings-main-search-drawer :open?] open?)}))
 
 (reg-event-fx
-  :offerings.user-bids/search
-  interceptors
-  (fn [{:keys [:db]} [search-params opts]]
-    {:dispatch [:offerings/search
-                (merge
-                  {:search-results-path [:search-results :offerings :user-bids]
-                   :append? true
-                   :params search-params}
-                  opts)]}))
+ :offerings.user-bids/search
+ interceptors
+ (fn [{:keys [:db]} [search-params opts]]
+   {:dispatch [:offerings/search
+               (merge
+                {:search-results-path [:search-results :offerings :user-bids]
+                 :append? true
+                 :params search-params}
+                opts)]}))
 
 (reg-event-fx
-  :offerings.main-search/set-params-and-search
-  interceptors
-  (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :main-search]
-          search-params-path (conj search-results-path :params)
-          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db db
-       :dispatch [:offerings/search {:search-results-path search-results-path
-                                     :append? (:append? opts)
-                                     :params (d0x-shared-utils/update-multi
-                                               search-params
-                                               [:min-price :max-price]
-                                               d0x-shared-utils/safe-eth->wei->num)}]})))
+ :offerings.main-search/set-params-and-search
+ interceptors
+ (fn [{:keys [:db]} [search-params opts]]
+   (let [search-results-path [:search-results :offerings :main-search]
+         search-params-path (conj search-results-path :params)
+         {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
+     {:db (assoc-in db search-params-path search-params)
+      :dispatch-debounce {:key :offerings/search
+                          :event [:offerings/search {:search-results-path search-results-path
+                                                     :append? (:append? opts)
+                                                     :params (d0x-shared-utils/update-multi
+                                                              search-params
+                                                              [:min-price :max-price]
+                                                              d0x-shared-utils/safe-eth->wei->num)}]
+                          :delay 300}})))
 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search
@@ -547,7 +549,7 @@
     {:dispatch [:saved-searches/add :offerings-search query-string saved-search-name]}))
 
 (reg-event-fx
-  :offerings.saved-searches/remove
-  interceptors
-  (fn [{:keys [:db]} [query-string]]
-    {:dispatch [:saved-searches/remove :offerings-search query-string]}))
+ :offerings.saved-searches/remove
+ interceptors
+ (fn [{:keys [:db]} [query-string]]
+   {:dispatch [:saved-searches/remove :offerings-search query-string]}))

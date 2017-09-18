@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [
-                 ;[district0x "0.1.10"]
+                                        ;[district0x "0.1.10"]
                  [cljs-http "0.1.43"]
                  [cljs-react-material-ui "0.2.48"]
                  [cljs-web3 "0.19.0-0-5"]
@@ -22,7 +22,8 @@
                  [org.clojure/clojurescript "1.9.854"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4" :exclusions [reagent]]
-
+                 [re-frisk "0.4.4"]
+                 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
                  [bidi "2.1.1"]
@@ -35,7 +36,7 @@
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 ;[com.cemerick/url "0.1.1"]
+                                        ;[com.cemerick/url "0.1.1"]
                  [day8.re-frame/http-fx "0.1.3"]
                  [kibu/pushy "0.3.6"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
