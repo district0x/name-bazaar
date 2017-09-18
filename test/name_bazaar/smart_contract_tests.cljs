@@ -162,7 +162,19 @@
 
                                        [:auction-offering/min-bid-increase
                                         :auction-offering/winning-bidder
-                                        :auction-offering/bid-count])))))
+                                        :auction-offering/bid-count])))
+
+                   (is (tx-failed? (<! (auction-offering/finalize! ss
+                                                             {:offering/address offering
+                                                              :offering/transferPrice true}
+                                                             {:from (state/my-address 0)}))))
+                   (<! (timeout 5000))
+                   (is (tx-sent? (<! (auction-offering/finalize! ss
+                                                             {:offering/address offering
+                                                              :offering/transferPrice true}
+                                                             {:from (state/my-address 0)}))))
+                   (is (= (state/my-address 3) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                          "abc.eth")})))))))
                (done)))
            (go
              (is (tx-sent? (<! (registrar/register! ss {:ens.record/label "abc"} {:from (state/my-address 0)}))))
@@ -170,13 +182,12 @@
                                 ss
                                 {:offering/name "abc.eth"
                                  :offering/price (eth->wei 0.1)
-                                 :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
-                                 :auction-offering/extension-duration (rand-int 10000)
+                                 :auction-offering/end-time (to-epoch (time/plus (time/now) (time/seconds 5)))
+                                 :auction-offering/extension-duration 0
                                  :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                                 {:from (state/my-address 0)}))))
 
              ;; TODO more
-
              ;; (done)
 
              ))))
