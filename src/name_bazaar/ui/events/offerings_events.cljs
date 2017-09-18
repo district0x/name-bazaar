@@ -432,7 +432,7 @@
                                                  [:name :min-price :max-price])
                                     300
                                     0)}})))
-
+ 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search
   interceptors
