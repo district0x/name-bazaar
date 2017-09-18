@@ -12,6 +12,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
+    [name-bazaar.ui.events.events-utils :as events-utils]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
@@ -418,13 +419,19 @@
     (let [search-results-path [:search-results :offerings :main-search]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db db
-       :dispatch [:offerings/search {:search-results-path search-results-path
-                                     :append? (:append? opts)
-                                     :params (d0x-shared-utils/update-multi
-                                               search-params
-                                               [:min-price :max-price]
-                                               d0x-shared-utils/safe-eth->wei->num)}]})))
+      {:db (assoc-in db search-params-path search-params)
+       :dispatch-debounce {:key :offerings/search
+                           :event [:offerings/search {:search-results-path search-results-path
+                                                      :append? (:append? opts)
+                                                      :params (d0x-shared-utils/update-multi
+                                                               search-params
+                                                               [:min-price :max-price]
+                                                               d0x-shared-utils/safe-eth->wei->num)}]
+                           :delay (if (events-utils/debounce? (get-in db search-params-path)
+                                                 search-params
+                                                 [:name :min-price :max-price])
+                                    300
+                                    0)}})))
 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search

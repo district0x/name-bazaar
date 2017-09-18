@@ -10,6 +10,7 @@
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
+    [name-bazaar.ui.events.events-utils :as events-utils]
     [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
@@ -98,9 +99,15 @@
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
       {:db db
-       :dispatch [:offering-requests/search {:search-results-path search-results-path
-                                             :append? (:append? opts)
-                                             :params search-params}]})))
+       :dispatch-debounce {:key :offering-requests/search
+                           :event [:offering-requests/search {:search-results-path search-results-path
+                                                              :append? (:append? opts)
+                                                              :params search-params}]
+                           :delay  (if (events-utils/debounce? (get-in db search-params-path)
+                                                 search-params
+                                                 [:name :min-price :max-price])
+                                    300
+                                    0)}})))
 
 (reg-event-fx
   :offering-requests.list-item/expanded
