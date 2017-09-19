@@ -34,12 +34,6 @@
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 (set! js/Web3 Web3)
 
-(defn send-async-fn [web3]
-  (fn [& args]
-    (apply js-invoke
-           (aget web3 "currentProvider")
-           "sendAsync" args)))
-
 (def total-accounts 10)
 
 (swap! *server-state* assoc :log-contract-calls? false)
