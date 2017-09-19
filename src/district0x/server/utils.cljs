@@ -62,6 +62,4 @@
 (def tx-sent? (comp d0x-shared-utils/sha3? second))
 
 (defn tx-failed? [tx]
-  (when-let [ftx (first tx)]
-    (when-let [n (aget ftx "name")]
-      (= "Error" n))))
+  (not (nil? (first tx))))
