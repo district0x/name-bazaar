@@ -5,6 +5,7 @@ pom.xml
 pom.xml.asc
 *.jar
 *.class
+package-lock.json
 /.lein-*
 /.nrepl-port
 .hgignore
@@ -21,5 +22,6 @@ pom.xml.asc
 /dev-server/
 /server/
 /dev-tests/
+/browser-tests/
 /src/name_bazaar/server/repl.cljs
 /resources/public/css/name-bazaar.main.css.map

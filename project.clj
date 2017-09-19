@@ -8,6 +8,7 @@
                  [cljs-http "0.1.43"]
                  [cljs-react-material-ui "0.2.48"]
                  [cljs-web3 "0.19.0-0-5"]
+                 [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.5.10-0"]
                  [cljsjs/react "15.6.1-1"]
                  [cljsjs/react-dom "15.6.1-1"]
@@ -16,7 +17,7 @@
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.0"]
-                 [lein-doo "0.1.7"]
+                 ;; [lein-doo "0.1.7"]
                  [madvas/reagent-patched "0.8.0-alpha1"]
                  [medley "0.8.3"]
                  [org.clojure/clojurescript "1.9.854"]
@@ -57,7 +58,15 @@
                        [sqlite3 "3.1.8"]
                        [web3 "0.19.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]]}
+                       [xhr2 "0.1.4"]]
+        :devDependencies [[karma "1.5.0"]
+                          [karma-chrome-launcher "2.0.0"]
+                          [karma-cli "1.0.1"]
+                          [karma-cljs-test "0.1.0"]
+                          [karma-firefox-launcher "1.0.1"]
+                          [karma-safari-launcher "1.0.0"]]}
+
+  :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
 
   :min-lein-version "2.5.3"
 
@@ -86,58 +95,66 @@
                              [org.clojure/tools.nrepl "0.2.13"]]
               :plugins [[lein-figwheel "0.5.11"]]
               :source-paths ["dev"]
-              :resource-paths ["resources"]
-              :cljsbuild {:builds [{:id "dev"
-                                    :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
-                                                   "src/district0x/ui" "src/district0x/shared"]
-                                    :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
-                                    :compiler {:main "name-bazaar.ui.core"
-                                               :output-to "resources/public/js/compiled/app.js"
-                                               :output-dir "resources/public/js/compiled/out"
-                                               :asset-path "js/compiled/out"
-                                               :source-map-timestamp true
-                                               :preloads [print.foo.preloads.devtools]
-                                               :closure-defines {goog.DEBUG true}
-                                               :external-config {:devtools/config {:features-to-install :all}}}}
-                                   {:id "dev-server"
-                                    :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                                   "src/district0x/server" "src/district0x/shared"]
-                                    :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
-                                    :compiler {:main "name-bazaar.server.dev"
-                                               :output-to "dev-server/name-bazaar.js",
-                                               :output-dir "dev-server",
-                                               :target :nodejs,
-                                               :optimizations :none,
-                                               :closure-defines {goog.DEBUG true}
-                                               :source-map true}}
-                                   {:id "server"
-                                    :source-paths ["src"]
-                                    :compiler {:main "name-bazaar.server.core"
-                                               :output-to "server/name-bazaar.js",
-                                               :output-dir "server",
-                                               :target :nodejs,
-                                               :optimizations :simple,
-                                               :source-map "server/name-bazaar.js.map"
-                                               :closure-defines {goog.DEBUG false}
-                                               :pretty-print false
-                                               :pseudo-names false}}
-                                   {:id "min"
-                                    :source-paths ["src"]
-                                    :compiler {:main "name-bazaar.ui.core"
-                                               :output-to "resources/public/js/compiled/app.js"
-                                               :optimizations :advanced
-                                               :closure-defines {goog.DEBUG false}
-                                               :pretty-print false
-                                               :pseudo-names false}}
-                                   {:id "dev-tests"
-                                    :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                                   "src/district0x/server" "src/district0x/shared"
-                                                   "test"]
-                                    :figwheel true
-                                    :compiler {:main "name-bazaar.run-tests"
-                                               :output-to "dev-tests/name-bazaar-tests.js",
-                                               :output-dir "dev-tests",
-                                               :target :nodejs,
-                                               :optimizations :none,
-                                               :verbose false
-                                               :source-map true}}]}}})
+              :resource-paths ["resources"]}}
+
+  :cljsbuild {:builds [{:id "dev"
+                        :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
+                                       "src/district0x/ui" "src/district0x/shared"]
+                        :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :output-dir "resources/public/js/compiled/out"
+                                   :asset-path "js/compiled/out"
+                                   :source-map-timestamp true
+                                   :preloads [print.foo.preloads.devtools]
+                                   :closure-defines {goog.DEBUG true}
+                                   :external-config {:devtools/config {:features-to-install :all}}}}
+                       {:id "dev-server"
+                        :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
+                                       "src/district0x/server" "src/district0x/shared"]
+                        :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
+                        :compiler {:main "name-bazaar.server.dev"
+                                   :output-to "dev-server/name-bazaar.js",
+                                   :output-dir "dev-server",
+                                   :target :nodejs,
+                                   :optimizations :none,
+                                   :closure-defines {goog.DEBUG true}
+                                   :source-map true}}
+                       {:id "server"
+                        :source-paths ["src"]
+                        :compiler {:main "name-bazaar.server.core"
+                                   :output-to "server/name-bazaar.js",
+                                   :output-dir "server",
+                                   :target :nodejs,
+                                   :optimizations :simple,
+                                   :source-map "server/name-bazaar.js.map"
+                                   :closure-defines {goog.DEBUG false}
+                                   :pretty-print false
+                                   :pseudo-names false}}
+                       {:id "min"
+                        :source-paths ["src"]
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :optimizations :advanced
+                                   :closure-defines {goog.DEBUG false}
+                                   :pretty-print false
+                                   :pseudo-names false}}
+                       {:id "dev-tests"
+                        :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
+                                       "src/district0x/server" "src/district0x/shared"
+                                       "test"]
+                        :figwheel true
+                        :compiler {:main "name-bazaar.run-tests"
+                                   :output-to "dev-tests/name-bazaar-tests.js",
+                                   :output-dir "dev-tests",
+                                   :target :nodejs,
+                                   :optimizations :none,
+                                   :verbose false
+                                   :source-map true}}
+                       {:id "browser-tests"
+                        :source-paths ["src/name_bazaar" "src/district0x" "test/browser"]
+                        :notify-command ["npm install"]
+                        :compiler {:output-to "browser-tests/name-bazaar-tests.js",
+                                   :output-dir "browser-tests",
+                                   :main browser.browser
+                                   :optimizations :none}}]})
