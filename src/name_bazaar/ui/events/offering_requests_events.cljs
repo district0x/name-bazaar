@@ -10,8 +10,7 @@
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.events.events-utils :as events-utils]
-    [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params]]
+    [name-bazaar.ui.utils :as utils :refer [namehash normalize path-for update-search-results-params]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -94,20 +93,20 @@
 (reg-event-fx
   :offering-requests.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]
+  (fn [{old-db :db} [old-search-params opts]]
     (let [search-results-path [:search-results :offering-requests :main-search]
           search-params-path (conj search-results-path :params)
-          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db db
+          {new-db :db new-search-params :search-params} (update-search-results-params old-db search-params-path old-search-params opts)]
+      {:db new-db
        :dispatch-debounce {:key :offering-requests/search
                            :event [:offering-requests/search {:search-results-path search-results-path
                                                               :append? (:append? opts)
-                                                              :params search-params}]
-                           :delay  (if (events-utils/debounce? (get-in db search-params-path)
-                                                 search-params
-                                                 [:name :min-price :max-price])
-                                    300
-                                    0)}})))
+                                                              :params new-search-params}]
+                           :delay  (if (utils/debounce? (get-in old-db search-params-path)
+                                                        new-search-params
+                                                        [:name])
+                                     300
+                                     0)}})))
 
 (reg-event-fx
   :offering-requests.list-item/expanded

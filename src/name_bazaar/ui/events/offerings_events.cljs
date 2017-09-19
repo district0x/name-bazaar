@@ -12,9 +12,8 @@
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
-    [name-bazaar.ui.events.events-utils :as events-utils]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
+    [name-bazaar.ui.utils :as utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -415,21 +414,21 @@
 (reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]
+  (fn [{old-db :db} [old-search-params opts]]
     (let [search-results-path [:search-results :offerings :main-search]
           search-params-path (conj search-results-path :params)
-          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db (assoc-in db search-params-path search-params)
+          {new-db :db new-search-params :search-params} (update-search-results-params old-db search-params-path old-search-params opts)]
+      {:db new-db
        :dispatch-debounce {:key :offerings/search
                            :event [:offerings/search {:search-results-path search-results-path
                                                       :append? (:append? opts)
                                                       :params (d0x-shared-utils/update-multi
-                                                               search-params
+                                                               new-search-params
                                                                [:min-price :max-price]
                                                                d0x-shared-utils/safe-eth->wei->num)}]
-                           :delay (if (events-utils/debounce? (get-in db search-params-path)
-                                                 search-params
-                                                 [:name :min-price :max-price])
+                           :delay (if (utils/debounce? (get-in old-db search-params-path)
+                                                       new-search-params
+                                                       [:name :min-price :max-price])
                                     300
                                     0)}})))
  
