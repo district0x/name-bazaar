@@ -15,7 +15,7 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.shared.key-utils :refer [encrypt encode-base64]]
+    [district0x.shared.key-utils :refer [encrypt encode-base64 get-current-keypair]]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [map-selected-values]]
     [district0x.ui.db]
@@ -511,8 +511,7 @@
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
                       form-data)
-          ;; TODO: pubkey
-          public-key nil]
+          public-key (:public-key (get-current-keypair))]
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))

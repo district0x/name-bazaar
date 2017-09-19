@@ -1,35 +1,50 @@
 (ns name-bazaar.ui.core
   (:require
-    [cljs-time.extend]
-    [cljs.spec.alpha :as s]
-    [cljsjs.material-ui]
-    [cljsjs.react-flexbox-grid]
-    [cljsjs.web3]
-    [district0x.ui.events]
-    [district0x.ui.subs]
-    [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
-    [name-bazaar.ui.components.main-panel :refer [main-panel]]
-    [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.db]
-    [name-bazaar.ui.events]
-    [name-bazaar.ui.subs]
-    [print.foo :include-macros true]
-    [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
-    [reagent.core :as r]
-    [district0x.ui.utils :as d0x-ui-utils]))
+   [cljs-time.extend]
+   [cljs.spec.alpha :as s]
+   [cljsjs.material-ui]
+   [cljsjs.react-flexbox-grid]
+   [cljsjs.web3]
+   [district0x.shared.key-utils :as key-utils :refer [set-current-keypair! default-keypair]]
+   [district0x.ui.events]
+   [district0x.ui.subs]
+   [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
+   [name-bazaar.ui.components.main-panel :refer [main-panel]]
+   [name-bazaar.ui.constants :as constants]
+   [name-bazaar.ui.db]
+   [name-bazaar.ui.events]
+   [name-bazaar.ui.subs]
+   [print.foo :include-macros true]
+   [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
+   [re-frisk.core :refer [enable-re-frisk!]]   
+   [reagent.core :as r]
+   [district0x.ui.utils :as d0x-ui-utils]))
 
-(enable-console-print!)
+(def debug?
+  ^boolean js/goog.DEBUG)
+
+(defn dev-setup []
+  (when debug?
+    (enable-console-print!)
+    (enable-re-frisk!)
+    (println "dev mode")))
+
+(defn keypair-setup []
+  (when debug?
+    (set-current-keypair! default-keypair)))
 
 (defn mount-root []
   (s/check-asserts goog.DEBUG)
-  (google-analytics-fx/set-enabled! (not goog.DEBUG))
+  (google-analytics-fx/set-enabled! (not debug?))
   (clear-subscription-cache!)
-  ;(.clear js/console)
+  ;; (.clear js/console)
   (r/render [main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []
   (s/check-asserts goog.DEBUG)
-  (google-analytics-fx/set-enabled! (not goog.DEBUG))
+  (dev-setup)
+  (keypair-setup)
+  (google-analytics-fx/set-enabled! (not debug?))
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects

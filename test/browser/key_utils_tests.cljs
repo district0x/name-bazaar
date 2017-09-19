@@ -18,5 +18,5 @@
           decoded-content (->> base64-encrypted-content
                                (key-utils/decode-base64)
                                (key-utils/decrypt (:private-key keypair)))]
-      (is (= content decoded-content)))))
+         (is (= content decoded-content)))))
 

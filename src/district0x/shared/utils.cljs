@@ -201,3 +201,7 @@
 
 (defn rand-nth-except [exception coll]
   (first (shuffle (remove (partial = exception) coll))))
+
+(defn env
+  []
+  (js->clj (.env node/process)))
