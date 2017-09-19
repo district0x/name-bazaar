@@ -17,7 +17,7 @@
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.0"]
-                 ;; [lein-doo "0.1.7"]
+                 [lein-doo "0.1.7"]
                  [madvas/reagent-patched "0.8.0-alpha1"]
                  [medley "0.8.3"]
                  [org.clojure/clojurescript "1.9.854"]
@@ -156,7 +156,7 @@
                                    :source-map true}}
                        {:id "browser-tests"
                         :source-paths ["src/name_bazaar" "src/district0x" "test/browser"]
-                        :notify-command ["npm install"]
+                        :notify-command ["lein npm install"]
                         :compiler {:output-to "browser-tests/name-bazaar-tests.js",
                                    :output-dir "browser-tests",
                                    :main browser.browser
