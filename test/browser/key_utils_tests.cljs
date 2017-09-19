@@ -1,6 +1,6 @@
 (ns browser.key-utils-tests
   (:require [cljs.test :refer-macros [deftest is testing run-tests]]
-            [district0x.server.key-utils :as key-utils]))
+            [district0x.shared.key-utils :as key-utils]))
 
 (defn contains-many? [m & ks]
   (every? #(contains? m %) ks))
@@ -19,3 +19,4 @@
                                (key-utils/decode-base64)
                                (key-utils/decrypt (:private-key keypair)))]
       (is (= content decoded-content)))))
+

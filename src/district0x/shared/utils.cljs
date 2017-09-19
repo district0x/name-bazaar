@@ -108,6 +108,16 @@
             (get m arg-key)))
         keys-order))
 
+(defn map-selected-values [m key-set f]
+  {:pre [(set? key-set)]}
+  (reduce 
+   (fn [result [k v]] 
+     (assoc result k (if (contains? key-set k) 
+                       (f v)
+                       v))) 
+   {} 
+   m))
+
 (defn map-selected-keys [f keyseq m]
   (let [keyseq (set keyseq)]
     (into {}

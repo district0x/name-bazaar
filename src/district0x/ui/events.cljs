@@ -15,8 +15,9 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
+    [district0x.shared.key-utils :refer [encrypt encode-base64]]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :as d0x-shared-utils :refer [map-selected-values]]
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.interval-fx]
@@ -503,24 +504,29 @@
     {:dispatch-n [[:district0x/load-transaction transaction-hash]
                   [:district0x/load-transaction-receipt transaction-hash]]}))
 
-
 (reg-event-fx
   :district0x-emails/set-email
   [interceptors (validate-first-arg (s/keys :req [:district0x-emails/email] :opt [:district0x-emails/address]))]
   (fn [{:keys [:db]} [form-data submit-props]]
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
-                      form-data)]
+                      form-data)
+          ;; TODO: pubkey
+          public-key nil]
       {:dispatch [:district0x/make-transaction
                   (merge
-                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
-                     :contract-key :district0x-emails
-                     :contract-method :set-email
-                     :form-data form-data
-                     :args-order [:district0x-emails/email]
-                     :form-id (select-keys form-data [:district0x-emails/address])
-                     :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
-                    submit-props)]})))
+                   {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
+                    :contract-key :district0x-emails
+                    :contract-method :set-email
+                    :form-data (map-selected-values form-data
+                                                    #{:district0x-emails/email}
+                                                    #(->> %
+                                                          (encrypt public-key) 
+                                                          (encode-base64)))
+                    :args-order [:district0x-emails/email]
+                    :form-id (select-keys form-data [:district0x-emails/address])
+                    :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
+                   submit-props)]})))
 
 (reg-event-fx
   :district0x-emails/load

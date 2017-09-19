@@ -1,4 +1,4 @@
-(ns district0x.server.key-utils
+(ns district0x.shared.key-utils
   (:require
    [cljsjs.eccjs :as eccjs]
    [goog.crypt.base64 :as base64]))
