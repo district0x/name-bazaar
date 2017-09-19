@@ -223,11 +223,9 @@
                                                                    {:offering/address offering
                                                                     :offering/transferPrice true}
                                                                    {:from (state/my-address 0)})))))
-                 ((send-async-fn (state/web3 ss))
-                  (clj->js {:jsonrpc "2.0"
-                            :method "evm_increaseTime"
-                            :params [(time/in-seconds (time/days 15))]
-                            :id (.getTime (js/Date.))})
+                 (web3-evm/increase-time!
+                  (state/web3 ss)
+                  [(time/in-seconds (time/days 15))]
                   (fn nearfuture [_]
                     (go
                       (testing
