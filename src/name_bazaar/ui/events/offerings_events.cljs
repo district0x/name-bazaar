@@ -13,7 +13,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :as utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -426,7 +426,7 @@
                                                                new-search-params
                                                                [:min-price :max-price]
                                                                d0x-shared-utils/safe-eth->wei->num)}]
-                           :delay (if (utils/debounce? (get-in old-db search-params-path)
+                           :delay (if (debounce? (get-in old-db search-params-path)
                                                        new-search-params
                                                        [:name :min-price :max-price])
                                     300
