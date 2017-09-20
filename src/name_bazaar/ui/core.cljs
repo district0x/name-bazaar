@@ -5,7 +5,6 @@
    [cljsjs.material-ui]
    [cljsjs.react-flexbox-grid]
    [cljsjs.web3]
-   [district0x.shared.key-utils :as key-utils :refer [set-current-keypair! default-keypair]]
    [district0x.ui.events]
    [district0x.ui.subs]
    [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
@@ -16,7 +15,7 @@
    [name-bazaar.ui.subs]
    [print.foo :include-macros true]
    [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
-   [re-frisk.core :refer [enable-re-frisk!]]   
+   [re-frisk.core :refer [enable-re-frisk!]]
    [reagent.core :as r]
    [district0x.ui.utils :as d0x-ui-utils]))
 
@@ -29,10 +28,6 @@
     (enable-re-frisk!)
     (println "dev mode")))
 
-(defn keypair-setup []
-  (when debug?
-    (set-current-keypair! default-keypair)))
-
 (defn mount-root []
   (s/check-asserts goog.DEBUG)
   (google-analytics-fx/set-enabled! (not debug?))
@@ -43,7 +38,6 @@
 (defn ^:export init []
   (s/check-asserts goog.DEBUG)
   (dev-setup)
-  (keypair-setup)
   (google-analytics-fx/set-enabled! (not debug?))
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
@@ -60,6 +54,3 @@
   (set! (.-onhashchange js/window)
         #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
   (mount-root))
-
-
-

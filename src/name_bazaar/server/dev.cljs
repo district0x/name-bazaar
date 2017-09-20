@@ -15,6 +15,7 @@
     [district0x.server.effects :as d0x-effects]
     [district0x.server.state :as state :refer [*server-state*]]
     [district0x.server.utils :as u :refer [watch-event-once]]
+    [district0x.shared.config :as config]
     [goog.date.Date]
     [honeysql.core :as sql]
     [honeysql.helpers :as sql-helpers]
@@ -52,6 +53,7 @@
 (def testrpc-port 8549)
 
 (defn on-jsload []
+  (config/load-config! config/default-config)
   (api-server/start! api-port)
   (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
 
@@ -91,5 +93,3 @@
   (run-mainnet!)
   (name-bazaar.server.core/-main)
   (state/my-addresses))
-
-

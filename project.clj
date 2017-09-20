@@ -24,7 +24,7 @@
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
                  [re-frisk "0.4.4"]
-                 
+
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
                  [bidi "2.1.1"]
@@ -44,7 +44,7 @@
                  [madvas.re-frame/web3-fx "0.1.11"]]
 
   :exclusions [reagent]
-  
+
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.4"]
             [lein-shell "0.5.0"]
@@ -156,7 +156,6 @@
                                    :source-map true}}
                        {:id "browser-tests"
                         :source-paths ["src/name_bazaar" "src/district0x" "test/browser"]
-                        :notify-command ["lein npm install"]
                         :compiler {:output-to "browser-tests/name-bazaar-tests.js",
                                    :output-dir "browser-tests",
                                    :main browser.browser
