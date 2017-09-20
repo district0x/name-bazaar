@@ -20,6 +20,6 @@ library BuyNowOfferingLibrary {
         require(offering.isSenderOriginalOwner());
         require(!offering.wasOwnershipTransferred());
         offering.price = _price;
-        offering.fireOnChanged();
+        offering.fireOnChanged("setSettings");
     }
 }

@@ -55,8 +55,11 @@ library AuctionOfferingLibrary {
             self.endTime = now.add(self.extensionDuration);
         }
 
-        offering.fireOnChanged();
-        offering.offeringRegistry.fireOnOfferingBid(offering.version, msg.sender, offering.price);
+        var extraEventData = new uint[](3);
+        extraEventData[0] = uint(msg.sender);
+        extraEventData[1] = offering.price;
+        extraEventData[2] = now;
+        offering.fireOnChanged("bid", extraEventData);
     }
 
     function withdraw(
@@ -69,7 +72,7 @@ library AuctionOfferingLibrary {
         if (pendingReturns > 0) {
             self.pendingReturns[_address] = 0;
             _address.transfer(pendingReturns);
-            offering.fireOnChanged();
+            offering.fireOnChanged("withdraw");
         }
     }
 
@@ -88,7 +91,6 @@ library AuctionOfferingLibrary {
             self.pendingReturns[offering.originalOwner] =
                 self.pendingReturns[offering.originalOwner].add(offering.price);
         }
-        offering.fireOnChanged();
     }
 
     function reclaimOwnership(
@@ -123,7 +125,7 @@ library AuctionOfferingLibrary {
             _extensionDuration,
             _minBidIncrease
         );
-        offering.fireOnChanged();
+        offering.fireOnChanged("setSettings");
     }
 
     function hasNoBids(AuctionOffering storage self) returns(bool) {

@@ -191,3 +191,11 @@
 
 (defn rand-nth-except [exception coll]
   (first (shuffle (remove (partial = exception) coll))))
+
+(defn prepend-address-zeros [address]
+  (let [n (- 42 (count address))]
+    (if (pos? n)
+      (->> (subs address 2)
+        (str (string/join (take n (repeat "0"))))
+        (str "0x"))
+      address)))

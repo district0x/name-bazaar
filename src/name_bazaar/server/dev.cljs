@@ -90,6 +90,11 @@
   (deploy-to-mainnet!)
   (run-mainnet!)
   (name-bazaar.server.core/-main)
-  (state/my-addresses))
+  (state/my-addresses)
+
+  (do
+    (d0x-effects/create-db! district0x.server.state/*server-state*)
+    (name-bazaar.server.db-sync/start-syncing! @*server-state*))
+  )
 
 

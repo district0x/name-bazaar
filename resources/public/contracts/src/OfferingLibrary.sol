@@ -58,7 +58,7 @@ library OfferingLibrary {
             // was disabled in emergency without having separate var for it, which is costly
             self.newOwner = 0xdead;
         }
-        fireOnChanged(self);
+        fireOnChanged(self, "reclaimOwnership");
     }
 
     function transferOwnership(Offering storage self, address _newOwner, uint _price) {
@@ -68,7 +68,7 @@ library OfferingLibrary {
         self.finalizedOn = now;
         doTransferOwnership(self, _newOwner);
         onTransfer(_newOwner, _price, now);
-        fireOnChanged(self);
+        fireOnChanged(self, "finalize");
     }
 
     function doTransferOwnership(Offering storage self, address _newOwner) {
@@ -79,8 +79,12 @@ library OfferingLibrary {
         }
     }
 
-    function fireOnChanged(Offering storage self) {
-        self.offeringRegistry.fireOnOfferingChanged(self.version);
+    function fireOnChanged(Offering storage self, bytes32 eventType, uint[] extraData) {
+        self.offeringRegistry.fireOnOfferingChanged(self.version, eventType, extraData);
+    }
+
+    function fireOnChanged(Offering storage self, bytes32 eventType) {
+        fireOnChanged(self, eventType, new uint[](0));
     }
 
     function setOfferingRegistry(Offering storage self, address _offeringRegistry) {
