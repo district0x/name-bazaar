@@ -81,12 +81,48 @@
                (is (tx-sent? (<! (registrar/register! ss
                                                       {:ens.record/label "abc"}
                                                       {:from (state/my-address 0)})))))
+             (testing "Registering name to transfer onwnership"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "notowned"}
+                                                      {:from (state/my-address 0)}))))
+
+               (let [deed-addr
+                     (:registrar.entry.deed/address
+                      (second
+                       (<! (registrar/entry ss
+                                            {:ens.record/label "notowned"}
+                                            {:from (state/my-address 0)}))))]
+                 ;;(is (not (empty? deed-addr)))
+                 (is (tx-sent? (<! (deed/owner ss deed-addr (state/my-address 1)))))
+                 ))
+
+             (testing "Registering name to transfer deed"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "notowndeed"}
+                                                      {:from (state/my-address 0)}))))
+               (is (tx-sent? (<! (registrar/transfer! ss
+                                                      {:ens.record/label "notowndeed"
+                                                       :ens.record/owner (state/my-address 0)}
+                                                      {:from (state/my-address 0)})))))
+             (testing
+                 "Can't make an offer on not owned domain"
+               (is (tx-failed? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "abc.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 1)})))))
+             #_(testing
+                 "Can make an offer on owned subdomain"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "sub.abc.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 0)})))))
              (testing
                  "Making an instant offer"
                (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
                                                                             {:offering/name "abc.eth"
                                                                              :offering/price (eth->wei 0.1)}
                                                                             {:from (state/my-address 0)})))))
+             
 
              (let [[[_ {{:keys [:offering]} :args}]]
                    (alts! [(offering-registry/on-offering-added-once ss
