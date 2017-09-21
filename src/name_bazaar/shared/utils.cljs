@@ -68,12 +68,14 @@
       (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
       (update :auction-offering/bid-count bn/->number))))
 
-(def offering-request-props [:offering-request/name :offering-request/requesters-count])
+(def offering-request-props [:offering-request/name :offering-request/requesters-count :offering-request/latest-round])
 
-(defn parse-offering-request [offering-request]
+(defn parse-offering-request [node offering-request]
   (when offering-request
     (-> (zipmap offering-request-props offering-request)
-      (update :offering-request/requesters-count bn/->number))))
+      (update :offering-request/requesters-count bn/->number)
+      (update :offering-request/latest-round bn/->number)
+      (assoc :offering-request/node node))))
 
 (def registrar-entry-states
   {0 :registrar.entry.state/open

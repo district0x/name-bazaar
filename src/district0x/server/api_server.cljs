@@ -3,7 +3,7 @@
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -83,7 +83,7 @@
 
 (defn parse-order-by [{:keys [:order-by-columns :order-by-dirs] :as query}]
   (-> query
-    (assoc :order-by (d0x-shared-utils/parse-order-by-search-params order-by-columns order-by-dirs))
+    (assoc :order-by (parse-order-by-search-params (collify order-by-columns) (collify order-by-dirs)))
     (dissoc :order-by-columns :order-by-dirs)))
 
 (def sanitize-query (comp restrict-limit

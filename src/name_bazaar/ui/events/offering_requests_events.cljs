@@ -61,9 +61,8 @@
   :offering-requests/loaded
   interceptors
   (fn [{:keys [:db]} [node offering-request]]
-    (let [offering-request (parse-offering-request offering-request)]
-      {:db (update-in db [:offering-requests node] merge (merge offering-request
-                                                                {:offering-request/node node}))})))
+    (let [offering-request (parse-offering-request node offering-request)]
+      {:db (update-in db [:offering-requests node] merge offering-request)})))
 
 (reg-event-fx
   :offering-requests.has-requested/load

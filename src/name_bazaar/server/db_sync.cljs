@@ -70,18 +70,25 @@
     (when filter
       (web3-eth/stop-watching! filter (fn [])))))
 
-(defn on-new-requests [server-state err {{:keys [:node :name]} :args}]
-  (go
-    (let [{:keys [:offering-request/requesters-count]}
-          (second (<! (offering-requests/get-request server-state {:offering-request/node node})))]
-      (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
-                                                             :offering-request/name name
-                                                             :offering-request/requesters-count requesters-count}))))
+(defn on-request-added [server-state err {{:keys [:node :round :requesters-count]} :args}]
+  (db/upsert-offering-requests-rounds! (state/db server-state)
+                                       {:offering-request/node node
+                                        :offering-request/round (bn/->number round)
+                                        :offering-request/requesters-count (bn/->number requesters-count)}))
 
-(defn on-request-added [server-state err {{:keys [:node :name :requesters-count]} :args}]
-  (db/upsert-offering-requests! (state/db server-state) {:offering-request/node node
-                                                         :offering-request/name name
-                                                         :offering-request/requesters-count (bn/->number requesters-count)}))
+(defn on-round-changed [server-state err {{:keys [:node :latest-round]} :args}]
+  (go
+    (let [latest-round (bn/->number latest-round)
+          request (second (<! (offering-requests/get-request server-state {:offering-request/node node})))]
+      (db/upsert-offering-requests! (state/db server-state)
+                                    (-> request
+                                      (assoc :offering-request/latest-round latest-round)))
+      (when (= latest-round (:offering-request/latest-round request))
+        ;; This is optimisation so we don't have to go through all on-request-added from block 0
+        ;; We just save current count of latest round, because it's all we need. Don't need all history
+        (on-request-added server-state nil {:args {:node node
+                                                   :round latest-round
+                                                   :requesters-count (:offering-request/requesters-count request)}})))))
 
 (defn on-ens-new-owner [server-state err {{:keys [:node :owner]} :args}]
   (go
@@ -114,10 +121,10 @@
                                                 {:from-block 0 :to-block "latest"}
                                                 (partial on-offering-changed server-state))
 
-           (offering-requests/on-new-requests server-state
-                                              {}
-                                              {:from-block 0 :to-block "latest"}
-                                              (partial on-new-requests server-state))
+           (offering-requests/on-round-changed server-state
+                                               {}
+                                               {:from-block 0 :to-block "latest"}
+                                               (partial on-round-changed server-state))
 
            (offering-registry/on-offering-changed server-state
                                                   {:event-type "bid"}
