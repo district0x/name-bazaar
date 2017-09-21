@@ -18,23 +18,23 @@
       (let [{:keys [:offering-request/node :offering-request/name :offering-request/requesters-count]} offering-request]
         [:div
          {:style (styles/search-results-list-item @xs?)}
-         (when-not node
-           [list-item-placeholder])
-         [row-with-cols
-          {:style (merge styles/search-results-list-item-header
-                         (if node styles/opacity-1 styles/opacity-0))
-           :between "sm"
-           :middle "sm"}
-          [col
-           {:xs 12 :sm 5}
-           [:div
-            {:style styles/list-item-ens-record-name}
-            name]]
-          [col
-           {:xs 6 :sm 3}
-           [:div
-            {:style (styles/offering-requests-list-item-count @xs?)}
-            requesters-count (pluralize " request" requesters-count)]]]]))))
+         (if-not node
+           [list-item-placeholder]
+           [row-with-cols
+            {:style (merge styles/search-results-list-item-header
+                           (if node styles/opacity-1 styles/opacity-0))
+             :between "sm"
+             :middle "sm"}
+            [col
+             {:xs 12 :sm 5}
+             [:div
+              {:style styles/list-item-ens-record-name}
+              name]]
+            [col
+             {:xs 6 :sm 3}
+             [:div
+              {:style (styles/offering-requests-list-item-count @xs?)}
+              requesters-count (pluralize " request" requesters-count)]]])]))))
 
 (defn offering-request-list-item []
   (let [xs? (subscribe [:district0x/window-xs-width?])]
