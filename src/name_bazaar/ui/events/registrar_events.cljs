@@ -30,8 +30,8 @@
                    :form-id (select-keys form-data [:ens.record/label])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:offerings.ownership/load [(:ens.record/owner form-data)]]
-                                     [:on-tx-receipt [:district0x.snackbar/show-message
-                                                      (gstring/format "Ownership of %s was transferred" name)]]]}]})))
+                                     [:district0x.snackbar/show-message
+                                      (gstring/format "Ownership of %s was transferred" name)]]}]})))
 
 (reg-event-fx
   :registrar/register

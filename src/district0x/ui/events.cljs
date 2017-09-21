@@ -365,23 +365,28 @@
   interceptors
   (fn [{:keys [:db]} [{:keys [:on-tx-receipt :on-tx-receipt-n :form-data :on-error]
                        :or {on-error [:district0x.snackbar/show-transaction-error]}}
-                      {:keys [:transaction-hash :gas-used] :as tx-receipt}]]
-    (let [success? (not= (get-in db [:transaction-log :transactions transaction-hash :gas]) gas-used)]
-      (merge
-        {:district0x/dispatch-n [[:district0x/transaction-receipt-loaded tx-receipt]
-                                 ;; MetaMask can load transaction only at receipt time, not earlier
-                                 [:district0x/load-transaction transaction-hash]]}
-        (when (and success? on-tx-receipt)
-          {:dispatch (vec (concat on-tx-receipt [form-data tx-receipt]))})
-        (when (and success? on-tx-receipt-n)
-          {:dispatch-n (map #(vec (concat % [form-data tx-receipt])) on-tx-receipt-n)})
-        (when (and (not success?) on-error)
-          {:dispatch (vec (concat on-error [form-data tx-receipt]))})))))
+                      {:keys [:transaction-hash :gas-used] :as tx-receipt}
+                      :as args]]
+    (if-let [gas-limit (get-in db [:transaction-log :transactions transaction-hash :gas])]
+      (let [success? (not= gas-limit gas-used)]
+        (merge
+          {:district0x/dispatch-n [[:district0x/transaction-receipt-loaded tx-receipt]]}
+          (when (and success? on-tx-receipt)
+            {:dispatch (vec (concat on-tx-receipt [form-data tx-receipt]))})
+          (when (and success? on-tx-receipt-n)
+            {:dispatch-n (map #(vec (concat % [form-data tx-receipt])) on-tx-receipt-n)})
+          (when (and (not success?) on-error)
+            {:dispatch (vec (concat on-error [form-data tx-receipt]))})))
+      ;; MetaMask can load transaction only at receipt time, not earlier
+      {:async-flow {:first-dispatch [:district0x/load-transaction transaction-hash]
+                    :rules [{:when :seen?
+                             :events [:district0x/transaction-loaded]
+                             :dispatch-n [(vec (concat [:district0x/on-tx-receipt] args))]}]}})))
 
 (reg-event-fx
   :district0x/load-transaction
   [interceptors]
-  (fn [{:keys [:db]} [transaction-hash & a]]
+  (fn [{:keys [:db]} [transaction-hash]]
     {:web3-fx.blockchain/fns
      {:web3 (:web3 db)
       :fns [{:f web3-eth/get-transaction
