@@ -21,17 +21,11 @@
    :load-node-addresses? false
    :server-url "https://api.namebazaar.io"})
 
-(def mainnet-deployment-config
-  {:node-url "http://localhost:8545"
-   :load-node-addresses? true
-   :server-url "https://api.namebazaar.io"})
-
 (def default-db
   (merge
     district0x.ui.db/default-db
     ;development-config
     production-config
-    ;mainnet-deployment-config
     {:active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :now (t/now)
