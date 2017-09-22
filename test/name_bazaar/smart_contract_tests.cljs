@@ -237,7 +237,7 @@
              ;; TODO more
              ))))
 
-(deftest offering-name-ownership
+(deftest offering-tld-ownership
   (async done
          (let [ss @*server-state*]
            (go
@@ -296,5 +296,49 @@
                                      :auction-offering/extension-duration 0
                                      :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                                     {:from (state/my-address 0)})))))
+             ;; TODO more
+             (done)))))
+
+(deftest offering-subdomain-ownership
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing "Registering name to add subdomain"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "tld"}
+                                                      {:from (state/my-address 0)}))))
+               (is (tx-sent? (<! (ens/set-subnode-owner!
+                                  ss
+                                  {:ens.record/label "mysub"
+                                   :ens.record/node "tld.eth"
+                                   :ens.record/owner (state/my-address 0)}
+                                  {:from (state/my-address 0)}))))
+
+               (is (= (state/my-address 0) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                       "mysub.tld.eth")})))))
+               (is (tx-sent? (<! (ens/set-subnode-owner!
+                                  ss
+                                  {:ens.record/label "theirsub"
+                                   :ens.record/node "tld.eth"
+                                   :ens.record/owner (state/my-address 1)}
+                                  {:from (state/my-address 0)}))))
+               (is (= (state/my-address 0) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                      "tld.eth")})))))
+               (is (= (state/my-address 1) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                      "theirsub.tld.eth")}))))))
+
+             (testing
+                 "Making an instant offer as administrator should fail"
+               (is (tx-failed? (<! (buy-now-offering-factory/create-offering! ss
+                                                                              {:offering/name "theirsub.tld.eth"
+                                                                               :offering/price (eth->wei 0.1)}
+                                                                              {:from (state/my-address 1)})))))
+
+             (testing
+                 "Making an instant offer as a owner"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "mysub.tld.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 0)})))))
              ;; TODO more
              (done)))))
