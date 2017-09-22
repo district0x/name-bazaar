@@ -86,7 +86,7 @@
                                                       {:ens.record/label "notowned"}
                                                       {:from (state/my-address 0)}))))
                (comment
-                 "This works")
+                 "This compiles and works")
                (<! (deed/owner ss (:registrar.entry.deed/address
                                    (second
                                     (<! (registrar/entry ss
@@ -95,7 +95,7 @@
                                (state/my-address 1)))
 
                (comment
-                 "This doesn't"
+                 "This doesn't compile"
                  (let [deed-addr
                        (:registrar.entry.deed/address
                         (second
