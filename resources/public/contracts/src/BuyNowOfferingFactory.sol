@@ -1,5 +1,10 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title OfferingFactory
+ * @dev Factory for creating new BuyNow offerings
+ */
+
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
 import "BuyNowOffering.sol";
@@ -18,6 +23,11 @@ contract BuyNowOfferingFactory is OfferingFactory {
     {
     }
 
+    /**
+    * @dev Deploys new BuyNow offering and registers it to OfferingRegistry
+    * @param name string Plaintext ENS name
+    * @param price uint The price of the offering
+    */
     function createOffering(
         string name,
         uint price
@@ -34,7 +44,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
             emergencyMultisig,
             price
         );
-        registerOffering(node, labelHash, newOffering, 1);
+        registerOffering(node, labelHash, newOffering, 1); // versioning for BuyNow offerings starts at number 1
     }
 }
 

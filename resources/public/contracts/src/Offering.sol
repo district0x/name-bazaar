@@ -1,5 +1,13 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title Offering
+ * @dev Base contract for any offering
+ * Logic for contract methods is at OfferingLibrary, so logic is not duplicated each time user creates
+ * new offering. It saves large amounts of gas. OfferingLibrary address is linked to Offering contract
+ * at compilation time.
+ */
+
 import "OfferingLibrary.sol";
 
 contract Offering {

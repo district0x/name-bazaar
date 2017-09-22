@@ -1,5 +1,9 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title OfferingFactory
+ * @dev Factory for creating new Auction offerings
+ */
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
@@ -18,6 +22,14 @@ contract AuctionOfferingFactory is OfferingFactory {
     {
     }
 
+    /**
+    * @dev Deploys new Auction offering and registers it to OfferingRegistry
+    * @param name string Plaintext ENS name
+    * @param startPrice uint The start price of the auction
+    * @param endTime uint The end time of the auction
+    * @param extensionDuration uint The extension duration of the auction
+    * @param minBidIncrease uint The min bid increase of the auction
+    */
     function createOffering(
     string name,
     uint startPrice,
@@ -41,7 +53,7 @@ contract AuctionOfferingFactory is OfferingFactory {
         minBidIncrease
         );
 
-        registerOffering(node, labelHash, newOffering, 100000);
+        registerOffering(node, labelHash, newOffering, 100000); // versioning for Auction offerings starts at number 100000
     }
 }
 

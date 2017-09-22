@@ -1,5 +1,13 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title AuctionOffering
+ * @dev Extends Offering with Auction functionality
+ * Logic for contract methods is at AuctionOfferingLibrary, so logic is not duplicated each time user creates
+ * new offering. It saves large amounts of gas. AuctionOfferingLibrary address is linked to AuctionOffering contract
+ * at compilation time.
+ */
+
 import "Offering.sol";
 import "SafeMath.sol";
 import "AuctionOfferingLibrary.sol";
