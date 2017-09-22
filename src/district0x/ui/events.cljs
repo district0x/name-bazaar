@@ -81,8 +81,9 @@
           (assoc db :web3 web3)
           (update-in db [:transaction-log :settings] merge {:open? false :highlighted-transaction nil}))))
 
-(defn- has-tx-status? [tx-status {:keys [:status]}]
-  (= tx-status status))
+(defn- contains-tx-status? [tx-statuses {:keys [:status]}]
+  (contains? tx-statuses status))
+
 
 (reg-event-fx
   :district0x/initialize
@@ -90,18 +91,22 @@
   (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
     (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)
           transactions (get-in db [:transaction-log :transactions])
-          not-loaded-txs (medley/filter-vals (partial has-tx-status? :tx.status/not-loaded) transactions)
-          pending-txs (medley/filter-vals (partial has-tx-status? :tx.status/pending) transactions)]
+          txs-to-reload (medley/filter-vals #(contains-tx-status? #{:tx.status/not-loaded :tx.status/pending} %)
+                                            transactions)]
       (merge
         {:db db
          :ga/page-view [(d0x-ui-utils/current-location-hash)]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
-         :district0x/dispatch-n (concat
-                                  (for [tx-hash (keys not-loaded-txs)]
-                                    [:district0x/load-transaction-and-receipt tx-hash])
-                                  (for [tx-hash (keys pending-txs)]
-                                    [:district0x/load-transaction-receipt tx-hash]))
+         :district0x/dispatch-n (vec (concat
+                                       (for [tx-hash (keys txs-to-reload)]
+                                         [:district0x/load-transaction-receipt tx-hash])
+                                       (for [tx-hash (keys txs-to-reload)]
+                                         [:web3-fx.contract/add-transaction-hash-to-watch
+                                          {:web3 (:web3 db)
+                                           :db-path [:contract/state-fns]
+                                           :transaction-hash tx-hash
+                                           :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
          ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
          :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000) :dispatch [:district0x/load-my-addresses]}]}
         (when conversion-rates
@@ -241,8 +246,8 @@
         :blockchain-filter-opts "latest"
         :db-path [:district0x/watch-eth-balances]
         :addresses addresses
-        :dispatches [on-address-balance-loaded
-                     [:district0x/blockchain-connection-error :district0x/watch-eth-balances]]}})))
+        :on-success on-address-balance-loaded
+        :on-error [:district0x/blockchain-connection-error :district0x/watch-eth-balances]}})))
 
 (reg-event-fx
   :district0x/load-eth-balances
@@ -253,8 +258,8 @@
       {:web3-fx.blockchain/balances
        {:web3 (:web3 db)
         :addresses addresses
-        :dispatches [on-address-balance-loaded
-                     [:district0x/blockchain-connection-error :district0x/watch-token-balances]]}})))
+        :on-success on-address-balance-loaded
+        :on-error [:district0x/blockchain-connection-error :district0x/watch-token-balances]}})))
 
 (reg-event-fx
   :district0x/watch-my-eth-balances
@@ -275,8 +280,8 @@
         :db-path [:district0x/watch-token-balances]
         :addresses addresses
         :instance instance
-        :dispatches [[:district0x/address-balance-loaded token-code]
-                     [:district0x/blockchain-connection-error :district0x/watch-token-balances]]}})))
+        :on-success [:district0x/address-balance-loaded token-code]
+        :on-error [:district0x/blockchain-connection-error :district0x/watch-token-balances]}})))
 
 (reg-event-fx
   :district0x/load-token-balances
@@ -287,8 +292,8 @@
        {:web3 (:web3 db)
         :addresses addresses
         :instance instance
-        :dispatches [[:district0x/address-balance-loaded token-code]
-                     [:district0x/blockchain-connection-error :district0x/watch-token-balances]]}})))
+        :on-success [:district0x/address-balance-loaded token-code]
+        :on-error [:district0x/blockchain-connection-error :district0x/watch-token-balances]}})))
 
 (reg-event-fx
   :district0x/watch-my-token-balances
@@ -423,13 +428,14 @@
   :district0x/transaction-receipt-loaded
   [interceptors]
   (fn [{:keys [:db]} [{:keys [:gas-used :transaction-hash] :as tx-receipt}]]
-    (let [gas-limit (get-in db [:transaction-log :transactions transaction-hash :gas])
-          tx-receipt (assoc tx-receipt :status (if gas-limit
-                                                 (if (= gas-limit gas-used)
-                                                   :tx.status/failure
-                                                   :tx.status/success)
-                                                 :tx.status/not-loaded))]
-      {:dispatch [:district0x.transactions/update transaction-hash tx-receipt]})))
+    (when transaction-hash
+      (let [gas-limit (get-in db [:transaction-log :transactions transaction-hash :gas])
+            tx-receipt (assoc tx-receipt :status (if gas-limit
+                                                   (if (= gas-limit gas-used)
+                                                     :tx.status/failure
+                                                     :tx.status/success)
+                                                   :tx.status/not-loaded))]
+        {:dispatch [:district0x.transactions/update transaction-hash tx-receipt]}))))
 
 (reg-event-fx
   :district0x.transactions/add
