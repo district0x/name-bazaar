@@ -4,7 +4,6 @@
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
     [cognitect.transit :as transit]
-    [district0x.shared.config :as config]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.shared.utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley])
@@ -31,6 +30,17 @@
 
 (defn send-json! [res data]
   (.json res (clj->js data)))
+
+(defn send
+  [response data]
+  (.send response data))
+
+(defn status
+  [response code]
+  (.status response code))
+
+(defn write-transit [body]
+  (transit/write transit-writer body))
 
 (defn stop! []
   (let [ch (chan)]
@@ -96,39 +106,6 @@
 
 (def sanitized-query-params (comp sanitize-query
                                   query-params))
-
-;; Handlers
-
-(defn send
-  [response data]
-  (.send response data))
-
-(defn status
-  [response code]
-  (.status response code))
-
-(defn handle-get-config-key
-  [request response]
-  (let [config-key (-> (aget request "params")
-                       (js->clj :keywordize-keys true)
-                       vals
-                       first
-                       keyword)]
-    (if (contains? config/whitelisted-keys config-key)
-      (-> response
-          (status 200)
-          (send (config/get-config config-key)))
-      (-> response
-          (status 400)
-          (send "Bad request")))))
-
-(defn handle-get-config
-  [request response]
-  (-> response
-      (status 200)
-      (send (->> (select-keys (config/get-config) config/whitelisted-keys)
-                  (transit/write transit-writer)))))
-
 
 (comment
   (start! 6200)

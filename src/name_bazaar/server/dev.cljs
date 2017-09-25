@@ -53,8 +53,6 @@
 
 (defn on-jsload []
   (config/load-config! config/default-config)
-  (api-server/reg-route! :get "/config/:key" api-server/handle-get-config-key)
-  (api-server/reg-route! :get "/config" api-server/handle-get-config)
   (api-server/start! (config/get-config :api-port))
   (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
 
