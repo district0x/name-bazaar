@@ -60,3 +60,7 @@
   (take! ch println))
 
 (def tx-sent? (comp d0x-shared-utils/sha3? second))
+
+(defn clj->json
+  [coll]
+  (.stringify js/JSON (clj->js coll)))

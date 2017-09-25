@@ -1,13 +1,10 @@
 (ns district0x.server.sendgrid
   (:require
    [ajax.core :as ajax :refer [POST]]
-   [district0x.shared.config :as config]))
+   [district0x.shared.config :as config]
+   [district0x.server.utils :refer [clj->json]]))
 
 (def ^private sendgrid-public-api "https://api.sendgrid.com/v3")
-
-(defn clj->json
-  [coll]
-  (.stringify js/JSON (clj->js coll)))
 
 (defn send-notification-email
   [{:keys [from-email to-email subject content]} success-handler error-handler]
