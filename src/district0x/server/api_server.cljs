@@ -3,6 +3,8 @@
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
+    [cognitect.transit :as transit]
+    [district0x.shared.config :as config]
     [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -10,6 +12,7 @@
 (def express (nodejs/require "express"))
 (def cors (nodejs/require "cors"))
 (def body-parser (nodejs/require "body-parser"))
+(def transit-writer (transit/writer :json))
 
 (defonce *app* (atom nil))
 (defonce *server* (atom nil))
@@ -43,13 +46,12 @@
   (doseq [method (keys @*registered-routes*)]
     (setup-method-routes! method)))
 
-(defn start! [& [port]]
-  (let [port (or port (aget js/process "env" "PORT"))]
-    (go
-      (<! (stop!))
-      (setup-app!)
-      (reset! *server* (.listen @*app* port (fn []
-                                              (println "Server started at port" port)))))))
+(defn start! [port]
+  (go
+    (<! (stop!))
+    (setup-app!)
+    (reset! *server* (.listen @*app* port (fn []
+                                            (println "Server started at port" port))))))
 
 
 
@@ -93,6 +95,38 @@
 
 (def sanitized-query-params (comp sanitize-query
                                   query-params))
+
+;; Handlers
+
+(defn send
+  [response data]
+  (.send response data))
+
+(defn status
+  [response code]
+  (.status response code))
+
+(defn handle-get-config-key
+  [request response]
+  (let [config-key (-> (aget request "params")
+                       (js->clj :keywordize-keys true)
+                       vals
+                       first
+                       keyword)]
+    (if (contains? config/whitelisted-keys config-key)
+      (-> response
+          (status 200)
+          (send (config/get-config config-key)))
+      (-> response
+          (status 400)
+          (send "Bad request")))))
+
+(defn handle-get-config
+  [request response]
+  (-> response
+      (status 200)
+      (send (->> (select-keys (config/get-config) config/whitelisted-keys)
+                  (transit/write transit-writer)))))
 
 
 (comment

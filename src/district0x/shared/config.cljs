@@ -1,12 +1,15 @@
 (ns district0x.shared.config)
 
-(defonce default-config
+(def default-config
   {:private-key "25615758538fef2b8a65aa7146c273fb17c03b0d73642feac250b7e79d8f06793eb"
-   :public-key "256ebc161b4751583b3718e77bd5bff97027c607daa553385094ce9410ebe7531b422f7b5f2702ba80b53092024ccc63c4a8c96ba7387e063500a58cce0c7b3a3ee"})
+   :public-key "256ebc161b4751583b3718e77bd5bff97027c607daa553385094ce9410ebe7531b422f7b5f2702ba80b53092024ccc63c4a8c96ba7387e063500a58cce0c7b3a3ee"
+   :api-port 6200})
+
+(def whitelisted-keys #{:public-key :api-port})
 
 (def ^private *config* (atom nil))
 
-(defonce ^private env js/process.env)
+(def ^private env js/process.env)
 
 (defn get-config
   ([]
@@ -17,7 +20,6 @@
 
 (defn- set-config!
   [config]
-  "Set the keypair"
   (reset! *config* config))
 
 (defn load-config!

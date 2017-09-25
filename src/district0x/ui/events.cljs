@@ -15,9 +15,9 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.shared.key-utils :refer [encrypt encode-base64 default-keypair]]
+    [district0x.shared.key-utils :refer [encrypt encode-base64]]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils :refer [map-selected-values]]
+    [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.interval-fx]
@@ -144,6 +144,24 @@
                    :on-success [:district0x/my-addresses-loaded]
                    :on-error [:district0x/dispatch-n [[:district0x/my-addresses-loaded []]]]}]}}
           {:dispatch [:district0x/my-addresses-loaded []]})))))
+
+(reg-event-fx
+ :district0x/do-load-config
+ interceptors
+ (fn [{:keys [db]} _]
+   {:db db
+    :http-xhrio {:method :get
+                 :uri (str (url/url (:server-url db) "/config"))  
+                 :timeout 3000
+                 :response-format (ajax/transit-response-format)
+                 :on-success [:success-load-config]
+                 :on-failure [:district0x.log/error :district0x/do-load-config]}}))
+
+(reg-event-db
+ :district0x/success-load-config
+ interceptors
+ (fn [db [config]]
+      (assoc-in db [:config] config)))
 
 (reg-event-fx
   :district0x/load-smart-contracts
@@ -511,13 +529,13 @@
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
                       form-data)
-          public-key (:public-key default-keypair)]
+          public-key (get-in db [:config :public-key])]
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
                     :contract-key :district0x-emails
                     :contract-method :set-email
-                    :form-data (map-selected-values form-data
+                    :form-data (d0x-shared-utils/map-selected-values form-data
                                                     #{:district0x-emails/email}
                                                     #(->> %
                                                           (encrypt public-key)

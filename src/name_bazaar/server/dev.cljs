@@ -49,12 +49,13 @@
 (set! js/Web3 Web3)
 
 (def total-accounts 6)
-(def api-port 6200)
 (def testrpc-port 8549)
 
 (defn on-jsload []
   (config/load-config! config/default-config)
-  (api-server/start! api-port)
+  (api-server/reg-route! :get "/config/:key" api-server/handle-get-config-key)
+  (api-server/reg-route! :get "/config" api-server/handle-get-config)
+  (api-server/start! (config/get-config :api-port))
   (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
 
 (defn deploy-to-mainnet! []
@@ -78,12 +79,13 @@
 
 (defn -main [& _]
   (go
+    (config/load-config! config/default-config)
     (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
                                                     :port testrpc-port}))
     (d0x-effects/create-web3! *server-state* {:port testrpc-port})
     (d0x-effects/create-db! *server-state*)
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-    (api-server/start! api-port)
+    (api-server/start! (config/get-config :api-port))
     (<! (d0x-effects/load-my-addresses! *server-state*))))
 
 (set! *main-cli-fn* -main)
