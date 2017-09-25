@@ -1,5 +1,13 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title BuyNowOffering
+ * @dev Extends Offering with BuyNow functionality
+ * Logic for contract methods is at BuyNowOfferingLibrary, so logic is not duplicated each time user creates
+ * new offering. It saves large amounts of gas. BuyNowOfferingLibrary address is linked to BuyNowOffering contract
+ * at compilation time.
+ */
+
 import "Offering.sol";
 import "BuyNowOfferingLibrary.sol";
 

@@ -68,11 +68,19 @@
                    (.run db "CREATE TABLE offering_requests (
                           node CHAR(66) PRIMARY KEY NOT NULL,
                           name VARCHAR NOT NULL,
+                          latest_round UNSIGNED INTEGER NOT NULL DEFAULT 0
+                          )" log-error)
+
+                   (.run db "CREATE INDEX offering_requests_name_index ON offering_requests (name)" log-error)
+
+                   (.run db "CREATE TABLE offering_requests_rounds (
+                          node CHAR(66) PRIMARY KEY NOT NULL,
+                          round UNSIGNED INTEGER NOT NULL DEFAULT NULL,
                           requesters_count UNSIGNED INTEGER NOT NULL DEFAULT 0
                           )" log-error)
 
-                   (.run db "CREATE INDEX requesters_count_index ON offering_requests (requesters_count)" log-error)
-                   (.run db "CREATE INDEX offering_requests_name_index ON offering_requests (name)" log-error))))
+                   (.run db "CREATE INDEX requesters_count_index ON offering_requests_rounds (requesters_count)" log-error)
+                   (.run db "CREATE INDEX offering_requests_round_index ON offering_requests_rounds (round)" log-error))))
 
 (def offering-keys [:offering/address
                     :offering/created-on
@@ -116,12 +124,21 @@
 
 (def offering-requests-keys [:offering-request/node
                              :offering-request/name
-                             :offering-request/requesters-count])
+                             :offering-request/latest-round])
 
 (defn upsert-offering-requests! [db values]
   (db-run! db {:insert-or-replace-into :offering-requests
                :columns (keywords->sql-cols offering-requests-keys)
                :values [((apply juxt offering-requests-keys) values)]}))
+
+(def offering-requests-rounds-keys [:offering-request/node
+                                    :offering-request/round
+                                    :offering-request/requesters-count])
+
+(defn upsert-offering-requests-rounds! [db values]
+  (db-run! db {:insert-or-replace-into :offering-requests-rounds
+               :columns (keywords->sql-cols offering-requests-rounds-keys)
+               :values [((apply juxt offering-requests-rounds-keys) values)]}))
 
 (defn- name-pattern [name name-position]
   (condp = name-position
@@ -205,17 +222,21 @@
 (s/def ::offering-requests-order-by-column (partial contains? #{:requesters-count}))
 (s/def ::offering-requests-order-by-item (s/tuple ::offering-requests-order-by-column ::order-by-dir))
 (s/def ::offering-requests-order-by (s/coll-of ::offering-requests-order-by-item :distinct true))
-(s/def ::offering-requests-select-fields (partial combination-of? #{:node :name :requesters-count}))
+(s/def ::offering-requests-select-fields (partial combination-of? #{:name :requesters-count}))
 
 (defn search-offering-requests [db {:keys [:limit :offset :name :name-position
                                            :order-by :root-name :select-fields :total-count?]
                                     :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:node])
+        select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:offering-requests.node])
         name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offering-requests]
+                     :left-join [:offering-requests-rounds [:and
+                                                            [:= :latest-round :round]
+                                                            [:= :offering-requests-rounds.node :offering-requests.node]]]
+                     :where [:< 0 :requesters-count]
                      :offset offset
                      :limit limit}
               name (merge-where [:like :name (str (name-pattern name (keyword name-position)) "." root-name)])

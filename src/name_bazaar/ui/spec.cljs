@@ -68,9 +68,11 @@
 
 (s/def :offering-request/requesters (s/coll-of address? :kind set?))
 (s/def :offering-request/requesters-count not-neg?)
+(s/def :offering-request/latest-round not-neg?)
 
 (s/def :offering-requests/request (s/keys :opt [:offering-request/requesters-count
-                                                :offering-request/requesters]))
+                                                :offering-request/requesters
+                                                :offering-request/latest-round]))
 
 (s/def ::offering-requests (s/map-of :ens.record/node :offering-requests/request))
 

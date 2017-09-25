@@ -1,17 +1,12 @@
 pragma solidity ^0.4.0;
 
 
-/*
-
-Temporary Hash Registrar
-========================
-
-This is a simplified version of a hash registrar. It is purporsefully limited:
-names cannot be six letters or shorter, new auctions will stop after 4 years.
-
-The plan is to test the basic features and then move to a new contract in at most
-2 years, when some sort of renewal mechanism will be enabled.
-*/
+/**
+ * @title MockRegistrar
+ * @dev Namebazaar's edited version of ens/HashRegistrarSimplified only for development purposes
+ * Compared to orginal contains method `register` for instantly register any name and contract acts
+ * as if it went through whole registrar auction process.
+ */
 
 
 import 'ens/AbstractENS.sol';

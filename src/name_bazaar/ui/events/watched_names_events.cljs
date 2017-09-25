@@ -7,7 +7,6 @@
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-offering-request]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.db :refer [default-db]]
     [name-bazaar.ui.utils :refer [namehash sha3 valid-ens-name? normalize get-ens-record-active-offering]]

@@ -1,5 +1,10 @@
 pragma solidity ^0.4.14;
 
+/**
+ * @title UsedByFactories
+ * @dev Provides modifiers to allow only offering factory contracts to execute method
+ */
+
 import "Ownable.sol";
 
 contract UsedByFactories is Ownable {
