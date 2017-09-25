@@ -72,6 +72,30 @@
 
              (done)))))
 
+(defn offering-status-keys [resp]
+  (select-keys resp [:offering/address
+                     :offering/offering-registry
+                     :offering/type
+                     :offering/top-level-name?
+                     :offering/name
+                     :offering/contains-special-char?
+                     :offering/label-length
+                     :offering/name-level
+                     :offering/node
+                     :offering/auction?
+                     :offering/contains-non-ascii?
+                     :offering/label-hash
+                     :offering/original-owner
+                     :offering/version
+                     :offering/price
+                     :offering/label
+                     :offering/buy-now?
+                     :offering/emergency-multisig
+                     :offering/contains-number?
+                     :offering/registrar
+                     :offering/new-owner
+                     ]))
+
 (deftest create-buy-now-offering
   (async done
          (let [ss @*server-state*]
@@ -102,10 +126,42 @@
                  (is (not (nil? offering))))
                (when offering
                  (testing
+                     "Offering parameters are correct"
+                   (is (= (offering-status-keys
+                           {:offering/address offering
+                            :offering/offering-registry (contract-address :offering-registry)
+                            :offering/type :buy-now-offering
+                            :offering/top-level-name? true
+                            :offering/name "abc.eth"
+                            :offering/contains-special-char? false
+                            :offering/label-length 3
+                            :offering/name-level 1
+                            :offering/node (namehash "abc.eth")
+                            :offering/auction? false
+                            :offering/contains-non-ascii? false
+                            :offering/label-hash (sha3 "abc")
+                            :offering/original-owner (state/my-address 0)
+                            :offering/version 1 :offering/price 100000000000000000,
+                            :offering/label "abc"
+                            :offering/buy-now? true
+                            :offering/emergency-multisig (state/active-address ss)
+                            :offering/contains-number? false
+                            :offering/registrar (contract-address :mock-registrar)
+                            :offering/new-owner nil})
+                          (offering-status-keys (last (<! (offering/get-offering ss
+                                                                        offering)))))))
+                 (testing
+                     "Can't buy TLD if offering owns no deed"
+                   (is (tx-failed?
+                        (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                    :from (state/my-address 1)})))))
+
+                 (testing
                      "Transferrnig ownership to the offering"
                    (is (tx-sent? (<! (registrar/transfer! ss
                                                           {:ens.record/label "abc" :ens.record/owner offering}
                                                           {:from (state/my-address 0)})))))
+
                  (testing
                      "Making sure an offering isn't too greedy"
                    (is (tx-failed?
@@ -130,7 +186,16 @@
                  (testing
                      "The name ownership must be transferred to the new owner"
                    (is (= (state/my-address 1) (last (<! (ens/owner ss {:ens.record/node (namehash
-                                                                                          "abc.eth")}))))))))
+                                                                                          "abc.eth")}))))))
+                 (testing
+                     "Ensuring the new owner gets his deed"
+                   (is (= (state/my-address 1) (last (<! (registrar/entry-deed-owner
+                                                          ss {:ens.record/label "abc"}))))))
+                 (testing
+                     "New-owner of the offering is set"
+                   (is (=  (state/my-address 1) (:offering/new-owner (last (<! (offering/get-offering ss
+                                                                                    offering)))))))
+                 ))
              ;; TODO more
              (done)))))
 
@@ -143,6 +208,26 @@
                (is (tx-sent? (<! (registrar/register! ss
                                                       {:ens.record/label "abc"}
                                                       {:from (state/my-address 0)})))))
+             (testing
+                 "Offering the name with overdue endtime fails"
+               (is (tx-failed? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/minus (time/now) (time/seconds 1)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 0)})))))
+             (testing
+                 "Offering the name with 0 bidincrease fails"
+               (is (tx-failed? (<! (auction-offering-factory/create-offering!
+                                    ss
+                                    {:offering/name "abc.eth"
+                                     :offering/price (eth->wei 0.1)
+                                     :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 1)))
+                                     :auction-offering/extension-duration 0
+                                     :auction-offering/min-bid-increase (web3/to-wei 0 :ether)}
+                                    {:from (state/my-address 0)})))))
              (testing
                  "Offering the name for a bid"
                (is (tx-sent? (<! (auction-offering-factory/create-offering!
@@ -165,6 +250,7 @@
                    "on-offering event should fire"
                  (is (not (nil? offering))))
                (when offering
+
                  (testing
                      "Transferrnig ownership to the offer"
                    (is (tx-sent? (<! (registrar/transfer! ss
@@ -233,6 +319,10 @@
                           "Ensuring the new owner gets his name"
                         (is (= (state/my-address 3) (last (<! (ens/owner ss {:ens.record/node (namehash
                                                                                                "abc.eth")}))))))
+                      (testing
+                          "Ensuring the new owner gets his deed"
+                        (is (= (state/my-address 3) (last (<! (registrar/entry-deed-owner
+                                             ss {:ens.record/label "abc"}))))))
                       (done))))))
              ;; TODO more
              ))))
@@ -328,9 +418,53 @@
                                                                                       "theirsub.tld.eth")}))))))
 
              (testing
-                 "Making an instant offer as administrator should fail"
+                 "Can't make an instant offer if only deed-owner"
                (is (tx-failed? (<! (buy-now-offering-factory/create-offering! ss
                                                                               {:offering/name "theirsub.tld.eth"
+                                                                               :offering/price (eth->wei 0.1)}
+                                                                              {:from (state/my-address 0)})))))
+             (testing
+                 "Making an instant offer as an administrator"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                              {:offering/name "theirsub.tld.eth"
+                                                                               :offering/price (eth->wei 0.1)}
+                                                                              {:from (state/my-address 1)})))))
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "theirsub.tld.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "Can't buy it yet, as subdomain ownership not transferred"
+                 (is (tx-failed?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                  :from (state/my-address 2)})))))
+               (testing "Transferring subdomain ownership to the offering"
+                 (is (tx-sent? (<! (ens/set-subnode-owner!
+                                    ss
+                                    {:ens.record/label "theirsub"
+                                     :ens.record/node  "tld.eth"
+                                     :ens.record/owner offering}
+                                    {:from (state/my-address 0)})))))
+               (testing
+                   "Now it can be sold"
+                 (is (tx-sent?
+                      (<! (buy-now-offering/buy! ss {:offering/address offering} {:value (eth->wei 0.1)
+                                                                                  :from (state/my-address 2)})))))
+
+               (testing
+                   "The new owner changes"
+                 (is (= (state/my-address 2)
+                        (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                   "theirsub.tld.eth")})))))))
+
+             (testing
+                 "Making an instant offer if not an owner fails"
+               (is (tx-failed? (<! (buy-now-offering-factory/create-offering! ss
+                                                                              {:offering/name "mysub.tld.eth"
                                                                                :offering/price (eth->wei 0.1)}
                                                                               {:from (state/my-address 1)})))))
 
