@@ -159,7 +159,7 @@
                  :uri (str (url/url (:server-url db) "/config"))  
                  :timeout 3000
                  :response-format (ajax/transit-response-format)
-                 :on-success [:success-load-config]
+                 :on-success [:district0x/success-load-config]
                  :on-failure [:district0x.log/error :district0x/do-load-config]}}))
 
 (reg-event-db
@@ -540,7 +540,7 @@
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
                       form-data)
-          public-key (get-in db [:config :public-key])]
+          public-key (get-in db [:config :PUBLIC_KEY])]
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))

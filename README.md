@@ -8,6 +8,15 @@ Coming Soon to [https://namebazaar.io](https://namebazaar.io)
 
 Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tree/master/resources/public/contracts/src).
 
+## Overriding default-config variables
+
+Any variable set in process.ENV overrides the variable with matching key in default-config.
+Example:
+
+```
+PUBLIC_KEY='bla' node dev-server/name-bazaar.js
+```
+
 ## Frontend (browser) tests: 
 
 ```

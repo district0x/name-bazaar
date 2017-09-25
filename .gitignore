@@ -25,3 +25,4 @@ package-lock.json
 /browser-tests/
 /src/name_bazaar/server/repl.cljs
 /resources/public/css/name-bazaar.main.css.map
+start_server.sh
