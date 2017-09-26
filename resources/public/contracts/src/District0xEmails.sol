@@ -14,4 +14,9 @@ contract District0xEmails {
     function setEmail(string _encryptedEmail) {
         emails[msg.sender] = _encryptedEmail;
     }
+
+    function getEmail(address _address) constant public returns(string) {
+       return emails[_address];
+    }
+    
 }
