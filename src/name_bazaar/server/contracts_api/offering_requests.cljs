@@ -27,7 +27,7 @@
   (web3-eth-async/contract-call
     (chan 1 (map (fn [[err res]]
                    [err (parse-offering-request node res)])))
-    (state/instance server-state :offering-requests)
+    (state/instance @server-state :offering-requests)
     :get-request
     node))
 

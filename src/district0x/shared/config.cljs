@@ -6,7 +6,7 @@
    :SENDGRID_API_KEY nil
    :api-port 6200})
 
-(def whitelisted-keys ^{:doc "Keys that are safe to be propagated to the UI"} #{:public-key})
+(def whitelisted-keys ^{:doc "Keys that are safe to be propagated to the UI"} #{:PUBLIC_KEY})
 
 (def ^private *config* (atom nil))
 
