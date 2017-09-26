@@ -5,12 +5,10 @@
             [name-bazaar.server.contracts-api.district0x-emails :as district0x-emails]
             [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
             [district0x.server.sendgrid :as sendgrid]
+            [district0x.server.sendgrid-templates :as templates]
             [district0x.shared.config :as config]
             [district0x.shared.key-utils :as key-utils])
   (:require-macros [cljs.core.async.macros :refer [go]]))
-
-(defn- get-instance [server-state contract-key]
-  (get-in @server-state [:smart-contracts contract-key :instance]))
 
 (defn on-offering-added [server-state {:keys [:offering :node :owner :version] :as args}]
   (go
@@ -27,13 +25,13 @@
               (for [address addresses]
                 (let [[_ base64-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address address}))]
                   (sendgrid/send-notification-email {:from-email "test@test.com"
-                                                      :to-email (->> base64-encrypted-email
-                                                                     (key-utils/decode-base64)
-                                                                     (key-utils/decrypt (config/get-config :PRIVATE_KEY)))
-                                                      :subject "Subject"
-                                                      :content "content"}
-                                                     #(prn "Success sending email")
-                                                     #(prn "An error has occured: " %)))))))))))
+                                                     :to-email (->> base64-encrypted-email
+                                                                    (key-utils/decode-base64)
+                                                                    (key-utils/decrypt (config/get-config :PRIVATE_KEY)))
+                                                     :subject "Offering created"
+                                                     :content (templates/offering-created name)}
+                                                    #(prn "Success sending email")
+                                                    #(prn "An error has occured: " %)))))))))))
 
 (defn setup-listener! [server-state contract-key event-key callback]
   (web3-eth/contract-call (state/instance @server-state contract-key)
@@ -48,10 +46,10 @@
 (defn setup-listeners! [server-state]
   (setup-listener! server-state :offering-registry :on-offering-added on-offering-added))
 
-#_(name-bazaar.server.contracts-api.offering-requests/add-request!
-   district0x.server.state/*server-state*
-   {:offering-request/name "test-request-name"}
-   {:from (district0x.server.state/my-address 0)})
+(comment (name-bazaar.server.contracts-api.offering-requests/add-request!
+          district0x.server.state/*server-state*
+          {:offering-request/name "test-request-name"}
+          {:from (district0x.server.state/my-address 0)}))
 
 
 
