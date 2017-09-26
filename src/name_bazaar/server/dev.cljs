@@ -36,6 +36,7 @@
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
+    [name-bazaar.server.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -54,7 +55,8 @@
 (defn on-jsload []
   (config/load-config! config/default-config)
   (api-server/start! (config/get-config :api-port))
-  (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
+  (d0x-effects/create-web3! *server-state* {:port testrpc-port})
+  (listeners/setup-listeners! *server-state*))
 
 (defn deploy-to-mainnet! []
   (go
