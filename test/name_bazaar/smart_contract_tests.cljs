@@ -310,6 +310,11 @@
                   (fn nearfuture [_]
                     (go
                       (testing
+                          "User who was overbid, can successfully withdraw funds from auction offering."
+                        (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                      {:offering/address offering}
+                                                                      {:from (state/my-address 1)})))))
+                      (testing
                           "Finalizing works when it's time"
                         (is (tx-sent? (<! (auction-offering/finalize! ss
                                                                       {:offering/address offering

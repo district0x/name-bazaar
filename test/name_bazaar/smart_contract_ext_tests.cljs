@@ -230,6 +230,7 @@
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
                                                              :from (state/my-address 2)})))))
+
                  (web3-evm/increase-time!
                   (state/web3 ss)
                   [(time/in-seconds (time/days 13))]
@@ -241,6 +242,17 @@
                                                                  {:offering/address offering}
                                                                  {:value (web3/to-wei 0.3 :ether)
                                                                   :from (state/my-address 3)})))))
+
+                      (testing
+                          "User who was overbid, can successfully withdraw funds from auction offering."
+                        (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                     {:offering/address offering}
+                                                                     {:from (state/my-address 2)})))))
+                      (testing
+                          "user can't withdraw twice."
+                        (is (tx-failed? (<! (auction-offering/withdraw! ss
+                                                                      {:offering/address offering}
+                                                                      {:from (state/my-address 2)})))))
                       (testing
                           "State of the auction offering is correct"
                         (is (< (- (:auction-offering/end-time (last (<! (auction-offering/get-auction-offering ss

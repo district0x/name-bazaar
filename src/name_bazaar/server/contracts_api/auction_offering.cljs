@@ -12,7 +12,9 @@
 (defn bid! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth-async/contract-at (state/web3 server-state)
-                                                             (:abi (state/contract server-state :auction-offering))
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :auction-offering))
                                                              address)
                                  :bid
                                  (merge {:gas 300000
@@ -40,4 +42,16 @@
                                  (merge {:gas 300000
                                          :from (state/active-address server-state)
                                          :value (when value-ether (web3/to-wei value-ether :ether))}
+                                        opts)))
+
+(defn withdraw! [server-state {:keys [:offering/address]} {:keys [:from] :as opts}]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state :auction-offering))
+                                                             address)
+                                 :withdraw
+                                 from
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
                                         opts)))
