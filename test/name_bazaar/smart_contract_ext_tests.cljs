@@ -62,22 +62,6 @@
      (async done (js/setTimeout #(done) 0)))
    })
 
-(deftest contracts-setup
-  (async done
-         (go
-           (let [ss @*server-state*]
-             (is (= (contract-address :ens) (second (<! (registrar/ens ss)))))
-             (is (= (contract-address :mock-registrar) (second (<! (auction-offering-factory/registrar ss)))))
-             (is (= (contract-address :offering-registry) (second (<! (auction-offering-factory/offering-registry ss)))))
-             (is (= (contract-address :offering-requests) (second (<! (auction-offering-factory/offering-requests ss)))))
-
-             (is (= (contract-address :mock-registrar) (second (<! (buy-now-offering-factory/registrar ss)))))
-             (is (= (contract-address :offering-registry) (second (<! (buy-now-offering-factory/offering-registry ss)))))
-             (is (= (contract-address :offering-requests) (second (<! (buy-now-offering-factory/offering-requests ss)))))
-
-             ;; TODO more
-
-             (done)))))
 
 (defn offering-status-keys [resp]
   (select-keys resp [:offering/address
@@ -163,6 +147,10 @@
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.2 :ether)
                                                              :from (state/my-address 1)})))))
+                 ;; (testing
+                 ;;     "Offering parameters are correct"
+                 ;;   (is (= "" (last (<! (offering/get-offering ss offering))))))
+                 ;; (is (= "" (:my-addresses ss)))
                  (testing
                      "State of the auction offering is correct"
                    (is (= {:auction-offering/min-bid-increase 100000000000000000
@@ -255,7 +243,8 @@
                         (testing
                             "User who was overbid, can successfully withdraw funds from auction offering."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
-                                                                        {:offering/address offering}
+                                                                        {:offering offering
+                                                                         :address (state/my-address 2)}
                                                                         {:from (state/my-address 2)}))))
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
@@ -263,7 +252,104 @@
                         (testing
                             "user can't withdraw twice."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
-                                                                        {:offering/address offering}
+                                                                        {:offering offering
+                                                                         :address (state/my-address 2)}
+                                                                        {:from (state/my-address 2)}))))
+                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
+                                    (last (<! (balance (state/my-address 2)))))
+                                 100000)))
+                        (testing
+                            "State of the auction offering is correct"
+                          (is (< (- (:auction-offering/end-time (last (<! (auction-offering/get-auction-offering ss
+                                                                                                                 offering))))
+                                    t0
+                                    (time/in-seconds (time/days 3)))
+                                 10))) ;;threashold on operations
+                        (done)))))))
+             ;; TODO more
+             ))))
+
+(deftest subdomain-auction-withdraw
+  (async done
+         (let [ss @*server-state*
+               t0 (to-epoch (time/plus (time/now) (time/weeks 2)))]
+           (go
+             (is (tx-sent? (<! (registrar/register! ss
+                                                    {:ens.record/label "tld"}
+                                                    {:from (state/my-address 0)}))))
+             (is (tx-sent? (<! (ens/set-subnode-owner!
+                                ss
+                                {:ens.record/label "theirsub"
+                                 :ens.record/node "tld.eth"
+                                 :ens.record/owner (state/my-address 1)}
+                                {:from (state/my-address 0)}))))
+
+             (testing
+                 "Offering the name for a bid"
+               (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "theirsub.tld.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time t0
+                                   :auction-offering/extension-duration (time/in-seconds (time/days 4))
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 1)})))))
+
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "theirsub.tld.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing
+                     "Transferrnig ownership to the offer"
+                   (is (tx-sent? (<! (ens/set-subnode-owner!
+                                      ss
+                                      {:ens.record/label "theirsub"
+                                       :ens.record/node "tld.eth"
+                                       :ens.record/owner offering}
+                                      {:from (state/my-address 0)})))))
+                 (testing
+                     "Can place a proper bid"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.1 :ether)
+                                                             :from (state/my-address 2)})))))
+
+                 (web3-evm/increase-time!
+                  (state/web3 ss)
+                  [(time/in-seconds (time/days 13))]
+                  (fn nearfuture [_]
+
+                    (go
+                      (let [balance-of-2 (last (<! (balance (state/my-address 2))))]
+                        (testing
+                            "Can place a bid"
+                          (is (tx-sent? (<! (auction-offering/bid! ss
+                                                                   {:offering/address offering}
+                                                                   {:value (web3/to-wei 0.3 :ether)
+                                                                    :from (state/my-address 3)})))))
+
+                        (testing
+                            "Emergency address can withdraw funds to a user's address on his behalf."
+                          (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                        {:offering offering
+                                                                         :address (state/my-address 2)}
+                                                                        {:from (state/my-address 0)}))))
+                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
+                                    (last (<! (balance (state/my-address 2)))))
+                                 100000)))
+                        (testing
+                            "user can't withdraw twice."
+                          (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                        {:offering offering
+                                                                         :address (state/my-address 2)}
                                                                         {:from (state/my-address 2)}))))
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))

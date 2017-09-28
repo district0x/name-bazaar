@@ -1,5 +1,6 @@
 (ns name-bazaar.smart-contract-tests
   (:require
+   [cljs-web3.async.eth :as web3-eth-async]
    [cljs-time.coerce :refer [to-epoch]]
    [cljs-time.core :as time]
    [cljs-web3.core :as web3]
@@ -35,6 +36,11 @@
 (set! js/Web3 Web3)
 
 (def total-accounts 10)
+
+(defn balance [address]
+  (web3-eth-async/get-balance ;;(state/web3 server-state)
+   (:web3 @*server-state*)
+   address))
 
 (swap! *server-state* assoc :log-contract-calls? false)
 
@@ -312,7 +318,8 @@
                       (testing
                           "User who was overbid, can successfully withdraw funds from auction offering."
                         (is (tx-sent? (<! (auction-offering/withdraw! ss
-                                                                      {:offering/address offering}
+                                                                      {:address (state/my-address 1)
+                                                                       :offering offering}
                                                                       {:from (state/my-address 1)})))))
                       (testing
                           "Finalizing works when it's time"
@@ -328,6 +335,18 @@
                           "Ensuring the new owner gets his deed"
                         (is (= (state/my-address 3) (last (<! (registrar/entry-deed-owner
                                              ss {:ens.record/label "abc"}))))))
+
+                      (let [balance-of-2 (last (<! (balance (state/my-address 2))))]
+                        (testing
+                            "User who was overbid, can successfully withdraw funds from auction offering."
+                          (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                        {:address (state/my-address 2)
+                                                                         :offering offering}
+                                                                        {:from (state/my-address 2)}))))
+                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.2 :ether))
+                                    (last (<! (balance (state/my-address 2)))))
+                                 100000))
+                          ))
                       (done))))))
              ;; TODO more
              ))))
