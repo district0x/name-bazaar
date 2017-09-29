@@ -62,31 +62,6 @@
      (async done (js/setTimeout #(done) 0)))
    })
 
-
-(defn offering-status-keys [resp]
-  (select-keys resp [:offering/address
-                     :offering/offering-registry
-                     :offering/type
-                     :offering/top-level-name?
-                     :offering/name
-                     :offering/contains-special-char?
-                     :offering/label-length
-                     :offering/name-level
-                     :offering/node
-                     :offering/auction?
-                     :offering/contains-non-ascii?
-                     :offering/label-hash
-                     :offering/original-owner
-                     :offering/version
-                     :offering/price
-                     :offering/label
-                     :offering/buy-now?
-                     :offering/emergency-multisig
-                     :offering/contains-number?
-                     :offering/registrar
-                     :offering/new-owner
-                     ]))
-
 (deftest create-auction-offering
   (async done
          (let [ss @*server-state*]
