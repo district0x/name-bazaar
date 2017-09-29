@@ -37,6 +37,11 @@
 
 (def total-accounts 10)
 
+(defn balance [address]
+  (web3-eth-async/get-balance ;;(state/web3 server-state)
+   (:web3 @*server-state*)
+   address))
+
 (use-fixtures
   :each
   {:before
@@ -311,3 +316,87 @@
                                                                                           "theirsub.tld.eth")}))))))))
              ;; TODO more
              (done)))))
+
+(deftest offering-reclaiming-auction-tld-emergency
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing
+                 "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+
+
+             (testing
+                 "Offering the name for a bid"
+               (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 1)})))))
+
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing
+                     "Transferrnig ownership to the offering"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+
+                 (testing
+                     "The name ownership must be transferred to the offering"
+                   (is (= offering (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                              "abc.eth")}))))))
+
+                 (testing
+                     "Ensuring offering gets the deed"
+                   (is (= offering (last (<! (registrar/entry-deed-owner
+                                              ss {:ens.record/label "abc"}))))))
+                 (testing
+                     "Can place a proper bid"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.1 :ether)
+                                                             :from (state/my-address 4)})))))
+                 (let [balance-of-4 (last (<! (balance (state/my-address 4))))]
+                   (testing
+                       "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
+                     (is (tx-sent? (<! (buy-now-offering/reclaim-ownership! ss
+                                                                            offering
+                                                                            {:from (state/my-address 0)})))))
+
+                   (testing
+                       "The name ownership must be transferred back to owner"
+                     (is (= (state/my-address 1) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                            "abc.eth")}))))))
+                   (testing
+                       "Ensuring the new owner gets back his deed"
+                     (is (= (state/my-address 1) (last (<! (registrar/entry-deed-owner
+                                                            ss {:ens.record/label "abc"}))))))
+
+                   (testing
+                       "User who was overbid, can successfully withdraw funds from auction offering."
+                     (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                   {:offering offering
+                                                                    :address (state/my-address 4)}
+                                                                   {:from (state/my-address 4)}))))
+                     (is (< (- (.plus balance-of-4 (web3/to-wei 0.1 :ether))
+                               (last (<! (balance (state/my-address 4)))))
+                            100000)))
+                   (done))))
+             ;; TODO more
+             ))))
