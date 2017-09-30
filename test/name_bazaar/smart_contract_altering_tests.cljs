@@ -400,3 +400,149 @@
                    (done))))
              ;; TODO more
              ))))
+
+(deftest offering-editing-buy-now
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing
+                 "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+
+             (testing
+                 "Making an instant offer"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "abc.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 1)})))))
+
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing
+                     "Transferrnig ownership to the offering"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+                 (testing
+                     "Offering can be successfully edited by original owner, throws error if different address tries to edit"
+                   (is (tx-failed? (<! (buy-now-offering/set-settings! ss
+                                                                     {:offering/address offering
+                                                                      :offering/price (eth->wei 0.2)}
+                                                                     {:from (state/my-address 2)})))))
+                 (testing
+                     "Updating price"
+                   (is (tx-sent? (<! (buy-now-offering/set-settings! ss
+                                                                     {:offering/address offering
+                                                                      :offering/price (eth->wei 0.2)}
+                                                          {:from (state/my-address 1)})))))
+                 (testing
+                     "The price is updated"
+                   (is (= (eth->wei 0.2) (str (:offering/price
+                                               (last (<! (offering/get-offering ss
+                                                                                offering))))))))
+
+
+                 ))
+             ;; TODO more
+             (done)))))
+
+(deftest offering-editing-auction
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing
+                 "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+
+             (testing
+                 "Offering the name for a bid"
+               (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 1)})))))
+
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing
+                     "Transferrnig ownership to the offering"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+
+
+                 (let [t0 (to-epoch (time/plus (time/now) (time/weeks 4)))]
+                   (testing
+                       "Auction offering can be edited"
+                     (is (tx-sent? (<! (auction-offering/set-settings!
+                                        ss
+                                        {:offering/address offering
+                                         :offering/price (eth->wei 0.2)
+                                         :auction-offering/end-time t0
+                                         :auction-offering/extension-duration 10000
+                                         :auction-offering/min-bid-increase (web3/to-wei 0.2 :ether)}
+                                        {:from (state/my-address 1)})))))
+
+
+                   (testing
+                       "State of the auction offering is correct"
+                     (is (= {:auction-offering/end-time (js/Math.floor t0),
+                             :auction-offering/extension-duration 10000,
+                             :auction-offering/min-bid-increase 200000000000000000}
+                            (select-keys (last (<! (auction-offering/get-auction-offering ss offering)))
+                                         [:auction-offering/end-time
+                                          :auction-offering/extension-duration
+                                          :auction-offering/min-bid-increase])))))
+                 (testing
+                     "The price is updated"
+                   (is (= (eth->wei 0.2) (str (:offering/price
+                                               (last (<! (offering/get-offering ss
+                                                                                offering))))))))
+                 (testing
+                     "Can place a proper bid"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.4 :ether)
+                                                             :from (state/my-address 4)})))))
+                 (testing
+                     "Auction offering can be edited only when has 0 bids, throws error if otherwise."
+                   (is (tx-failed? (<! (auction-offering/set-settings!
+                                      ss
+                                      {:offering/address offering
+                                       :offering/price (eth->wei 0.8)
+                                       :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 8)))
+                                       :auction-offering/extension-duration 20000
+                                       :auction-offering/min-bid-increase (web3/to-wei 0.3 :ether)}
+                                      {:from (state/my-address 1)})))))
+
+
+                 ))
+             ;; TODO more
+             (done)))))

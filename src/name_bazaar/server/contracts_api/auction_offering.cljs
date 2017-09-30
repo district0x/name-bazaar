@@ -68,3 +68,24 @@
                                  (merge {:gas 300000
                                          :from (state/active-address server-state)}
                                         opts)))
+
+(defn set-settings! [server-state {:keys [:offering/address
+                                          :offering/price
+                                          :auction-offering/end-time
+                                          :auction-offering/extension-duration
+                                          :auction-offering/min-bid-increase]} opts]
+  
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :auction-offering))
+                                                             address)
+                                 :setSettings
+                                 price
+                                 end-time
+                                 extension-duration
+                                 min-bid-increase
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))

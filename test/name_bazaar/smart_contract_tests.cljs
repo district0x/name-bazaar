@@ -147,7 +147,8 @@
                             :offering/contains-non-ascii? false
                             :offering/label-hash (sha3 "abc")
                             :offering/original-owner (state/my-address 0)
-                            :offering/version 1 :offering/price 100000000000000000,
+                            :offering/version 1
+                            :offering/price 100000000000000000,
                             :offering/label "abc"
                             :offering/buy-now? true
                             :offering/emergency-multisig (state/active-address ss)
