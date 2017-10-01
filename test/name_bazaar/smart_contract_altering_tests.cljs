@@ -546,3 +546,83 @@
                  ))
              ;; TODO more
              (done)))))
+
+(deftest offering-changing-register-and-requests
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing
+                 "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+             (testing
+                 "user can successfully request ENS name"
+               (is (tx-sent? (<! (offering-requests/add-request! ss
+                                                                 {:offering-request/name "abc.eth"}
+                                                                {:form (state/my-address 1)})))))
+             (testing
+                 "and it increase counter of requests."
+               (is (= 1 (:offering-request/requesters-count
+                         (second (<! (offering-requests/get-request ss
+                                                                    {:offering-request/node (namehash
+                                                                                             "abc.eth")}
+                                                                    {:form (state/my-address 1)})))))))
+             (testing
+                 "Making an instant offer"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "abc.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 1)})))))
+             (testing
+                 "if offering is created after that, it zeroes requests counter"
+               (is (= 0 (:offering-request/requesters-count
+                         (second (<! (offering-requests/get-request ss
+                                                                    {:offering-request/node (namehash
+                                                                                             "abc.eth")}
+                                                                    {:form (state/my-address 1)})))))))
+
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing
+                   "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing
+                     "Transferrnig ownership to the offering"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+
+                 (testing
+                     "Emergency address can change register address property of offering contract."
+                   (is (tx-sent? (<! (buy-now-offering/set-offering-registry!
+                                      ss
+                                      {:offering/address offering
+                                       :offering/registry (state/my-address 5)}
+                                      {:from (state/my-address 0)})))))
+                 (testing
+                     "Throws error for other address."
+                   (is (tx-failed? (<! (buy-now-offering/set-offering-registry!
+                                      ss
+                                      {:offering/address offering
+                                       :offering/registry (state/my-address 5)}
+                                      {:from (state/my-address 3)})))))
+                 (testing
+                     "Registar changed"
+                   (is
+                    (=
+                     (state/my-address 5)
+                     (:offering/offering-registry
+                      (last (<! (offering/get-offering ss
+                                                       offering)))))))
+
+                 ))
+             ;; TODO more
+             (done)))))
