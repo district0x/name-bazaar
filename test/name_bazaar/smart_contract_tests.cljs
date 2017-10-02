@@ -67,10 +67,12 @@
            (let [ss @*server-state*]
              (is (= (contract-address :ens) (second (<! (registrar/ens ss)))))
              (is (= (contract-address :mock-registrar) (second (<! (auction-offering-factory/registrar ss)))))
+             (is (= (state/my-address 0) (second (<! (auction-offering-factory/emergency-multisig ss)))))
              (is (= (contract-address :offering-registry) (second (<! (auction-offering-factory/offering-registry ss)))))
              (is (= (contract-address :offering-requests) (second (<! (auction-offering-factory/offering-requests ss)))))
 
              (is (= (contract-address :mock-registrar) (second (<! (buy-now-offering-factory/registrar ss)))))
+             (is (= (state/my-address 0) (second (<! (buy-now-offering-factory/emergency-multisig ss)))))
              (is (= (contract-address :offering-registry) (second (<! (buy-now-offering-factory/offering-registry ss)))))
              (is (= (contract-address :offering-requests) (second (<! (buy-now-offering-factory/offering-requests ss)))))
 
