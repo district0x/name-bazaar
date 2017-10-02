@@ -115,6 +115,12 @@
               :from [:offerings]
               :where [:= :address offering-address]}))
 
+(defn get-offering [db offering-address]
+  (db-get db {:select [:name :original-owner :price :end-time :winning-bidder]
+              :from [:offerings]
+              :where [:= :address offering-address]
+              :limit 1}))
+
 (def bids-keys [:bid/bidder :bid/value :bid/offering])
 
 (defn insert-bid! [db values]
