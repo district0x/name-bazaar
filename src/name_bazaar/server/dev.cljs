@@ -31,7 +31,6 @@
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
-    [name-bazaar.server.core :refer [mainnet-port]]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
@@ -50,17 +49,17 @@
 (set! js/Web3 Web3)
 
 (def total-accounts 6)
-(def testrpc-port 8549)
 
 (defn on-jsload []
   (config/load-config! config/default-config)
   (api-server/start! (config/get-config :api-port))
-  (d0x-effects/create-web3! *server-state* {:port testrpc-port})
-  (listeners/setup-listeners! *server-state*))
+  (d0x-effects/create-web3! *server-state* {:port (config/get-config :testrpc-port)})
+  (listeners/setup-event-listeners! *server-state*))
 
 (defn deploy-to-mainnet! []
   (go
-    (d0x-effects/create-web3! *server-state* {:port mainnet-port})
+    (config/load-config! config/default-config)
+    (d0x-effects/create-web3! *server-state* {:port (config/get-config :mainnet-port)})
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (<! (d0x-effects/load-my-addresses! *server-state*))
     (<! (deploy-smart-contracts! *server-state* {:persist? true}))))
@@ -78,15 +77,17 @@
     ch))
 
 (defn -main [& _]
+  (config/load-config! config/default-config)
   (go
-    (config/load-config! config/default-config)
-    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
-                                                    :port testrpc-port}))
-    (d0x-effects/create-web3! *server-state* {:port testrpc-port})
-    (d0x-effects/create-db! *server-state*)
-    (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-    (api-server/start! (config/get-config :api-port))
-    (<! (d0x-effects/load-my-addresses! *server-state*))))
+    (let [testrpc-port (config/get-config :testrpc-port)]
+      (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
+                                                      :port testrpc-port}))
+      (d0x-effects/create-web3! *server-state* {:port testrpc-port})
+      (d0x-effects/create-db! *server-state*)
+      (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
+      (api-server/start! (config/get-config :api-port))
+      (<! (d0x-effects/load-my-addresses! *server-state*))
+      (listeners/setup-event-listeners! *server-state*))))
 
 (set! *main-cli-fn* -main)
 
