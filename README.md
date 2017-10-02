@@ -17,6 +17,12 @@ Example:
 PUBLIC_KEY='bla' node dev-server/name-bazaar.js
 ```
 
+is then accessible as:
+
+```
+(config/get-config :public-key)
+```
+
 ## Frontend (browser) tests: 
 
 ```

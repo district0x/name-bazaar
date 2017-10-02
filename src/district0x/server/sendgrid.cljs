@@ -14,7 +14,7 @@
               :content [{:type "text/html"
                          :value content}]}]
     (POST (str sendgrid-public-api "/mail/send")
-          {:headers {"Authorization" (str "Bearer " (config/get-config :SENDGRID_API_KEY))
+          {:headers {"Authorization" (str "Bearer " (config/get-config :sendgrid-api-key))
                      "Content-type" "application/json"}
            :body (clj->json body)}
            :handler success-handler

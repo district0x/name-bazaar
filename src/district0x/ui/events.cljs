@@ -540,7 +540,7 @@
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
                       form-data)
-          public-key (get-in db [:config :PUBLIC_KEY])]
+          public-key (get-in db [:config :public-key])]
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
