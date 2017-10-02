@@ -67,7 +67,6 @@
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
                           [karma-cljs-test "0.1.0"]
-                          [karma-firefox-launcher "1.0.1"]
                           [karma-safari-launcher "1.0.0"]]}
 
   :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
