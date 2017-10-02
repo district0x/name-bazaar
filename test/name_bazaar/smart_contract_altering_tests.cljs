@@ -27,6 +27,7 @@
    [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
    [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
    [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
+   [district0x.server.effects :as effects]
    [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -158,12 +159,13 @@
                  (testing
                      "Transferrnig ownership to the offering"
                    (is
-                    (tx-sent? (<! (ens/set-subnode-owner!
-                                   ss
-                                   {:ens.record/label "theirsub"
-                                    :ens.record/node  "tld.eth"
-                                    :ens.record/owner offering}
-                                   {:from (state/my-address 1)})))))
+                    (tx-sent?
+                     (<! (ens/set-owner!
+                          ss
+                          {;;:ens.record/name "theirsub"
+                           :ens.record/node (namehash "theirsub.tld.eth")
+                           :ens.record/owner offering}
+                          {:from (state/my-address 2)})))))
 
                  (testing
                      "The name ownership must be transferred to the offering"
@@ -567,7 +569,7 @@
                          (second (<! (offering-requests/get-request ss
                                                                     {:offering-request/node (namehash
                                                                                              "abc.eth")}
-                                                                    {:form (state/my-address 1)})))))))
+                                                                    )))))))
              (testing
                  "Making an instant offer"
                (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
@@ -580,7 +582,7 @@
                          (second (<! (offering-requests/get-request ss
                                                                     {:offering-request/node (namehash
                                                                                              "abc.eth")}
-                                                                    {:form (state/my-address 1)})))))))
+                                                                    )))))))
 
              (let [[[_ {{:keys [:offering]} :args}]]
                    (alts! [(offering-registry/on-offering-added-once ss
