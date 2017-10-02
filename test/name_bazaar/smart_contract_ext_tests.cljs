@@ -41,8 +41,7 @@
 (swap! *server-state* assoc :log-contract-calls? false)
 
 (defn balance [address]
-  (web3-eth-async/get-balance ;;(state/web3 server-state)
-                              (:web3 @*server-state*)
+  (web3-eth-async/get-balance (:web3 @*server-state*)
                               address))
 
 (use-fixtures
@@ -66,13 +65,11 @@
   (async done
          (let [ss @*server-state*]
            (go
-             (testing
-                 "Registering name"
+             (testing "Registering name"
                (is (tx-sent? (<! (registrar/register! ss
                                                       {:ens.record/label "abc"}
                                                       {:from (state/my-address 0)})))))
-             (testing
-                 "Offering the name for a bid"
+             (testing "Offering the name for a bid"
                (is (tx-sent? (<! (auction-offering-factory/create-offering!
                                   ss
                                   {:offering/name "abc.eth"
@@ -89,45 +86,34 @@
                                                                       :from-block 0
                                                                       :owner (state/my-address 0)})
                            (timeout 5000)])]
-               (testing
-                   "on-offering event should fire"
+               (testing "on-offering event should fire"
                  (is (not (nil? offering))))
                (when offering
-                 (testing
-                     "Can't place a bid before ownership transfer"
+                 (testing "Can't place a bid before ownership transfer"
                    (is (tx-failed? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
                                                              :from (state/my-address 1)})))))
-                 (testing
-                     "Transferrnig ownership to the offer"
+                 (testing "Transferrnig ownership to the offer"
                    (is (tx-sent? (<! (registrar/transfer! ss
                                                           {:ens.record/label "abc" :ens.record/owner offering}
                                                           {:from (state/my-address 0)})))))
-                 (testing
-                     "Can place a proper bid"
+                 (testing "Can place a proper bid"
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
                                                              :from (state/my-address 1)})))))
-                 (testing
-                     "Correct increase of the bid is accepted"
+                 (testing "Correct increase of the bid is accepted"
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.2 :ether)
                                                              :from (state/my-address 2)})))))
-                 (testing
-                     "If user has bid before, it's enough for him to send only difference needed for next bid."
+                 (testing "If user has bid before, it's enough for him to send only difference needed for next bid."
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.2 :ether)
                                                              :from (state/my-address 1)})))))
-                 ;; (testing
-                 ;;     "Offering parameters are correct"
-                 ;;   (is (= "" (last (<! (offering/get-offering ss offering))))))
-                 ;; (is (= "" (:my-addresses ss)))
-                 (testing
-                     "State of the auction offering is correct"
+                 (testing "State of the auction offering is correct"
                    (is (= {:auction-offering/min-bid-increase 100000000000000000
                            :auction-offering/winning-bidder (state/my-address 1)
                            :auction-offering/bid-count 3}
@@ -137,9 +123,7 @@
                                        [:auction-offering/min-bid-increase
                                         :auction-offering/winning-bidder
                                         :auction-offering/bid-count]))))
-                 (done)))
-             ;; TODO more
-             ))))
+                 (done)))))))
 
 (deftest create-subdomain-auction-offering
   (async done
@@ -157,8 +141,7 @@
                                 {:from (state/my-address 0)}))))
              #_(is (= (state/my-address 1) (last (<! (ens/owner ss {:ens.record/node (namehash
                                                                                     "theirsub.tld.eth")})))))
-             (testing
-                 "Offering the name for a bid"
+             (testing "Offering the name for a bid"
                (is (tx-sent? (<! (auction-offering-factory/create-offering!
                                   ss
                                   {:offering/name "theirsub.tld.eth"
@@ -175,27 +158,23 @@
                                                                       :from-block 0
                                                                       :owner (state/my-address 1)})
                            (timeout 5000)])]
-               (testing
-                   "on-offering event should fire"
+               (testing "on-offering event should fire"
                  (is (not (nil? offering))))
                (when offering
-                 (testing
-                     "Can't place a bid before ownership transfer"
+                 (testing "Can't place a bid before ownership transfer"
                    (is (tx-failed? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
                                                              :from (state/my-address 1)})))))
 
-                 (testing
-                     "Transferrnig ownership to the offer"
+                 (testing "Transferrnig ownership to the offer"
                    (is (tx-sent? (<! (ens/set-subnode-owner!
                                       ss
                                       {:ens.record/label "theirsub"
                                        :ens.record/node "tld.eth"
                                        :ens.record/owner offering}
                                       {:from (state/my-address 0)})))))
-                 (testing
-                     "Can place a proper bid"
+                 (testing "Can place a proper bid"
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
@@ -208,15 +187,13 @@
 
                     (go
                       (let [balance-of-2 (last (<! (balance (state/my-address 2))))]
-                        (testing
-                            "Can place a bid"
+                        (testing "Can place a bid"
                           (is (tx-sent? (<! (auction-offering/bid! ss
                                                                    {:offering/address offering}
                                                                    {:value (web3/to-wei 0.3 :ether)
                                                                     :from (state/my-address 3)})))))
 
-                        (testing
-                            "User who was overbid, can successfully withdraw funds from auction offering."
+                        (testing "User who was overbid, can successfully withdraw funds from auction offering."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
                                                                         {:offering offering
                                                                          :address (state/my-address 2)}
@@ -224,8 +201,7 @@
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
                                  100000)))
-                        (testing
-                            "user can't withdraw twice."
+                        (testing "user can't withdraw twice."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
                                                                         {:offering offering
                                                                          :address (state/my-address 2)}
@@ -233,16 +209,13 @@
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
                                  100000)))
-                        (testing
-                            "State of the auction offering is correct"
+                        (testing "State of the auction offering is correct"
                           (is (< (- (:auction-offering/end-time (last (<! (auction-offering/get-auction-offering ss
                                                                                                                  offering))))
                                     t0
                                     (time/in-seconds (time/days 3)))
                                  10))) ;;threashold on operations
-                        (done)))))))
-             ;; TODO more
-             ))))
+                        (done)))))))))))
 
 (deftest subdomain-auction-withdraw
   (async done
@@ -259,8 +232,7 @@
                                  :ens.record/owner (state/my-address 1)}
                                 {:from (state/my-address 0)}))))
 
-             (testing
-                 "Offering the name for a bid"
+             (testing "Offering the name for a bid"
                (is (tx-sent? (<! (auction-offering-factory/create-offering!
                                   ss
                                   {:offering/name "theirsub.tld.eth"
@@ -278,20 +250,17 @@
                                                                       :from-block 0
                                                                       :owner (state/my-address 1)})
                            (timeout 5000)])]
-               (testing
-                   "on-offering event should fire"
+               (testing "on-offering event should fire"
                  (is (not (nil? offering))))
                (when offering
-                 (testing
-                     "Transferrnig ownership to the offer"
+                 (testing "Transferrnig ownership to the offer"
                    (is (tx-sent? (<! (ens/set-subnode-owner!
                                       ss
                                       {:ens.record/label "theirsub"
                                        :ens.record/node "tld.eth"
                                        :ens.record/owner offering}
                                       {:from (state/my-address 0)})))))
-                 (testing
-                     "Can place a proper bid"
+                 (testing "Can place a proper bid"
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.1 :ether)
@@ -304,15 +273,13 @@
 
                     (go
                       (let [balance-of-2 (last (<! (balance (state/my-address 2))))]
-                        (testing
-                            "Can place a bid"
+                        (testing "Can place a bid"
                           (is (tx-sent? (<! (auction-offering/bid! ss
                                                                    {:offering/address offering}
                                                                    {:value (web3/to-wei 0.3 :ether)
                                                                     :from (state/my-address 3)})))))
 
-                        (testing
-                            "Emergency address can withdraw funds to a user's address on his behalf."
+                        (testing "Emergency address can withdraw funds to a user's address on his behalf."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
                                                                         {:offering offering
                                                                          :address (state/my-address 2)}
@@ -320,8 +287,7 @@
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
                                  100000)))
-                        (testing
-                            "user can't withdraw twice."
+                        (testing "user can't withdraw twice."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
                                                                         {:offering offering
                                                                          :address (state/my-address 2)}
@@ -329,13 +295,10 @@
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
                                  100000)))
-                        (testing
-                            "State of the auction offering is correct"
+                        (testing "State of the auction offering is correct"
                           (is (< (- (:auction-offering/end-time (last (<! (auction-offering/get-auction-offering ss
                                                                                                                  offering))))
                                     t0
                                     (time/in-seconds (time/days 3)))
                                  10))) ;;threashold on operations
-                        (done)))))))
-             ;; TODO more
-             ))))
+                        (done)))))))))))
