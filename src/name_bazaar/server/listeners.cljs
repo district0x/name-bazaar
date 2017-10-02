@@ -36,38 +36,40 @@
 
 (defn- on-auction-finalized
   [server-state original-owner winning-bidder name price]
-  (let [[_ owner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address original-owner}))
-        [_ winner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address winning-bidder}))]
-    (when-not (empty? owner-encrypted-email)
-      (sendgrid/send-notification-email {:from-email "hello@district0x.io"
-                                         :to-email (->> owner-encrypted-email
-                                                        (key-utils/decode-base64)
-                                                        (key-utils/decrypt (config/get-config :private-key)))
-                                         :subject "Auction was finalized"
-                                         :content (templates/on-auction-finalized :owner name price)}
-                                        #(prn "Success sending email")
-                                        #(prn "An error has occured: " %)))
-    (when-not (empty? winner-encrypted-email)
-      (sendgrid/send-notification-email {:from-email "hello@district0x.io"
-                                         :to-email (->> winner-encrypted-email
-                                                        (key-utils/decode-base64)
-                                                        (key-utils/decrypt (config/get-config :private-key)))
-                                         :subject "Auction was finalized"
-                                         :content (templates/on-auction-finalized :winner name price)}
-                                        #(prn "Success sending email")
-                                        #(prn "An error has occured: " %)))))
+  (go
+    (let [[_ owner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address original-owner}))
+          [_ winner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address winning-bidder}))]
+      (when-not (empty? owner-encrypted-email)
+        (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+                                           :to-email (->> owner-encrypted-email
+                                                          (key-utils/decode-base64)
+                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                           :subject "Auction was finalized"
+                                           :content (templates/on-auction-finalized :owner name price)}
+                                          #(prn "Success sending email")
+                                          #(prn "An error has occured: " %)))
+      (when-not (empty? winner-encrypted-email)
+        (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+                                           :to-email (->> winner-encrypted-email
+                                                          (key-utils/decode-base64)
+                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                           :subject "Auction was finalized"
+                                           :content (templates/on-auction-finalized :winner name price)}
+                                          #(prn "Success sending email")
+                                          #(prn "An error has occured: " %))))))
 
 (defn- on-offering-bought [server-state original-owner name price]
-  (go (let [[_ owner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address original-owner}))]
-        (when-not (empty? owner-encrypted-email)
-          (sendgrid/send-notification-email {:from-email "hello@district0x.io"
-                                             :to-email (->> owner-encrypted-email
-                                                            (key-utils/decode-base64)
-                                                            (key-utils/decrypt (config/get-config :private-key)))
-                                             :subject "Your offering was bought"
-                                             :content (templates/on-offering-bought name price)}
-                                            #(prn "Success sending email")
-                                            #(prn "An error has occured: " %))))))
+  (go
+    (let [[_ owner-encrypted-email] (<! (district0x-emails/get-email @server-state {:district0x-emails/address original-owner}))]
+      (when-not (empty? owner-encrypted-email)
+        (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+                                           :to-email (->> owner-encrypted-email
+                                                          (key-utils/decode-base64)
+                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                           :subject "Your offering was bought"
+                                           :content (templates/on-offering-bought name price)}
+                                          #(prn "Success sending email")
+                                          #(prn "An error has occured: " %))))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (go
