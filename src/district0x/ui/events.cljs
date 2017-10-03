@@ -546,7 +546,7 @@
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
                     :contract-key :district0x-emails
                     :contract-method :set-email
-                    :form-data (d0x-shared-utils/map-selected-values form-data
+                    :form-data (d0x-shared-utils/update-multi form-data
                                                     #{:district0x-emails/email}
                                                     #(->> %
                                                           (encrypt public-key)
