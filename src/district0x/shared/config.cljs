@@ -7,9 +7,10 @@
    :sendgrid-api-key nil
    :api-port 6200
    :testrpc-port 8549
-   :mainnet-port 8545})
+   :mainnet-port 8545
+   :frontend-url "http://0.0.0.0:4544"})
 
-(def whitelisted-keys ^{:doc "Keys that are safe to be propagated to the UI"} #{:public-key})
+(def whitelisted-keys ^{:doc "Keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
 
 (def ^private *config* (atom nil))
 

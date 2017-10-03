@@ -35,7 +35,7 @@
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
-    [name-bazaar.server.listeners :as listeners]
+    #_[name-bazaar.server.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -54,7 +54,7 @@
   (config/load-config! config/default-config)
   (api-server/start! (config/get-config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (config/get-config :testrpc-port)})
-  (listeners/setup-event-listeners! *server-state*))
+  #_(listeners/setup-event-listeners! *server-state*))
 
 (defn deploy-to-mainnet! []
   (go
@@ -87,7 +87,7 @@
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
       (api-server/start! (config/get-config :api-port))
       (<! (d0x-effects/load-my-addresses! *server-state*))
-      (listeners/setup-event-listeners! *server-state*))))
+      #_(listeners/setup-event-listeners! *server-state*))))
 
 (set! *main-cli-fn* -main)
 

@@ -1,4 +1,4 @@
-(ns name-bazaar.server.listeners
+(ns name-bazaar.server.emailer.listeners
   (:require [cljs-web3.eth :as web3-eth]
             [cljs.core.async :refer [<! >! chan]]
             [district0x.server.state :as state]
@@ -6,7 +6,7 @@
             [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
             [name-bazaar.server.db :as db]
             [district0x.server.sendgrid :as sendgrid]
-            [district0x.server.sendgrid-templates :as templates]
+            [name-bazaar.server.emailer.templates :as templates]
             [district0x.shared.config :as config]
             [district0x.shared.key-utils :as key-utils])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -30,7 +30,7 @@
                                                                                       (key-utils/decode-base64)
                                                                                       (key-utils/decrypt (config/get-config :private-key)))
                                                                        :subject "Offering created"
-                                                                       :content (templates/on-offering-added name)}
+                                                                       :content (templates/on-offering-added offering name)}
                                                                       #(prn "Success sending email")
                                                                       #(prn "An error has occured: " %)))))))))))))
 
@@ -45,7 +45,7 @@
                                                           (key-utils/decode-base64)
                                                           (key-utils/decrypt (config/get-config :private-key)))
                                            :subject "Auction was finalized"
-                                           :content (templates/on-auction-finalized :owner name price)}
+                                           :content (templates/on-auction-finalized :owner offering name price)}
                                           #(prn "Success sending email")
                                           #(prn "An error has occured: " %)))
       (when-not (empty? winner-encrypted-email)
@@ -54,7 +54,7 @@
                                                           (key-utils/decode-base64)
                                                           (key-utils/decrypt (config/get-config :private-key)))
                                            :subject "Auction was finalized"
-                                           :content (templates/on-auction-finalized :winner name price)}
+                                           :content (templates/on-auction-finalized :winner offering name price)}
                                           #(prn "Success sending email")
                                           #(prn "An error has occured: " %))))))
 
@@ -67,7 +67,7 @@
                                                           (key-utils/decode-base64)
                                                           (key-utils/decrypt (config/get-config :private-key)))
                                            :subject "Your offering was bought"
-                                           :content (templates/on-offering-bought name price)}
+                                           :content (templates/on-offering-bought offering name price)}
                                           #(prn "Success sending email")
                                           #(prn "An error has occured: " %))))))
 
@@ -89,7 +89,7 @@
                                                           (key-utils/decode-base64)
                                                           (key-utils/decrypt (config/get-config :private-key)))
                                            :subject "Your offering was bought"
-                                           :content (templates/on-new-bid name price)}
+                                           :content (templates/on-new-bid offering name price)}
                                           #(prn "Success sending email")
                                           #(prn "An error has occured: " %))))))
 

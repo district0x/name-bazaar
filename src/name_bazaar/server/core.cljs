@@ -8,7 +8,7 @@
     [district0x.shared.config :as config]
     [name-bazaar.server.api]
     [name-bazaar.server.db-sync :as db-sync]
-    [name-bazaar.server.listeners :as listeners]
+    #_[name-bazaar.server.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -24,6 +24,6 @@
     (api-server/start! (config/get-config :api-port))
     (<! (d0x-effects/load-my-addresses! *server-state*))
     (db-sync/start-syncing! @*server-state*)
-    (listeners/setup-event-listeners! *server-state*)))
+    #_(listeners/setup-event-listeners! *server-state*)))
 
 (set! *main-cli-fn* -main)

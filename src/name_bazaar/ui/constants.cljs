@@ -6,6 +6,7 @@
     [district0x.ui.spec-interceptors :refer [validate-db]]
     [district0x.ui.utils :refer [parse-boolean-string parse-kw-coll-query-params parse-int-or-nil parse-float-or-nil]]
     [medley.core :as medley]
+    [name-bazaar.shared.constants :as shared-constants]
     [re-frame.core :as re-frame :refer [trim-v]]))
 
 (def contracts-version "1.0.0")
@@ -30,24 +31,6 @@
                             :order-by-columns parse-kw-coll-query-params}
    :route.offering-requests/search {:name-position keyword}})
 
-(def routes
-  ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
-        ["register" :route.mock-registrar/register]
-        ["watched-names" :route/watched-names]
-        [["user/" :user/address "/offerings"] :route.user/offerings]
-        [["user/" :user/address "/purchases"] :route.user/purchases]
-        [["user/" :user/address "/bids"] :route.user/bids]
-        ["my-settings" :route.user/my-settings]
-        ["my-offerings" :route.user/my-offerings]
-        ["my-purchases" :route.user/my-purchases]
-        ["my-bids" :route.user/my-bids]
-        ["offerings/create" :route.offerings/create]
-        [["offerings/" :offering/address] :route.offerings/detail]
-        [["offerings/" :offering/address "/edit"] :route.offerings/edit]
-        ["offerings" :route.offerings/search]
-        ["offering-requests" :route.offering-requests/search]
-        ["about" :route/about]
-        ["how-it-works" :route/how-it-works]
-        [true :route/home]]])
+(def routes shared-constants/routes)
 
 (def interceptors [trim-v (validate-db :name-bazaar.ui.db/db)])
