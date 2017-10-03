@@ -47,7 +47,8 @@
   :exclusions [reagent]
 
   :plugins [[lein-auto "0.1.2"]
-            [lein-cljsbuild "1.1.4"]
+            [lein-cljsbuild "1.1.7"]
+            [lein-figwheel "0.5.11"]
             [lein-shell "0.5.0"]
             [deraen/lein-less4j "0.5.0"]
             [lein-doo "0.1.7"]
@@ -95,8 +96,7 @@
                              [binaryage/devtools "0.9.4"]
                              [com.cemerick/piggieback "0.2.1"]
                              [figwheel-sidecar "0.5.11"]
-                             [org.clojure/tools.nrepl "0.2.13"]]
-              :plugins [[lein-figwheel "0.5.11"]]
+                             [org.clojure/tools.nrepl "0.2.13"]]        
               :source-paths ["dev"]
               :resource-paths ["resources"]}}
 
@@ -145,9 +145,9 @@
                        {:id "dev-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"
-                                       "test"]
+                                       "test/server"]
                         :figwheel true
-                        :compiler {:main "name-bazaar.run-tests"
+                        :compiler {:main "server.run-tests"
                                    :output-to "dev-tests/name-bazaar-tests.js",
                                    :output-dir "dev-tests",
                                    :target :nodejs,
@@ -155,7 +155,8 @@
                                    :verbose false
                                    :source-map true}}
                        {:id "browser-tests"
-                        :source-paths ["src/name_bazaar" "src/district0x" "test/browser"]
+                        :source-paths ["src/name_bazaar" "src/district0x"
+                                       "test/browser"]
                         :compiler {:output-to "browser-tests/name-bazaar-tests.js",
                                    :output-dir "browser-tests",
                                    :main browser.browser

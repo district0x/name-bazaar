@@ -1,4 +1,4 @@
-(ns name-bazaar.smart-contract-tests
+(ns server.name-bazaar.smart-contract-tests
   (:require
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as time]
