@@ -17,3 +17,43 @@
                                          :from (state/active-address server-state)
                                          :value (when value-ether (web3/to-wei value-ether :ether))}
                                         opts)))
+
+(defn reclaim-ownership! [server-state contract-address opts]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :buy-now-offering))
+                                                             contract-address)
+                                 :reclaimOwnership
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))
+
+(defn set-settings! [server-state {:keys [:offering/address
+                                          :offering/price]} opts]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :buy-now-offering))
+                                                             address)
+                                 :setSettings
+                                 price
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))
+
+(defn set-offering-registry! [server-state {:keys [:offering/address
+                                                   :offering/registry]} opts]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :buy-now-offering))
+                                                             address)
+                                 :setOfferingRegistry
+                                 registry
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))

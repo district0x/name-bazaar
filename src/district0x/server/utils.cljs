@@ -60,3 +60,6 @@
   (take! ch println))
 
 (def tx-sent? (comp d0x-shared-utils/sha3? second))
+
+(defn tx-failed? [tx]
+  (not (nil? (first tx))))
