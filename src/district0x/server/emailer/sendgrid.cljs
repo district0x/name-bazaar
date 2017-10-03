@@ -1,8 +1,7 @@
-(ns district0x.server.sendgrid
-  (:require
-   [ajax.core :as ajax :refer [POST]]
-   [district0x.shared.config :as config]
-   [district0x.server.utils :refer [clj->json]]))
+(ns district0x.server.emailer.sendgrid
+  (:require [ajax.core :as ajax :refer [POST]]
+            [district0x.shared.config :as config]
+            [district0x.server.utils :as server-utils]))
 
 (def ^private sendgrid-public-api "https://api.sendgrid.com/v3")
 
@@ -16,9 +15,9 @@
     (POST (str sendgrid-public-api "/mail/send")
           {:headers {"Authorization" (str "Bearer " (config/get-config :sendgrid-api-key))
                      "Content-type" "application/json"}
-           :body (clj->json body)}
-           :handler success-handler
-           :error-handler error-handler)))
+           :body (server-utils/clj->json body)}
+          :handler success-handler
+          :error-handler error-handler)))
 
 (comment
   (district0x.server.sendgrid/send-notification-email {:from-email "test@test.com"

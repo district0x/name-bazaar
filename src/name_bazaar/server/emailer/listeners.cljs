@@ -5,7 +5,7 @@
             [name-bazaar.server.contracts-api.district0x-emails :as district0x-emails]
             [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
             [name-bazaar.server.db :as db]
-            [district0x.server.sendgrid :as sendgrid]
+            [district0x.server.emailer.sendgrid :as sendgrid]
             [name-bazaar.server.emailer.templates :as templates]
             [district0x.shared.config :as config]
             [district0x.shared.encryption-utils :as encryption-utils])
