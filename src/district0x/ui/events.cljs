@@ -15,7 +15,7 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.shared.key-utils :refer [encrypt encode-base64]]
+    [district0x.shared.encryption-utils :as encryption-utils]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.db]
@@ -548,9 +548,7 @@
                     :contract-method :set-email
                     :form-data (d0x-shared-utils/update-multi form-data
                                                     #{:district0x-emails/email}
-                                                    #(->> %
-                                                          (encrypt public-key)
-                                                          (encode-base64)))
+                                                    (encryption-utils/encrypt-encode))
                     :args-order [:district0x-emails/email]
                     :form-id (select-keys form-data [:district0x-emails/address])
                     :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}

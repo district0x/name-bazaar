@@ -1,7 +1,6 @@
-(ns district0x.shared.key-utils
-  (:require
-   [cljsjs.eccjs :as eccjs]
-   [goog.crypt.base64 :as base64]))
+(ns district0x.shared.encryption-utils
+  (:require [cljsjs.eccjs :as eccjs]
+            [goog.crypt.base64 :as base64]))
 
 (defn generate-keypair []
   (let [keypair (js->clj (.generate js/ecc (.-ENC_DEC js/ecc) 256))]
@@ -19,3 +18,13 @@
 
 (defn decode-base64 [s]
   (base64/decodeString s))
+
+(defn encrypt-encode [public-key content]
+  (->> content
+       (encrypt public-key)
+       (encode-base64)))
+
+(defn decode-decrypt [private-key content]
+  (->> content
+       (decode-base64) 
+       (decrypt private-key)))
