@@ -151,7 +151,7 @@
           {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
- :district0x/do-load-config
+ :district0x.config/load
  interceptors
  (fn [{:keys [db]} _]
    {:db db
@@ -159,11 +159,11 @@
                  :uri (str (url/url (:server-url db) "/config"))  
                  :timeout 3000
                  :response-format (ajax/transit-response-format)
-                 :on-success [:district0x/success-load-config]
-                 :on-failure [:district0x.log/error :district0x/do-load-config]}}))
+                 :on-success [:district0x.config/loaded]
+                 :on-failure [:district0x.log/error :district0x.config/load]}}))
 
 (reg-event-db
- :district0x/success-load-config
+ :district0x.config/loaded
  interceptors
  (fn [db [config]]
       (assoc-in db [:config] config)))
@@ -546,9 +546,7 @@
                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
                     :contract-key :district0x-emails
                     :contract-method :set-email
-                    :form-data (d0x-shared-utils/update-multi form-data
-                                                    #{:district0x-emails/email}
-                                                    (encryption-utils/encrypt-encode))
+                    :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
                     :args-order [:district0x-emails/email]
                     :form-id (select-keys form-data [:district0x-emails/address])
                     :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}

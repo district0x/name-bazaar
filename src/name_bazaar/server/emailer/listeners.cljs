@@ -8,7 +8,7 @@
             [district0x.server.sendgrid :as sendgrid]
             [name-bazaar.server.emailer.templates :as templates]
             [district0x.shared.config :as config]
-            [district0x.shared.key-utils :as key-utils])
+            [district0x.shared.encryption-utils :as encryption-utils])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn on-offering-added [server-state {:keys [:offering :node :owner :version] :as args}]
@@ -28,7 +28,7 @@
                   (when-not (empty? (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                                                        :to-email (->> base64-encrypted-email
                                                                                       (key-utils/decode-base64)
-                                                                                      (key-utils/decrypt (config/get-config :private-key)))
+                                                                                      (encryption-utils/decrypt (config/get-config :private-key)))
                                                                        :subject "Offering created"
                                                                        :content (templates/on-offering-added offering name)}
                                                                       #(prn "Success sending email")
@@ -42,8 +42,8 @@
       (when-not (empty? owner-encrypted-email)
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                            :to-email (->> owner-encrypted-email
-                                                          (key-utils/decode-base64)
-                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                                          (encryption-utils/decode-base64)
+                                                          (encryption-utils/decrypt (config/get-config :private-key)))
                                            :subject "Auction was finalized"
                                            :content (templates/on-auction-finalized :owner offering name price)}
                                           #(prn "Success sending email")
@@ -51,8 +51,8 @@
       (when-not (empty? winner-encrypted-email)
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                            :to-email (->> winner-encrypted-email
-                                                          (key-utils/decode-base64)
-                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                                          (encryption-utils/decode-base64)
+                                                          (encryption-utils/decrypt (config/get-config :private-key)))
                                            :subject "Auction was finalized"
                                            :content (templates/on-auction-finalized :winner offering name price)}
                                           #(prn "Success sending email")
@@ -64,8 +64,8 @@
       (when-not (empty? owner-encrypted-email)
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                            :to-email (->> owner-encrypted-email
-                                                          (key-utils/decode-base64)
-                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                                          (encryption-utils/decode-base64)
+                                                          (encryption-utils/decrypt (config/get-config :private-key)))
                                            :subject "Your offering was bought"
                                            :content (templates/on-offering-bought offering name price)}
                                           #(prn "Success sending email")
@@ -86,8 +86,8 @@
       (when-not (empty? owner-encrypted-email)
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                            :to-email (->> owner-encrypted-email
-                                                          (key-utils/decode-base64)
-                                                          (key-utils/decrypt (config/get-config :private-key)))
+                                                          (encryption-utils/decode-base64)
+                                                          (encryption-utils/decrypt (config/get-config :private-key)))
                                            :subject "Your offering was bought"
                                            :content (templates/on-new-bid offering name price)}
                                           #(prn "Success sending email")

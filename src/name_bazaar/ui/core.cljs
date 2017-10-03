@@ -46,10 +46,8 @@
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n [[:district0x/watch-my-eth-balances]
-                                                       [:active-page-changed]]}
-                                         {:when :seen?
-                                          :events [:district0x/load-smart-contracts]
-                                          :dispatch [:district0x/do-load-config]}]}
+                                                       [:active-page-changed]
+                                                       [:district0x.config/load]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
