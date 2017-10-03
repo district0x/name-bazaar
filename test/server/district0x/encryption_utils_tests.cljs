@@ -7,9 +7,8 @@
   (every? #(contains? m %) ks))
 
 (deftest encyption-utils-tests
-  
-  (testing "content decryption/encryption test."
-    (let [keypair (select-keys {config/default-config} [:public-key :private-key])
+    (testing "content decryption/encryption test."
+    (let [keypair (select-keys config/default-config [:public-key :private-key])
           content "top secret"
           base64-encrypted-content (->> content
                                         (encryption-utils/encrypt (:public-key keypair)) 
