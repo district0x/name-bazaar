@@ -38,7 +38,7 @@
 
 (def total-accounts 10)
 
-(swap! *server-state* assoc :log-contract-calls? false)
+(swap! *server-state* assoc :log-contract-calls? false :log-errors? false)
 
 (defn balance [address]
   (web3-eth-async/get-balance (:web3 @*server-state*)

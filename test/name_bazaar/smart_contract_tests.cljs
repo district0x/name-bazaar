@@ -42,7 +42,7 @@
    (:web3 @*server-state*)
    address))
 
-(swap! *server-state* assoc :log-contract-calls? false)
+(swap! *server-state* assoc :log-contract-calls? false :log-errors? false)
 
 (use-fixtures
   :each
