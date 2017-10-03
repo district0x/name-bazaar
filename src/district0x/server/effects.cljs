@@ -88,7 +88,8 @@
   (let [ch (chan)
         TestRPC (js/require "ethereumjs-testrpc")]
     (if port
-      (let [server (.server TestRPC (clj->js (merge {:locked false} testrpc-opts)))]
+      (let [server (.server TestRPC
+                            (clj->js (merge {:locked false} testrpc-opts)))]
         (.listen server port (fn [err]
                                (if err
                                  (println err)
@@ -120,14 +121,16 @@
     ch))
 
 (defn logged-contract-call! [server-state & [instance method :as args]]
-  (let [ch (chan)]
+  (let [ch (chan)
+        log-errors? (:log-errors? server-state)]
     (go
       (let [[err tx-hash] (<! (apply web3-eth-async/contract-call args))
             filter-id (atom nil)]
 
         (if err
           (do
-            (println method err)
+            (when log-errors?
+              (println method err))
             (>! ch [err tx-hash]))
           (reset!
             filter-id
@@ -135,11 +138,11 @@
               (state/web3 server-state)
               "latest"
               (fn [err]
-                (when err
+                (when (and log-errors? err)
                   (println err))
                 (go
                   (let [[err tx-receipt] (<! (web3-eth-async/get-transaction-receipt (state/web3 server-state) tx-hash))]
-                    (when err
+                    (when (and log-errors? err)
                       (println method err))
                     (when (and (:gas-used tx-receipt)
                                (:block-number tx-receipt))
