@@ -4,7 +4,7 @@
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
     [cognitect.transit :as transit]
-    [district0x.shared.utils as d0x-shared-utils :refer [collify parse-order-by-search-params]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
