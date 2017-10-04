@@ -7,8 +7,11 @@
   (every? #(contains? m %) ks))
 
 (deftest encyption-utils-tests
-    (testing "content decryption/encryption test."
-    (let [keypair (select-keys state/default-config [:public-key :private-key])
+  (testing "keypair generation test."
+    (is (contains-many? (encryption-utils/generate-keypair) :public-key :private-key)))
+  
+  (testing "content decryption/encryption test."
+    (let [keypair (encryption-utils/generate-keypair)
           content "top secret"
           base64-encrypted-content (->> content
                                         (encryption-utils/encrypt (:public-key keypair)) 
@@ -16,5 +19,5 @@
           decoded-content (->> base64-encrypted-content
                                (encryption-utils/decode-base64)
                                (encryption-utils/decrypt (:private-key keypair)))]
-         (is (= content decoded-content)))))
+      (is (= content decoded-content)))))
 

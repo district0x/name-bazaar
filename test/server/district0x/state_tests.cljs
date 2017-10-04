@@ -25,15 +25,19 @@
     (let [loaded-config (state/config)]
       (is (= "foo" (:private-key loaded-config)))
       (is (= "bar" (:public-key loaded-config)))))
+
   (testing "Get config key from atomic state"
     (is (= "foo" (state/config :private-key))))
+
   (testing "Get config key from derefed state"
     (is (= "FU" (state/config derefed-test-state :private-key))))
+
   (testing "Get config from atomic state"
     (is (= (-> atomic-test-state
                deref
                (get-in [:config]))
            (state/config))))
+
   (testing "Get config from derefed state"
     (is (= (-> derefed-test-state
                (get-in [:config]))

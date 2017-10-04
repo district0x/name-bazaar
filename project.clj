@@ -51,8 +51,7 @@
             [lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.11"]
             [lein-shell "0.5.0"]
-            [deraen/lein-less4j "0.5.0"]
-            [lein-doo "0.1.7"]
+            [deraen/lein-less4j "0.5.0"]  
             [lein-npm "0.6.2"]]
 
   :npm {:dependencies [[cors "2.8.4"]
@@ -64,14 +63,7 @@
                        [sqlite3 "3.1.8"]
                        [web3 "0.19.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]]
-        :devDependencies [[karma "1.5.0"]
-                          [karma-chrome-launcher "2.0.0"]
-                          [karma-cli "1.0.1"]
-                          [karma-cljs-test "0.1.0"]
-                          [karma-safari-launcher "1.0.0"]]}
-
-  :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
+                       [xhr2 "0.1.4"]]}
 
   :min-lein-version "2.5.3"
 
@@ -153,11 +145,4 @@
                                    :target :nodejs,
                                    :optimizations :none,
                                    :verbose false
-                                   :source-map true}}
-                       {:id "browser-tests"
-                        :source-paths ["src/name_bazaar" "src/district0x"
-                                       "test/browser"]
-                        :compiler {:output-to "browser-tests/name-bazaar-tests.js",
-                                   :output-dir "browser-tests",
-                                   :main browser.browser
-                                   :optimizations :none}}]})
+                                   :source-map true}}]})
