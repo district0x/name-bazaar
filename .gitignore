@@ -8,6 +8,8 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 .hgignore
+package-lock.json
+start_server.sh
 .hg/
 /.idea/
 /name-bazaar.iml
@@ -21,5 +23,6 @@ pom.xml.asc
 /dev-server/
 /server/
 /dev-tests/
+browser-tests/
 /src/name_bazaar/server/repl.cljs
 /resources/public/css/name-bazaar.main.css.map
