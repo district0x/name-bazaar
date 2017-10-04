@@ -34,8 +34,9 @@
                               (aget env k)))
                      {}
                      (js-keys env))]
-     (swap! server-state-atom update :config (merge default-config env-config)))))
-
+     (swap! server-state-atom
+            (fn [old new] (assoc-in old [:config] new))
+            (merge default-config env-config)))))
 
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts
