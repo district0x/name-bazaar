@@ -15,6 +15,7 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
+    [district0x.shared.encryption-utils :as encryption-utils]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.db]
@@ -148,6 +149,24 @@
                    :on-success [:district0x/my-addresses-loaded]
                    :on-error [:district0x/dispatch-n [[:district0x/my-addresses-loaded []]]]}]}}
           {:dispatch [:district0x/my-addresses-loaded []]})))))
+
+(reg-event-fx
+ :district0x.config/load
+ interceptors
+ (fn [{:keys [db]} _]
+   {:db db
+    :http-xhrio {:method :get
+                 :uri (str (url/url (:server-url db) "/config"))  
+                 :timeout 3000
+                 :response-format (ajax/transit-response-format)
+                 :on-success [:district0x.config/loaded]
+                 :on-failure [:district0x.log/error :district0x.config/load]}}))
+
+(reg-event-db
+ :district0x.config/loaded
+ interceptors
+ (fn [db [config]]
+      (assoc-in db [:config] config)))
 
 (reg-event-fx
   :district0x/load-smart-contracts
@@ -514,24 +533,23 @@
     {:dispatch-n [[:district0x/load-transaction transaction-hash]
                   [:district0x/load-transaction-receipt transaction-hash]]}))
 
-
 (reg-event-fx
   :district0x-emails/set-email
   [interceptors (validate-first-arg (s/keys :req [:district0x-emails/email] :opt [:district0x-emails/address]))]
   (fn [{:keys [:db]} [form-data submit-props]]
     (let [form-data (if-not (:district0x-emails/address form-data)
                       (assoc form-data :district0x-emails/address (:active-address db))
-                      form-data)]
+                      form-data)
+          public-key (get-in db [:config :public-key])]
       {:dispatch [:district0x/make-transaction
-                  (merge
-                    {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
-                     :contract-key :district0x-emails
-                     :contract-method :set-email
-                     :form-data form-data
-                     :args-order [:district0x-emails/email]
-                     :form-id (select-keys form-data [:district0x-emails/address])
-                     :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
-                    submit-props)]})))
+                  (merge {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
+                          :contract-key :district0x-emails
+                          :contract-method :set-email
+                          :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
+                          :args-order [:district0x-emails/email]
+                          :form-id (select-keys form-data [:district0x-emails/address])
+                          :tx-opts {:gas 500000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
+                         submit-props)]})))
 
 (reg-event-fx
   :district0x-emails/load
@@ -760,4 +778,3 @@
   interceptors
   (fn [_ [events & args]]
     {:dispatch-n (mapv #(vec (concat % args)) (remove nil? events))}))
-

@@ -3,13 +3,15 @@
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
-    [district0x.shared.utils :refer [collify parse-order-by-search-params]]
+    [cognitect.transit :as transit]
+    [district0x.shared.utils :as d0x-shared-utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def express (nodejs/require "express"))
 (def cors (nodejs/require "cors"))
 (def body-parser (nodejs/require "body-parser"))
+(def transit-writer (transit/writer :json))
 
 (defonce *app* (atom nil))
 (defonce *server* (atom nil))
@@ -28,6 +30,17 @@
 (defn send-json! [res data]
   (.json res (clj->js data)))
 
+(defn send
+  [response data]
+  (.send response data))
+
+(defn status
+  [response code]
+  (.status response code))
+
+(defn write-transit [body]
+  (transit/write transit-writer body))
+
 (defn stop! []
   (let [ch (chan)]
     (if @*server*
@@ -43,13 +56,12 @@
   (doseq [method (keys @*registered-routes*)]
     (setup-method-routes! method)))
 
-(defn start! [& [port]]
-  (let [port (or port (aget js/process "env" "PORT"))]
-    (go
-      (<! (stop!))
-      (setup-app!)
-      (reset! *server* (.listen @*app* port (fn []
-                                              (println "Server started at port" port)))))))
+(defn start! [port]
+  (go
+    (<! (stop!))
+    (setup-app!)
+    (reset! *server* (.listen @*app* port (fn []
+                                            (println "Server started at port" port))))))
 
 
 
@@ -93,7 +105,6 @@
 
 (def sanitized-query-params (comp sanitize-query
                                   query-params))
-
 
 (comment
   (start! 6200)

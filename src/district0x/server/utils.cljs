@@ -61,5 +61,10 @@
 
 (def tx-sent? (comp d0x-shared-utils/sha3? second))
 
+(defn clj->json
+  [coll]
+  (.stringify js/JSON (clj->js coll)))
+
 (defn tx-failed? [tx]
   (not (nil? (first tx))))
+

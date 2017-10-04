@@ -25,4 +25,27 @@
                             (state/db)
                             (api-server/sanitized-query-params req)))))))
 
+(api-server/reg-route! :get
+                       "/config/:key"
+                       (fn [request response]
+                         (let [config-key (-> (aget request "params")
+                                              (js->clj :keywordize-keys true)
+                                              vals
+                                              first
+                                              keyword)]
+                           (if (contains? state/whitelisted-config-keys config-key)
+                             (-> response
+                                 (api-server/status 200)
+                                 (api-server/send (state/config config-key)))
+                             (-> response
+                                 (api-server/status 400)
+                                 (api-server/send "Bad request"))))))
 
+(api-server/reg-route! :get
+                       "/config"
+                       (fn
+                         [request response]
+                         (-> response
+                             (api-server/status 200)
+                             (api-server/send (->> (select-keys (state/config) state/whitelisted-config-keys)
+                                                   (api-server/write-transit))))))

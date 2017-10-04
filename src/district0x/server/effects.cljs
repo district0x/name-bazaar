@@ -5,6 +5,7 @@
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan put!]]
     [cljs.nodejs :as nodejs]
+    [clojure.string :as string]
     [district0x.server.state :as state]
     [district0x.server.utils :as d0x-server-utils :refer [fetch-abi fetch-bin link-library]]
     [medley.core :as medley])
@@ -13,6 +14,29 @@
 (def Web3 (js/require "web3"))
 (def fs (js/require "fs"))
 (def process (nodejs/require "process"))
+(def ^private env js/process.env)
+
+(defn- env->cljkk [s]
+  (-> s
+      (string/lower-case)
+      (string/replace "_" "-")
+      keyword))
+
+(defn load-config!
+  "Load the config overriding the defaults with values from process.ENV (if exist)."
+  ([server-state-atom]
+   load-config! {})
+  ([server-state-atom default-config]
+   (let [env-config (reduce
+                     (fn [coll k]
+                       (assoc coll
+                              (env->cljkk k)
+                              (aget env k)))
+                     {}
+                     (js-keys env))]
+     (swap! server-state-atom
+            (fn [old new] (assoc-in old [:config] new))
+            (merge default-config env-config)))))
 
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts

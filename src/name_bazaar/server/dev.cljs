@@ -30,11 +30,11 @@
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
-    [name-bazaar.server.core :refer [mainnet-port]]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
+    [name-bazaar.server.emailer.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -48,16 +48,17 @@
 (set! js/Web3 Web3)
 
 (def total-accounts 6)
-(def api-port 6200)
-(def testrpc-port 8549)
 
 (defn on-jsload []
-  (api-server/start! api-port)
-  (d0x-effects/create-web3! *server-state* {:port testrpc-port}))
+  (d0x-effects/load-config! *server-state* state/default-config)
+  (api-server/start! (state/config :api-port))
+  (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)})
+  (listeners/setup-event-listeners! *server-state*))
 
 (defn deploy-to-mainnet! []
   (go
-    (d0x-effects/create-web3! *server-state* {:port mainnet-port})
+    (d0x-effects/load-config! *server-state* state/default-config)
+    (d0x-effects/create-web3! *server-state* {:port (state/config :mainnet-port)})
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (<! (d0x-effects/load-my-addresses! *server-state*))
     (<! (deploy-smart-contracts! *server-state* {:persist? true}))))
@@ -75,14 +76,17 @@
     ch))
 
 (defn -main [& _]
+  (d0x-effects/load-config! *server-state* state/default-config)
   (go
-    (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
-                                                    :port testrpc-port}))
-    (d0x-effects/create-web3! *server-state* {:port testrpc-port})
-    (d0x-effects/create-db! *server-state*)
-    (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-    (api-server/start! api-port)
-    (<! (d0x-effects/load-my-addresses! *server-state*))))
+    (let [testrpc-port (state/config :testrpc-port)]
+      (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
+                                                      :port testrpc-port}))
+      (d0x-effects/create-web3! *server-state* {:port testrpc-port})
+      (d0x-effects/create-db! *server-state*)
+      (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
+      (api-server/start! (state/config :api-port))
+      (<! (d0x-effects/load-my-addresses! *server-state*))
+      (listeners/setup-event-listeners! *server-state*))))
 
 (set! *main-cli-fn* -main)
 
@@ -96,5 +100,4 @@
     (d0x-effects/create-db! district0x.server.state/*server-state*)
     (name-bazaar.server.db-sync/start-syncing! @*server-state*))
   )
-
 

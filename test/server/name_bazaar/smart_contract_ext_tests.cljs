@@ -1,4 +1,4 @@
-(ns name-bazaar.smart-contract-ext-tests
+(ns server.name-bazaar.smart-contract-ext-tests
   (:require
    [cljs-web3.async.eth :as web3-eth-async]
    [cljs-time.coerce :refer [to-epoch]]
