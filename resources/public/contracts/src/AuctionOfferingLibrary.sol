@@ -50,17 +50,24 @@ library AuctionOfferingLibrary {
         OfferingLibrary.Offering storage offering
     ) {
         require(now < self.endTime);
-        require(msg.sender != self.winningBidder);
         require(offering.isContractNodeOwner());
 
-        uint bidValue = self.pendingReturns[msg.sender].add(msg.value);
-        self.pendingReturns[msg.sender] = 0;
+        uint bidValue;
+        if (msg.sender == self.winningBidder) {
+          //Overbidding oneself
+          bidValue = offering.price.add(msg.value);
+        } else {
+          //Overbidding someone else
+          bidValue = self.pendingReturns[msg.sender].add(msg.value);
+          self.pendingReturns[msg.sender] = 0;
+        }
 
         if (self.winningBidder == 0x0) {
             require(bidValue >= offering.price);
         } else {
             require(bidValue >= offering.price.add(self.minBidIncrease));
-            self.pendingReturns[self.winningBidder] = self.pendingReturns[self.winningBidder].add(offering.price);
+            if (msg.sender != self.winningBidder)
+              self.pendingReturns[self.winningBidder] = self.pendingReturns[self.winningBidder].add(offering.price);
         }
 
         self.winningBidder = msg.sender;

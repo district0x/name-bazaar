@@ -467,3 +467,101 @@
                                                                              :offering/price (eth->wei 0.1)}
                                                                             {:from (state/my-address 0)})))))
              (done)))))
+
+(deftest auction-offering-self-overbid
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+             (testing "Offering the name for a bid"
+               (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 1)})))))
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+
+                 (testing "Transferrnig ownership to the offer"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+
+                 (testing "User 2 can place a proper bid"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.1 :ether)
+                                                             :from (state/my-address 2)})))))
+                 (testing "User 3 can place a proper bid too"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.2 :ether)
+                                                             :from (state/my-address 3)})))))
+                 (testing "User 3 can overbid in order to afk himself"
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                            {:offering/address offering}
+                                                            {:value (web3/to-wei 0.1 :ether)
+                                                             :from (state/my-address 3)})))))
+                 (testing "State of the auction offering is correct"
+                   (is (= {:auction-offering/min-bid-increase 100000000000000000
+                           :auction-offering/winning-bidder (state/my-address 3)
+                           :auction-offering/bid-count 3}
+                          (select-keys (last (<! (auction-offering/get-auction-offering ss
+                                                                                        offering)))
+
+                                       [:auction-offering/min-bid-increase
+                                        :auction-offering/winning-bidder
+                                        :auction-offering/bid-count]))))
+
+                 (web3-evm/increase-time!
+                  (state/web3 ss)
+                  [(time/in-seconds (time/days 15))]
+                  (fn nearfuture [_]
+                    (go
+                      (testing "Finalizing works when it's time"
+                        (is (tx-sent? (<! (auction-offering/finalize! ss
+                                                                      {:offering/address offering
+                                                                       :offering/transferPrice true}
+                                                                      {:from (state/my-address 0)})))))
+                      (testing "Ensuring the new owner gets his name"
+                        (is (= (state/my-address 3) (last (<! (ens/owner ss {:ens.record/node (namehash
+                                                                                               "abc.eth")}))))))
+                      (testing "Ensuring the new owner gets his deed"
+                        (is (= (state/my-address 3) (last (<! (registrar/entry-deed-owner
+                                             ss {:ens.record/label "abc"}))))))
+
+                      (let [balance-of-2 (last (<! (balance (state/my-address 2))))
+                            balance-of-3 (last (<! (balance (state/my-address 3))))]
+                        (testing "User 2, who was overbid, can successfully withdraw funds from auction offering."
+                          (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                        {:address (state/my-address 2)
+                                                                         :offering offering}
+                                                                        {:from (state/my-address 2)}))))
+                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
+                                    (last (<! (balance (state/my-address 2)))))
+                                 100000)))
+                        (testing "But user 3 who overbid himself, can't withdraw funds from auction offering."
+                          (is (tx-sent? (<! (auction-offering/withdraw! ss
+                                                                        {:address (state/my-address 3)
+                                                                         :offering offering}
+                                                                        {:from (state/my-address 3)}))))
+                          (is (< (- balance-of-3
+                                    (last (<! (balance (state/my-address 3)))))
+                                 100000)))
+                        )
+                      (done))))))))))
