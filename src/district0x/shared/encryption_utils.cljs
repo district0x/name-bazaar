@@ -29,5 +29,5 @@
        (decode-base64) 
        (decrypt private-key)))
 
-(comment
-  (district0x.shared.encryption-utils/encrypt-encode (:public-key district0x.server.state/default-config) "test@district0x.io"))
+;; (comment
+;;   (district0x.shared.encryption-utils/encrypt-encode (:public-key district0x.server.state/default-config) "test@district0x.io"))

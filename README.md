@@ -27,5 +27,15 @@ is then accessible as:
 
 ```
 lein cljsbuild once dev-tests
+
 node dev-tests/name-bazaar-tests.js
-``` 
+```
+
+## Frontend (browser) tests: 
+
+```
+lein doo chrome browser-tests
+```
+
+It will autobuild browser-test and re-run the tests as the watched files change.
+More info: [https://github.com/bensu/doo](doo).
