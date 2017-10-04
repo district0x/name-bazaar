@@ -1,6 +1,6 @@
 (ns server.district0x.encryption-utils-tests
   (:require [cljs.test :refer [deftest is testing run-tests]]
-            [district0x.shared.config :as config]
+            [district0x.server.state :as state]
             [district0x.shared.encryption-utils :as encryption-utils]))
 
 (defn contains-many? [m & ks]
@@ -8,7 +8,7 @@
 
 (deftest encyption-utils-tests
     (testing "content decryption/encryption test."
-    (let [keypair (select-keys config/default-config [:public-key :private-key])
+    (let [keypair (select-keys state/default-config [:public-key :private-key])
           content "top secret"
           base64-encrypted-content (->> content
                                         (encryption-utils/encrypt (:public-key keypair)) 

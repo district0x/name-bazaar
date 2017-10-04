@@ -13,15 +13,15 @@
 (set! (.-error js/console) (fn [x] (.log js/console x)))
 
 (comment
-  (run-tests 'district0x.server.encryption-utils-tests
-             'district0x.server.state-tests
+  (run-tests 'server.district0x.encryption-utils-tests
+             'server.district0x.state-tests
              'server.name-bazaar.smart-contract-tests
              'server.name-bazaar.smart-contract-ext-tests
              'server.name-bazaar.smart-contract-altering-tests))
 
 (defn -main [& _]
-  (run-tests 'district0x.server.encryption-utils-tests
-             'district0x.server.state-tests
+  (run-tests 'server.district0x.encryption-utils-tests
+             'server.district0x.state-tests
              'server.name-bazaar.smart-contract-tests
              'server.name-bazaar.smart-contract-ext-tests
              'server.name-bazaar.smart-contract-altering-tests))

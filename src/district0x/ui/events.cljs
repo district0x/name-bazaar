@@ -542,15 +542,14 @@
                       form-data)
           public-key (get-in db [:config :public-key])]
       {:dispatch [:district0x/make-transaction
-                  (merge
-                   {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
-                    :contract-key :district0x-emails
-                    :contract-method :set-email
-                    :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
-                    :args-order [:district0x-emails/email]
-                    :form-id (select-keys form-data [:district0x-emails/address])
-                    :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
-                   submit-props)]})))
+                  (merge {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
+                          :contract-key :district0x-emails
+                          :contract-method :set-email
+                          :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
+                          :args-order [:district0x-emails/email]
+                          :form-id (select-keys form-data [:district0x-emails/address])
+                          :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
+                         submit-props)]})))
 
 (reg-event-fx
   :district0x-emails/load

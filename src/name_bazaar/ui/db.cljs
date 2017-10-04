@@ -24,8 +24,8 @@
 (def default-db
   (merge
     district0x.ui.db/default-db
-    development-config
-    ;production-config
+    ;development-config
+    production-config
     {:active-page (d0x-ui-utils/match-current-location constants/routes)
      :smart-contracts smart-contracts
      :now (t/now)
