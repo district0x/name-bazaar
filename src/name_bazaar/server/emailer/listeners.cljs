@@ -63,9 +63,7 @@
                                           #(prn "Success sending email")
                                           #(prn "An error has occured: " %))))))
 
-;; TODO
 (defn- on-offering-bought [server-state offering original-owner name price]
-  (prn "@on-offering-bought")
   (go
     (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
       (when-let [to-email (validate-email owner-encrypted-email)]
