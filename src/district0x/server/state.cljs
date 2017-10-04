@@ -5,7 +5,18 @@
                                :my-addresses []
                                :web3 nil
                                :db nil
-                               :testrpc-server nil}))
+                               :testrpc-server nil
+                               :config nil}))
+
+(defonce default-config {:private-key "25615758538fef2b8a65aa7146c273fb17c03b0d73642feac250b7e79d8f06793eb"
+                         :public-key "256ebc161b4751583b3718e77bd5bff97027c607daa553385094ce9410ebe7531b422f7b5f2702ba80b53092024ccc63c4a8c96ba7387e063500a58cce0c7b3a3ee"
+                         :sendgrid-api-key nil
+                         :api-port 6200
+                         :testrpc-port 8549
+                         :mainnet-port 8545
+                         :frontend-url "http://0.0.0.0:4544"})
+
+(defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
 
 (defn web3
   ([]
@@ -54,3 +65,37 @@
    (my-addresses @*server-state*))
   ([server-state]
    (:my-addresses server-state)))
+
+(defn dispatch-config
+  [& args]
+  (cond
+    (and (map? (first args)) (keyword? (second args)))
+    :config-map-key
+    
+    (keyword? (first args))
+    :config-key
+
+    (map? (first args))
+    :config-map
+
+    :else
+    :config))
+
+(defmulti config dispatch-config)
+
+(defmethod config :config-key
+  [k]
+  (get-in @*server-state* [:config k]))
+
+(defmethod config :config-map
+  [server-state]
+  (get-in server-state [:config]))
+
+(defmethod config :config-map-key
+  [server-state k]
+  (get-in server-state [:config k]))
+
+(defmethod config :config
+  []
+  (get-in @*server-state* [:config]))
+ 

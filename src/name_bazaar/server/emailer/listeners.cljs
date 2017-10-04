@@ -7,7 +7,7 @@
             [name-bazaar.server.contracts-api.offering-requests :as offering-requests-api]
             [district0x.server.emailer.sendgrid :as sendgrid]
             [name-bazaar.server.emailer.templates :as templates]
-            [district0x.shared.config :as config]
+            [district0x.server.state :as state]
             [district0x.shared.encryption-utils :as encryption-utils])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -16,7 +16,7 @@
 
 (defn validate-email [base64-encrypted-email]
   (when-not (empty? base64-encrypted-email)
-    (let [email (encryption-utils/decode-decrypt (config/get-config :private-key)
+    (let [email (encryption-utils/decode-decrypt (state/config :private-key)
                                             base64-encrypted-email)]
       (when (email? email)
         email))))
@@ -89,7 +89,7 @@
       (when-let [to-email (validate-email owner-encrypted-email)]
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                            :to-email to-email
-                                           :subject "Your offering was bought"
+                                           :subject "Your offering received a new bid"
                                            :content (templates/on-new-bid offering name price)}
                                           #(prn "Success sending on-new-bid email")
                                           #(prn "An error has occured: " %))))))

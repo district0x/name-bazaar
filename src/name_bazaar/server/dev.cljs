@@ -15,7 +15,6 @@
     [district0x.server.effects :as d0x-effects]
     [district0x.server.state :as state :refer [*server-state*]]
     [district0x.server.utils :as u :refer [watch-event-once]]
-    [district0x.shared.config :as config]
     [goog.date.Date]
     [honeysql.core :as sql]
     [honeysql.helpers :as sql-helpers]
@@ -51,15 +50,15 @@
 (def total-accounts 6)
 
 (defn on-jsload []
-  (config/load-config! config/default-config)
-  (api-server/start! (config/get-config :api-port))
-  (d0x-effects/create-web3! *server-state* {:port (config/get-config :testrpc-port)})
+  (d0x-effects/load-config! *server-state* state/default-config)
+  (api-server/start! (state/config :api-port))
+  (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)})
   (listeners/setup-event-listeners! *server-state*))
 
 (defn deploy-to-mainnet! []
   (go
-    (config/load-config! config/default-config)
-    (d0x-effects/create-web3! *server-state* {:port (config/get-config :mainnet-port)})
+    (d0x-effects/load-config! *server-state* state/default-config)
+    (d0x-effects/create-web3! *server-state* {:port (state/config :mainnet-port)})
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (<! (d0x-effects/load-my-addresses! *server-state*))
     (<! (deploy-smart-contracts! *server-state* {:persist? true}))))
@@ -77,15 +76,15 @@
     ch))
 
 (defn -main [& _]
-  (config/load-config! config/default-config)
+  (d0x-effects/load-config! *server-state* state/default-config)
   (go
-    (let [testrpc-port (config/get-config :testrpc-port)]
+    (let [testrpc-port (state/config :testrpc-port)]
       (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
                                                       :port testrpc-port}))
       (d0x-effects/create-web3! *server-state* {:port testrpc-port})
       (d0x-effects/create-db! *server-state*)
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-      (api-server/start! (config/get-config :api-port))
+      (api-server/start! (state/config :api-port))
       (<! (d0x-effects/load-my-addresses! *server-state*))
       (listeners/setup-event-listeners! *server-state*))))
 

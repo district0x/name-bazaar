@@ -4,7 +4,6 @@
     [cljs.nodejs :as nodejs]
     [district0x.server.api-server :as api-server :refer [send-json!]]
     [district0x.server.state :as state]
-    [district0x.shared.config :as config]
     [medley.core :as medley]
     [name-bazaar.server.db :as db]
     [clojure.string :as string])
@@ -34,10 +33,10 @@
                                               vals
                                               first
                                               keyword)]
-                           (if (contains? config/whitelisted-keys config-key)
+                           (if (contains? state/whitelisted-config-keys config-key)
                              (-> response
                                  (api-server/status 200)
-                                 (api-server/send (config/get-config config-key)))
+                                 (api-server/send (state/config config-key)))
                              (-> response
                                  (api-server/status 400)
                                  (api-server/send "Bad request"))))))
@@ -48,5 +47,5 @@
                          [request response]
                          (-> response
                              (api-server/status 200)
-                             (api-server/send (->> (select-keys (config/get-config) config/whitelisted-keys)
+                             (api-server/send (->> (select-keys (state/config) state/whitelisted-config-keys)
                                                    (api-server/write-transit))))))

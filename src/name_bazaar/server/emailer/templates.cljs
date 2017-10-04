@@ -1,12 +1,12 @@
 (ns name-bazaar.server.emailer.templates
   (:require [bidi.bidi :as bidi]
-            [district0x.shared.config :as config]
+            [district0x.server.state :as state]
             [goog.string :as gstring]
             [name-bazaar.shared.constants :as shared-constants]))
 
 (defn- form-link [offering]
   (str "\""
-       (config/get-config :frontend-url)
+       (state/config :frontend-url)
        "/#"
        (bidi/path-for shared-constants/routes :route.offerings/detail :offering/address offering)
        "\""))
