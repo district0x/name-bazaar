@@ -44,8 +44,8 @@
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas.re-frame/web3-fx "0.2.0"]]
 
-  :exclusions [[reagent]
-               [org.clojure/clojure]]
+  :exclusions [[org.clojure/clojure]
+               [reagent]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]

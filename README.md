@@ -23,6 +23,14 @@ is then accessible as:
 (config/get-config :public-key)
 ```
 
+## Backend (server) tests:
+
+```
+lein cljsbuild once dev-tests
+
+node dev-tests/name-bazaar-tests.js
+```
+
 ## Frontend (browser) tests: 
 
 ```

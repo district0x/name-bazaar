@@ -1,4 +1,4 @@
-(ns server.name-bazaar.run-tests
+(ns server.run-tests
   (:require
     [cljs.nodejs :as nodejs]
     [server.district0x.encryption-utils-tests]
