@@ -83,7 +83,6 @@
         (on-auction-finalized server-state offering original-owner winning-bidder name price)
         (on-offering-bought server-state offering original-owner name price)))))
 
-;; TODO
 (defn on-new-bid
   [server-state {:keys [:offering] :as args}]
   (go

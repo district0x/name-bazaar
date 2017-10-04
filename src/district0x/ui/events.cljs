@@ -548,7 +548,7 @@
                           :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
                           :args-order [:district0x-emails/email]
                           :form-id (select-keys form-data [:district0x-emails/address])
-                          :tx-opts {:gas 100000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
+                          :tx-opts {:gas 500000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
                          submit-props)]})))
 
 (reg-event-fx
