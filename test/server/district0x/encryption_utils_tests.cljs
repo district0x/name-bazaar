@@ -1,5 +1,5 @@
 (ns server.district0x.encryption-utils-tests
-  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
+  (:require [cljs.test :refer [deftest is testing run-tests]]
             [district0x.shared.config :as config]
             [district0x.shared.encryption-utils :as encryption-utils]))
 

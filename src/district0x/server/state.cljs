@@ -1,6 +1,7 @@
 (ns district0x.server.state)
 
 (defonce *server-state* (atom {:log-contract-calls? true
+                               :log-errors? true
                                :smart-contracts {}
                                :my-addresses []
                                :web3 nil

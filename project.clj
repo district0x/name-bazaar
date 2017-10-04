@@ -91,14 +91,13 @@
          :source-map true
          :compression true}
 
-  :profiles {:dev
-             {:dependencies [[org.clojure/clojure "1.8.0"]
-                             [binaryage/devtools "0.9.4"]
-                             [com.cemerick/piggieback "0.2.1"]
-                             [figwheel-sidecar "0.5.11"]
-                             [org.clojure/tools.nrepl "0.2.13"]]        
-              :source-paths ["dev"]
-              :resource-paths ["resources"]}}
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+                                  [binaryage/devtools "0.9.4"]
+                                  [com.cemerick/piggieback "0.2.1"]
+                                  [figwheel-sidecar "0.5.11" :exclusions [org.clojure/core.async]]
+                                  [org.clojure/tools.nrepl "0.2.13"]]        
+                   :source-paths ["dev"]
+                   :resource-paths ["resources"]}}
 
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"

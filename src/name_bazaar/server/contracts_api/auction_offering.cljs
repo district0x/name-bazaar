@@ -12,7 +12,9 @@
 (defn bid! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth-async/contract-at (state/web3 server-state)
-                                                             (:abi (state/contract server-state :auction-offering))
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :auction-offering))
                                                              address)
                                  :bid
                                  (merge {:gas 300000
@@ -28,3 +30,62 @@
                                 (:abi (state/contract server-state :auction-offering))
                                 contract-address)
     :auction-offering))
+
+(defn finalize! [server-state {:keys [:offering/address
+                                      :offering/transferPrice]} {:keys [:value-ether] :as opts}]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract server-state :auction-offering))
+                                                             address)
+                                 :finalize
+                                 transferPrice
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)
+                                         :value (when value-ether (web3/to-wei value-ether :ether))}
+                                        opts)))
+
+(defn withdraw! [server-state {:keys [:offering
+                                      :address]} {:keys [:from] :as opts}]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state :auction-offering))
+                                                             offering)
+                                 :withdraw
+                                 address
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))
+
+(defn reclaim-ownership! [server-state contract-address opts]
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :auction-offering))
+                                                             contract-address)
+                                 :reclaimOwnership
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))
+
+(defn set-settings! [server-state {:keys [:offering/address
+                                          :offering/price
+                                          :auction-offering/end-time
+                                          :auction-offering/extension-duration
+                                          :auction-offering/min-bid-increase]} opts]
+  
+  (effects/logged-contract-call! server-state
+                                 (web3-eth-async/contract-at (state/web3 server-state)
+                                                             (:abi (state/contract
+                                                                    server-state
+                                                                    :auction-offering))
+                                                             address)
+                                 :setSettings
+                                 price
+                                 end-time
+                                 extension-duration
+                                 min-bid-increase
+                                 (merge {:gas 300000
+                                         :from (state/active-address server-state)}
+                                        opts)))

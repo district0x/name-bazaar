@@ -23,3 +23,6 @@
 
 (defn offering-requests [server-state]
   (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :offering-requests))
+
+(defn emergency-multisig [server-state]
+  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :emergency-multisig))

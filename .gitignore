@@ -9,6 +9,8 @@ package-lock.json
 /.lein-*
 /.nrepl-port
 .hgignore
+package-lock.json
+start_server.sh
 .hg/
 /.idea/
 /name-bazaar.iml
