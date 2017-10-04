@@ -76,7 +76,7 @@
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (go
-    (let [{:keys [:name :original-owner :price :end-time :winning-bidder] :as result} (<! (offering-api/get-offering @server-state offering))]
+    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))]
       (if winning-bidder
         (on-auction-finalized server-state offering original-owner winning-bidder name price)
         (on-offering-bought server-state offering original-owner name price)))))
@@ -84,7 +84,7 @@
 (defn on-new-bid
   [server-state {:keys [:offering] :as args}]
   (go
-    (let [{:keys [:name :original-owner :price :end-time :winning-bidder] :as result} (<! (offering-api/get-offering @server-state offering))
+    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))
           [_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
       (when-let [to-email (validate-email owner-encrypted-email)]
         (sendgrid/send-notification-email {:from-email "hello@district0x.io"

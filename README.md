@@ -26,9 +26,8 @@ is then accessible as:
 ## Backend (server) tests:
 
 ```
-lein cljsbuild once dev-tests
-
-node dev-tests/name-bazaar-tests.js
+lein cljsbuild once server-tests
+node server-tests/server-tests.js
 ```
 
 ## Frontend (browser) tests: 

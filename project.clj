@@ -142,7 +142,7 @@
                                    :closure-defines {goog.DEBUG false}
                                    :pretty-print false
                                    :pseudo-names false}}
-                       {:id "dev-tests"
+                       {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"
                                        "test/server"]
