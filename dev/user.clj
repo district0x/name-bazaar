@@ -18,8 +18,8 @@
   (figwheel-sidecar.repl-api/start-figwheel!
     (assoc-in (figwheel-sidecar.config/fetch-config)
               [:data :figwheel-options :server-port] 4543)
-    "dev-tests")
-  (figwheel-sidecar.repl-api/cljs-repl "dev-tests"))
+    "server-tests")
+  (figwheel-sidecar.repl-api/cljs-repl "server-tests"))
 
 (comment
   (start-ui!)

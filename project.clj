@@ -30,6 +30,7 @@
                  [bidi "2.1.1"]
                  [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.5.8"]
+                 [cljs-node-io "0.5.0"]
                  [cljsjs/bignumber "2.1.4-1"]
                  [cljsjs/react-flexbox-grid "1.0.0-0"]
                  [cljsjs/react-highlight "1.0.5-0"]
@@ -37,6 +38,8 @@
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [com.cognitect/transit-cljs "0.8.239"]
+                 [com.taoensso/encore "2.92.0"]              
+                 [com.taoensso/timbre "4.10.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
                  ;[com.cemerick/url "0.1.1"]
                  [day8.re-frame/http-fx "0.1.3"]
@@ -44,7 +47,8 @@
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas.re-frame/web3-fx "0.2.0"]]
 
-  :exclusions [[org.clojure/clojure]
+  :exclusions [[com.taoensso/encore]
+               [org.clojure/clojure]
                [reagent]]
 
   :plugins [[lein-auto "0.1.2"]
@@ -148,8 +152,8 @@
                                        "test/server"]
                         :figwheel true
                         :compiler {:main "server.run-tests"
-                                   :output-to "dev-tests/name-bazaar-tests.js",
-                                   :output-dir "dev-tests",
+                                   :output-to "server-tests/server-tests.js",
+                                   :output-dir "server-tests",
                                    :target :nodejs,
                                    :optimizations :none,
                                    :verbose false

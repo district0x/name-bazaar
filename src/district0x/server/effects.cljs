@@ -3,40 +3,36 @@
     [cljs-web3.async.eth :as web3-eth-async]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
+    [cljs-node-io.core :as io :refer [slurp spit]]
+    [cljs-node-io.file :refer [File]]
     [cljs.core.async :refer [<! >! chan put!]]
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
+    [clojure.walk :as walk]
+    [cognitect.transit :as transit]
     [district0x.server.state :as state]
     [district0x.server.utils :as d0x-server-utils :refer [fetch-abi fetch-bin link-library]]
+    [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def Web3 (js/require "web3"))
 (def fs (js/require "fs"))
 (def process (nodejs/require "process"))
-(def ^private env js/process.env)
-
-(defn- env->cljkk [s]
-  (-> s
-      (string/lower-case)
-      (string/replace "_" "-")
-      keyword))
-
+(def env js/process.env)
+ 
 (defn load-config!
   "Load the config overriding the defaults with values from process.ENV (if exist)."
   ([server-state-atom]
    load-config! {})
   ([server-state-atom default-config]
-   (let [env-config (reduce
-                     (fn [coll k]
-                       (assoc coll
-                              (env->cljkk k)
-                              (aget env k)))
-                     {}
-                     (js-keys env))]
+   (let [r (transit/reader :json)
+         env-config (if-let [path (aget env "CONFIG")]
+                      (-> (transit/read r (slurp path))
+                          (walk/keywordize-keys)))]
      (swap! server-state-atom
             (fn [old new] (assoc-in old [:config] new))
-            (merge default-config env-config)))))
+            (d0x-shared-utils/merge-in default-config env-config)))))
 
 (defn load-smart-contracts! [server-state-atom contracts & [{:keys [:fetch-opts]}]]
   (->> contracts
@@ -175,5 +171,4 @@
                       (web3-eth/stop-watching! @filter-id (fn [err] (when err (println err))))
                       (>! ch [err tx-hash]))))))))))
     ch))
-
 

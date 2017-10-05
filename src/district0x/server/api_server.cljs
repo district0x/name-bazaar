@@ -4,14 +4,18 @@
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
     [cognitect.transit :as transit]
+    [district0x.server.logging :as logging]
     [district0x.shared.utils :as d0x-shared-utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+(def transit-writer (transit/writer :json))
 (def express (nodejs/require "express"))
+
+;; Middleware
+
 (def cors (nodejs/require "cors"))
 (def body-parser (nodejs/require "body-parser"))
-(def transit-writer (transit/writer :json))
 
 (defonce *app* (atom nil))
 (defonce *server* (atom nil))
@@ -61,7 +65,7 @@
     (<! (stop!))
     (setup-app!)
     (reset! *server* (.listen @*app* port (fn []
-                                            (println "Server started at port" port))))))
+                                            (logging/info ::start! "Server started" {:port port}))))))
 
 
 

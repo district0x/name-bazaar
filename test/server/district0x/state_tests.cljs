@@ -1,10 +1,12 @@
 (ns server.district0x.state-tests
-  (:require [cljs.test :refer [deftest is testing run-tests use-fixtures]]
+  (:require [cljs-node-io.core :as io]
+            [cljs.test :refer [deftest is testing run-tests use-fixtures]]
             [district0x.server.effects :as d0x-effects]
             [district0x.server.state :as state]))
 
 (def default-test-config {:private-key "foo"
-                          :public-key "bar"})
+                          :public-key "bar"
+                          :nested-key {:b "same"}})
 
 (def atomic-test-state (atom {:some "foo"
                               :config nil}))
@@ -15,6 +17,8 @@
 
 (defn with-config [f] 
   (with-redefs [district0x.server.state/*server-state* atomic-test-state]
+    (goog.object/set district0x.server.effects/env "CONFIG"
+                     "test/resources/test_config.json")
     (d0x-effects/load-config! atomic-test-state default-test-config)
     (f)))
 
@@ -26,6 +30,10 @@
       (is (= "foo" (:private-key loaded-config)))
       (is (= "bar" (:public-key loaded-config)))))
 
+  (testing "Deep merge"
+    (is (= "different" (:b (state/config :nested-key))))
+    (is (= "new" (:a (state/config :nested-key)))))
+  
   (testing "Get config key from atomic state"
     (is (= "foo" (state/config :private-key))))
 
