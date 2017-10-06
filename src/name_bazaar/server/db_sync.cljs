@@ -2,11 +2,12 @@
   (:require
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan timeout]]
     [clojure.string :as string]
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :refer [prepend-address-zeros]]
+    [district0x.server.effects :as d0x-effects]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
@@ -14,10 +15,41 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
-    [name-bazaar.server.contracts-api.mock-registrar :as registrar])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
+    [name-bazaar.server.emailer.listeners :as email-listeners])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defonce event-filters (atom []))
+
+(def node-watchdog (atom {:online? false
+                          :timeout 1000
+                          :enabled? false}))
+
+(defn stop-node-watchdog! []
+  (swap! node-watchdog assoc :enabled? false))
+
+(defn start-node-watchdog! [server-state on-up-fn on-down-fn]
+  #_(print "Starting watchdog, timeout:"
+         (:timeout @node-watchdog) "ms")
+  (swap! node-watchdog assoc :enabled? true)
+  (go-loop []
+    (<! (timeout (:timeout @node-watchdog)))
+    ;; (print "PING?")
+    (let [state (web3/connected? (state/web3 server-state))]
+      ;; (print "PONG:" state)
+      (when (and
+             on-down-fn
+             (:online? @node-watchdog)
+             (not state))
+        (on-down-fn))
+      (when (and
+             on-up-fn
+             (not (:online? @node-watchdog))
+             state)
+        (on-up-fn))
+      (swap! node-watchdog assoc :online? state))
+    (when (:enabled? @node-watchdog)
+      (recur))))
 
 (defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
   (let [ch (chan)]
@@ -97,8 +129,7 @@
         (let [owner? (<! (node-owner? server-state owner offering))]
           (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                  :offering/node-owner? owner?}))))))
-
-(defn start-syncing! [server-state]
+(defn start-node-syncing! [server-state]
   (db/create-tables! (state/db server-state))
   (stop-watching-filters!)
   (reset! event-filters
@@ -129,8 +160,27 @@
            (offering-registry/on-offering-changed server-state
                                                   {:event-type "bid"}
                                                   {:from-block 0 :to-block "latest"}
-                                                  (partial on-offering-bid server-state))]))
+                                                  (partial on-offering-bid server-state))])
+  )
 
-(defn stop-syncing! []
+(defn stop-node-syncing! []
   (stop-watching-filters!)
   (reset! event-filters []))
+
+(defn start-syncing! [server-state]
+  ;; (start-node-syncing! server-state)
+  (start-node-watchdog! @server-state
+                        (fn []
+                          (println "ME UP :)")
+                          (d0x-effects/create-db! server-state)
+                          (start-node-syncing! @server-state)
+                          (email-listeners/setup-event-listeners! server-state))
+                        (fn []
+                          (println "ME DOWN :(")
+                          (stop-node-syncing!)
+                          (email-listeners/stop-event-listeners! server-state))))
+
+
+(defn stop-syncing! []
+  (stop-node-watchdog!)
+  (stop-node-syncing!))
