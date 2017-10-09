@@ -29,10 +29,14 @@
   (swap! node-watchdog assoc :enabled? false))
 
 (defn start-node-watchdog! [server-state on-up-fn on-down-fn]
+  (if (get-in server-state [:config :shortcircuit-node-watchdog?])
+    (println "Shortcircuit watcher")
+    (println "Starting watcher"))
   (swap! node-watchdog assoc :enabled? true)
   (go-loop []
     (<! (timeout (:timeout @node-watchdog)))
-    (let [state (web3/connected? (state/web3 server-state))]
+    (let [state (or (get-in server-state [:config :shortcircuit-node-watchdog?])
+                    (web3/connected? (state/web3 server-state)))]
       (when (and
              on-down-fn
              (:online? @node-watchdog)
@@ -170,7 +174,7 @@
                           (email-listeners/setup-event-listeners! server-state))
                         (fn []
                           (stop-node-syncing!)
-                          (email-listeners/stop-event-listeners! server-state))))
+                          (email-listeners/stop-event-listeners!))))
 
 
 (defn stop-syncing! []

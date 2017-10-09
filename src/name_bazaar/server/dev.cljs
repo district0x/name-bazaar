@@ -85,7 +85,7 @@
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
       (api-server/start! (state/config :api-port))
       (<! (d0x-effects/load-my-addresses! *server-state*))
-      (db-sync/start-syncing! *server-state*)
+      ;;(db-sync/start-syncing! *server-state*)
       )))
 
 (set! *main-cli-fn* -main)

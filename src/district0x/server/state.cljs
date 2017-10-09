@@ -15,6 +15,7 @@
                          :api-port 6200
                          :testrpc-port 8549
                          :mainnet-port 8545
+                         :shortcircuit-node-watchdog? true
                          :frontend-url "http://0.0.0.0:4544"})
 
 (defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
