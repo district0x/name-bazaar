@@ -29,14 +29,10 @@
   (swap! node-watchdog assoc :enabled? false))
 
 (defn start-node-watchdog! [server-state on-up-fn on-down-fn]
-  #_(print "Starting watchdog, timeout:"
-         (:timeout @node-watchdog) "ms")
   (swap! node-watchdog assoc :enabled? true)
   (go-loop []
     (<! (timeout (:timeout @node-watchdog)))
-    ;; (print "PING?")
     (let [state (web3/connected? (state/web3 server-state))]
-      ;; (print "PONG:" state)
       (when (and
              on-down-fn
              (:online? @node-watchdog)
@@ -160,23 +156,19 @@
            (offering-registry/on-offering-changed server-state
                                                   {:event-type "bid"}
                                                   {:from-block 0 :to-block "latest"}
-                                                  (partial on-offering-bid server-state))])
-  )
+                                                  (partial on-offering-bid server-state))]))
 
 (defn stop-node-syncing! []
   (stop-watching-filters!)
   (reset! event-filters []))
 
 (defn start-syncing! [server-state]
-  ;; (start-node-syncing! server-state)
   (start-node-watchdog! @server-state
                         (fn []
-                          (println "ME UP :)")
                           (d0x-effects/create-db! server-state)
                           (start-node-syncing! @server-state)
                           (email-listeners/setup-event-listeners! server-state))
                         (fn []
-                          (println "ME DOWN :(")
                           (stop-node-syncing!)
                           (email-listeners/stop-event-listeners! server-state))))
 

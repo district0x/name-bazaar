@@ -40,7 +40,6 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (nodejs/enable-util-print!)
-;; (set! js/XMLHttpRequest (nodejs/require "xhr2"))
 
 (def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
@@ -53,7 +52,6 @@
   (d0x-effects/load-config! *server-state* state/default-config)
   (api-server/start! (state/config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)})
-  ;;(listeners/setup-event-listeners! *server-state*)
   )
 
 (defn deploy-to-mainnet! []
@@ -80,14 +78,13 @@
   (d0x-effects/load-config! *server-state* state/default-config)
   (go
     (let [testrpc-port (state/config :testrpc-port)]
-      #_(<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
+      (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
                                                       :port testrpc-port}))
       (d0x-effects/create-web3! *server-state* {:port testrpc-port})
       (d0x-effects/create-db! *server-state*)
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
       (api-server/start! (state/config :api-port))
       (<! (d0x-effects/load-my-addresses! *server-state*))
-      ;;(listeners/setup-event-listeners! *server-state*)
       (db-sync/start-syncing! *server-state*)
       )))
 
