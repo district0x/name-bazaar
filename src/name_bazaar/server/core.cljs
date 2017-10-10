@@ -7,6 +7,7 @@
     [district0x.server.state :as state :refer [*server-state*]]
     [name-bazaar.server.api]
     [name-bazaar.server.db-sync :as db-sync]
+    [name-bazaar.server.watchdog :as watchdog]
     [name-bazaar.server.emailer.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -21,6 +22,6 @@
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (api-server/start! (state/config :api-port))
     (<! (d0x-effects/load-my-addresses! *server-state*))
-    (db-sync/start-syncing! *server-state*)))
+    (watchdog/start-syncing! *server-state*)))
 
 (set! *main-cli-fn* -main)

@@ -33,6 +33,7 @@
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
+    [name-bazaar.server.watchdog :as watchdog]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
     [name-bazaar.server.emailer.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
@@ -65,12 +66,12 @@
 (defn initialize! [server-state-atom]
   (let [ch (chan)]
     (go
-      (db-sync/stop-syncing! server-state-atom)
+      (watchdog/stop-syncing! server-state-atom)
       (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
       (<! (deploy-smart-contracts! server-state-atom {:persist? true}))
       (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
       (d0x-effects/create-db! server-state-atom)
-      (db-sync/start-syncing! server-state-atom)
+      (watchdog/start-syncing! server-state-atom)
       (>! ch true))
     ch))
 
@@ -85,7 +86,7 @@
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
       (api-server/start! (state/config :api-port))
       (<! (d0x-effects/load-my-addresses! *server-state*))
-      ;;(db-sync/start-syncing! *server-state*)
+      ;;(watchdog/start-syncing! *server-state*)
       )))
 
 (set! *main-cli-fn* -main)
@@ -98,7 +99,7 @@
 
   (do
     (d0x-effects/create-db! district0x.server.state/*server-state*)
-    (name-bazaar.server.db-sync/start-syncing! *server-state*)
+    (name-bazaar.server.watchdog/start-syncing! *server-state*)
     )
   )
 

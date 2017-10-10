@@ -21,35 +21,7 @@
 
 (defonce event-filters (atom []))
 
-(defn stop-node-watchdog! [server-state]
-  (swap! server-state assoc-in [:node-watchdog :enabled?] false))
 
-(defn start-node-watchdog! [server-state on-up-fn on-down-fn]
-  (swap! server-state assoc-in [:node-watchdog :enabled?] true)
-  (let [shortcircuit? (get-in @server-state [:config :shortcircuit-node-watchdog?])]
-    (if shortcircuit?
-      (println "Shortcircuit watcher")
-      (println "Starting watcher"))
-    (go-loop []
-      (let [node-watchdog (:node-watchdog @server-state)]
-        (<! (timeout (:timeout node-watchdog)))
-        (let [state (or shortcircuit?
-                        (web3/connected? (state/web3 @server-state)))]
-          (when (and
-                 on-down-fn
-                 (:online? node-watchdog)
-                 (not state))
-            (println "down")
-            (on-down-fn))
-          (when (and
-                 on-up-fn
-                 (not (:online? node-watchdog))
-                 state)
-            (println "up")
-            (on-up-fn))
-          (swap! server-state assoc-in [:node-watchdog :online?] state))
-        (when (:enabled? node-watchdog)
-          (recur))))))
 
 (defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
   (let [ch (chan)]
@@ -129,7 +101,7 @@
         (let [owner? (<! (node-owner? server-state owner offering))]
           (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                  :offering/node-owner? owner?}))))))
-(defn start-node-syncing! [server-state]
+(defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))
   (stop-watching-filters!)
   (reset! event-filters
@@ -162,21 +134,6 @@
                                                   {:from-block 0 :to-block "latest"}
                                                   (partial on-offering-bid server-state))]))
 
-(defn stop-node-syncing! []
+(defn stop-syncing! []
   (stop-watching-filters!)
   (reset! event-filters []))
-
-(defn start-syncing! [server-state]
-  (start-node-watchdog! server-state
-                        (fn []
-                          (d0x-effects/create-db! server-state)
-                          (start-node-syncing! @server-state)
-                          (email-listeners/setup-event-listeners! server-state))
-                        (fn []
-                          (stop-node-syncing!)
-                          (email-listeners/stop-event-listeners!))))
-
-
-(defn stop-syncing! [server-state]
-  (stop-node-watchdog! server-state)
-  (stop-node-syncing!))
