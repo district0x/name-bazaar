@@ -2,11 +2,12 @@
   (:require
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
-    [cljs.core.async :refer [<! >! chan]]
+    [cljs.core.async :refer [<! >! chan timeout]]
     [clojure.string :as string]
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :refer [prepend-address-zeros]]
+    [district0x.server.effects :as d0x-effects]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
@@ -14,10 +15,13 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
-    [name-bazaar.server.contracts-api.mock-registrar :as registrar])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
+    [name-bazaar.server.emailer.listeners :as email-listeners])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defonce event-filters (atom []))
+
+
 
 (defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
   (let [ch (chan)]
@@ -97,7 +101,6 @@
         (let [owner? (<! (node-owner? server-state owner offering))]
           (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                  :offering/node-owner? owner?}))))))
-
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))
   (stop-watching-filters!)
