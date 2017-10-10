@@ -6,6 +6,9 @@
                                :my-addresses []
                                :web3 nil
                                :db nil
+                               :node-watchdog {:online? false
+                                               :timeout 1000
+                                               :enabled? false}
                                :testrpc-server nil
                                :config nil}))
 
@@ -15,7 +18,7 @@
                          :api-port 6200
                          :testrpc-port 8549
                          :mainnet-port 8545
-                         :shortcircuit-node-watchdog? true
+                         :shortcircuit-node-watchdog? true ;;Shortcircuit it when connected to built-in TestRPC
                          :frontend-url "http://0.0.0.0:4544"})
 
 (defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})

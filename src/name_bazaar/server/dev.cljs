@@ -65,7 +65,7 @@
 (defn initialize! [server-state-atom]
   (let [ch (chan)]
     (go
-      (db-sync/stop-syncing!)
+      (db-sync/stop-syncing! server-state-atom)
       (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
       (<! (deploy-smart-contracts! server-state-atom {:persist? true}))
       (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))

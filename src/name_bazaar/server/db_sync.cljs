@@ -21,35 +21,35 @@
 
 (defonce event-filters (atom []))
 
-(def node-watchdog (atom {:online? false
-                          :timeout 1000
-                          :enabled? false}))
-
-(defn stop-node-watchdog! []
-  (swap! node-watchdog assoc :enabled? false))
+(defn stop-node-watchdog! [server-state]
+  (swap! server-state assoc-in [:node-watchdog :enabled?] false))
 
 (defn start-node-watchdog! [server-state on-up-fn on-down-fn]
-  (if (get-in server-state [:config :shortcircuit-node-watchdog?])
-    (println "Shortcircuit watcher")
-    (println "Starting watcher"))
-  (swap! node-watchdog assoc :enabled? true)
-  (go-loop []
-    (<! (timeout (:timeout @node-watchdog)))
-    (let [state (or (get-in server-state [:config :shortcircuit-node-watchdog?])
-                    (web3/connected? (state/web3 server-state)))]
-      (when (and
-             on-down-fn
-             (:online? @node-watchdog)
-             (not state))
-        (on-down-fn))
-      (when (and
-             on-up-fn
-             (not (:online? @node-watchdog))
-             state)
-        (on-up-fn))
-      (swap! node-watchdog assoc :online? state))
-    (when (:enabled? @node-watchdog)
-      (recur))))
+  (swap! server-state assoc-in [:node-watchdog :enabled?] true)
+  (let [shortcircuit? (get-in @server-state [:config :shortcircuit-node-watchdog?])]
+    (if shortcircuit?
+      (println "Shortcircuit watcher")
+      (println "Starting watcher"))
+    (go-loop []
+      (let [node-watchdog (:node-watchdog @server-state)]
+        (<! (timeout (:timeout node-watchdog)))
+        (let [state (or shortcircuit?
+                        (web3/connected? (state/web3 @server-state)))]
+          (when (and
+                 on-down-fn
+                 (:online? node-watchdog)
+                 (not state))
+            (println "down")
+            (on-down-fn))
+          (when (and
+                 on-up-fn
+                 (not (:online? node-watchdog))
+                 state)
+            (println "up")
+            (on-up-fn))
+          (swap! server-state assoc-in [:node-watchdog :online?] state))
+        (when (:enabled? node-watchdog)
+          (recur))))))
 
 (defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
   (let [ch (chan)]
@@ -167,7 +167,7 @@
   (reset! event-filters []))
 
 (defn start-syncing! [server-state]
-  (start-node-watchdog! @server-state
+  (start-node-watchdog! server-state
                         (fn []
                           (d0x-effects/create-db! server-state)
                           (start-node-syncing! @server-state)
@@ -177,6 +177,6 @@
                           (email-listeners/stop-event-listeners!))))
 
 
-(defn stop-syncing! []
-  (stop-node-watchdog!)
+(defn stop-syncing! [server-state]
+  (stop-node-watchdog! server-state)
   (stop-node-syncing!))
