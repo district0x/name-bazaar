@@ -7,12 +7,12 @@
     [district0x.server.state :as state :refer [*server-state*]]
     [name-bazaar.server.api]
     [name-bazaar.server.db-sync :as db-sync]
+    [name-bazaar.server.watchdog :as watchdog]
     [name-bazaar.server.emailer.listeners :as listeners]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (nodejs/enable-util-print!)
-(set! js/XMLHttpRequest (nodejs/require "xhr2"))
 
 (defn -main [& _]
   (d0x-effects/load-config! *server-state* state/default-config)
@@ -22,7 +22,6 @@
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (api-server/start! (state/config :api-port))
     (<! (d0x-effects/load-my-addresses! *server-state*))
-    (db-sync/start-syncing! @*server-state*)
-    (listeners/setup-event-listeners! *server-state*)))
+    (watchdog/start-syncing! *server-state*)))
 
 (set! *main-cli-fn* -main)

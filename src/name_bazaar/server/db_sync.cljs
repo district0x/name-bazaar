@@ -8,6 +8,7 @@
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :refer [prepend-address-zeros]]
+    [district0x.server.effects :as d0x-effects]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
@@ -19,6 +20,8 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce event-filters (atom []))
+
+
 
 (defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
   (let [ch (chan)]
