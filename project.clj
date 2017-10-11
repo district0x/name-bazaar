@@ -49,6 +49,7 @@
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
+               [org.clojure/clojurescript]
                [reagent]]
 
   :plugins [[lein-auto "0.1.2"]
