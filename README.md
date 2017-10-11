@@ -10,20 +10,41 @@ Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tr
 
 ## Overriding default-config variables
 
-Any variable set in process.ENV overrides the variable with matching key in default-config.
-Example:
+Config variables are picked up from a JSON file specified as process.ENV variable.
+Any key set in config.json overrides the variable with matching key in default-config.
+Hierarchical keys are deep-merged.
+
+Example config file:
 
 ```
-PUBLIC_KEY='bla' node dev-server/name-bazaar.js
+{"sendgrid-api-key" : "SG.uJM-W5OCNkxhyXx0XNTOZY",
+          "logging" : {"logstash" : {"protocol" : "http", 
+                                         "host" : "0.0.0.0",
+                                         "port" : 12345,
+                                         "user" : "moose",
+                                     "password" : "YuckyBananas"}}}
 ```
 
-is then accessible as:
+Setting CONFIG process.ENV variable:
 
 ```
-(config/get-config :public-key)
+CONFIG='/etc/config/config.json' node dev-server/name-bazaar.js
+```
+
+Any key is then accessible as:
+
+```
+(config/get-config :sendgrid-api-key)
 ```
 
 ## Backend (server) tests:
+
+```
+lein doo node "server-tests"
+```
+
+The doo runner will autobuild the test and re-run them as the watched files change.
+Alternatively:
 
 ```
 lein cljsbuild once server-tests

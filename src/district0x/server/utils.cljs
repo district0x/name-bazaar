@@ -67,4 +67,3 @@
 
 (defn tx-failed? [tx]
   (not (nil? (first tx))))
-
