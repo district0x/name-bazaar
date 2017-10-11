@@ -8,6 +8,7 @@
     [district0x.server.effects :as d0x-effects]
     [district0x.server.state :as state :refer [*server-state*]]
     [name-bazaar.server.db-sync :as db-sync]
+    [taoensso.timbre :refer-macros [log trace debug info warn error]]
     [name-bazaar.server.emailer.listeners :as email-listeners])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
@@ -18,25 +19,25 @@
   (swap! server-state assoc-in [:node-watchdog :enabled?] true)
   (let [shortcircuit? (get-in @server-state [:config :shortcircuit-node-watchdog?])]
     (if shortcircuit?
-      (println "Shortcircuit watcher")
-      (println "Starting watcher"))
+      (warn "Shortcircuit watcher")
+      (info "Starting watcher"))
     (go-loop []
       (let [node-watchdog (:node-watchdog @server-state)]
         (<! (timeout (:timeout node-watchdog)))
-        ;; (println "Check?")
+        (info "Check?")
         (let [state (or shortcircuit?
                         (web3/connected? (state/web3 @server-state)))]
           (when (and
                  on-down-fn
                  (:online? node-watchdog)
                  (not state))
-            ;; (println "down")
+            (warn "Node is offline")
             (on-down-fn))
           (when (and
                  on-up-fn
                  (not (:online? node-watchdog))
                  state)
-            ;; (println "up")
+            (warn "Node is online")
             (on-up-fn))
           (swap! server-state assoc-in [:node-watchdog :online?] state))
         (when (:enabled? node-watchdog)
