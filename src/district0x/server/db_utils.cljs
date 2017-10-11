@@ -4,7 +4,7 @@
     [camel-snake-kebab.extras :refer [transform-keys]]
     [cljs.core.async :refer [<! >! chan put!]]
     [cljs.spec.alpha :as s]
-    [district0x.server.logging :as logging]
+    [taoensso.timbre :as logging]
     [district0x.server.utils :as d0x-server-utils]
     [honeysql.core :as sql]
     [medley.core :as medley]
@@ -13,7 +13,7 @@
 
 (defn log-error [err]
   (when err
-    (logging/error ::db-utils "Database error" {:error err})))
+    (logging/error "Database error" {:error err})))
 
 (defn- db-run! [db sql-map & [{:keys [:get-last-id?]}]]
   (let [[query & values] (sql/format sql-map)
