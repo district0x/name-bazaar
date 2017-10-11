@@ -7,10 +7,10 @@
             [name-bazaar.server.contracts-api.offering :as offering-api]
             [name-bazaar.server.contracts-api.offering-requests :as offering-requests-api]
             [name-bazaar.server.emailer.templates :as templates]
-            [district0x.server.emailer.sendgrid :as sendgrid]
-            [district0x.server.logging :as logging]
+            [district0x.server.emailer.sendgrid :as sendgrid]                  
             [district0x.server.state :as state]
-            [district0x.shared.encryption-utils :as encryption-utils])
+            [district0x.shared.encryption-utils :as encryption-utils]
+            [taoensso.timbre :as logging])
    (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce event-listeners (atom []))
@@ -23,12 +23,12 @@
         email))))
 
 (defn on-offering-added [server-state {:keys [:offering :node :owner :version] :as args}]
-  (logging/info ::on-offering-added "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (go
     (try
       (let [[error offering-request] (<! (offering-requests-api/get-request @server-state {:offering-request/node node}))]
         (if error
-          (logging/error ::on-offering-added "Error retrieving requests for offering" {:error error})
+          (logging/error "Error retrieving requests for offering" {:error error})
           (let [{:keys [:offering-request/name 
                         :offering-request/requesters-count 
                         :offering-request/latest-round 
@@ -43,11 +43,11 @@
                                                          :to-email to-email
                                                          :subject "Offering created"
                                                          :content (templates/on-offering-added offering name)}
-                                                        #(logging/info ::on-offering-added "Success sending email to requesting address" {:address address})
-                                                        #(logging/error ::on-offering-added "Error sending email to requesting address" {:error %}))))))
-              (logging/warn ::on-offering-added "No requesters found for offering" {:offering offering})))))
+                                                        #(logging/info "Success sending email to requesting address" {:address address})
+                                                        #(logging/error "Error sending email to requesting address" {:error %}))))))
+              (logging/warn "No requesters found for offering" {:offering offering})))))
       (catch :default e
-        (logging/error ::on-offering-added {:error e})))))
+        (logging/error {:error e})))))
 
 (defn- on-auction-finalized
   [server-state offering original-owner winning-bidder name price]
@@ -60,20 +60,20 @@
                                              :to-email to-email
                                              :subject "Auction was finalized"
                                              :content (templates/on-auction-finalized :owner offering name price)}
-                                            #(logging/info ::on-auction-finalized "Success sending email to owner" {:address original-owner})
-                                            #(logging/error ::on-auction-finalized "Error sending email to owner" {:error %}))
-          (logging/warn ::on-auction-finalized "Empty or malformed email" {:address original-owner}))
+                                            #(logging/info "Success sending email to owner" {:address original-owner})
+                                            #(logging/error "Error sending email to owner" {:error %}))
+          (logging/warn "Empty or malformed email" {:address original-owner}))
         
         (if-let [to-email winner-encrypted-email]
           (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                              :to-email to-email
                                              :subject "Auction was finalized"
                                              :content (templates/on-auction-finalized :winner offering name price)}
-                                            #(logging/info ::on-auction-finalized "Success sending email to winner" {:address winning-bidder})
-                                            #(logging/error ::on-auction-finalized "Error sending email to winner" {:error %}))
-          (logging/warn ::on-auction-finalized "Empty or malformed winner email" {:address winning-bidder})))
+                                            #(logging/info "Success sending email to winner" {:address winning-bidder})
+                                            #(logging/error "Error sending email to winner" {:error %}))
+          (logging/warn "Empty or malformed winner email" {:address winning-bidder})))
       (catch :default e
-        (logging/error ::on-auction-finalized {:error e})))))
+        (logging/error {:error e})))))
 
 (defn- on-offering-bought [server-state offering original-owner name price]
   (go
@@ -84,13 +84,13 @@
                                              :to-email to-email
                                              :subject "Your offering was bought"
                                              :content (templates/on-offering-bought offering name price)}
-                                            #(logging/info ::on-offering-bought "Success sending email to owner" {:address original-owner})
-                                            #(logging/error ::on-offering-bought "Error sending email" {:error %}))))
+                                            #(logging/info "Success sending email to owner" {:address original-owner})
+                                            #(logging/error "Error sending email" {:error %}))))
       (catch :default e
-        (logging/error ::on-offering-bought {:error e})))))
+        (logging/error {:error e})))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
-  (logging/info ::on-offering-changed "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (go
     (try
       (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))]
@@ -98,11 +98,11 @@
           (on-auction-finalized server-state offering original-owner winning-bidder name price)
           (on-offering-bought server-state offering original-owner name price)))
       (catch :default e
-        (logging/error ::on-offering-changed {:error e})))))
+        (logging/error {:error e})))))
 
 (defn on-new-bid
   [server-state {:keys [:offering] :as args}]
-  (logging/info ::on-new-bid "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (go
     (try
       (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))
@@ -112,10 +112,10 @@
                                              :to-email to-email
                                              :subject "Your offering received a new bid"
                                              :content (templates/on-new-bid offering name price)}
-                                            #(logging/info ::on-new-bid "Success sending on-new-bid email")
-                                            #(logging/error ::on-new-bid "Error when sending on-new-bid email" {:error %}))))
+                                            #(logging/info "Success sending on-new-bid email")
+                                            #(logging/error "Error when sending on-new-bid email" {:error %}))))
       (catch :default e
-        (logging/error ::on-new-bid {:error e})))))
+        (logging/error {:error e})))))
 
 (defn stop-event-listeners! []
   (doseq [listener @event-listeners]
@@ -136,7 +136,7 @@
                              "latest")
                            (fn [error {:keys [:args] :as response}]
                              (if error
-                               (logging/error ::setup-listener! "Error when setting up a listener for event" {:error error :event-key event-key})
+                               (logging/error "Error when setting up a listener for event" {:error error :event-key event-key})
                                (callback server-state args))))))
 
 (defn setup-event-listeners! [server-state]

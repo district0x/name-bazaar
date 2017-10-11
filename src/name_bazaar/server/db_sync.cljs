@@ -3,8 +3,7 @@
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
-    [clojure.string :as string]
-    [district0x.server.logging :as logging]
+    [clojure.string :as string]   
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :refer [prepend-address-zeros]]
@@ -15,7 +14,8 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
-    [name-bazaar.server.contracts-api.mock-registrar :as registrar])
+    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
+    [taoensso.timbre :as logging])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce event-filters (atom []))
@@ -36,7 +36,7 @@
                 (= (second (<! ens-owner-ch))                 ;; For other names just basic ENS ownership check
                    offering-address))))
         (catch :default e
-          (logging/error ::node-owner? {:error e}))))
+          (logging/error {:error e}))))
     ch))
 
 (defn auction? [version]
@@ -56,20 +56,20 @@
                            (assoc :offering/node-owner? owner?))]
           (>! ch offering))
         (catch :default e
-          (logging/error ::on-offering-from-event {:error e}))))
+          (logging/error {:error e}))))
     ch))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
-  (logging/info ::on-offering-changed "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (go
     (try
       (let [offering (<! (get-offering-from-event server-state args))]
         (db/upsert-offering! (state/db server-state) offering))
       (catch :default e
-        (logging/error ::on-offering-changed {:error e})))))
+        (logging/error {:error e})))))
 
 (defn on-offering-bid [server-state err {{:keys [:offering :version :extra-data] :as args} :args}]
-  (logging/info ::on-offering-bid "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (try 
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
         (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
@@ -78,7 +78,7 @@
         (assoc :bid/offering offering)
         (->> (db/insert-bid! (state/db server-state))))
     (catch :default e
-      (logging/error ::on-offering-bid "Error handling blockchain event" {:error e}))))
+      (logging/error "Error handling blockchain event" {:error e}))))
 
 (defn stop-watching-filters! []
   (doseq [filter @event-filters]
@@ -86,14 +86,14 @@
       (web3-eth/stop-watching! filter (fn [])))))
 
 (defn on-request-added [server-state err {{:keys [:node :round :requesters-count] :as args} :args}]
-  (logging/info ::on-request-added "Handling block event" {:args args})
+  (logging/info "Handling block event" {:args args})
   (db/upsert-offering-requests-rounds! (state/db server-state)
                                        {:offering-request/node node
                                         :offering-request/round (bn/->number round)
                                         :offering-request/requesters-count (bn/->number requesters-count)}))
 
 (defn on-round-changed [server-state err {{:keys [:node :latest-round] :as args} :args}]
-  (logging/info ::on-round-changed "Handling block event" {:args args})
+  (logging/info "Handling blockchain event" {:args args})
   (go
     (try
       (let [latest-round (bn/->number latest-round)
@@ -108,7 +108,7 @@
                                                      :round latest-round
                                                      :requesters-count (:offering-request/requesters-count request)}})))
       (catch :default e
-        (logging/error ::on-round-changed {:error e})))))
+        (logging/error {:error e})))))
 
 (defn on-ens-new-owner [server-state err {{:keys [:node :owner] :as args} :args}]  
   (go
@@ -116,12 +116,12 @@
       (let [offering (second (<! (offering/get-offering server-state owner)))]
         (when offering
           (do
-            (logging/info ::on-ens-new-owner "Handling blockchain event" {:args args})
+            (logging/info "Handling blockchain event" {:args args})
             (let [owner? (<! (node-owner? server-state owner offering))]
               (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                      :offering/node-owner? owner?})))))
       (catch :default e
-        (logging/error ::on-ens-new-owner {:error e})))))
+        (logging/error {:error e})))))
 
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))

@@ -6,29 +6,26 @@
             [clojure.string :as string]
             [district0x.server.state :as state]
             [district0x.shared.encryption-utils :as encryption-utils]
-            [taoensso.timbre :as timbre :refer [info warn error fatal debug] :rename {info timbre-info warn timbre-warn
-                                                                                      error timbre-error fatal timbre-fatal
-                                                                                      debug timbre-debug}]))
+            [taoensso.timbre :as timbre]))
 
 (defn logline [logdata]
   (-> logdata
-      (select-keys [:instant :level :ns :message :meta])
+      (select-keys [:instant :level :ns  :message :meta :?file :?line])
       (clj-set/rename-keys {:instant :timestamp})))
 
 (defn- decode-vargs [vargs]
-  (doall (reduce (fn [m arg]
-                   (assoc m (cond
-                              (qualified-keyword? arg) :ns
-                              (string? arg) :message
-                              :else :meta) arg))
-                 {}
-                 vargs)))
+  (reduce (fn [m arg]
+            (assoc m (cond
+                       (qualified-keyword? arg) :ns
+                       (string? arg) :message
+                       :else :meta) arg))
+          {}
+          vargs))
 
 (defn wrap-decode-vargs [data]
   "Middleware for vargs"
   (merge data (decode-vargs (-> data
-                                :vargs
-                                first))))
+                                :vargs))))
 
 (defn console-appender []
   {:enabled?   true
@@ -72,7 +69,8 @@
 
 (timbre/merge-config!
  (let [logging-config (state/config :logging)]
-   {:middleware [wrap-decode-vargs]
+   {:level :warn
+    :middleware [wrap-decode-vargs]
     :appenders {:console (when (:console logging-config) (console-appender))
                 :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))
                 :logstash (when (:logstash logging-config) (logstash-appender (get-in logging-config [:logstash :protocol])
@@ -80,12 +78,3 @@
                                                                               (get-in logging-config [:logstash :port])
                                                                               {:user (get-in logging-config [:logstash :user])
                                                                                :password (get-in logging-config [:logstash :password])}))}}))
-
-(defn info [& args] (timbre-info args))
-(defn warn [& args] (timbre-warn args))
-(defn error [& args] (timbre-error args))
-(defn fatal [& args] (timbre-fatal args))
-(defn debug [& args] (timbre-debug args))
-
-(comment
-  (district0x.server.logging.error "FU" ::user {:fu "bar"}))

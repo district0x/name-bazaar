@@ -13,7 +13,8 @@
     [cljs.spec.alpha :as s]
     [district0x.server.api-server :as api-server]
     [district0x.server.effects :as d0x-effects]
-    [district0x.server.logging :as logging]
+    [district0x.server.logging]
+    [taoensso.timbre :as logging]
     [district0x.server.state :as state :refer [*server-state*]]
     [district0x.server.utils :as u :refer [watch-event-once]]
     [goog.date.Date]
@@ -52,7 +53,7 @@
 
 (defn on-jsload []
   (d0x-effects/load-config! *server-state* state/default-config)
-  (logging/info ::on-js-load "Final loaded config:" (state/config))
+  (logging/info "Final loaded config:" (state/config))
   (api-server/start! (state/config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)})
   (listeners/setup-event-listeners! *server-state*))
