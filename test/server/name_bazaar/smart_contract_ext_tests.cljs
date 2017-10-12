@@ -108,10 +108,10 @@
                                                             {:offering/address offering}
                                                             {:value (web3/to-wei 0.2 :ether)
                                                              :from (state/my-address 2)})))))
-                 (testing "If user has bid before, it's enough for him to send only difference needed for next bid."
+                 (testing "If user has bid before, he needs to send the whole amount again in order to make a new bid"
                    (is (tx-sent? (<! (auction-offering/bid! ss
                                                             {:offering/address offering}
-                                                            {:value (web3/to-wei 0.2 :ether)
+                                                            {:value (web3/to-wei 0.3 :ether)
                                                              :from (state/my-address 1)})))))
                  (testing "State of the auction offering is correct"
                    (is (= {:auction-offering/min-bid-increase 100000000000000000
@@ -193,7 +193,13 @@
                                                                    {:value (web3/to-wei 0.3 :ether)
                                                                     :from (state/my-address 3)})))))
 
-                        (testing "User who was overbid, can successfully withdraw funds from auction offering."
+                        (testing "User who was overbid, should have his funds back from auction offering."
+                          
+                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
+                                    (last (<! (balance (state/my-address 2)))))
+                                 100000)))
+
+                        (testing "Nothing to withdraw if return transfer succeeded on overbid."
                           (is (tx-sent? (<! (auction-offering/withdraw! ss
                                                                         {:offering offering
                                                                          :address (state/my-address 2)}
@@ -201,14 +207,7 @@
                           (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
                                     (last (<! (balance (state/my-address 2)))))
                                  100000)))
-                        (testing "user can't withdraw twice."
-                          (is (tx-sent? (<! (auction-offering/withdraw! ss
-                                                                        {:offering offering
-                                                                         :address (state/my-address 2)}
-                                                                        {:from (state/my-address 2)}))))
-                          (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
-                                    (last (<! (balance (state/my-address 2)))))
-                                 100000)))
+
                         (testing "State of the auction offering is correct"
                           (is (< (- (:auction-offering/end-time (last (<! (auction-offering/get-auction-offering ss
                                                                                                                  offering))))

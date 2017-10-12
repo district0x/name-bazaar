@@ -43,8 +43,8 @@ contract AuctionOffering is Offering {
         auctionOffering.bid(offering);
     }
 
-    function finalize(bool transferPrice) {
-        auctionOffering.finalize(offering, transferPrice);
+    function finalize() {
+        auctionOffering.finalize(offering);
     }
 
     function withdraw(address _address) {
