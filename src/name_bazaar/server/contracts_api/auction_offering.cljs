@@ -31,14 +31,12 @@
                                 contract-address)
     :auction-offering))
 
-(defn finalize! [server-state {:keys [:offering/address
-                                      :offering/transferPrice]} {:keys [:value-ether] :as opts}]
+(defn finalize! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
                                  (web3-eth-async/contract-at (state/web3 server-state)
                                                              (:abi (state/contract server-state :auction-offering))
                                                              address)
                                  :finalize
-                                 transferPrice
                                  (merge {:gas 300000
                                          :from (state/active-address server-state)
                                          :value (when value-ether (web3/to-wei value-ether :ether))}

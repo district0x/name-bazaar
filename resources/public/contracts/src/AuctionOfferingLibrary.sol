@@ -52,27 +52,22 @@ library AuctionOfferingLibrary {
         require(now < self.endTime);
         require(offering.isContractNodeOwner());
 
-        uint bidValue;
-        if (msg.sender == self.winningBidder) {
-          //Overbidding oneself
-          bidValue = offering.price.add(msg.value);
-        } else {
-          //Overbidding someone else
-          bidValue = self.pendingReturns[msg.sender].add(msg.value);
-          self.pendingReturns[msg.sender] = 0;
-        }
-
         if (self.winningBidder == 0x0) {
-            require(bidValue >= offering.price);
+          require(msg.value >= offering.price);
         } else {
-            require(bidValue >= offering.price.add(self.minBidIncrease));
-            if (msg.sender != self.winningBidder)
-              self.pendingReturns[self.winningBidder] = self.pendingReturns[self.winningBidder].add(offering.price);
+          require(msg.value >= offering.price.add(self.minBidIncrease));
+          var previousWinnerRefund = self.pendingReturns[self.winningBidder].add(offering.price);
+          if (self.winningBidder.send(previousWinnerRefund)){
+            self.pendingReturns[self.winningBidder] = 0;
+          }
+          else {
+            self.pendingReturns[self.winningBidder] = previousWinnerRefund;
+          }
         }
 
         self.winningBidder = msg.sender;
         self.bidCount += 1;
-        offering.price = bidValue;
+        offering.price = msg.value;
 
         if ((self.endTime - self.extensionDuration) <= now) {
             self.endTime = now.add(self.extensionDuration);
@@ -111,26 +106,21 @@ library AuctionOfferingLibrary {
     * @dev Finalizes auction: transfers funds to original ENS owner, transfers ENS name to winning bidder
     * Must be after auction end time
     * Accoring to Withdrawal Pattern we cannot assume transferring funds to original owner will be possible,
-    * therefore should put his funds for withdrawal, rather than transferring. However, to not do this UX nightmare
-    * for our users, we offer both ways determined by `transferPrice`, where in UI withdrawal pattern is used only as fallback
+    * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails. 
     * @param self AuctionOffering AuctionOffering data struct
     * @param offering OfferingLibrary.Offering Offering data struct
-    * @param transferPrice bool Whether to to actual transfer of funds or just put them available for withdrawal
     */
     function finalize(
         AuctionOffering storage self,
-        OfferingLibrary.Offering storage offering,
-        bool transferPrice
+        OfferingLibrary.Offering storage offering
     ) {
         require(now > self.endTime);
         require(self.winningBidder != 0x0);
         offering.transferOwnership(self.winningBidder);
 
-        if (transferPrice) {
-            offering.originalOwner.transfer(offering.price);
-        } else {
-            self.pendingReturns[offering.originalOwner] =
-                self.pendingReturns[offering.originalOwner].add(offering.price);
+        if (!offering.originalOwner.send(offering.price)){
+          self.pendingReturns[offering.originalOwner] =
+            self.pendingReturns[offering.originalOwner].add(offering.price);
         }
     }
 
@@ -205,4 +195,3 @@ library AuctionOfferingLibrary {
         return self.pendingReturns[bidder];
     }
 }
-

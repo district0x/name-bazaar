@@ -38,7 +38,7 @@
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [com.cognitect/transit-cljs "0.8.239"]
-                 [com.taoensso/encore "2.92.0"]              
+                 [com.taoensso/encore "2.92.0"]
                  [com.taoensso/timbre "4.10.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
                  ;[com.cemerick/url "0.1.1"]
@@ -62,7 +62,7 @@
 
   :npm {:dependencies [[cors "2.8.4"]
                        [eth-ens-namehash "2.0.0"]
-                       [ethereumjs-testrpc "4.0.1"]
+                       [ethereumjs-testrpc "4.1.3"]
                        [express "4.15.3"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]
