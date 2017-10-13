@@ -10,17 +10,6 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn buy! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
-  
-  #_(let [ret (chan)]
-    (.buy (web3-eth/contract-at (state/web3 server-state)
-                                (:abi (state/contract server-state :buy-now-offering))
-                                address)
-          (clj->js {"gas" 300000
-                    "from" (:from opts)
-                    "value" (:value opts)})
-          (fn [err res]
-            (go (>! ret [err res]))))
-    ret)
   (effects/logged-contract-call! server-state
                                  (web3-eth/contract-at (state/web3 server-state)
                                                        (:abi (state/contract server-state :buy-now-offering))
