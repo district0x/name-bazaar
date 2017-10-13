@@ -5,7 +5,9 @@
     [district0x.server.effects :as effects]
     [district0x.server.state :as state]
     [district0x.server.utils :as d0x-server-utils]
-    [cljs-web3.async.eth :as web3-eth-async]))
+    [cljs-web3.async.eth :as web3-eth-async]
+    [cljs.core.async :refer [>! chan]])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn buy! [server-state {:keys [:offering/address]} {:keys [:value-ether] :as opts}]
   (effects/logged-contract-call! server-state
