@@ -521,7 +521,7 @@
                                (last (<! (balance (state/my-address 2)))))
                             spent-gas-threshold)))
 
-                   (testing "User 3 gets back his previous bid"
+                   (testing "User 3 funds are spent on the bid"
                      (is (< (- balance-of-3
                                (.plus (last (<! (balance (state/my-address 3)))) (web3/to-wei 0.2 :ether)))
                             spent-gas-threshold)))
