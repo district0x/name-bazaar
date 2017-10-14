@@ -19,7 +19,7 @@
 (def production-config
   {:node-url "https://kovan.infura.io/"
    :load-node-addresses? false
-   :server-url "http://localhost:6200"})
+   :server-url "https://api.namebazaar.io"})
 
 (def default-db
   (merge
