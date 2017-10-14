@@ -18,7 +18,7 @@
   :infinite-list/items-heights
   :<- [:infinite-list/expanded-items]
   (fn [expanded-items [_ items-count default-height]]
-    (map #(get-in expanded-items [% :height] default-height) (range items-count))))
+    (map #(get-in expanded-items [% :height] default-height) (range 1 (inc items-count)))))
 
 (reg-sub
   :infinite-list.item/expanded?
