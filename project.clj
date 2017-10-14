@@ -6,11 +6,11 @@
   :dependencies [
                  ;[district0x "0.1.10"]
                  [cljs-http "0.1.43"]
-                 [cljs-react-material-ui "0.2.48"]
-                 [cljs-web3 "0.19.0-0-6"]
+                 [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.5.10-0"]
                  [cljsjs/react "15.6.1-2"]
+                 [cljsjs/react-datepicker "0.55.0-0"]
                  [cljsjs/react-dom "15.6.1-2"]
                  [cljsjs/react-dom-server "15.6.1-2"]
                  [cljsjs/react-infinite "0.12.1-0"]
@@ -18,12 +18,12 @@
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.0"]
                  [lein-doo "0.1.7"]
-                 [madvas/reagent-patched "0.8.0-alpha1"]
                  [medley "0.8.3"]
-                 [org.clojure/clojurescript "1.9.908"]
+                 [org.clojure/clojurescript "1.9.946"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
                  [re-frisk "0.4.4"]
+                 [soda-ash "0.4.0"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
@@ -45,20 +45,19 @@
                  [day8.re-frame/http-fx "0.1.3"]
                  [kibu/pushy "0.3.6"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
-                 [madvas.re-frame/web3-fx "0.2.0"]]
+                 [madvas.re-frame/web3-fx "0.2.1"]]
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
-               [org.clojure/clojurescript]
-               [reagent]]
+               [org.clojure/clojurescript]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
-            [lein-figwheel "0.5.11"]
+            [lein-figwheel "0.5.13"]
             [lein-shell "0.5.0"]
-            [deraen/lein-less4j "0.5.0"]
             [lein-doo "0.1.7"]
-            [lein-npm "0.6.2"]]
+            [lein-npm "0.6.2"]
+            [lein-pdo "0.1.1"]]
 
   :npm {:dependencies [[cors "2.8.4"]
                        [eth-ens-namehash "2.0.0"]
@@ -69,7 +68,8 @@
                        [sqlite3 "3.1.8"]
                        [web3 "0.19.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]]
+                       [xhr2 "0.1.4"]
+                       [semantic-ui "2.2.13"]]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -84,24 +84,25 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-  :figwheel {:server-port 4544}
+  :figwheel {:server-port 4544
+             :css-dirs ["resources/public/css"]}
 
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
 
-  :aliases {"compile-solidity" ["shell" "./compile-solidity.sh"]}
-
-  :less {:source-paths ["resources/public/less"]
-         :target-path "resources/public/css"
-         :target-dir "resources/public/css"
-         :source-map true
-         :compression true}
+  :aliases {"compile-solidity" ["shell" "./compile-solidity.sh"]
+            "clean-prod-server" ["shell" "rm" "-rf" "server"]
+            "watch-css" ["shell" "./semantic.sh" "watch"]
+            "build-css" ["shell" "./semantic.sh" "build-css"]
+            "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
+            "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
+            "pbuild-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [binaryage/devtools "0.9.4"]
                                   [com.cemerick/piggieback "0.2.1"]
-                                  [figwheel-sidecar "0.5.11" :exclusions [org.clojure/core.async]]
-                                  [org.clojure/tools.nrepl "0.2.13"]]        
+                                  [figwheel-sidecar "0.5.13" :exclusions [org.clojure/core.async]]
+                                  [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev"]
                    :resource-paths ["resources"]}}
 

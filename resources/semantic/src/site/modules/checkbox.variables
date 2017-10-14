@@ -1,0 +1,38 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+@checkboxSize: 24px;
+@checkboxBorderRadius: 100%;
+@checkboxFocusBackground: transparent;
+@checkboxBackground: transparent;
+@checkboxCheckFontSize: 10px;
+@checkboxActiveBackground: @pink;
+@checkboxActiveFocusBackground: @pink;
+@checkboxActiveCheckColor: fade(@white, 80);
+@solidBorderColor: fade(@darkBlue, 13);
+@checkboxActiveBorderColor: transparent;
+@checkboxHoverBorderColor: fade(@solidBorderColor, 30);
+@checkboxTransition: background-color 0.3s @defaultEasing;
+@checkboxPressedBackground: @white;
+@checkboxPressedBorderColor: fade(@solidBorderColor, 70);
+@textColor: @darkBlueText;
+@hoveredTextColor: @textColor;
+@selectedTextColor: @textColor;
+@labelDistance: 35px;
+
+@toggleLaneWidth: 30px;
+@toggleHandleSize: 18px;
+@toggleLaneBackground: #d8dde8;
+@toggleLaneHeight: 12px;
+@toggleHeight: @toggleHandleSize;
+@toggleLaneVerticalOffset: (@toggleHandleSize - @toggleLaneHeight) / 2;
+@handleBoxShadow: 1px 2px 10px 2px @solidBorderColor;
+@handleBackground: @white;
+@toggleOffHandleBoxShadow: @handleBoxShadow;
+@toggleOnHandleBoxShadow: @handleBoxShadow;
+@toggleOnLaneColor: fade(@pink, 50);
+@toggleLabelDistance: 45px;
+@toggleLabelOffset: 0;
+@toggleLabelLineHeight: @toggleHandleSize;
+

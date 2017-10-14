@@ -17,9 +17,9 @@
    :server-url "http://localhost:6200"})
 
 (def production-config
-  {:node-url "https://mainnet.infura.io/"
+  {:node-url "https://kovan.infura.io/"
    :load-node-addresses? false
-   :server-url "https://api.namebazaar.io"})
+   :server-url "http://localhost:6200"})
 
 (def default-db
   (merge
@@ -40,9 +40,9 @@
 
      :search-results
      {:offerings {:home-page-autocomplete {:ids []}
-                  :home-page-newest {:ids []}
-                  :home-page-most-active {:ids []}
-                  :home-page-ending-soon {:ids []}
+                  :home-page-newest {:ids [] :loading? true}
+                  :home-page-most-active {:ids [] :loading? true}
+                  :home-page-ending-soon {:ids [] :loading? true}
                   :main-search {:ids []
                                 :params {:name-position :any
                                          :buy-now? true

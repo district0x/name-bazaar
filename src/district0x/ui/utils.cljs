@@ -2,7 +2,6 @@
   (:require
     [bidi.bidi :as bidi]
     [cemerick.url :as url]
-    [cljs-react-material-ui.reagent :as ui]
     [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
     [cljs-time.core :as t :refer [date-time to-default-time-zone]]
     [cljs-time.format :as time-format]
@@ -16,19 +15,11 @@
     [re-frame.core :refer [reg-sub]]
     [reagent.core :as r]))
 
-(defn color-emphasize [& args]
-  (apply js/MaterialUIUtils.colorManipulator.emphasize args))
-
-(defn color-lighten [& args]
-  (apply js/MaterialUIUtils.colorManipulator.lighten args))
-
-(defn color-darken [& args]
-  (apply js/MaterialUIUtils.colorManipulator.darken args))
-
-(defn get-window-width-size [width]
+(defn get-screen-size [width]
   (cond
+    (>= width 1920) 4
     (>= width 1200) 3
-    (>= width 1024) 2
+    (>= width 992) 2
     (>= width 768) 1
     :else 0))
 
@@ -158,6 +149,8 @@
 
 (def time-unit->text {:days "day" :hours "hour" :minutes "minute" :seconds "second"})
 
+(def time-unit->short-text {:days "day" :hours "hour" :minutes "min." :seconds "sec."})
+
 (defn format-time-duration-unit [unit amount]
   (str amount " " (pluralize (time-unit->text unit) amount)))
 
@@ -170,13 +163,15 @@
 
 (defn format-time-duration-units [milis]
   (let [{:keys [:seconds :minutes :hours :days]} (time-duration-units milis)]
-    (reduce (fn [acc [unit amount]]
-              (if (pos? amount)
-                (str acc (format-time-duration-unit unit amount) " ")
-                acc))
-            ""
-            ;; To ensure proper order
-            [[:days days] [:hours hours] [:minutes minutes] [:seconds seconds]])))
+    ;; To ensure proper order
+    (.slice
+      (reduce (fn [acc [unit amount]]
+                (if (pos? amount)
+                  (str acc (format-time-duration-unit unit amount) " ")
+                  acc))
+              ""
+              [[:days days] [:hours hours] [:minutes minutes] [:seconds seconds]])
+      0 -1)))
 
 (defn truncate
   "Truncate a string with suffix (ellipsis by default) if it is
@@ -205,19 +200,6 @@
                  [component (r/merge-props default-props props)]
                  children)))))
 
-(defn current-component-mui-theme [& args]
-  (js->clj (apply aget (r/current-component) "_reactInternalInstance" "_context" "muiTheme" args)))
-
-(defn create-icon [path]
-  (fn [props]
-    (r/as-element
-      [ui/svg-icon
-       (r/merge-props
-         {}
-         props)
-       (r/as-element
-         [:path {:d path}])])))
-
 (defn time-ago [time]
   (when time
     (let [units [{:name "second" :limit 60 :in-second 1}
@@ -242,11 +224,6 @@
 (defn date+time->local-date-time [date time]
   (t/local-date-time (.getFullYear date) (inc (.getMonth date)) (.getDate date)
                      (.getHours time) (.getMinutes time) (.getSeconds time)))
-
-(def default-data-source-config {"text" "text" "value" "value"})
-
-(defn map->data-source [coll key-key val-key]
-  (map #(hash-map "text" (get % val-key) "value" (get % key-key)) coll))
 
 (defn parse-boolean-string [s]
   (when (string? s)

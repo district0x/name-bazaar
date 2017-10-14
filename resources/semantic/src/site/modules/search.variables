@@ -1,0 +1,14 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+@promptBackground: @white;
+@resultsWidth: 100%;
+@resultsDistance: 10px;
+@resultsBorderRadius: @segmentBorderRadius;
+@resultsBorder: none;
+@resultVerticalPadding: 13px;
+@resultTitleFont: @pageFont;
+@resultTitleFontWeight: normal;
+@resultTitleColor: @textColor;
+@resultPriceColor: @textColor;

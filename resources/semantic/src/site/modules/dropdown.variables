@@ -1,0 +1,13 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+@borderRadius: 0;
+@selectionMinHeight: 18px;
+@selectionVerticalPadding: 5px;
+@borderColor: @inputBorderColor;
+@menuBorder: none;
+@hoveredItemBackground: fade(@lightBrown, 10);
+@selectedBackground: fade(@lightBrown, 15);
+@selectionHorizontalPadding: 0;
+@selectionActiveHoverBoxShadow: none;

@@ -30,3 +30,8 @@ start_server.sh
 /resources/public/css/name-bazaar.main.css.map
 start_server.sh
 start_tests.sh
+/npm-debug.log
+/resources/semantic/dist/components/
+/resources/public/css/
+/resources/semantic/dist/
+/config.json

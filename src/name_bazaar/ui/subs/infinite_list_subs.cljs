@@ -26,12 +26,4 @@
   (fn [expanded-items [_ index]]
     (boolean (get expanded-items index))))
 
-(reg-sub
-  :infinite-list.item/expanded-body-height
-  :<- [:infinite-list/expanded-items]
-  (fn [expanded-items [_ index collapsed-height]]
-    (if-let [item-height (get-in expanded-items [index :height])]
-      (- item-height collapsed-height)
-      0)))
-
 

@@ -120,7 +120,7 @@
   :auction-offering/bid
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [offering-name (gstring/format "Bid for %s" (get-offering-name db (:offering/address form-data)))]
+    (let [offering-name (get-offering-name db (:offering/address form-data))]
       {:dispatch [:district0x/make-transaction
                   {:name offering-name
                    :contract-key :auction-offering
@@ -247,7 +247,7 @@
 (reg-event-fx
   :offerings/load
   [interceptors (conform-args (s/cat :opts (s/? map?) :offering-addresses sequential? :rest (s/* any?)))]
-  (fn [{:keys [:db]} [{:keys [:opts :offering-addresses]}]]
+  (fn [{:keys [:db]} [{:keys [:opts :offering-addresses] :as a}]]
     {:web3-fx.contract/constant-fns
      {:fns (for [offering-address offering-addresses]
              {:instance (get-instance db :buy-now-offering offering-address)
@@ -518,7 +518,7 @@
                                      :params (merge
                                                {:name-position :any
                                                 :offset 0
-                                                :limit 5
+                                                :limit 10
                                                 :node-owner? true}
                                                search-params)}]})))
 

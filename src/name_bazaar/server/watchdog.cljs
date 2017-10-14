@@ -24,20 +24,21 @@
     (go-loop []
       (let [node-watchdog (:node-watchdog @server-state)]
         (<! (timeout (:timeout node-watchdog)))
-        (info "Check?")
-        (let [state (or shortcircuit?
-                        (web3/connected? (state/web3 @server-state)))]
+        (let [web3 (state/web3 @server-state)
+              state (or shortcircuit?
+                        (web3/connected? web3))
+              host (aget web3 "currentProvider" "host")]
           (when (and
                  on-down-fn
                  (:online? node-watchdog)
                  (not state))
-            (warn "Node is offline")
+            (warn "Node is offline" {:host host})
             (on-down-fn))
           (when (and
                  on-up-fn
                  (not (:online? node-watchdog))
                  state)
-            (warn "Node is online")
+            (warn "Node is online" {:host host})
             (on-up-fn))
           (swap! server-state assoc-in [:node-watchdog :online?] state))
         (when (:enabled? node-watchdog)

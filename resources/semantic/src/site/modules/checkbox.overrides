@@ -1,0 +1,21 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.ui.checkbox:not(.toggle) input:checked~.box:after,
+.ui.checkbox:not(.toggle) input:checked~label:after {
+  font-family: 'icons';
+  content: @check;
+}
+
+.ui.checkbox input~label:before {
+  box-shadow: 2px 2px 3px 1px @solidBorderColor;
+}
+
+.ui.toggle.checkbox input:checked~.box:after, .ui.toggle.checkbox input:checked~label:after {
+  background-color: @pink;
+}
+
+.ui.checkbox.toggle {
+  line-height: @toggleLabelLineHeight;
+}

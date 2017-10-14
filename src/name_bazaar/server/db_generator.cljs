@@ -22,7 +22,7 @@
 (def normalize (aget (js/require "eth-ens-namehash") "normalize"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
-(def names-per-account 10)
+(def names-per-account 1)
 
 (defn generate! [server-state {:keys [:total-accounts]}]
   (let [ch (chan)]
@@ -30,7 +30,7 @@
       (dotimes [address-index total-accounts]
         (dotimes [_ names-per-account]
           (let [owner (state/my-address server-state address-index)
-                label (normalize (rand-str 5))
+                label (normalize (rand-str (+ (rand-int 7) 3)))
                 name (str label "." registrar/root-node)
                 node (namehash name)
                 ;offering-type :auction-offering
@@ -70,7 +70,8 @@
                                            {:ens.record/label label :ens.record/owner offering}
                                            {:from owner}))
 
-                  (when (= offering-type :auction-offering)
+                  (when (and (= offering-type :auction-offering)
+                             (zero? (rand-int 2)))
                     (<! (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
 
                   #_ (when true #_(zero? (rand-int 2))

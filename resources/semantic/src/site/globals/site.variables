@@ -1,0 +1,108 @@
+/*******************************
+     User Global Variables
+*******************************/
+@importGoogleFonts: false;
+@fontPath: '../fonts';
+
+@brown: #2e1f37;
+@green: #65e70e;
+@lightGreen: #66fa03;
+@darkGreen: #66cc00;
+@pink: #ff0090;
+@purple: #9d0adb;
+@lightBrown: #74647e;
+@blue: #7d96c3;
+@darkBlue: #47608e;
+@lightBlue: #3d5afe;
+@grey: #b2bacb;
+@cyan: #13d8bf;
+@orange: #ff8400;
+@red: #ff000a;
+
+@negativeColor: @pink;
+@negativeBackgroundColor: transparent;
+@negativeTextColor: @negativeColor;
+@negativeBorderColor: @negativeColor;
+
+@positiveColor: @darkGreen;
+@warningColor: @red;
+
+@bodyBackground: #f8f9fe;
+@textColor: fade(@brown, 87);
+@primaryColor: @lightGreen;
+@secondaryColor: @pink;
+@tertiaryColor: @purple;
+@whiteTextColor: fade(#FFF, 87);
+@invertedTextColor: @whiteTextColor;
+@fontName: 'proxima-nova';
+@pageFont: @fontName, 'sans-serif';
+@headerFont: 'filson-soft', 'sans-serif';
+@secondaryHeaderFont: 'proxima-nova-extra-condensed', sans-serif;
+
+@darkBlueText: fade(#47608e, 87);
+@brownBackground: @brown;
+@headerFontWeight: 300;
+@minAppHeight: 1200px;
+@sidebarWidth: 190px;
+@segmentGutter: 33px;
+@segmentGutterMobile: 20px;
+@segmentBorderRadius: 10px;
+@segmentBoxShadow: 2px 4px 4px 2px rgba(0,0,0,.02);
+@h1: 22px;
+@h5: 12px;
+@h6: 9px;
+@headerBottomMargin: 25px;
+//@solidInternalBorderColor: fade(@lightBrown, 15);
+@borderColor: fade(@lightBrown, 15);
+@focusedFormMutedBorderColor: @borderColor;
+@internalBorderColor: @borderColor;
+@inputBorderColor: fade(@lightBrown, 30);
+@inputBorder: 1px solid @inputBorderColor;
+@focusedFormBorderColor: @brown;
+@inputPlaceholderColor: @grey;
+
+@appBarHeight: 45px;
+@transactionLogWidth: 300px;
+@transactionLogHeight: 383px;
+
+
+@transactionSuccessColor: #5edb0b;
+@transactionPendingColor: #f5cb07;
+@transactionFailureColor: #ff0000;
+
+@floatingShadow: 2px 2px 20px 4px rgba(0,0,0,.05);
+
+@hamburger: "\e904";
+@leaf: "\e901";
+@flag: "\e903";
+@dollar-circle: "\e900";
+@bookmark: "\e902";
+@bookmark-remove: "\e907";
+@exclamation-circle: "\e90f";
+@filter: "\e911";
+@eye: "\e912";
+@price-tag-plus: "\e913";
+@hammer: "\e914";
+@plus-circle: "\e915";
+@clock2: "\e916";
+@times: "\e917";
+@clock: "\e918";
+@pulse: "\e919";
+@user-question: "\e91a";
+@check-circle: "\e91d";
+@hammer-down: "\e91e";
+@twitter: "\e91f";
+@fb: "\e920";
+@user: "\e921";
+@magnifier2: "\e922";
+@magnifier: "\e923";
+@transactions: "\e924";
+@check: "\e925";
+@question: "\e926";
+@book: "\e928";
+@pencil: "\e929";
+@settings: "\e92a";
+@bag: "\e92b";
+@price-tag: "\e92c";
+@message-box: "\e92d";
+@hand: "\e92e";

@@ -2,8 +2,6 @@
   (:require
     [cljs-time.extend]
     [cljs.spec.alpha :as s]
-    [cljsjs.material-ui]
-    [cljsjs.react-flexbox-grid]
     [cljsjs.web3]
     [district0x.ui.events]
     [district0x.ui.subs]
@@ -23,10 +21,9 @@
   ^boolean js/goog.DEBUG)
 
 (defn dev-setup []
+  (enable-console-print!)
   (when debug?
-    (enable-console-print!)
-    (enable-re-frisk!)
-    (println "dev mode")))
+    (enable-re-frisk!)))
 
 (defn mount-root []
   (s/check-asserts goog.DEBUG)
@@ -45,13 +42,14 @@
                    {:async-flow {:first-dispatch [:district0x/load-smart-contracts {:version constants/contracts-version}]
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
-                                          :dispatch-n [[:district0x.config/load]
-                                                       [:district0x/watch-my-eth-balances]
+                                          :dispatch-n [[:district0x/watch-my-eth-balances]
                                                        [:active-page-changed]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
-                    :dispatch [:setup-update-now-interval]}}])
+                    :dispatch-n [[:setup-update-now-interval]
+                                 [:district0x/load-conversion-rates [:USD]]
+                                 [:district0x.config/load]]}}])
   (set! (.-onhashchange js/window)
         #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
   (mount-root))

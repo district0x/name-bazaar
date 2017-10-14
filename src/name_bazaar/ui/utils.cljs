@@ -65,6 +65,17 @@
   {:buy-now-offering "Buy Now"
    :auction-offering "Auction"})
 
+(def offering-type->icon
+  {:buy-now-offering "bag"
+   :auction-offering "hammer"})
+
+(def offering-status->text
+  {:offering.status/emergency "Emergency Cancel"
+   :offering.status/active "Active"
+   :offering.status/finalized "Completed"
+   :offering.status/missing-ownership "Missing Ownership"
+   :offering.status/auction-ended "Auction Ended"})
+
 (defn get-ens-record-name [db node]
   (get-in db [:ens/records node :ens.record/name]))
 
@@ -104,7 +115,8 @@
 
 (defn registrar-entry-deed-loaded? [registrar-entry]
   (boolean (or (d0x-shared-utils/zero-address? (:registrar.entry.deed/address registrar-entry))
-               (:registrar.entry.deed/value registrar-entry))))
+               (and (:registrar.entry.deed/value registrar-entry)
+                    (:registrar.entry.deed/owner registrar-entry)))))
 
 (defn ens-record-loaded? [ens-record]
   (boolean (:ens.record/owner ens-record)))

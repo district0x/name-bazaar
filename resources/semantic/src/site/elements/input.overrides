@@ -1,0 +1,62 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.ui.input input {
+  border-right: none;
+  border-top: none;
+  border-left: none;
+}
+
+.ui.input.action {
+  .ui.label:last-child {
+    font-size: 16px;
+  }
+}
+
+.ui.input.labeled {
+  position: relative;
+  .ui.label:first-child {
+    transition: @labelTransition;
+    position: absolute;
+    transform: scale(1) translate(0px, 0px);
+    transform-origin: left top 0;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    padding: 0;
+    color: @inputPlaceholderColor;
+    font-size: inherit;
+    bottom: @verticalPadding;
+  }
+  &.dirty, &.focus {
+    .ui.label:first-child {
+      transform: scale(0.8) translate(0px, -28px);
+    }
+  }
+  &.focus {
+    .ui.label:first-child {
+      color: @focusedFormBorderColor;
+    }
+    &.error .ui.label:first-child {
+      color: @errorBorder;
+    }
+  }
+}
+
+.input-state-label {
+  position: relative;
+  & > .ui.label {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    color: @grey;
+    transition: @labelTransition;
+  }
+  &.error > .ui.label {
+    color: @errorBorder;
+  }
+  &.success > .ui.label {
+    color: @positiveColor;
+  }
+}
