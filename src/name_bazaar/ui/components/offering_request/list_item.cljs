@@ -1,51 +1,48 @@
 (ns name-bazaar.ui.components.offering-request.list-item
   (:require
-    [cljs-react-material-ui.reagent :as ui]
     [clojure.string :as string]
-    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [pluralize]]
+    [district0x.ui.utils :refer [pluralize]]
     [name-bazaar.ui.components.ens-name-details :refer [ens-name-details]]
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
-    [name-bazaar.ui.components.misc :refer [a]]
-    [name-bazaar.ui.components.search-results.list-item-placeholder :refer [list-item-placeholder]]
-    [name-bazaar.ui.styles :as styles]
+    [name-bazaar.ui.components.loading-placeholders :refer [list-item-placeholder]]
+    [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [soda-ash.core :as ui]))
 
 (defn offering-request-list-item-header []
-  (let [xs? (subscribe [:district0x/window-xs-width?])]
-    (fn [{:keys [:offering-request]}]
+  (let [visible? (r/atom false)
+        mobile? (subscribe [:district0x.screen-size/mobile?])]
+    (fn [{:keys [:offering-request] :as props}]
       (let [{:keys [:offering-request/node :offering-request/name :offering-request/requesters-count]} offering-request]
-        [:div
-         {:style (styles/search-results-list-item @xs?)}
+        [:div.ui.grid.padded.search-results-list-item.offering-request
+         (r/merge-props
+           {:class (when @mobile? "mobile")}
+           (dissoc props :offering-request))
          (if-not node
            [list-item-placeholder]
-           [row-with-cols
-            {:style (merge styles/search-results-list-item-header
-                           (if node styles/opacity-1 styles/opacity-0))
-             :between "sm"
-             :middle "sm"}
-            [col
-             {:xs 12 :sm 5}
-             [:div
-              {:style styles/list-item-ens-record-name}
-              name]]
-            [col
-             {:xs 6 :sm 3}
-             [:div
-              {:style (styles/offering-requests-list-item-count @xs?)}
-              requesters-count (pluralize " request" requesters-count)]]])]))))
+           [ui/GridRow
+            {:class (str "search-results-list-item-header "
+                         (when @visible? "opacity-1"))
+             :ref #(reset! visible? true)
+             :vertical-align :middle}
+            [ui/GridColumn
+             {:width 10}
+             name]
+            [ui/GridColumn
+             {:width 6
+              :text-align :right}
+             requesters-count (pluralize " request" requesters-count)]])]))))
 
 (defn offering-request-list-item []
-  (let [xs? (subscribe [:district0x/window-xs-width?])]
+  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
     (fn [{:keys [:offering-request :expanded? :on-expand :key]}]
       (let [{:keys [:offering-request/node :offering-request/name]} offering-request]
         [expandable-list-item
          {:index key
           :on-expand #(dispatch [:offering-requests.list-item/expanded offering-request])
-          :collapsed-height (styles/search-results-list-item-height @xs?)
-          :expanded-height (styles/offering-request-list-item-expanded-height @xs?)
-          :expand-disabled? (not node)}
+          :collapsed-height (constants/infinite-list-collapsed-item-height @mobile?)
+          :disable-expand? (not node)}
          [offering-request-list-item-header
           {:offering-request offering-request}]
          [ens-name-details

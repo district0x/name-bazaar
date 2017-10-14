@@ -17,14 +17,14 @@
     [day8.re-frame.http-fx]
     [district0x.shared.encryption-utils :as encryption-utils]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.interval-fx]
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size path-for to-locale-string]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -84,7 +84,6 @@
 
 (defn- contains-tx-status? [tx-statuses {:keys [:status]}]
   (contains? tx-statuses status))
-
 
 (reg-event-fx
   :district0x/initialize
@@ -151,22 +150,22 @@
           {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
- :district0x.config/load
- interceptors
- (fn [{:keys [db]} _]
-   {:db db
-    :http-xhrio {:method :get
-                 :uri (str (url/url (:server-url db) "/config"))  
-                 :timeout 3000
-                 :response-format (ajax/transit-response-format)
-                 :on-success [:district0x.config/loaded]
-                 :on-failure [:district0x.log/error :district0x.config/load]}}))
+  :district0x.config/load
+  interceptors
+  (fn [{:keys [db]} _]
+    {:db db
+     :http-xhrio {:method :get
+                  :uri (str (url/url (:server-url db) "/config"))
+                  :timeout 3000
+                  :response-format (ajax/transit-response-format)
+                  :on-success [:district0x.config/loaded]
+                  :on-failure [:district0x.log/error :district0x.config/load]}}))
 
 (reg-event-db
- :district0x.config/loaded
- interceptors
- (fn [db [config]]
-      (assoc-in db [:config] config)))
+  :district0x.config/loaded
+  interceptors
+  (fn [db [config]]
+    (assoc-in db [:config] config)))
 
 (reg-event-fx
   :district0x/load-smart-contracts
@@ -421,15 +420,15 @@
 (reg-event-fx
   :district0x/transaction-loaded
   [interceptors]
-  (fn [{:keys [:db]} [transaction-hash {:keys [:gas] :as transaction}]]
+  (fn [{:keys [:db]} [transaction-hash {:keys [:gas :gas-price] :as transaction}]]
     (let [gas-used (get-in db [:transaction-log :transactions transaction-hash :gas-used])
-          transaction (-> transaction
-                        (assoc :status (if (and gas gas-used)
-                                         (if (= gas-used gas)
-                                           :tx.status/failure
-                                           :tx.status/success)
-                                         :tx.status/pending))
-                        (assoc :hash transaction-hash))]
+          transaction (cond-> transaction
+                        true (assoc :status (if (and gas gas-used)
+                                              (if (= gas-used gas)
+                                                :tx.status/failure
+                                                :tx.status/success)
+                                              :tx.status/pending))
+                        true (assoc :hash transaction-hash))]
       {:dispatch [:district0x.transactions/update transaction-hash transaction]})))
 
 (reg-event-fx
@@ -479,23 +478,36 @@
        :localstorage (merge localstorage (select-keys new-db [:transaction-log]))
        :dispatch [:district0x.transaction-log/set-open true tx-hash]})))
 
+(defn- assoc-gas-used-costs [{:keys [:gas-used :gas-price] :as transaction} usd-rate]
+  (if (and gas-used gas-price)
+    (let [gas-used-cost (bn/->number (wei->eth (* (bn/->number gas-price) gas-used)))]
+      (merge transaction
+             {:gas-used-cost gas-used-cost}
+             (when usd-rate
+               {:gas-used-cost-usd (* gas-used-cost usd-rate)})))
+    transaction))
+
 (reg-event-fx
   :district0x.transactions/update
   [interceptors (inject-cofx :localstorage)]
-  (fn [{:keys [:db :localstorage]} [transaction-hash transaction]]
-    (let [new-db (update-in db
-                            [:transaction-log :transactions transaction-hash]
-                            merge
-                            (cond-> transaction
-                              true (select-keys [:block-hash :gas-used :gas :value :status])
-                              (:value transaction) (update :value bn/->number)))]
-      (let [{:keys [:gas :gas-used :form-data :contract-key :contract-method]}
-            (get-in new-db [:transaction-log :transactions transaction-hash])]
+  (fn [{:keys [:db :localstorage]} [transaction-hash {:keys [:gas-used :gas-price] :as transaction}]]
+    (let [usd-rate (get-in db [:conversion-rates :USD])
+          existing-tx (get-in db [:transaction-log :transactions transaction-hash])
+          transaction (-> transaction
+                        (select-keys [:block-hash :gas :gas-used :value :status :gas-price])
+                        (->> (merge existing-tx))
+                        (update :value bn/->number)
+                        (update :gas-price bn/->number)
+                        (assoc-gas-used-costs usd-rate))
+
+          new-db (assoc-in db [:transaction-log :transactions transaction-hash] transaction)]
+      (let [{:keys [:gas :gas-used :gas-used-cost-usd :form-data :contract-key :contract-method]} transaction]
         (when (and gas gas-used)
           (console :log
                    (keyword contract-key contract-method)
                    "gas-limit:" gas
                    "gas-used:" gas-used
+                   "gas-used-cost-usd:" (to-locale-string gas-used-cost-usd 2)
                    (str (int (* (/ gas-used gas) 100)) "%")
                    form-data)))
       (merge
@@ -688,8 +700,9 @@
     {:db (update db :snackbar merge
                  {:open? true
                   :message message
-                  :action nil
-                  :on-action-touch-tap nil})}))
+                  :action-href nil})
+     :dispatch-later [{:ms (get-in db [:snackbar :timeout])
+                       :dispatch [:district0x.snackbar/close]}]}))
 
 (reg-event-fx
   :district0x.snackbar/show-transaction-error
@@ -700,12 +713,13 @@
 (reg-event-fx
   :district0x.snackbar/show-message-redirect-action
   interceptors
-  (fn [{:keys [db]} [{:keys [:message :route :route-params :routes :action]}]]
+  (fn [{:keys [db]} [{:keys [:message] :as params}]]
     {:db (update db :snackbar merge
                  {:open? true
                   :message message
-                  :action (or action "SHOW ME")
-                  :on-action-touch-tap #(dispatch [:district0x.location/nav-to route route-params routes])})}))
+                  :action-href (path-for (select-keys params [:route :route-params :routes]))})
+     :dispatch-later [{:ms (get-in db [:snackbar :timeout])
+                       :dispatch [:district0x.snackbar/close]}]}))
 
 (reg-event-db
   :district0x.menu-drawer/set
@@ -753,7 +767,7 @@
   :district0x.window/resized
   interceptors
   (fn [{:keys [db]} [width]]
-    {:db (assoc db :window-width-size (d0x-ui-utils/get-window-width-size width))}))
+    {:db (assoc db :screen-size (get-screen-size width))}))
 
 (reg-event-fx
   :district0x.window/scroll-to-top

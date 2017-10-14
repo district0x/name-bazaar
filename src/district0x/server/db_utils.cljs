@@ -28,9 +28,12 @@
     ch))
 
 (defn ->count-query [sql-map]
-  (-> sql-map
-    (assoc :select [:%count.*])
-    (dissoc :offset :limit :order-by)))
+  (let [select (if (contains? (set (:modifiers sql-map)) :distinct)
+                 [(keyword (str "%count-distinct." (name (first (:select sql-map)))))]
+                 [:%count.*])]
+    (-> sql-map
+      (assoc :select select)
+      (dissoc :offset :limit :order-by))))
 
 (defn db-get [db sql-map & [{:keys [:port]
                              :or {port (chan)}}]]
@@ -55,7 +58,7 @@
                                                   (log-error err)
                                                   (if err
                                                     (put! total-count-ch 0)
-                                                    (put! total-count-ch (aget res "count(*)"))))))
+                                                    (put! total-count-ch (first (vals (js->clj res))))))))
       (put! total-count-ch false))
     (.all db query (clj->js values) (fn [err res]
                                       (log-error err)

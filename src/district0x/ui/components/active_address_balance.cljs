@@ -1,18 +1,17 @@
 (ns district0x.ui.components.active-address-balance
   (:require
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :refer [to-locale-string]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
 (defn active-address-balance []
   (fn [{:keys [:token :token-name :max-fraction-digits]
-        :or {max-fraction-digits 2 token :eth}
+        :or {max-fraction-digits 2 token :eth token-name "ETH"}
         :as props}]
     (let [balance @(subscribe [:district0x/active-address-balance token])]
       (when balance
-        [:div
+        [:div.active-address-balance
          (dissoc props :token :token-name :max-fraction-digits)
-         (d0x-ui-utils/to-locale-string balance max-fraction-digits)
+         (to-locale-string balance max-fraction-digits)
          " "
-         [:span {:style {:text-transform :uppercase}}
-          (or token-name (name token))]]))))
+         [:span (or token-name (name token))]]))))

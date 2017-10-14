@@ -1,51 +1,48 @@
 (ns name-bazaar.ui.pages.register-name-page
   (:require
-    [district0x.ui.components.misc :as misc :refer [row row-with-cols col paper page]]
-    [district0x.ui.components.text-field :refer [text-field-with-suffix]]
-    [district0x.ui.components.transaction-button :refer [raised-transaction-button]]
-    [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
-    [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.styles :as styles]
-    [name-bazaar.ui.utils :refer [valid-ens-name?]]
+    [district0x.ui.components.misc :refer [page]]
+    [district0x.ui.components.transaction-button :refer [transaction-button]]
+    [name-bazaar.ui.components.app-layout :refer [app-layout]]
+    [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
+    [name-bazaar.ui.utils :refer [valid-ens-name? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [soda-ash.core :as ui]))
 
 (defn register-name-form []
-  (let [xs? (subscribe [:district0x/window-xs-width?])
-        label (r/atom "")]
+  (let [label (r/atom "")]
     (fn []
-      [:div
-       {:style {:height (when-not @xs? 250)
-                :display :flex
-                :flex-direction :column}}
-       [:div
-        [text-field-with-suffix
-         {:floating-label-text "Name"
-          :full-width @xs?
-          :value @label
-          :on-change (fn [_ value]
-                       (when (valid-ens-name? value)
-                         (reset! label value)))}
-         [:span
-          {:style styles/text-field-suffix}
-          constants/registrar-root]]]
-       [row
-        {:bottom "xs"
-         :end "xs"
-         :style styles/full-height}
-        [raised-transaction-button
-         {:label "Register"
-          :primary true
-          :disabled (empty? @label)
-          :full-width @xs?
-          :on-click (fn []
-                      (when (and (not (empty? @label))
-                                 (valid-ens-name? @label))
-                        (dispatch [:registrar/register {:ens.record/label @label}])
-                        (reset! label "")))}]]])))
+      [ui/Grid
+       {:class "layout-grid submit-footer"}
+       [ui/GridRow
+        [ui/GridColumn
+         {:mobile 16
+          :tablet 8
+          :computer 6}
+         [ens-name-input
+          {:label "Name"
+           :fluid true
+           :value @label
+           :on-change (fn [_ data]
+                        (let [value (aget data "value")]
+                          (when (valid-ens-name? value)
+                            (reset! label value))))}]]]
+       [ui/GridRow
+        {:centered true}
+        [:div
+         [transaction-button
+          {:primary true
+           :disabled (empty? @label)
+           :pending-text "Registering..."
+           :on-click (fn []
+                       (when (and (not (empty? @label))
+                                  (valid-ens-name? @label))
+                         (dispatch [:registrar/register {:ens.record/label @label}])
+                         (reset! label "")))}
+          "Register"]]]])))
 
 (defmethod page :route.mock-registrar/register []
-  [side-nav-menu-center-layout
-   [paper
-    [:h1 "Register Name"]
+  [app-layout
+   [ui/Segment
+    [:h1.ui.header.padded "Register Name"]
     [register-name-form]]])

@@ -1,351 +1,342 @@
 (ns name-bazaar.ui.pages.offerings-search-page
   (:require
-    [cljs-react-material-ui.reagent :as ui]
-    [clojure.string :as string]
-    [district0x.shared.utils :as d0x-shared-utils :refer [non-neg-ether-value?]]
-    [district0x.ui.components.misc :as d0x-misc :refer [row row-with-cols col paper page]]
-    [district0x.ui.components.text-field :refer [text-field ether-field integer-field ether-field-with-currency]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code]]
+    [district0x.shared.utils :refer [non-neg-ether-value?]]
+    [district0x.ui.components.input :refer [input]]
+    [district0x.ui.components.misc :refer [page]]
     [medley.core :as medley]
-    [name-bazaar.ui.components.icons :as icons]
-    [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
+    [name-bazaar.ui.components.app-layout :refer [app-layout]]
+    [name-bazaar.ui.components.keyword-position-select :refer [keyword-position-select]]
+    [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
-    [name-bazaar.ui.components.search-fields.keyword-position-select-field :refer [keyword-position-select-field]]
-    [name-bazaar.ui.components.search-fields.keyword-text-field :refer [keyword-text-field]]
-    [name-bazaar.ui.components.search-fields.offerings-order-by-select-field :refer [offerings-order-by-select-field]]
+    [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
+    [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
-    [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.styles :as styles]
-    [name-bazaar.ui.utils :refer [etherscan-ens-url]]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [soda-ash.core :as ui]))
 
 (defn offerings-keyword-text-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
     (fn []
-      [keyword-text-field
-       {:value (:name @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query {:name %2}])}])))
+      [input
+       {:label "Keyword"
+        :fluid true
+        :value (:name @search-params)
+        :on-change #(dispatch [:district0x.location/add-to-query {:name (aget %2 "value")}])}])))
 
-(defn offerings-keyword-position-select-field []
+(defn offerings-keyword-position-select []
   (let [search-params (subscribe [:offerings.main-search/params])]
     (fn []
-      [keyword-position-select-field
-       {:value (:name-position @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query {:name-position %3}])}])))
+      [keyword-position-select
+       {:fluid true
+        :value (:name-position @search-params)
+        :on-change #(dispatch [:district0x.location/add-to-query {:name-position (aget %2 "value")}])}])))
 
-(defn saved-searches-select-field []
+(defn saved-searches-select []
   (let [saved-searches (subscribe [:offerings/saved-searches])
         query-string (subscribe [:district0x/query-string])]
-    (fn [props]
-      [ui/select-field
-       (r/merge-props
-         (merge
-           {:style styles/saved-searches-select-field
-            :floating-label-text "Saved Searches"
-            :disabled (empty? @saved-searches)
-            :on-change #(dispatch [:district0x.location/set-query %3])}
-           (when (get @saved-searches @query-string)
-             {:value @query-string}))
-         props)
-       (for [[query text] @saved-searches]
-         [ui/menu-item
-          {:key query
-           :value query
-           :primary-text text}])])))
-
-(defn save-search-dialog []
-  (let [saved-search-name (r/atom "")]
-    (fn [{:keys [:on-confirm :on-cancel] :as props}]
-      [ui/dialog
-       (r/merge-props
-         {:title "Save Search"
-          :actions [(r/as-element
-                      [ui/flat-button
-                       {:label "Cancel"
-                        :secondary true
-                        :on-click on-cancel}])
-                    (r/as-element
-                      [ui/flat-button
-                       {:label "Save"
-                        :primary true
-                        :disabled (empty? @saved-search-name)
-                        :keyboard-focused true
-                        :on-click (fn []
-                                    (on-confirm @saved-search-name))}])]}
-         (dissoc props :on-confirm :on-cancel))
-       [:div
-        [row
-         [text-field
-          {:floating-label-text "Search Name"
-           :value @saved-search-name
-           :on-change #(reset! saved-search-name %2)}]]
-        [row
-         {:style styles/margin-top-gutter-less}
-         [:small
-          "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]])))
+    [ui/Select
+     {:select-on-blur false
+      :placeholder "Saved Searches"
+      :fluid true
+      :disabled (empty? @saved-searches)
+      :value (when (get @saved-searches @query-string) @query-string)
+      :options (for [[value text] @saved-searches]
+                 {:value value :text text})
+      :on-change #(dispatch [:district0x.location/set-query (aget %2 "value")])}]))
 
 (defn save-search-button []
-  (let [dialog-open? (r/atom false)
+  (let [open? (r/atom false)
         query-string (subscribe [:district0x/query-string])
-        saved-search-active? (subscribe [:offerings.saved-search/active?])]
+        saved-search-active? (subscribe [:offerings.saved-search/active?])
+        saved-search-name (r/atom "")]
     (fn [props]
-      [:div
-       [save-search-dialog
-        {:open @dialog-open?
-         :on-cancel #(reset! dialog-open? false)
-         :on-confirm (fn [saved-search-name]
-                       (dispatch [:offerings.saved-searches/add @query-string saved-search-name])
-                       (reset! dialog-open? false))}]
-       (if @saved-search-active?
-         [ui/icon-button
-          (r/merge-props
-            {:tooltip "Delete this saved search"
-             :on-click #(dispatch [:offerings.saved-searches/remove @query-string])}
-            props)
-          (icons/bookmark-remove)]
-         [ui/icon-button
-          (r/merge-props
-            {:tooltip "Save current search"
-             :disabled (empty? @query-string)
-             :on-click #(reset! dialog-open? true)}
-            props)
-          (icons/bookmark-outline)])])))
+      [ui/Modal
+       (r/merge-props
+         {:dimmer false
+          :open @open?
+          :on-open (fn []
+                     (if @saved-search-active?
+                       (dispatch [:offerings.saved-searches/remove @query-string])
+                       (when-not (empty? @query-string)
+                         (reset! open? true))))
+          :on-close #(reset! open? false)
+          :trigger (r/as-element [:i.icon.search-options-icon-button
+                                  {:class (str
+                                            (when (empty? @query-string) "disabled ")
+                                            (if @saved-search-active? "bookmark-remove" "bookmark"))}])
+          :size :small}
+         (dissoc props :on-confirm :on-cancel))
+       [ui/ModalHeader "Save Search"]
+       [ui/ModalContent
+        [ui/Grid
+         [ui/GridRow
+          [ui/GridColumn
+           {:computer 6
+            :tablet 8
+            :mobile 14}
+           [input
+            {:label "Search Name"
+             :fluid true
+             :value @saved-search-name
+             :on-change #(reset! saved-search-name (aget %2 "value"))}]]]
+         [ui/GridRow
+          {:class :description}
+          [ui/GridColumn
+           "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]]
+       [ui/ModalActions
+        [ui/Button
+         {:secondary true
+          :on-click #(reset! open? false)}
+         "Cancel"]
+        [ui/Button
+         {:primary true
+          :disabled (empty? @saved-search-name)
+          :on-click (fn []
+                      (dispatch [:offerings.saved-searches/add @query-string @saved-search-name])
+                      (reset! open? false))}
+         "Save"]]])))
 
-(defn offering-type-checkbox-group []
+(defn buy-now-offerings-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:buy-now-checkbox-props :auction-checkbox-props]}]
-      [:div
-       {:style styles/full-width}
-       [ui/checkbox
-        (r/merge-props
-          {:label "Buy Now Offerings"
-           :checked (boolean (:buy-now? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:buy-now? %2}])}
-          buy-now-checkbox-props)]
-       [ui/checkbox
-        (r/merge-props
-          {:label "Auction Offerings"
-           :checked (boolean (:auction? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:auction? %2}])}
-          auction-checkbox-props)]])))
+    (fn []
+      [ui/Checkbox
+       {:label "Buy Now Offerings"
+        :checked (boolean (:buy-now? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:buy-now? (aget %2 "checked")}])}])))
 
-(defn name-level-checkbox-group []
+(defn auction-offerings-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:top-level-checkbox-props :subname-checkbox-props]}]
-      [:div
-       {:style styles/full-width}
-       [ui/checkbox
-        (r/merge-props
-          {:label "Top Level Names"
-           :checked (boolean (:top-level-names? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:top-level-names? %2}])}
-          top-level-checkbox-props)]
-       [ui/checkbox
-        (r/merge-props
-          {:label "Subnames"
-           :checked (boolean (:sub-level-names? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:sub-level-names? %2}])}
-          subname-checkbox-props)]])))
+    (fn []
+      [ui/Checkbox
+       {:label "Auction Offerings"
+        :checked (boolean (:auction? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:auction? (aget %2 "checked")}])}])))
 
-(defn exclude-chars-checkbox-group []
+(defn top-level-names-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:exclude-numbers-checkbox-props :exclude-spec-chars-checkbox-props]}]
-      [:div
-       {:style styles/full-width}
-       [ui/checkbox
-        (r/merge-props
-          {:label "Exclude Numbers"
-           :checked (boolean (:exclude-numbers? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:exclude-numbers? %2}])}
-          exclude-numbers-checkbox-props)]
-       [ui/checkbox
-        (r/merge-props
-          {:label "Exclude Special Char."
-           :checked (boolean (:exclude-special-chars? @search-params))
-           :on-check #(dispatch [:district0x.location/add-to-query {:exclude-special-chars? %2}])}
-          exclude-spec-chars-checkbox-props)]])))
+    (fn []
+      [ui/Checkbox
+       {:label "Top Level Names"
+        :checked (boolean (:top-level-names? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:top-level-names? (aget %2 "checked")}])}])))
 
-(defn price-text-fields []
+(defn subnames-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:min-price-text-field-props :max-price-text-field-props]}]
-      (let [{:keys [:min-price :max-price]} @search-params]
-        [row-with-cols
-         [col
-          {:xs 6}
-          [text-field
-           (r/merge-props
-             {:floating-label-text "Min. Price"
-              :full-width true
-              :value min-price
-              :error-text (when-not (non-neg-ether-value? min-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:district0x.location/add-to-query {:min-price %2}])}
-             min-price-text-field-props)]]
-         [col
-          {:xs 6}
-          [text-field
-           (r/merge-props
-             {:floating-label-text "Max. Price"
-              :full-width true
-              :value max-price
-              :error-text (when-not (non-neg-ether-value? max-price {:allow-empty? true}) " ")
-              :on-change #(dispatch [:district0x.location/add-to-query {:max-price %2}])}
-             max-price-text-field-props)]]]))))
+    (fn []
+      [ui/Checkbox
+       {:label "Subnames"
+        :checked (boolean (:sub-level-names? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:sub-level-names? (aget %2 "checked")}])}])))
 
-(defn length-text-fields []
+(defn exclude-numbers-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [{:keys [:min-length-text-field-props :max-length-text-field-props]}]
-      [row-with-cols
-       [col
-        {:xs 6}
-        [integer-field
-         (r/merge-props
-           {:floating-label-text "Min. Length"
-            :full-width true
-            :allow-empty? true
-            :value (:min-length @search-params)
-            :on-change #(dispatch [:district0x.location/add-to-query {:min-length %2}])}
-           min-length-text-field-props)]]
-       [col
-        {:xs 6}
-        [integer-field
-         (r/merge-props
-           {:floating-label-text "Max. Length"
-            :full-width true
-            :allow-empty? true
-            :value (:max-length @search-params)
-            :on-change #(dispatch [:district0x.location/add-to-query {:max-length %2}])}
-           max-length-text-field-props)]]])))
+    (fn []
+      [ui/Checkbox
+       {:label "Exclude Numbers"
+        :checked (boolean (:exclude-numbers? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:exclude-numbers? (aget %2 "checked")}])}])))
+
+(defn exclude-special-chars-checkbox []
+  (let [search-params (subscribe [:offerings.main-search/params])]
+    (fn []
+      [ui/Checkbox
+       {:label "Exclude Special Char."
+        :checked (boolean (:exclude-special-chars? @search-params))
+        :on-change #(dispatch [:district0x.location/add-to-query {:exclude-special-chars? (aget %2 "checked")}])}])))
+
+(defn min-price-input []
+  (let [search-params (subscribe [:offerings.main-search/params])]
+    (fn []
+      (let [{:keys [:min-price]} @search-params]
+        [input
+         {:label "Min. Price"
+          :fluid true
+          :value min-price
+          :error (not (non-neg-ether-value? min-price {:allow-empty? true}))
+          :on-change #(dispatch [:district0x.location/add-to-query {:min-price (aget %2 "value")}])}]))))
+
+(defn max-price-input []
+  (let [search-params (subscribe [:offerings.main-search/params])]
+    (fn []
+      (let [{:keys [:max-price]} @search-params]
+        [input
+         {:label "Max. Price"
+          :fluid true
+          :value max-price
+          :error (not (non-neg-ether-value? max-price {:allow-empty? true}))
+          :on-change #(dispatch [:district0x.location/add-to-query {:max-price (aget %2 "value")}])}]))))
+
+(defn min-length-input []
+  (let [search-params (subscribe [:offerings.main-search/params])]
+    (fn []
+      (let [{:keys [:min-length]} @search-params]
+        [input
+         {:label "Min. Length"
+          :fluid true
+          :value min-length
+          :error (not (non-neg-ether-value? min-length {:allow-empty? true}))
+          :on-change #(dispatch [:district0x.location/add-to-query {:min-length (aget %2 "value")}])}]))))
+
+(defn max-length-input []
+  (let [search-params (subscribe [:offerings.main-search/params])]
+    (fn []
+      (let [{:keys [:max-length]} @search-params]
+        [input
+         {:label "Max. Length"
+          :fluid true
+          :value max-length
+          :error (not (non-neg-ether-value? max-length {:allow-empty? true}))
+          :on-change #(dispatch [:district0x.location/add-to-query {:max-length (aget %2 "value")}])}]))))
 
 (defn order-by-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
-    (fn [props]
-      (let [searching-by-name? (not (empty? (:name @search-params)))]
-        [offerings-order-by-select-field
-         (r/merge-props
-           {:order-by-column (first (:order-by-columns @search-params))
-            :order-by-dir (first (:order-by-dirs @search-params))
-            :options [:offering.order-by/newest
-                      :offering.order-by/most-active
-                      :offering.order-by/most-expensive
-                      :offering.order-by/cheapest
-                      :offering.order-by/ending-soon
-                      :offering.order-by/most-relevant]
-            :on-change (fn [order-by-column order-by-dir]
-                         (dispatch [:district0x.location/add-to-query
-                                    {:order-by-columns [(name order-by-column)]
-                                     :order-by-dirs [(name order-by-dir)]}]))}
-           props)]))))
-
-(defn reset-search-icon-button []
-  [ui/icon-button
-   {:tooltip "Reset Search"
-    :on-click #(dispatch [:district0x.location/set-query ""])}
-   (icons/filter-remove)])
+    (fn []
+      [offerings-order-by-select
+       {:fluid true
+         :order-by-column (first (:order-by-columns @search-params))
+        :order-by-dir (first (:order-by-dirs @search-params))
+        :options [:offering.order-by/newest
+                  :offering.order-by/most-active
+                  :offering.order-by/most-expensive
+                  :offering.order-by/cheapest
+                  :offering.order-by/ending-soon
+                  :offering.order-by/most-relevant]
+        :on-change (fn [e data]
+                     (let [[order-by-column order-by-dir] (aget data "value")]
+                       (dispatch [:district0x.location/add-to-query
+                                  {:order-by-columns [(name order-by-column)]
+                                   :order-by-dirs [(name order-by-dir)]}])))}])))
 
 (defn search-params-panel []
-  [paper
-   [row-with-cols
-    {:bottom "xs"
-     :between "xs"}
-    [col
-     {:md 5}
-     [offerings-keyword-text-field]]
-    [col
-     {:md 3}
-     [row
-      {:bottom "xs"}
-      [offerings-keyword-position-select-field]]]
-    [col
-     {:md 4}
-     [row
-      {:bottom "xs"}
-      [saved-searches-select-field]
-      [save-search-button]]]]
-   [row-with-cols
-    {:style styles/margin-top-gutter-less}
-    [col
-     {:md 4}
-     [offering-type-checkbox-group]]
-    [col
-     {:md 4}
-     [name-level-checkbox-group]]
-    [col
-     {:md 4}
-     [exclude-chars-checkbox-group]]]
-   [row-with-cols
-    {:bottom "xs"}
-    [col
-     {:md 4}
-     [price-text-fields]]
-    [col
-     {:md 4}
-     [length-text-fields]]
-    [col
-     {:md 4}
-     [row
-      {:bottom "xs"}
-      [order-by-select-field
-       {:style styles/offerings-order-by-select-field}]
-      [reset-search-icon-button]]]]])
-
-(defn search-params-drawer-mobile []
-  (let [open? (subscribe [:offerings.main-search.drawer/open?])]
+  (let [open? (r/atom false)
+        mobile? (subscribe [:district0x.screen-size/mobile?])]
     (fn []
-      [ui/drawer
-       {:open-secondary true
-        :open @open?
-        :on-request-change #(dispatch [:offerings.search-params-drawer/set %])}
-       [:div
-        {:style styles/offering-search-params-drawer-mobile}
-        [row
-         [offerings-keyword-position-select-field]]
-        [row
-         [price-text-fields]]
-        [row
-         [length-text-fields]]
-        [row
-         {:style styles/margin-top-gutter}
-         [offering-type-checkbox-group]]
-        [row
-         {:style styles/margin-top-gutter}
-         [name-level-checkbox-group]]
-        [row
-         {:style styles/margin-top-gutter}
-         [exclude-chars-checkbox-group]]
-        [row
-         {:style styles/margin-top-gutter}
-         [ui/raised-button
-          {:full-width true
-           :primary true
-           :label "Close"
-           :on-click #(dispatch [:offerings.search-params-drawer/set false])}]]
-        [row
-         {:style styles/margin-top-gutter-less}
-         [ui/flat-button
-          {:full-width true
-           :label "Reset"
-           :on-click #(dispatch [:district0x.location/set-query ""])}]]]])))
-
-(defn search-params-panel-mobile []
-  [paper
-   [search-params-drawer-mobile]
-   [offerings-keyword-text-field]
-   [order-by-select-field]
-   [row
-    {:bottom "xs"}
-    [saved-searches-select-field]
-    [save-search-button]]])
-
+      [ui/Segment
+       [ui/Grid
+        {:celled :internally}
+        [ui/GridRow
+         [ui/GridColumn
+          {:computer 8
+           :tablet 8
+           :mobile 16}
+          [offerings-keyword-text-field]]
+         (when @mobile?
+           [ui/GridColumn
+            {:class "join-upper hide-divider"
+             :mobile 16}
+            [:div.offerings-search-options-section
+             [order-by-select-field]
+             [:i.icon.filter.search-options-icon-button
+              {:on-click (fn []
+                           (reset! open? false)
+                           (dispatch [:district0x.location/set-query ""]))}]]])
+         [ui/GridColumn
+          {:vertical-align :bottom
+           :class "hide-divider join-upper"
+           :computer 8
+           :tablet 8
+           :mobile 16}
+          [:div.offerings-search-options-section
+           [ui/Grid
+            (when-not @mobile?
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [offerings-keyword-position-select]])
+            [ui/GridColumn
+             {:computer 8
+              :tablet 8
+              :mobile 16}
+             [saved-searches-select]]]
+           [save-search-button]]]]
+        (if (or (not @mobile?) @open?)
+          [ui/GridRow
+           [ui/GridColumn
+            {:computer 8
+             :tablet 8
+             :mobile 16}
+            [ui/Grid
+             {:class :checkbox-filtering-options}
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [buy-now-offerings-checkbox]]
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [subnames-checkbox]]
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [auction-offerings-checkbox]]
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [exclude-numbers-checkbox]]
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [top-level-names-checkbox]]
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [exclude-special-chars-checkbox]]]]
+           [ui/GridColumn
+            {:computer 8
+             :tablet 8
+             :mobile 16
+             :class :mobile-hide-divider}
+            [:div.offerings-search-options-section
+             [ui/Grid
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [min-price-input]]
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [max-price-input]]
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [min-length-input]]
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [max-length-input]]
+              (when-not @mobile?
+                [ui/GridColumn
+                 {:width 16}
+                 [order-by-select-field]])]
+             (when-not @mobile?
+               [:i.icon.filter.search-options-icon-button
+                {:on-click #(dispatch [:district0x.location/set-query ""])}])]]]
+          [ui/GridRow
+           {:centered true}
+           [:div.show-advanced-search-options
+            {:on-click #(reset! open? true)}
+            "Show Advanced Options ▾"]])]])))
 
 (defn offerings-search-results []
   (let [search-results (subscribe [:offerings/main-search])]
     (fn []
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
-        [paper
-         {:style styles/search-results-paper}
-         [search-results-infinite-list
-          {:total-count total-count
+        [ui/Segment
+         [offering-infinite-list
+          {:class "primary"
+           :total-count total-count
            :offset (:offset params)
            :loading? loading?
            :no-items-text "No offerings found matching your search criteria"
@@ -356,14 +347,12 @@
           (doall
             (for [[i offering] (medley/indexed items)]
               [offering-list-item
-               {:key i
+               {:key (inc i)
                 :offering offering}]))]]))))
 
 (defmethod page :route.offerings/search []
-  (let [xs-sm? (subscribe [:district0x/window-xs-sm-width?])]
+  (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])]
     (fn []
-      [side-nav-menu-center-layout
-       (if @xs-sm?
-         [search-params-panel-mobile]
-         [search-params-panel])
+      [app-layout
+       [search-params-panel]
        [offerings-search-results]])))

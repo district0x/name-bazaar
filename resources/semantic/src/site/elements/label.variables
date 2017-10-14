@@ -1,0 +1,8 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+@backgroundColor: transparent;
+@color: @brown;
+@fontWeight: normal;
+@horizontalPadding: 0;

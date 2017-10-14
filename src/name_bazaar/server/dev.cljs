@@ -58,10 +58,10 @@
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)})
   )
 
-(defn deploy-to-mainnet! []
+(defn deploy-to-mainnet! [port]
   (go
     (d0x-effects/load-config! *server-state* state/default-config)
-    (d0x-effects/create-web3! *server-state* {:port (state/config :mainnet-port)})
+    (d0x-effects/create-web3! *server-state* {:port (or port (state/config :mainnet-port))})
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (<! (d0x-effects/load-my-addresses! *server-state*))
     (<! (deploy-smart-contracts! *server-state* {:persist? true}))))

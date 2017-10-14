@@ -155,7 +155,7 @@
   :saved-searches/remove
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [saved-searches-key query-string]]
-    (let [new-db (medley/dissoc-in db [:saved-searches saved-searches-key query-string])]
+    (let [new-db (update-in db [:saved-searches saved-searches-key] dissoc query-string)]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:saved-searches]))})))
 

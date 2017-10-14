@@ -16,12 +16,12 @@
                                                                  :route/query-params
                                                                  :route/path]))
 (s/def :db/window-width-size int?)
-(s/def :snackbar/open? boolean?)
 (s/def :drawer/open? boolean?)
+(s/def :snackbar/open? boolean?)
 (s/def :snackbar/message string?)
-(s/def :snackbar/on-request-close fn?)
-(s/def :snackbar/auto-hide-duration int?)
-(s/def :db/snackbar (s/keys :req-un [:snackbar/open? :snackbar/message :snackbar/on-request-close :snackbar/auto-hide-duration]))
+(s/def :snackbar/action-href (s/nilable string?))
+(s/def :snackbar/timeout not-neg?)
+(s/def :db/snackbar (s/keys :req-un [:snackbar/open? :snackbar/message :snackbar/action-href :snackbar/timeout]))
 (s/def :db/drawer (s/keys :req-un [:drawer/open?]))
 (s/def :db/menu-drawer :db/drawer)
 
@@ -56,6 +56,8 @@
 (s/def :transaction/gas-used not-neg?)
 (s/def :transaction/gas not-neg?)
 (s/def :transaction/gas-price not-neg?)
+(s/def :transaction/gas-used-cost not-neg?)
+(s/def :transaction/gas-used-cost-usd not-neg?)
 
 (s/def :transaction/status (partial contains? #{:tx.status/pending :tx.status/not-loaded :tx.status/success
                                                 :tx.status/failure}))
@@ -75,7 +77,6 @@
 (s/def :transaction/contract-key :contract/key)
 (s/def :transaction/contract-address :contract/address)
 
-
 (s/def :transaction-log/transactions (s/map-of :transaction/hash (s/keys :req-un [:transaction/tx-opts
                                                                                   :transaction/hash
                                                                                   :transaction/status
@@ -84,6 +85,9 @@
                                                                                    :transaction/block-hash
                                                                                    :transaction/gas-used
                                                                                    :transaction/gas
+                                                                                   :transaction/gas-price
+                                                                                   :transaction/gas-used-cost
+                                                                                   :transaction/gas-used-cost-usd
                                                                                    :transaction/value
                                                                                    :transaction/result-href
                                                                                    :transaction/created-on])))

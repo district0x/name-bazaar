@@ -3,7 +3,7 @@
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
+    [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address?]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
@@ -11,8 +11,7 @@
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.shared.utils :as d0x-shared-utils]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
   :registrar/transfer
@@ -93,15 +92,13 @@
   interceptors
   (fn [{:keys [:db]} [label-hash deed-value]]
     {:db (assoc-in db
-                   [:registrar/entries label-hash :registrar.entry.deed/value]
-                   (d0x-shared-utils/wei->eth->num deed-value))}))
+                   [:registrar/entries label-hash :registrar.entry.deed/value] (wei->eth->num deed-value))}))
 
 (reg-event-fx
   :registrar-entry.deed.owner/loaded
   interceptors
   (fn [{:keys [:db]} [label-hash deed-owner]]
-    {:db (assoc-in db [:registrar/entries label-hash :registrar.entry.deed/owner]
-                   (when-not (empty-address? deed-owner) deed-owner))}))
+    {:db (assoc-in db [:registrar/entries label-hash :registrar.entry.deed/owner] deed-owner)}))
 
 
 

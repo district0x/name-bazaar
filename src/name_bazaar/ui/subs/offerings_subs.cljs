@@ -7,7 +7,9 @@
     [name-bazaar.shared.utils :refer [emergency-state-new-owner]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [registrar-entry-deed-loaded? ens-record-loaded?]]
-    [re-frame.core :refer [reg-sub subscribe]]))
+    [re-frame.core :refer [reg-sub subscribe]]
+    [cljs-web3.core :as web3]
+    [district0x.shared.big-number :as bn]))
 
 (reg-sub
   :offerings
@@ -90,6 +92,15 @@
     (and
       active-address
       (= active-address (get-in offerings [offering-address :auction-offering/winning-bidder])))))
+
+(reg-sub
+  :auction-offering/min-bid
+  (fn [[_ offering-address]]
+    [(subscribe [:offering offering-address])])
+  (fn [[offering]]
+    (let [{:keys [:offering/price :auction-offering/min-bid-increase :auction-offering/bid-count]} offering
+          min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
+      (bn/->number (bn/+ (web3/to-big-number price) min-bid-increase)))))
 
 (reg-sub
   :offering/active-address-original-owner?
@@ -222,20 +233,31 @@
   :<- [:offerings/search-results :user-offerings]
   identity)
 
+
+
 (reg-sub
   :offerings/home-page-newest
   :<- [:offerings/search-results :home-page-newest]
-  identity)
+  (fn [{:keys [:loading? :items] :as search-results}]
+    (if loading?
+      (assoc search-results :items (range 5))
+      search-results)))
 
 (reg-sub
   :offerings/home-page-most-active
   :<- [:offerings/search-results :home-page-most-active]
-  identity)
+  (fn [{:keys [:loading? :items] :as search-results}]
+    (if loading?
+      (assoc search-results :items (range 5))
+      search-results)))
 
 (reg-sub
   :offerings/home-page-ending-soon
   :<- [:offerings/search-results :home-page-ending-soon]
-  identity)
+  (fn [{:keys [:loading? :items] :as search-results}]
+    (if loading?
+      (assoc search-results :items (range 5))
+      search-results)))
 
 (reg-sub
   :buy-now-offering.buy/tx-pending?

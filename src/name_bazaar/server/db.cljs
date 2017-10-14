@@ -11,14 +11,8 @@
     [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-; name VARCHAR NOT NULL,
-; name_rowid INTEGER DEFAULT NULL,
-; FOREIGN KEY(name_rowid) REFERENCES ens_names(rowid)
-
 (defn create-tables! [db]
   (.serialize db (fn []
-                   #_(.run db "CREATE VIRTUAL TABLE ens_names USING fts5(name)" log-error)
-
                    (.run db "CREATE TABLE offerings (
                           address CHAR(42) PRIMARY KEY NOT NULL,
                           created_on UNSIGNED INTEGER NOT NULL,
@@ -192,6 +186,7 @@
                                               [:= :end-time nil]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder bidder])
+              bidder (update-in [:modifiers] concat [:distinct])
               winning-bidder (merge-where [:= :winning-bidder winning-bidder])
               exclude-winning-bidder (merge-where [:<> :winning-bidder exclude-winning-bidder])
               version (merge-where [:= :version version])

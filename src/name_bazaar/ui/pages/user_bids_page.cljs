@@ -1,87 +1,98 @@
 (ns name-bazaar.ui.pages.user-bids-page
   (:require
-    [cljs-react-material-ui.reagent :as ui]
-    [district0x.ui.components.misc :as misc :refer [row row-with-cols col center-layout paper page]]
+    [district0x.ui.components.misc :refer [page]]
     [district0x.ui.utils :refer [truncate]]
     [medley.core :as medley]
-    [name-bazaar.ui.components.misc :refer [a side-nav-menu-center-layout]]
+    [name-bazaar.ui.components.app-layout :refer [app-layout]]
+    [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
-    [name-bazaar.ui.components.search-fields.offerings-order-by-select-field :refer [offerings-order-by-select-field]]
-    [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
-    [name-bazaar.ui.styles :as styles]
-    [re-frame.core :refer [subscribe dispatch]]))
+    [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
+    [re-frame.core :refer [subscribe dispatch]]
+    [soda-ash.core :as ui]))
 
-(defn user-bids-order-by-select-field []
-  (let [xs? (subscribe [:district0x/window-xs-width?])
-        search-results (subscribe [:offerings/user-bids])]
+(defn user-bids-order-by-select []
+  (let [search-results (subscribe [:offerings/user-bids])]
     (fn []
       (let [{:keys [:params]} @search-results]
-        [offerings-order-by-select-field
+        [offerings-order-by-select
          {:order-by-column (first (:order-by-columns params))
           :order-by-dir (first (:order-by-dirs params))
-          :full-width (not @xs?)
+          :fluid true
           :options [:offering.order-by/newest
                     :offering.order-by/most-active
                     :offering.order-by/most-expensive
                     :offering.order-by/cheapest
                     :offering.order-by/ending-soon]
-          :on-change (fn [order-by-column order-by-dir]
-                       (dispatch [:offerings.user-bids/set-params-and-search
-                                  {:order-by-columns [order-by-column]
-                                   :order-by-dirs [order-by-dir]}]))}]))))
+          :on-change (fn [e data]
+                       (let [[order-by-column order-by-dir] (aget data "value")]
+                         (dispatch [:offerings.user-bids/set-params-and-search
+                                    {:order-by-columns [order-by-column]
+                                     :order-by-dirs [order-by-dir]}])))}]))))
 
-(defn user-bids-search-params []
+(defn user-bids-search-checkboxes []
   (let [search-results (subscribe [:offerings/user-bids])]
     (fn []
       (let [{:keys [:params]} @search-results]
-        [:div
-         [ui/checkbox
-          {:label "Winning"
-           :checked (boolean (:winning? params))
-           :on-check #(dispatch [:offerings.user-bids/set-params-and-search {:winning? %2}])}]
-         [ui/checkbox
-          {:label "Outbid"
-           :checked (boolean (:outbid? params))
-           :on-check #(dispatch [:offerings.user-bids/set-params-and-search {:outbid? %2}])}]
-         [ui/checkbox
-          {:label "Finished auctions"
-           :checked (not (:min-end-time-now? params))
-           :on-check #(dispatch [:offerings.user-bids/set-params-and-search {:min-end-time-now? (not %2)}])}]]))))
+        [ui/Grid
+         {:class :checkbox-filtering-options
+          :padded :vertically}
+         [ui/GridColumn
+          {:width 16}
+          [ui/Checkbox
+           {:label "Winning"
+            :checked (boolean (:winning? params))
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:winning? (aget %2 "checked")}])}]]
+         [ui/GridColumn
+          {:width 16}
+          [ui/Checkbox
+           {:label "Outbid"
+            :checked (boolean (:outbid? params))
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:outbid? (aget %2 "checked")}])}]]
+         [ui/GridColumn
+          {:width 16}
+          [ui/Checkbox
+           {:label "Finished auctions"
+            :checked (not (:min-end-time-now? params))
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:min-end-time-now? (not (aget %2 "checked"))}])}]]]))))
 
 (defn user-bids []
   (let [search-results (subscribe [:offerings/user-bids])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
-        [side-nav-menu-center-layout
-         [paper
-          {:style styles/search-results-paper}
-          [:h1
-           {:style styles/search-results-paper-headline}
-           title]
-          [row-with-cols
-           {:between "xs"
-            :middle "xs"
-            :style (merge styles/margin-top-gutter
-                          styles/margin-bottom-gutter)}
-           [col
-            {:xs 12 :sm 4
-             :style styles/margin-left-gutter-less}
-            [user-bids-search-params]]
-           [col
-            {:xs 12 :sm 4
-             :style styles/margin-left-gutter-less}
-            [user-bids-order-by-select-field]]]
-          [search-results-infinite-list
-           {:total-count total-count
+        [app-layout
+         [ui/Segment
+          [ui/Grid
+           {:padded true
+            :class "no-inner-horizontal-padding mobile-inner-vertical-padding"}
+           [ui/GridColumn
+            {:width 16
+             :class :join-upper}
+            [:h1.ui.header title]]
+           [ui/GridColumn
+            {:computer 8
+             :tablet 16
+             :mobile 16}
+            [user-bids-search-checkboxes]]
+           [ui/GridColumn
+            {:computer 6
+             :tablet 8
+             :mobile 16
+             :floated "right"
+             :vertical-align :bottom}
+            [user-bids-order-by-select]]]
+          [offering-infinite-list
+           {:class "primary"
+            :total-count total-count
             :offset (:offset params)
             :loading? loading?
             :no-items-text no-items-text
             :on-next-load (fn [offset limit]
-                            (dispatch [:offerings.user-bids/set-params-and-search {:offset offset :limit limit}]))}
+                            (dispatch [:offerings.user-bids/set-params-and-search
+                                       {:offset offset :limit limit} {:append? true}]))}
            (doall
              (for [[i offering] (medley/indexed items)]
                [offering-list-item
-                {:key i
+                {:key (inc i)
                  :offering offering
                  :header-props {:show-auction-winning? true
                                 :show-auction-pending-returns? true}}]))]]]))))
@@ -89,7 +100,7 @@
 (defmethod page :route.user/my-bids []
   [user-bids
    {:title "My Bids"
-    :no-items-text "Currently you don't have bid in any active auction"}])
+    :no-items-text "You don't have bid in any active auction currently"}])
 
 (defmethod page :route.user/bids []
   (let [route-params (subscribe [:district0x/route-params])]

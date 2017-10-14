@@ -1,0 +1,6 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+@celledBorderColor: @borderColor;
+@celledPadding: @segmentGutter;
