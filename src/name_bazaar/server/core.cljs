@@ -14,6 +14,9 @@
 
 (nodejs/enable-util-print!)
 
+(def Web3 (nodejs/require "web3"))
+(set! js/Web3 Web3)
+
 (defn -main [& _]
   (d0x-effects/load-config! *server-state* state/default-config)
   (go
