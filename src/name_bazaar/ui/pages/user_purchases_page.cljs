@@ -60,7 +60,7 @@
            (doall
              (for [[i offering] (medley/indexed items)]
                [offering-list-item
-                {:key (inc i)
+                {:key i
                  :offering offering
                  :header-props {:show-finalized-on? true}}]))]]]))))
 

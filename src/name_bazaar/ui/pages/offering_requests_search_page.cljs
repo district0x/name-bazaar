@@ -66,7 +66,7 @@
           (doall
             (for [[i offering-request] (medley/indexed items)]
               [offering-request-list-item
-               {:key (inc i)
+               {:key i
                 :offering-request offering-request}]))]]))))
 
 (defmethod page :route.offering-requests/search []

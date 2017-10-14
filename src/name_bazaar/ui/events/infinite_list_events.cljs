@@ -7,7 +7,7 @@
   :infinite-list.item/initialize-expand
   interceptors
   (fn [{:keys [:db]} [key]]
-    {:db (assoc-in db [:infinite-list :expanded-items key :height] 0)}))
+    {:db (assoc-in db [:infinite-list :expanded-items key :height] 1)})) ;; Cannot be set to zero
 
 (reg-event-fx
   :infinite-list.item/set-expanded-height

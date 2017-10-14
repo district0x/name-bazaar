@@ -60,7 +60,7 @@
    (doall
      (for [[i offering] (medley/indexed offerings)]
        [offering-list-item
-        {:key (inc i)
+        {:key i
          :offering offering
          :disable-expand? true
          :mobile? true
