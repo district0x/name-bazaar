@@ -96,7 +96,7 @@
             "build-css" ["shell" "./semantic.sh" "build-css"]
             "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
-            "pbuild-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
+            "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [binaryage/devtools "0.9.4"]
