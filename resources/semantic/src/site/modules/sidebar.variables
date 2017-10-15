@@ -5,3 +5,4 @@
 @duration: 450ms;
 @easing: cubic-bezier(0.23, 1, 0.32, 1);
 @width: @sidebarWidth;
+@boxShadow: 0 0 18px 13px rgba(0,0,0,.1);

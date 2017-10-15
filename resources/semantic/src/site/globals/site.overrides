@@ -755,6 +755,7 @@ h4, h5, h6 {
           align-items: center;
           justify-content: space-around;
           padding: 7px 0;
+          white-space: nowrap;
           .ui.header.sub {
             font-size: 11px;
           }
