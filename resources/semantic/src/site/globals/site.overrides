@@ -302,7 +302,7 @@ h4, h5, h6 {
       transition: opacity .20s ease-in;
       .amount {
         font-size: 33px;
-        color: #e9eff9;
+        color: #dde4ef;
         font-weight: bold;
         font-family: @secondaryHeaderFont;
       }
