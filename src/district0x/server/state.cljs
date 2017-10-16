@@ -20,7 +20,8 @@
                          :mainnet-port 8545
                          :shortcircuit-node-watchdog? true ;;Shortcircuit it when connected to built-in TestRPC
                          :frontend-url "http://0.0.0.0:4544"
-                         :logging {:console true
+                         :logging {:level :info
+                                   :console true
                                    :file {:path "/tmp/district0x.log"}}})
 
 (defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
