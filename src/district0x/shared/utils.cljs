@@ -92,6 +92,16 @@
 
 (def non-neg-or-empty-ether-value? #(non-neg-ether-value? % {:allow-empty? true}))
 
+(defn jsobj->clj
+  [obj]
+  (reduce
+   (fn [coll k]
+     (assoc coll
+            (keyword k)
+            (aget obj k)))
+   {}
+   (js-keys obj)))
+
 (defn eth-props->wei-props [args wei-keys]
   (medley/map-kv (fn [key value]
                    (if (contains? wei-keys key)

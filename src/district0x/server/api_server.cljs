@@ -17,6 +17,11 @@
 (def cors (nodejs/require "cors"))
 (def body-parser (nodejs/require "body-parser"))
 
+(defn wrap-parse-middleware [req resp next]
+  (-> req
+      (aset "parsed" (clj->js (d0x-shared-utils/jsobj->clj req)))
+      .next))
+
 (defonce *app* (atom nil))
 (defonce *server* (atom nil))
 (defonce *registered-routes* (atom {}))
@@ -57,6 +62,7 @@
   (.use @*app* (cors))
   (.use @*app* (.urlencoded body-parser #js {:extended true}))
   (.use @*app* (.json body-parser))
+  (.use @*app* wrap-parse-middleware)
   (doseq [method (keys @*registered-routes*)]
     (setup-method-routes! method)))
 
