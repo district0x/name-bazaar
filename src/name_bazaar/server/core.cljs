@@ -4,7 +4,7 @@
     [cljs.nodejs :as nodejs]
     [district0x.server.api-server :as api-server]
     [district0x.server.effects :as d0x-effects]
-    [district0x.server.logging]
+    [district0x.server.logging :as d0x-logging]
     [district0x.server.state :as state :refer [*server-state*]]
     [name-bazaar.server.api]
     [name-bazaar.server.db-sync :as db-sync]
@@ -20,6 +20,7 @@
 
 (defn -main [& _]
   (d0x-effects/load-config! *server-state* state/default-config)
+  (d0x-logging/setup!)
   (go
     (d0x-effects/create-web3! *server-state* {:port (state/config :mainnet-port)})
     (d0x-effects/create-db! *server-state*)
