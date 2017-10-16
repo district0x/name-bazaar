@@ -70,7 +70,7 @@
 (defn setup! []
   (timbre/merge-config!
         (let [logging-config (state/config :logging)]
-          {:level :warn
+          {:level (:level logging-config)
            :middleware [wrap-decode-vargs]
            :appenders {:console (when (:console logging-config) (console-appender))
                        :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))
