@@ -19,6 +19,18 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
+(defn non-valid-name-warning [props]
+  [:div.centered.row
+   [ui/GridColumn
+    {:text-align :center
+     :computer 10
+     :tablet 12
+     :mobile 16}
+    [:div.description.warning
+     [:b "WARNING: "]
+     "Offered name is not compatible with UTS46 normalisation, "
+     "therefore buying or bidding is disabled."]]])
+
 (defn offering-detail-link [{:keys [:offering/address]}]
   [:div
    [:a.no-decor
@@ -37,7 +49,7 @@
 
 (defn offering-expanded-body [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
-                :offering/original-owner]} offering]
+                :offering/original-owner :offering/valid-name? :offering/normalized?]} offering]
     [ui/Grid
      {:class "layout-grid submit-footer offering-detail"
       :celled :internally}
@@ -59,6 +71,8 @@
       {:centered true}
       [offering-middle-section
        {:offering offering}]]
+     (when (not (and valid-name? normalized?))
+       [non-valid-name-warning])
      [ui/GridRow
       {:centered true}
       [offering-bottom-section
