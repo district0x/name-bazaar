@@ -29,6 +29,8 @@ library AuctionOfferingLibrary {
         uint _minBidIncrease
     ) {
         require(_endTime > now);
+        require(_endTime <= now + 4 * 30 days);
+        require(_extensionDuration <= _endTime - now);
         self.endTime = _endTime;
         self.extensionDuration = _extensionDuration;
         require(_minBidIncrease > 0);

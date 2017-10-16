@@ -568,7 +568,34 @@
                           (is (< (- (last (<! (balance (state/my-address 1))))
                                     (.plus balance-of-1 (web3/to-wei 0.3 :ether)))
                                  spent-gas-threshold)))
-
-                        
-
                         (done)))))))))))
+
+(deftest create-auction-offering-sanity-checks
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 0)})))))
+             (testing "Offering with the endtime too far in the future fails"
+               (is (tx-failed? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/plus (time/now)
+                                                                                   (time/days (* 4 30))
+                                                                                   (time/hours 1)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 0)})))))
+             (testing "Offering with the extension duration longer than auction duration fails"
+               (is (tx-failed? (<! (auction-offering-factory/create-offering!
+                                    ss
+                                    {:offering/name "abc.eth"
+                                     :offering/price (eth->wei 0.1)
+                                     :auction-offering/end-time (to-epoch (time/plus (time/now) (time/days (* 2 30))))
+                                     :auction-offering/extension-duration (time/in-seconds (time/days 61))
+                                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                    {:from (state/my-address 0)})))))
+             (done)))))
