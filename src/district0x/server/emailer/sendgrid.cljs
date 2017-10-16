@@ -18,14 +18,3 @@
            :body (server-utils/clj->json body)}
           :handler success-handler
           :error-handler error-handler)))
-
-(comment
-  (district0x.server.sendgrid/send-notification-email {:from-email "test@test.com"
-                                                       :to-email "zveyfovk@sharklasers.com"
-                                                       :subject "Subject"
-                                                       :content "content"}
-                                                      #(prn "Success!")
-                                                      #(prn "Error: " %)))
-
-
-

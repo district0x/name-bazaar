@@ -23,6 +23,14 @@
     (>= width 768) 1
     :else 0))
 
+;; TODO: get whitelisted domains from config
+(defn hashroutes? []
+  (when-not (contains? #{"beta.namebazaar.io" "namebazaar.io"}
+                       (-> js/window
+                           .-location
+                           .-hostname))
+    true))
+
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
 
@@ -36,10 +44,16 @@
     (if (empty? hash) "/" hash)))
 
 (defn path-for [{:keys [:route :route-params :routes]}]
-  (str "#" (medley/mapply bidi/path-for routes route route-params)))
+  (let [path (medley/mapply bidi/path-for routes route route-params)]
+    (if (hashroutes?)
+      (str "#" path)
+      path)))
 
-(defn match-current-location [routes]
-  (bidi/match-route routes (current-location-hash)))
+(defn match-current-location
+  ([routes route]
+   (bidi/match-route routes route))
+  ([routes]
+   (match-current-location routes (current-location-hash))))
 
 (defn assoc-order-by-search-param [{:keys [:search-params/order-by-columns :search-params/order-by-dirs]
                                     :as search-params}]

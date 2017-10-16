@@ -10,7 +10,7 @@
 
 (defn logline [logdata]
   (-> logdata
-      (select-keys [:instant :level :ns  :message :meta :?file :?line])
+      (select-keys [:instant :level :ns :message :meta :?file :?line])
       (clj-set/rename-keys {:instant :timestamp})))
 
 (defn- decode-vargs [vargs]
@@ -48,33 +48,11 @@
      :fn (fn [data]
            (spit path (str (logline data) nl) :append (.exists f)))}))
 
-(defn logstash-appender
-  "Returns a Timbre appender, which will connect to a server created with the Logstash http-input plugin, and sends all events in JSON format to it"
-  [protocol host port {:keys [:user :password] :as opts}]
-  (let [nl "\n"]
-    {:enabled?   true
-     :async?     false
-     :min-level  nil
-     :rate-limit nil
-     :output-fn  nil
-     :fn
-     (fn [data]
-       (POST (str protocol "://" host ":" port)
-             {:params  (logline data)
-              :headers {"authorization" (str "Basic " (encryption-utils/encode-base64 (str user ":" password)))}
-              :handler identity
-              :error-handler #(*print-err-fn* (merge % {:ns ::logstash-appender}))
-              :format :json
-              :keywords? true}))}))
-
 (defn setup! [logging-config]
   (timbre/merge-config!
-    {:level (keyword (:level logging-config))
+    {:level (-> logging-config
+                 :level
+                 keyword)
      :middleware [wrap-decode-vargs]
      :appenders {:console (when (:console logging-config) (console-appender))
-                 :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))
-                 :logstash (when (:logstash logging-config) (logstash-appender (get-in logging-config [:logstash :protocol])
-                                                                               (get-in logging-config [:logstash :host])
-                                                                               (get-in logging-config [:logstash :port])
-                                                                               {:user (get-in logging-config [:logstash :user])
-                                                                                :password (get-in logging-config [:logstash :password])}))}}))
+                 :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))}}))
