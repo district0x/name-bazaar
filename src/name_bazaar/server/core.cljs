@@ -4,6 +4,7 @@
     [cljs.nodejs :as nodejs]
     [district0x.server.api-server :as api-server]
     [district0x.server.effects :as d0x-effects]
+    [district0x.server.logging]
     [district0x.server.state :as state :refer [*server-state*]]
     [name-bazaar.server.api]
     [name-bazaar.server.db-sync :as db-sync]

@@ -1,7 +1,8 @@
 # Production deployment
 This document describes production deployment of NameBazaar.
  
-#### Config
+## Config
+
 Create configuration file in JSON format, for example namebazaar.json:
 ```json
 {"private-key" : "25615758538fef2b8a65aa",
@@ -19,25 +20,52 @@ Configuration is picked up from the Node.js `CONFIG` ENV variable:
 CONFIG='/etc/config/namebazaar.json' node dev-server/name-bazaar.js 2> /tmp/namebazaar_error.log
 ```
 
-#### Logging
-NameBazaar uses (ELK)(https://www.elastic.co/products) stack for logging:
-
-  - Logstash: The server component of ELK that processes incoming logs.
+## Logging
+NameBazaar uses AWS ElasticSearchService(https://aws.amazon.com/elasticsearch-service/) (EK) stack for logging:
   - Elasticsearch: Stores all of the logs.
   - Kibana: Web interface for searching and visualizing logs.
-  - Filebeat: Log shipping agent.
-##### Client server
+  - Filebeat: Log shipping agent (runs on the client server).
 
-On the server for which we want to gather logs for, we need to:
+###  Elasticsearch Server
 
-##### Install Filebeat:
+#### Set access policy
+
+From AWS console(console.aws.amazon.com/console/home) create a new Elasticsearch Service instance.
+When the instance is created select **Modify the access policy** and whitelist your client's server public IP:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "es:*",
+      "Resource": "ES_INSTANCE",
+      "Condition": {
+        "IpAddress": {
+          "aws:SourceIp": [
+            "CLIENT_SERVER_IP"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+### Client server
+
+#### Install Filebeat:
 Download and untar:
 ```sh
 $ wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.6.2-linux-x86_64.tar.gz
 $ tar xvzf filebeat-*.tar.gz
 ```
 
-##### Change the config 
+#### Configure Filebeat
 
 For example using nano: `$ nano /filebeat/filebeat.yml`.
 
@@ -49,72 +77,84 @@ In the watched logs section:
     - /tmp/namebazaar_error.log
     #- /var/log/*.log
 ```
-In the output section configure Filebeat to use SSL to forward the logs to the ELK server (matching certificate needs to be on the ELK server):
+
+In the output section use https port (http port is 80) and forward the logs to the ES server:
 ```yml
 #output.logstash:
   # The Logstash hosts
-  hosts: ["ELK_server_IP:5044"]
+  hosts: ["ES_server_IP:443"]
   bulk_max_size: 1024
-  
-  # Optional SSL. By default is off.
-  # List of root certificates for HTTPS server verifications
-  ssl.certificate_authorities: ["/etc/pki/tls/certs/logstash-forwarder.crt"]
-```
-Start Filebeat: 
-```sh
-$ ./filebeat -c filebeat.yml
 ```
 
-#####  ELK Server
+#### Load Filebeat Index Template into Elasticsearch. 
 
-On the server with ELK stack we need to:
-
-##### Load Filebeat Index Template into Elasticsearch. 
 The index template will configure Elasticsearch to analyze incoming Filebeat log messages:
 
 ```ssh
 $ curl -L -O https://artifacts.elastic.co/downloads/beats/beats-dashboards/beats-dashboards-5.6.2.zip
 $ unzip beats-dashboards-*.zip
-$ curl -X PUT 'http://localhost:9200/_template/filebeat?pretty' -d@filebeat-index-template.json
+$ ./scripts/import_dashboards -only-index -dir beats-dashboards/filebeat/ -es ES_SERVER_IP:443
 ```
 
-##### Configure Logstash
+#### Start Filebeat: 
 
-Using nano: `$ nano /etc/logstash/conf.d/logstash.conf `.
-The certificate and key need to be generated and the ssl certficate need to match the one on the Client Server:
-
-```conf
-input {
-  beats {
-    port => 5044
-    ssl => true
-    ssl_certificate => "/etc/pki/tls/certs/logstash-forwarder.crt"
-    ssl_key => "/etc/pki/tls/private/logstash-forwarder.key"
-  }
-}
-
-filter { 
-  date {
-    match => [ "timestamp" , "yyyy-MM-dd HH:mm:ss,SSS" ]
-  }
-}
-
-output {
-  elasticsearch {
-    hosts => ["localhost:9200"]
-    manage_template => false
-    document_type => "%{[@metadata][type]}"
-    index => "filebeat-%{+YYYY.MM.dd}"
-    }
-  stdout { codec => rubydebug }
-}
+```sh
+$ ./filebeat -e -d "publish" -c filebeat.yml
 ```
- You can now start Logstash, ElasticSearch and Kibana:
- 
- ```sh
- $ logstash -f /etc/logstash/conf.d/logstash.conf
- $ elasticsearch -E network.host=localhost
- $ kibana
- ```
 
-The web interface for Kibana runs on port `5601` of the ELK server.
+#### Kibana
+
+We need to set a reverse proxy protected with nginx
+
+Create a password file:
+
+```sh
+$ sudo sh -c "echo -n 'ADD_USERNAME:' >> /etc/nginx/.htpasswd"
+```
+
+Add an encrypted password entry:
+
+```sh
+$ sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+```
+
+You can repeat this process for additional usernames/passwords.
+
+Create nginx config file:
+
+```sh
+sudo nano /etc/nginx/logs.namebazaar.io
+```
+
+Create a server listening on port 443 and make sure that the following entry is there:
+
+```json
+location = / { rewrite ^ /_plugin/kibana/ redirect; }
+location / {
+           proxy_pass ES_SERVER_DOMAIN
+           auth_basic "Restricted Content";
+           auth_basic_user_file /etc/nginx/.htpasswd;
+           proxy_http_version 1.1; 
+           proxy_set_header Authorization ""; 
+           proxy_hide_header Authorization; 
+           proxy_set_header X-Forwarded-Proto $scheme; 
+           }
+```
+
+Create a softlink:
+
+```sh
+sudo ln -s -f /etc/nginx/sites-available/logs.district0x.io /etc/nginx/sites-enabled/logs.namebazaar.io
+```
+
+Check syntax:
+
+```sh
+sudo nginx -t
+```
+
+restart nginx:
+
+```sh
+sudo /etc/init.d/nginx restart
+```

@@ -1,7 +1,7 @@
 (ns server.district0x.state-tests
   (:require [cljs-node-io.core :as io]
             [cljs.test :refer [deftest is testing run-tests use-fixtures]]
-            [district0x.server.effects :as d0x-effects]
+            [district0x.server.effects :as effects]
             [district0x.server.state :as state]))
 
 (def default-test-config {:private-key "foo"
@@ -19,7 +19,7 @@
   (with-redefs [district0x.server.state/*server-state* atomic-test-state]
     (goog.object/set district0x.server.effects/env "CONFIG"
                      "test/resources/test_config.json")
-    (d0x-effects/load-config! atomic-test-state default-test-config)
+    (effects/load-config! atomic-test-state default-test-config)
     (f)))
 
 (use-fixtures :each with-config)
