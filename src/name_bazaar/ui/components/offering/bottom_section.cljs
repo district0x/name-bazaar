@@ -126,8 +126,6 @@
                                                       :offering/price price}])}
         "Buy"]])))
 
-
-
 (defn offering-bottom-section [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/new-owner :offering/auction? :auction-offering/bid-count]} offering]
     (cond
