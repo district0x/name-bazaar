@@ -49,7 +49,8 @@
 
 (defn offering-expanded-body [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
-                :offering/original-owner :offering/valid-name? :offering/normalized?]} offering]
+                :offering/original-owner]} offering]
+
     [ui/Grid
      {:class "layout-grid submit-footer offering-detail"
       :celled :internally}
@@ -71,8 +72,6 @@
       {:centered true}
       [offering-middle-section
        {:offering offering}]]
-     (when (not (and valid-name? normalized?))
-       [non-valid-name-warning])
      [ui/GridRow
       {:centered true}
       [offering-bottom-section
