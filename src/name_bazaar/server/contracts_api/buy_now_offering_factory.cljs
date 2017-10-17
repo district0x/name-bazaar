@@ -15,14 +15,14 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-(defn registrar [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :registrar))
+(defn ens [server-state]
+  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :ens))
+
+(defn root-node [server-state]
+  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :root-node))
 
 (defn offering-registry [server-state]
   (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :offering-registry))
 
 (defn offering-requests [server-state]
   (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :offering-requests))
-
-(defn emergency-multisig [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :emergency-multisig))

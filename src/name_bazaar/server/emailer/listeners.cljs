@@ -45,7 +45,7 @@
                                                          :content (templates/on-offering-added offering name)}
                                                         #(logging/info "Success sending email to requesting address" {:address address})
                                                         #(logging/error "Error sending email to requesting address" {:error %}))))))
-              (logging/warn "No requesters found for offering" {:offering offering})))))
+              (logging/info "No requesters found for offering" {:offering offering})))))
       (catch :default e
         (logging/error {:error e})))))
 

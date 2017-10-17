@@ -16,10 +16,13 @@
    :contracts-file-path "/src/name_bazaar/shared/smart_contracts.cljs"
    :gas-price 30000000000})
 
-(def library-placeholders
-  {:offering-library "__OfferingLibrary.sol:OfferingLibrary___"
-   :buy-now-offering-library "__BuyNowOfferingLibrary.sol:BuyNowOffe__"
-   :auction-offering-library "__AuctionOfferingLibrary.sol:AuctionOf__"})
+(defn library-placeholders [& [{:keys [:emergency-multisig]}]]
+  {:auction-offering "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef"
+   :buy-now-offering "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef"
+   :ens "314159265dD8dbb310642f98f50C066173C1259b"
+   :offering-registry "fEEDFEEDfeEDFEedFEEdFEEDFeEdfEEdFeEdFEEd"
+   emergency-multisig "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed"})
+
 
 (defn deploy-ens! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
@@ -34,58 +37,57 @@
                                               :args [(state/contract-address @server-state-atom :ens)
                                                      (namehash "eth")]})))
 
-(defn deploy-offering-registry! [server-state-atom default-opts]
+(defn deploy-offering-registry! [server-state-atom default-opts {:keys [:emergency-multisig]}]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
                                                                {:gas 700000
-                                                                :contract-key :offering-registry})))
+                                                                :contract-key :offering-registry
+                                                                :args [emergency-multisig]})))
 
 (defn deploy-offering-requests! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
                                                                {:gas 1700000
                                                                 :contract-key :offering-requests})))
 
-(defn deploy-offering-library! [server-state-atom default-opts]
-  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:gas 1200000
-                                                                :contract-key :offering-library})))
 
-(defn deploy-buy-now-library! [server-state-atom default-opts]
-  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:gas 500000
-                                                                :contract-key :buy-now-offering-library
-                                                                :library-placeholders (select-keys library-placeholders
-                                                                                                   [:offering-library])})))
+(defn deploy-buy-now-offering! [server-state-atom default-opts {:keys [:emergency-multisig]}]
+  (d0x-effects/deploy-smart-contract! server-state-atom
+                                      (merge default-opts
+                                             {:gas 1200000
+                                              :contract-key :buy-now-offering
+                                              :library-placeholders
+                                              (dissoc (library-placeholders {:emergency-multisig emergency-multisig})
+                                                      :buy-now-offering :auction-offering)})))
 
-(defn deploy-auction-library! [server-state-atom default-opts]
-  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:gas 1000000
-                                                                :contract-key :auction-offering-library
-                                                                :library-placeholders (select-keys library-placeholders
-                                                                                                   [:offering-library])})))
+(defn deploy-auction-offering! [server-state-atom default-opts {:keys [:emergency-multisig]}]
+  (d0x-effects/deploy-smart-contract! server-state-atom
+                                      (merge default-opts
+                                             {:gas 1700000
+                                              :contract-key :auction-offering
+                                              :library-placeholders
+                                              (dissoc (library-placeholders {:emergency-multisig emergency-multisig})
+                                                      :buy-now-offering :auction-offering)})))
 
-(defn deploy-buy-now-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
-  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:gas 1700000
-                                                                :contract-key :buy-now-offering-factory
-                                                                :library-placeholders (select-keys library-placeholders
-                                                                                                   [:offering-library
-                                                                                                    :buy-now-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :mock-registrar)
-                                                                       (state/contract-address @server-state-atom :offering-registry)
-                                                                       (state/contract-address @server-state-atom :offering-requests)
-                                                                       emergency-multisig]})))
+(defn deploy-buy-now-factory! [server-state-atom default-opts]
+  (d0x-effects/deploy-smart-contract! server-state-atom
+                                      (merge default-opts
+                                             {:gas 1700000
+                                              :contract-key :buy-now-offering-factory
+                                              :library-placeholders (select-keys (library-placeholders)
+                                                                                 [:buy-now-offering])
+                                              :args [(state/contract-address @server-state-atom :ens)
+                                                     (state/contract-address @server-state-atom :offering-registry)
+                                                     (state/contract-address @server-state-atom :offering-requests)]})))
 
-(defn deploy-auction-factory! [server-state-atom default-opts {:keys [:offering-factory/emergency-multisig]}]
-  (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
-                                                               {:gas 2000000
-                                                                :contract-key :auction-offering-factory
-                                                                :library-placeholders (select-keys library-placeholders
-                                                                                                   [:offering-library
-                                                                                                    :auction-offering-library])
-                                                                :args [(state/contract-address @server-state-atom :mock-registrar)
-                                                                       (state/contract-address @server-state-atom :offering-registry)
-                                                                       (state/contract-address @server-state-atom :offering-requests)
-                                                                       emergency-multisig]})))
+(defn deploy-auction-factory! [server-state-atom default-opts]
+  (d0x-effects/deploy-smart-contract! server-state-atom
+                                      (merge default-opts
+                                             {:gas 2000000
+                                              :contract-key :auction-offering-factory
+                                              :library-placeholders (select-keys (library-placeholders)
+                                                                                 [:auction-offering])
+                                              :args [(state/contract-address @server-state-atom :ens)
+                                                     (state/contract-address @server-state-atom :offering-registry)
+                                                     (state/contract-address @server-state-atom :offering-requests)]})))
 
 (defn deploy-district0x-emails! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom (merge default-opts
@@ -94,7 +96,8 @@
 
 (defn deploy-smart-contracts! [server-state-atom & [deploy-opts]]
   (let [ch (chan)
-        deploy-opts (merge default-deploy-opts deploy-opts)]
+        deploy-opts (merge default-deploy-opts deploy-opts)
+        emergency-wallet (state/active-address @server-state-atom)]
     (go
       (<! (deploy-ens! server-state-atom deploy-opts))
       (<! (deploy-registrar! server-state-atom deploy-opts))
@@ -104,15 +107,14 @@
                                    :ens.record/node ""
                                    :ens.record/owner (state/contract-address @server-state-atom :mock-registrar)}))
 
-      (<! (deploy-offering-registry! server-state-atom deploy-opts))
+      (<! (deploy-offering-registry! server-state-atom deploy-opts {:emergency-multisig emergency-wallet}))
       (<! (deploy-offering-requests! server-state-atom deploy-opts))
-      (<! (deploy-offering-library! server-state-atom deploy-opts))
-      (<! (deploy-buy-now-library! server-state-atom deploy-opts))
-      (<! (deploy-auction-library! server-state-atom deploy-opts))
-      (<! (deploy-buy-now-factory! server-state-atom deploy-opts {:offering-factory/emergency-multisig
-                                                                  (state/active-address @server-state-atom)}))
-      (<! (deploy-auction-factory! server-state-atom deploy-opts {:offering-factory/emergency-multisig
-                                                                  (state/active-address @server-state-atom)}))
+
+      (<! (deploy-buy-now-offering! server-state-atom deploy-opts {:emergency-multisig emergency-wallet}))
+      (<! (deploy-buy-now-factory! server-state-atom deploy-opts))
+
+      (<! (deploy-auction-offering! server-state-atom deploy-opts {:emergency-multisig emergency-wallet}))
+      (<! (deploy-auction-factory! server-state-atom deploy-opts))
 
       (<! (deploy-district0x-emails! server-state-atom deploy-opts))
 

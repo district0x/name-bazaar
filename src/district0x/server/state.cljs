@@ -18,7 +18,6 @@
                          :api-port 6200
                          :testrpc-port 8549
                          :mainnet-port 8545
-                         :shortcircuit-node-watchdog? true ;;Shortcircuit it when connected to built-in TestRPC
                          :frontend-url "http://0.0.0.0:4544"
                          :logging {:level :info
                                    :console true
@@ -39,7 +38,7 @@
    (:db server-state)))
 
 (defn active-address
-  ([]
+   ([]
    (active-address @*server-state*))
   ([server-state]
    (:active-address server-state)))

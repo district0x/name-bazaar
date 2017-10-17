@@ -54,9 +54,11 @@
                          ")"))))
 
 (defn link-contract-libraries [smart-contracts bin library-placeholders]
-  (reduce (fn [bin [contract-key placeholder]]
-            (let [address (get-in smart-contracts [contract-key :address])]
-              (link-library bin placeholder address)))
+  (reduce (fn [bin [replacement placeholder]]
+            (let [address (if (keyword? replacement)
+                            (get-in smart-contracts [replacement :address])
+                            replacement)]
+              (link-library bin (string/lower-case placeholder) address)))
           bin library-placeholders))
 
 (defn deploy-smart-contract! [server-state-atom {:keys [:contract-key :args :contracts-file-path

@@ -52,8 +52,6 @@
 (def total-accounts 6)
 
 (defn on-jsload []
-  (d0x-effects/load-config! *server-state* state/default-config)
-  (d0x-logging/setup!)
   (logging/info "Final loaded config:" (state/config))
   (api-server/start! (state/config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)}))
@@ -73,15 +71,15 @@
       (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
       (<! (deploy-smart-contracts! server-state-atom {:persist? true}))
       (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
-      (d0x-effects/create-db! server-state-atom)
       (watchdog/start-syncing! server-state-atom)
       (>! ch true))
     ch))
 
 (defn -main [& _]
-  (d0x-effects/load-config! *server-state* state/default-config)
   (go
-    (let [testrpc-port (state/config :testrpc-port)]
+    (d0x-effects/load-config! *server-state* state/default-config)
+    (d0x-logging/setup! (state/config @*server-state* :logging))
+    (let [testrpc-port (state/config @*server-state* :testrpc-port)]
       (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
                                                       :port testrpc-port}))
       (d0x-effects/create-web3! *server-state* {:port testrpc-port})

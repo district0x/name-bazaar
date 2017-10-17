@@ -25,7 +25,7 @@
                  :contract-key :buy-now-offering-factory
                  :contract-method :create-offering
                  :form-data form-data
-                 :tx-opts {:gas 600000 :gas-price default-gas-price}
+                 :tx-opts {:gas 320000 :gas-price default-gas-price}
                  :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
                  :args-order [:offering/name
                               :offering/price]
@@ -48,7 +48,7 @@
                    :contract-key :auction-offering-factory
                    :contract-method :create-offering
                    :form-data form-data
-                   :tx-opts {:gas 800000 :gas-price default-gas-price}
+                   :tx-opts {:gas 370000 :gas-price default-gas-price}
                    :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
                    :args-order [:offering/name
                                 :offering/price

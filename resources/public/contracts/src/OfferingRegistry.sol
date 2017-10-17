@@ -1,4 +1,4 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
 
 import "UsedByFactories.sol";
@@ -15,7 +15,22 @@ contract OfferingRegistry is UsedByFactories {
     event onOfferingAdded(address indexed offering, bytes32 indexed node, address indexed owner, uint version);
     event onOfferingChanged(address indexed offering, uint version, bytes32 indexed eventType, uint[] extraData);
 
+    address public emergencyMultisig;                           // Emergency Multisig wallet of Namebazaar
+    bool public isEmergencyPaused = false;                      // Variable to pause buying activity on all offerings
     mapping (address => bool) public isOffering;                // Stores whether given address of namebazaar offering
+
+
+    /**
+     * @dev Modifier to make a function callable only by Namebazaar Multisig wallet
+     */
+    modifier onlyEmergencyMultisig() {
+        require(msg.sender == emergencyMultisig);
+        _;
+    }
+
+    function OfferingRegistry(address _emergencyMultisig) {
+        emergencyMultisig = _emergencyMultisig;
+    }
 
     /**
      * @dev Serves as central point for firing event when new offering is created
@@ -43,5 +58,21 @@ contract OfferingRegistry is UsedByFactories {
     function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] extraData) {
         require(isOffering[msg.sender]);
         onOfferingChanged(msg.sender, version, eventType, extraData);
+    }
+
+    /**
+     * @dev Function to activate emergency pause. This should stop buying activity on all offerings
+     * Only Emergency Multisig wallet should be able to call this
+     */
+    function emergencyPause() onlyEmergencyMultisig {
+        isEmergencyPaused = true;
+    }
+
+    /**
+     * @dev Function to deactivate emergency pause. This should allow buying activity on all offerings again
+     * Only Emergency Multisig wallet should be able to call this
+     */
+    function emergencyRelease() onlyEmergencyMultisig {
+        isEmergencyPaused = false;
     }
 }

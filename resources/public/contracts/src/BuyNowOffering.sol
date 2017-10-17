@@ -1,41 +1,41 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
 /**
  * @title BuyNowOffering
- * @dev Extends Offering with BuyNow functionality
- * Logic for contract methods is at BuyNowOfferingLibrary, so logic is not duplicated each time user creates
- * new offering. It saves large amounts of gas. BuyNowOfferingLibrary address is linked to BuyNowOffering contract
- * at compilation time.
+ * @dev Contains logic for BuyNowOffering. This contract will be deployed only once, while users will create
+ * many instances of Forwarder via BuyNowOfferingFactory, which will serve as a proxy pointing this contract.
+ * This way code logic for this offering won't be duplicated on blockchain.
  */
 
 import "Offering.sol";
-import "BuyNowOfferingLibrary.sol";
 
 contract BuyNowOffering is Offering {
 
-    function BuyNowOffering(
-        address _offeringRegistry,
-        address _registrar,
-        bytes32 _node,
-        string _name,
-        bytes32 _labelHash,
-        address _originalOwner,
-        address _emergencyMultisig,
-        uint _price
-    )
-        Offering(_offeringRegistry, _registrar, _node, _name, _labelHash, _originalOwner, _emergencyMultisig, 1, _price)
+    /**
+    * @dev Exchanges funds of new owner for ownership of ENS name owner
+    * msg.value must exactly equal to offering price
+    */
+    function buy()
+        public
+        payable
     {
+        require(msg.value == offering.price);
+        offering.originalOwner.transfer(offering.price);
+        transferOwnership(msg.sender);
     }
 
-    function buy() payable {
-        BuyNowOfferingLibrary.buy(offering);
-    }
-
-    function setSettings(uint _price) {
-        BuyNowOfferingLibrary.setSettings(offering, _price);
-    }
-
-    function() payable {
-        buy();
+    /**
+    * @dev Changes settings for BuyNowOffering
+    * Can be executed only by original owner
+    * Can't be executed after ownership was already transferred to a new owner
+    * @param _price uint New price of the offering
+    */
+    function setSettings(uint _price)
+        public
+        onlyOriginalOwner
+        onlyWithoutNewOwner
+    {
+        super.doSetSettings(_price);
+        fireOnChanged("setSettings");
     }
 }

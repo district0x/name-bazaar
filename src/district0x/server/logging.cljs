@@ -67,15 +67,14 @@
               :format :json
               :keywords? true}))}))
 
-(defn setup! []
+(defn setup! [logging-config]
   (timbre/merge-config!
-        (let [logging-config (state/config :logging)]
-          {:level (:level logging-config)
-           :middleware [wrap-decode-vargs]
-           :appenders {:console (when (:console logging-config) (console-appender))
-                       :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))
-                       :logstash (when (:logstash logging-config) (logstash-appender (get-in logging-config [:logstash :protocol])
-                                                                                     (get-in logging-config [:logstash :host])
-                                                                                     (get-in logging-config [:logstash :port])
-                                                                                     {:user (get-in logging-config [:logstash :user])
-                                                                                      :password (get-in logging-config [:logstash :password])}))}})))
+    {:level (keyword (:level logging-config))
+     :middleware [wrap-decode-vargs]
+     :appenders {:console (when (:console logging-config) (console-appender))
+                 :file (when (:file logging-config) (file-appender {:path (get-in logging-config [:file :path])}))
+                 :logstash (when (:logstash logging-config) (logstash-appender (get-in logging-config [:logstash :protocol])
+                                                                               (get-in logging-config [:logstash :host])
+                                                                               (get-in logging-config [:logstash :port])
+                                                                               {:user (get-in logging-config [:logstash :user])
+                                                                                :password (get-in logging-config [:logstash :password])}))}}))

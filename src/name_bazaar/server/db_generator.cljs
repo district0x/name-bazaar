@@ -22,7 +22,7 @@
 (def normalize (aget (js/require "eth-ens-namehash") "normalize"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
-(def names-per-account 1)
+(def names-per-account 5)
 
 (defn generate! [server-state {:keys [:total-accounts]}]
   (let [ch (chan)]
@@ -74,10 +74,10 @@
                              (zero? (rand-int 2)))
                     (<! (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
 
-                  #_ (when true #_(zero? (rand-int 2))
-                    (if (= offering-type :buy-now-offering)
-                      (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
-                      (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer}))))
+                  #_(when (zero? (rand-int 2))
+                      (if (= offering-type :buy-now-offering)
+                        (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
+                        (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer}))))
 
                 (.error js/console "Offering for" label "wasn't created"))))))
       (>! ch true))

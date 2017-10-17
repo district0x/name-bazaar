@@ -14,3 +14,25 @@
                                 (:abi (state/contract server-state :buy-now-offering))
                                 contract-address)
     :offering))
+
+(defn emergency-multisig [server-state contract-address]
+  (web3-eth-async/contract-call
+    (web3-eth-async/contract-at (state/web3 server-state)
+                                (:abi (state/contract server-state :buy-now-offering))
+                                contract-address)
+    :emergency-multisig))
+
+(defn ens [server-state contract-address]
+  (web3-eth-async/contract-call
+    (web3-eth-async/contract-at (state/web3 server-state)
+                                (:abi (state/contract server-state :buy-now-offering))
+                                contract-address)
+    :ens))
+
+(defn offering-registry [server-state contract-address]
+  (web3-eth-async/contract-call
+    (web3-eth-async/contract-at (state/web3 server-state)
+                                (:abi (state/contract server-state :buy-now-offering))
+                                contract-address)
+    :offering-registry))
+

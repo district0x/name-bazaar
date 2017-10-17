@@ -21,14 +21,14 @@
                    opts)])))
 
 
-(defn registrar [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :registrar))
+(defn ens [server-state]
+  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :ens))
+
+(defn root-node [server-state]
+  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :root-node))
 
 (defn offering-registry [server-state]
   (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-registry))
 
 (defn offering-requests [server-state]
   (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-requests))
-
-(defn emergency-multisig [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :emergency-multisig))

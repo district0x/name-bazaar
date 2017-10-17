@@ -1,5 +1,6 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
+import "ens/ENS.sol";
 import "ens/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
@@ -13,21 +14,21 @@ import "strings.sol";
 contract OfferingFactory {
     using strings for *;
 
-    Registrar public registrar;
+    ENS public ens;
     OfferingRegistry public offeringRegistry;
     OfferingRequestsAbstract public offeringRequests;
-    address public emergencyMultisig;
 
-    function OfferingFactory(
-        address _registrar,
-        address _offeringRegistry,
-        address _offeringRequests,
-        address _emergencyMultisig
+    // Hardcoded namehash of "eth"
+    bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+
+    function OfferingFactory (
+        ENS _ens,
+        OfferingRegistry _offeringRegistry,
+        OfferingRequestsAbstract _offeringRequests
     ) {
-        registrar = Registrar(_registrar);
-        offeringRegistry = OfferingRegistry(_offeringRegistry);
-        offeringRequests = OfferingRequestsAbstract(_offeringRequests);
-        emergencyMultisig = _emergencyMultisig;
+        ens = _ens;
+        offeringRegistry = _offeringRegistry;
+        offeringRequests = _offeringRequests;
     }
 
     /**
@@ -41,10 +42,10 @@ contract OfferingFactory {
     function registerOffering(bytes32 node, bytes32 labelHash, address newOffering, uint version)
         internal
     {
-        require(registrar.ens().owner(node) == msg.sender);
-        if (node == sha3(registrar.rootNode(), labelHash)) {
+        require(ens.owner(node) == msg.sender);
+        if (node == sha3(rootNode, labelHash)) {
             address deed;
-            (,deed,,,) = registrar.entries(labelHash);
+            (,deed,,,) = Registrar(ens.owner(rootNode)).entries(labelHash);
             require(Deed(deed).owner() == msg.sender);
         }
 

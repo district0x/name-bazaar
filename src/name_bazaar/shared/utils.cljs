@@ -28,9 +28,9 @@
 (defn top-level-name? [name]
   (and name (= 1 (name-level name))))
 
-(def offering-props [:offering/offering-registry :offering/registrar :offering/node :offering/name :offering/label-hash
-                     :offering/original-owner :offering/emergency-multisig :offering/version :offering/created-on
-                     :offering/new-owner :offering/price :offering/finalized-on])
+(def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
+                     :offering/new-owner :offering/price :offering/version :offering/created-on
+                     :offering/finalized-on])
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
@@ -56,8 +56,8 @@
         (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
-                             :auction-offering/min-bid-increase :auction-offering/winning-bidder
-                             :auction-offering/bid-count])
+                             :auction-offering/bid-count :auction-offering/min-bid-increase
+                             :auction-offering/winning-bidder])
 
 (defn parse-auction-offering [auction-offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when auction-offering

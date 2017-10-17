@@ -7,9 +7,6 @@
 (s/def :offering/address address?)
 (s/def :offering/node sha3?)
 (s/def :offering/name string?)
-(s/def :offering/registrar address?)
-(s/def :offering/offering-registry address?)
-(s/def :offering/emergency-multisig address?)
 (s/def :offering/original-owner address?)
 (s/def :offering/label string?)
 (s/def :offering/label-hash sha3?)
@@ -40,9 +37,6 @@
                                 :offering/name
                                 :offering/original-owner
                                 :offering/new-owner
-                                :offering/registrar
-                                :offering/offering-registry
-                                :offering/emergency-multisig
                                 :offering/version
                                 :offering/label
                                 :offering/label-hash

@@ -1,24 +1,23 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
 /**
- * @title OfferingFactory
+ * @title AuctionOfferingFactory
  * @dev Factory for creating new Auction offerings
  */
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
 import "AuctionOffering.sol";
-
+import "Forwarder.sol";
 
 contract AuctionOfferingFactory is OfferingFactory {
 
     function AuctionOfferingFactory(
-    address registrar,
-    address offeringRegistry,
-    address offeringRequests,
-    address emergencyMultisig
+        ENS ens,
+        OfferingRegistry offeringRegistry,
+        OfferingRequestsAbstract offeringRequests
     )
-    OfferingFactory(registrar, offeringRegistry, offeringRequests, emergencyMultisig)
+    OfferingFactory(ens, offeringRegistry, offeringRequests)
     {
     }
 
@@ -31,29 +30,30 @@ contract AuctionOfferingFactory is OfferingFactory {
     * @param minBidIncrease uint The min bid increase of the auction
     */
     function createOffering(
-    string name,
-    uint startPrice,
-    uint endTime,
-    uint extensionDuration,
-    uint minBidIncrease
+        string name,
+        uint startPrice,
+        uint64 endTime,
+        uint64 extensionDuration,
+        uint minBidIncrease
     ) {
+        var forwarder = address(new Forwarder());
         var node = namehash(name);
         var labelHash = getLabelHash(name);
-        address newOffering = new AuctionOffering(
-        offeringRegistry,
-        registrar,
-        node,
-        name,
-        labelHash,
-        msg.sender,
-        emergencyMultisig,
-        startPrice,
-        endTime,
-        extensionDuration,
-        minBidIncrease
+        var version = 100000;                   // versioning for Auction offerings starts at number 100000
+
+        AuctionOffering(forwarder).construct(
+            node,
+            name,
+            labelHash,
+            msg.sender,
+            version,
+            startPrice,
+            endTime,
+            extensionDuration,
+            minBidIncrease
         );
 
-        registerOffering(node, labelHash, newOffering, 100000); // versioning for Auction offerings starts at number 100000
+        registerOffering(node, labelHash, forwarder, version);
     }
 }
 

@@ -1,25 +1,23 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
 /**
- * @title OfferingFactory
+ * @title BuyNowOfferingFactory
  * @dev Factory for creating new BuyNow offerings
  */
 
 import "OfferingRegistry.sol";
 import "OfferingFactory.sol";
 import "BuyNowOffering.sol";
-import "strings.sol";
+import "Forwarder.sol";
 
 contract BuyNowOfferingFactory is OfferingFactory {
-    using strings for *;
 
     function BuyNowOfferingFactory(
-        address registrar,
-        address offeringRegistry,
-        address offeringRequests,
-        address emergencyMultisig
+        ENS ens,
+        OfferingRegistry offeringRegistry,
+        OfferingRequestsAbstract offeringRequests
     )
-        OfferingFactory(registrar, offeringRegistry, offeringRequests, emergencyMultisig)
+        OfferingFactory(ens, offeringRegistry, offeringRequests)
     {
     }
 
@@ -34,17 +32,19 @@ contract BuyNowOfferingFactory is OfferingFactory {
     ) {
         var node = namehash(name);
         var labelHash = getLabelHash(name);
-        address newOffering = new BuyNowOffering(
-            offeringRegistry,
-            registrar,
+        var forwarder = address(new Forwarder());
+        var version = 1; // versioning for BuyNow offerings starts at number 1
+
+        BuyNowOffering(forwarder).construct(
             node,
             name,
             getLabelHash(name),
             msg.sender,
-            emergencyMultisig,
+            version,
             price
         );
-        registerOffering(node, labelHash, newOffering, 1); // versioning for BuyNow offerings starts at number 1
+
+        registerOffering(node, labelHash, forwarder, version);
     }
 }
 
