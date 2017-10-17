@@ -53,6 +53,10 @@
                                                                   {:address address}
                                                                   "offering address"]
         " or you can use the form below."])]))
+(defn non-valid-name-warning [props]
+   [:div.description.warning
+    [:b "WARNING: "] "Offered name is not compatible with UTS46 normalisation, "
+    "therefore buying or bidding is disabled."])
 
 (defn non-ascii-characters-warning [props]
   [:div.description.warning
@@ -85,17 +89,26 @@
 
 (defn offering-middle-section [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/auction? :offering/top-level-name?
-                :offering/new-owner]} offering
+                :offering/new-owner :offering/valid-name? :offering/normalized?]} offering
         missing-ownership? @(subscribe [:offering/missing-ownership? address])
         active-address-owner? @(subscribe [:offering/active-address-original-owner? address])
         show-auction-bid-info? (and auction? (not active-address-owner?))
+        name-not-valid? (not (and valid-name? normalized?))
         emergency-cancel? (= new-owner emergency-state-new-owner)]
-    (when (or show-auction-bid-info? missing-ownership? (not top-level-name?) contains-non-ascii? emergency-cancel?)
+    (when (or show-auction-bid-info?
+              missing-ownership?
+              (not top-level-name?)
+              contains-non-ascii?
+              name-not-valid?
+              emergency-cancel?)
       [ui/GridColumn
        {:text-align :center
         :computer 10
         :tablet 12
         :mobile 16}
+       (when name-not-valid?
+         [non-valid-name-warning])
+
        (when missing-ownership?
          [missing-ownership-warning
           {:offering offering}])

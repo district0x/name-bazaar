@@ -87,6 +87,7 @@
   :figwheel {:server-port 4544
              :css-dirs ["resources/public/css"]}
 
+  :repl-options {:timeout 120000}
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
 

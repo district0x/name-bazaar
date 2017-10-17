@@ -69,7 +69,8 @@
   (let [bid-value (r/atom nil)]
     (fn [{:keys [:offering] :as props}]
       (let [{:keys [:offering/address :offering/price :auction-offering/min-bid-increase
-                    :auction-offering/bid-count]} offering
+                    :auction-offering/bid-count :offering/valid-name? :offering/normalized?]} offering
+            invalid-name? (not (and valid-name? normalized?))
             offering-status @(subscribe [:offering/status address])
             pending-returns (or @(subscribe [:auction-offering/active-address-pending-returns address]) 0)
             active-address-winning? @(subscribe [:auction-offering/active-address-winning-bidder? address])
@@ -91,6 +92,7 @@
             [:div.input-section
              [token-input
               {:value (or @bid-value min-bid)
+               :disabled invalid-name?
                :on-change #(reset! bid-value (aget %2 "value"))
                :fluid true}
               "Your bid"]
@@ -98,14 +100,18 @@
               {:primary true
                :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
                :pending-text "Bidding..."
-               :disabled (or (not (>= (or @bid-value min-bid) min-bid))
-                             (= offering-status :offering.status/missing-ownership))
+               :disabled (or
+                          invalid-name?
+                          (not (>= (or @bid-value min-bid) min-bid))
+                          (= offering-status :offering.status/missing-ownership))
                :on-click #(dispatch [:auction-offering/bid {:offering/address address
                                                             :offering/price (or @bid-value min-bid)}])}
               "Bid Now"]]]])))))
 
 (defn section-for-buy-now-buyer [{:keys [:offering] :as props}]
-  (let [{:keys [:offering/price :offering/address :offering/new-owner]} offering
+  (let [{:keys [:offering/price :offering/address :offering/new-owner :offering/valid-name?
+                :offering/normalized?]} offering
+        invalid-name? (not (and valid-name? normalized?))
         offering-status @(subscribe [:offering/status address])]
     (when (offering-buyable? offering-status)
       [:div
@@ -113,7 +119,9 @@
         {:primary true
          :pending? @(subscribe [:buy-now-offering.buy/tx-pending? address])
          :pending-text "Buying..."
-         :disabled (= offering-status :offering.status/missing-ownership)
+         :disabled (or
+                    invalid-name?
+                    (= offering-status :offering.status/missing-ownership))
          :on-click #(dispatch [:buy-now-offering/buy {:offering/address address
                                                       :offering/price price}])}
         "Buy"]])))
@@ -124,6 +132,7 @@
 
       @(subscribe [:offering/active-address-original-owner? address])
       [section-for-original-owner {:offering offering}]
+
 
       auction?
       [section-for-auction-bidder {:offering offering}]
