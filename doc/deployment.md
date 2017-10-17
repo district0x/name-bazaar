@@ -13,7 +13,7 @@ Create configuration file in JSON format, for example namebazaar.json:
 ```
   - public-key will be used to encode information on the UI.
   - matching private-key will be used to decode information on the backend server (**protect your production config private-key!**).
-  - sendgrid-api-key is needed to interact with public API of the [Sendgird](https://sendgrid.com/) email delivery service.
+  - sendgrid-api-key is needed to interact with public API of the [Sendgrid](https://sendgrid.com/) email delivery service.
  
 Configuration is picked up from the Node.js `CONFIG` ENV variable:
 ```sh
@@ -21,7 +21,7 @@ CONFIG='/etc/config/namebazaar.json' node dev-server/name-bazaar.js 2> /tmp/name
 ```
 
 ## Logging
-NameBazaar uses AWS ElasticSearchService(https://aws.amazon.com/elasticsearch-service/) (EK) stack for logging:
+NameBazaar uses [AWS ElasticSearchService](https://aws.amazon.com/elasticsearch-service/) (EK) stack for logging:
   - Elasticsearch: Stores all of the logs.
   - Kibana: Web interface for searching and visualizing logs.
   - Filebeat: Log shipping agent (runs on the client server).
@@ -30,7 +30,7 @@ NameBazaar uses AWS ElasticSearchService(https://aws.amazon.com/elasticsearch-se
 
 #### Set access policy
 
-From AWS console(console.aws.amazon.com/console/home) create a new Elasticsearch Service instance.
+From [AWS console](https://console.aws.amazon.com/console/home) create a new Elasticsearch Service instance.
 When the instance is created select **Modify the access policy** and whitelist your client's server public IP:
 
 ```json
@@ -131,14 +131,14 @@ Create a server listening on port 443 and make sure that the following entry is 
 ```json
 location = / { rewrite ^ /_plugin/kibana/ redirect; }
 location / {
-           proxy_pass ES_SERVER_DOMAIN
-           auth_basic "Restricted Content";
-           auth_basic_user_file /etc/nginx/.htpasswd;
-           proxy_http_version 1.1; 
-           proxy_set_header Authorization ""; 
-           proxy_hide_header Authorization; 
-           proxy_set_header X-Forwarded-Proto $scheme; 
-           }
+    proxy_pass ES_SERVER_DOMAIN
+    auth_basic "Restricted Content";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    proxy_http_version 1.1; 
+    proxy_set_header Authorization ""; 
+    proxy_hide_header Authorization; 
+    proxy_set_header X-Forwarded-Proto $scheme; 
+}
 ```
 
 Create a softlink:
