@@ -28,6 +28,25 @@
 (defn top-level-name? [name]
   (and name (= 1 (name-level name))))
 
+(defn normalize [name]
+  ((if (exists? js/EthEnsNamehash)
+     js/EthEnsNamehash.normalize
+     (aget (js/require "eth-ens-namehash") "normalize")) name))
+
+(defn normalized? [name]
+  (try
+    (= (normalize name)
+       name)
+    (catch js/Error e
+      false)))
+
+(defn valid-ens-name? [name]
+  (try
+    (normalize name)
+    true
+    (catch js/Error e
+      false)))
+
 (def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
                      :offering/new-owner :offering/price :offering/version :offering/created-on
                      :offering/finalized-on])
@@ -53,7 +72,9 @@
         (assoc :offering/label-length (count label))
         (assoc :offering/contains-number? (contains-number? (:offering/name offering)))
         (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
-        (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))))))
+        (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
+        (assoc :offering/normalized? (normalized? (:offering/name offering)))
+        (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase

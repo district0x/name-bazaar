@@ -16,7 +16,7 @@
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
     [name-bazaar.server.contracts-api.mock-registrar :as registrar]
-    [taoensso.timbre :as logging])
+    [taoensso.timbre :as logging :refer-macros [info warn error]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce event-filters (atom []))
@@ -63,17 +63,20 @@
     ch))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
-  (logging/info "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event [on-offering-changed]" {:args args})
   (go
     (try
       (let [offering (<! (get-offering-from-event server-state args))]
-        (db/upsert-offering! (state/db server-state) offering))
+        (if (and (:offering/valid-name? offering)
+                 (:offering/normalized? offering))
+          (db/upsert-offering! (state/db server-state) offering)
+          (warn [:MAILFORMED-NAME-OFFERING offering])))
       (catch :default e
         (logging/error {:error e})))))
 
 (defn on-offering-bid [server-state err {{:keys [:offering :version :extra-data] :as args} :args}]
   (logging/info "Handling blockchain event" {:args args})
-  (try 
+  (try
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
         (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
         (update :bid/value bn/->number)
