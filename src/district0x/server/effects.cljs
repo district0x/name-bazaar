@@ -80,7 +80,7 @@
                                                                     (:smart-contracts @server-state-atom)
                                                                     bin
                                                                     library-placeholders))
-                                                  :gas 3000000}
+                                                  :gas 6000000}
                                                (merge opts)
                                                (select-keys [:from :to :gas-price :gas :value :data]))])))]
         (if err

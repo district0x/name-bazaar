@@ -12,6 +12,8 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
+
+
 (defn auction-bid-info [{:keys [:offering]}]
   (let [{:keys [:offering/address]} offering
         offering-status @(subscribe [:offering/status address])
@@ -53,6 +55,10 @@
                                                                   {:address address}
                                                                   "offering address"]
         " or you can use the form below."])]))
+(defn non-valid-name-warning [props]
+   [:div.description.warning
+    [:b "WARNING: "] "Offered name is not compatible with UTS46 normalisation, "
+    "therefore buying or bidding is disabled."])
 
 (defn non-ascii-characters-warning [props]
   [:div.description.warning
@@ -96,6 +102,9 @@
         :computer 10
         :tablet 12
         :mobile 16}
+       (when (not (not (and valid-name? normalized?))
+                  [non-valid-name-warning]))
+
        (when missing-ownership?
          [missing-ownership-warning
           {:offering offering}])
