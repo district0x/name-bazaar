@@ -12,8 +12,6 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-
-
 (defn auction-bid-info [{:keys [:offering]}]
   (let [{:keys [:offering/address]} offering
         offering-status @(subscribe [:offering/status address])
