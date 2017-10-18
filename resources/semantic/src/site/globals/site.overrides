@@ -69,7 +69,6 @@ h4, h5, h6 {
       width: 100%;
       font-size: 15px;
       .prompt {
-        border-radius: 15px 0 0 15px;
         padding-top: 19px;
         padding-bottom: 19px;
         padding-left: 15px;

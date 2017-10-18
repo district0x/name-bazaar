@@ -6,6 +6,7 @@
 @resultsWidth: 100%;
 @resultsDistance: 10px;
 @resultsBorderRadius: @segmentBorderRadius;
+@promptBorderRadius: 15px;
 @resultsBorder: none;
 @resultVerticalPadding: 13px;
 @resultTitleFont: @pageFont;
