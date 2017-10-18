@@ -23,7 +23,7 @@
   (d0x-logging/setup! (state/config @*server-state* :logging))
   (go
     (d0x-effects/create-web3! *server-state* {:port (state/config @*server-state* :mainnet-port)})
-    (d0x-effects/create-db! *server-state*)
+    (<! (d0x-effects/create-db! *server-state*))
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (api-server/start! (state/config :api-port))
     (<! (d0x-effects/load-my-addresses! *server-state*))
