@@ -122,6 +122,7 @@
        :time-intervals 15
        :date-format "LLLL"
        :should-close-on-select false
+       :max-date (.add (js/moment) (* 4 30) "days")
        :min-date (js/moment)}
       props)]])
 
