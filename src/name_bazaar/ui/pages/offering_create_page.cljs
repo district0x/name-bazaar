@@ -138,26 +138,23 @@
     auction? (update :auction-offering/end-time to-date)
     auction? (update :auction-offering/extension-duration seconds->hours)))
 
-(defn- get-submit-event [offering-type editing?]
-  (if (= offering-type :buy-now-offering)
-    (if editing?
-      :buy-now-offering/set-settings
-      :buy-now-offering-factory/create-offering)
-    (if editing?
-      :auction-offering/set-settings
-      :auction-offering-factory/create-offering)))
-
-
 (defn offering-form [{:keys [:offering]}]
   (let [now (subscribe [:now])
         form-data (r/atom (or offering (offering-default-form-data)))]
     (fn [{:keys [:editing?]}]
-      (let [{:keys [:offering/name :offering/type :offering/price :auction-offering/min-bid-increase
+      (let [{:keys [:offering/address :offering/name :offering/type :offering/price :auction-offering/min-bid-increase
                     :auction-offering/extension-duration :auction-offering/end-time]} @form-data
             auction? (= type :auction-offering)
             ownership-status (when-not editing? (get-ownership-status name))
             valid-price? (pos-ether-value? price)
-            valid-min-bid-increase? (pos-ether-value? min-bid-increase)]
+            valid-min-bid-increase? (pos-ether-value? min-bid-increase)
+            submit-disabled? (or (and (not editing?)
+                                      (not= ownership-status :owner))
+                                 (not valid-price?)
+                                 (not (or (not auction?)
+                                          valid-min-bid-increase?))
+                                 (and auction?
+                                      (t/after? @now (from-date (.toDate (js/moment end-time))))))]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
           :celled "internally"}
@@ -242,20 +239,31 @@
          [ui/GridRow
           {:centered true}
           [:div
-           [ui/Button
-            {:primary true
-             :disabled (or (and (not editing?)
-                                (not= ownership-status :owner))
-                           (not valid-price?)
-                           (not (or (not auction?)
-                                    valid-min-bid-increase?))
-                           (and auction?
-                                (t/after? @now (from-date (.toDate (js/moment end-time))))))
-             :on-click (fn []
-                         (dispatch [(get-submit-event type editing?) (form-data->transaction-data @form-data)])
-                         (when-not editing?
-                           (swap! form-data assoc :offering/name "")))}
-            (if editing? "Save Changes" "Create Offering")]]]]))))
+           (if-not editing?
+             [ui/Button
+              {:primary true
+               :disabled submit-disabled?
+               :on-click (fn []
+                           (dispatch [(if auction?
+                                        :auction-offering-factory/create-offering
+                                        :buy-now-offering-factory/create-offering)
+                                      (form-data->transaction-data @form-data)])
+                           (when-not editing?
+                             (swap! form-data assoc :offering/name "")))}
+              "Create Offering"]
+             [transaction-button
+              {:primary true
+               :disabled submit-disabled?
+               :pending? (if auction?
+                           @(subscribe [:auction-offering.set-settings/tx-pending? address])
+                           @(subscribe [:buy-now-offering.set-settings/tx-pending? address]))
+               :pending-text "Saving Changes..."
+               :on-click (fn []
+                           (dispatch [(if auction?
+                                        :auction-offering/set-settings
+                                        :buy-now-offering/set-settings)
+                                      (form-data->transaction-data @form-data)]))}
+              "Save Changes"])]]]))))
 
 (defmethod page :route.offerings/edit []
   (let [route-params (subscribe [:district0x/route-params])]

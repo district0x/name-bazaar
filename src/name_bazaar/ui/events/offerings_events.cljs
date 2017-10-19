@@ -13,7 +13,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -111,7 +111,7 @@
                  :contract-address (:offering/address form-data)
                  :args-order [:offering/price]
                  :result-href (path-for :route.offerings/detail form-data)
-                 :tx-opts {:gas 250000 :gas-price default-gas-price}
+                 :tx-opts {:gas 200000 :gas-price default-gas-price}
                  :form-id (select-keys form-data [:offering/address])
                  :wei-keys #{:offering/price}
                  :on-tx-receipt [:offering/set-settings-tx-receipt form-data]}]}))
@@ -202,7 +202,7 @@
                                 :auction-offering/extension-duration
                                 :auction-offering/min-bid-increase]
                    :form-id (select-keys form-data [:offering/address])
-                   :tx-opts {:gas 1000000 :gas-price default-gas-price}
+                   :tx-opts {:gas 200000 :gas-price default-gas-price}
                    :on-tx-receipt [:offering/set-settings-tx-receipt form-data]
                    :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]})))
 
@@ -413,17 +413,23 @@
 (reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]
+  (fn [{old-db :db} [search-params opts]]
     (let [search-results-path [:search-results :offerings :main-search]
           search-params-path (conj search-results-path :params)
-          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db db
-       :dispatch [:offerings/search {:search-results-path search-results-path
-                                     :append? (:append? opts)
-                                     :params (d0x-shared-utils/update-multi
-                                               search-params
-                                               [:min-price :max-price]
-                                               d0x-shared-utils/safe-eth->wei->num)}]})))
+          {new-db :db new-search-params :search-params} (update-search-results-params old-db search-params-path search-params opts)]
+      {:db new-db
+       :dispatch-debounce {:key :offerings/search
+                           :event [:offerings/search {:search-results-path search-results-path
+                                                      :append? (:append? opts)
+                                                      :params (d0x-shared-utils/update-multi
+                                                                new-search-params
+                                                                [:min-price :max-price]
+                                                                d0x-shared-utils/safe-eth->wei->num)}]
+                           :delay (if (debounce? (get-in old-db search-params-path)
+                                                 new-search-params
+                                                 [:name :min-price :max-price])
+                                    300
+                                    0)}})))
 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search

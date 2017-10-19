@@ -625,13 +625,12 @@ h4, h5, h6 {
     }
   }
   .side-nav-logo {
-    width: 100%;
-    text-align: center;
     display: block;
     margin: 30px 0;
-    img {
-      width: 120px;
-    }
+    width: 120px;
+    height: 80px;
+    background: url(../images/logo@2x.png) no-repeat center;
+    background-size: contain;
   }
   & > .app-content {
     @media only screen and (min-width: @computerBreakpoint) {
@@ -723,11 +722,11 @@ h4, h5, h6 {
         justify-content: center;
         .active-address-balance {
           font-size: 18px;
-          margin-right: 10px;
         }
 
         & > i.icon {
           font-size: 24px;
+          margin-left: 7px;
         }
       }
     }

@@ -198,12 +198,11 @@
   :<- [:district0x/transaction-log]
   (fn [[active-address {:keys [:transactions :ids-by-form]}] [_ contract-key contract-method form-id]]
     (let [transaction-hash (first (get-in ids-by-form
-                                          (remove nil? [contract-key contract-method active-address form-id])))]
-      (when transaction-hash
-        (-> transaction-hash
-          transactions
-          :block-hash
-          empty?)))))
+                                          (remove nil? [contract-key contract-method active-address form-id])))
+          block-hash (:block-hash (transactions transaction-hash))]
+      (and transaction-hash
+           (or (empty? block-hash)
+               (= block-hash "0x0000000000000000000000000000000000000000000000000000000000000000"))))))
 
 (reg-sub
   :district0x-emails.set-email/tx-pending?

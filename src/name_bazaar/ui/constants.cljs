@@ -9,7 +9,7 @@
     [name-bazaar.shared.constants :as shared-constants]
     [re-frame.core :as re-frame :refer [trim-v]]))
 
-(def contracts-version "1.0.0")
+(def contracts-version "1.0.1")
 (def registrar-root ".eth")
 
 (def default-gas-price 4000000000)

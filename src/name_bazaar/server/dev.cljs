@@ -58,7 +58,7 @@
   (api-server/start! (state/config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)}))
 
-(defn deploy-to-mainnet! [port]
+(defn deploy-to-mainnet! [& [port]]
   (go
     (d0x-effects/load-config! *server-state* state/default-config)
     (d0x-effects/create-web3! *server-state* {:port (or port (state/config :mainnet-port))})

@@ -13,9 +13,7 @@
 
 (defn side-nav-menu-logo []
   [:a.side-nav-logo
-   {:href (path-for :route/home)}
-   [:img
-    {:src "./images/logo@2x.png"}]])
+   {:href (path-for :route/home)}])
 
 (defn district0x-banner []
   [:div.district0x-banner

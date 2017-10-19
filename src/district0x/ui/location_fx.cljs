@@ -17,7 +17,9 @@
   (re-frame/dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location @history/routes (history/get-state))]))
 
 (defn nav-to! [route route-params routes]
-  (let [path (medley/mapply d0x-ui-utils/path-for routes route route-params)]
+  (let [path (d0x-ui-utils/path-for {:route route
+                                     :route-params route-params
+                                     :routes routes})]
     (if (d0x-ui-utils/hashroutes?)
       (set-location-hash! path)
       (set-history! path))))
