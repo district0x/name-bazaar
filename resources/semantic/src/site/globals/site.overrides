@@ -627,7 +627,6 @@ h4, h5, h6 {
   .side-nav-logo {
     display: block;
     margin: 30px 0;
-    width: 120px;
     height: 80px;
     background: url(../images/logo@2x.png) no-repeat center;
     background-size: contain;
