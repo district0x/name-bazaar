@@ -41,8 +41,11 @@
                     (when-let [to-email (validate-email base64-encrypted-email)]
                       (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                                          :to-email to-email
-                                                         :subject "Offering created"
+                                                         :subject ("Offering has been added:" name)
                                                          :content (templates/on-offering-added offering name)}
+                                                        {:header (str name "offering added")
+                                                         :button-title "See offering details"
+                                                         :button-href (templates/form-link offering)}
                                                         #(logging/info "Success sending email to requesting address" {:address address})
                                                         #(logging/error "Error sending email to requesting address" {:error %}))))))
               (logging/info "No requesters found for offering" {:offering offering})))))
@@ -58,8 +61,11 @@
         (if-let [to-email (validate-email owner-encrypted-email)]
           (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                              :to-email to-email
-                                             :subject "Auction was finalized"
+                                             :subject (str "Your auction was finalized:" name)
                                              :content (templates/on-auction-finalized :owner offering name price)}
+                                            {:header (str name "auction has ended")
+                                             :button-title "See auction details"
+                                             :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to owner" {:address original-owner})
                                             #(logging/error "Error sending email to owner" {:error %}))
           (logging/warn "Empty or malformed email" {:address original-owner}))
@@ -67,8 +73,11 @@
         (if-let [to-email winner-encrypted-email]
           (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                              :to-email to-email
-                                             :subject "Auction was finalized"
+                                             :subject (str "Auction was finalized:" name)
                                              :content (templates/on-auction-finalized :winner offering name price)}
+                                            {:header (str name "auction has ended")
+                                             :button-title "See auction details"
+                                             :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to winner" {:address winning-bidder})
                                             #(logging/error "Error sending email to winner" {:error %}))
           (logging/warn "Empty or malformed winner email" {:address winning-bidder})))
@@ -82,8 +91,11 @@
         (when-let [to-email (validate-email owner-encrypted-email)]
           (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                              :to-email to-email
-                                             :subject "Your offering was bought"
+                                             :subject (str "Your offering was bought: " name)
                                              :content (templates/on-offering-bought offering name price)}
+                                            {:header (str name "was bought")
+                                             :button-title "See offering details"
+                                             :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to owner" {:address original-owner})
                                             #(logging/error "Error sending email" {:error %}))))
       (catch :default e
@@ -110,8 +122,11 @@
         (when-let [to-email (validate-email owner-encrypted-email)]
           (sendgrid/send-notification-email {:from-email "hello@district0x.io"
                                              :to-email to-email
-                                             :subject "Your offering received a new bid"
+                                             :subject (str "Your auction received a new bid: "name)
                                              :content (templates/on-new-bid offering name price)}
+                                            {:header (str name "auction")
+                                             :button-title "See auction details"
+                                             :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending on-new-bid email")
                                             #(logging/error "Error when sending on-new-bid email" {:error %}))))
       (catch :default e

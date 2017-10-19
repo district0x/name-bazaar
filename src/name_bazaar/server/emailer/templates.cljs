@@ -5,17 +5,24 @@
             [goog.string :as gstring]
             [name-bazaar.shared.constants :as shared-constants]))
 
-(defn- form-link [offering]
-  (str "\""
-       (state/config :frontend-url)
-       "/#"
-       (bidi/path-for shared-constants/routes :route.offerings/detail :offering/address offering)
-       "\""))
+(defn form-link [offering]
+  "If frontens host is not among pushroute-hosts form link with a #."
+  (let [frontend (state/config :frontend)
+        host (:host frontend)
+        port (:port frontend)
+        url (str host (when port (str ":" port)))]
+    (str "\""
+         url
+         (when-not (contains (set (state/config :pushroute-hosts)) host)
+           "/#"
+           "/")
+         (bidi/path-for shared-constants/routes :route.offerings/detail :offering/address offering)
+         "\"")))
 
 (defn on-offering-added [offering name]
   "Offering was created for name requested by user"
   (gstring/format
-   "An <a href=%s>offering</a> has just been created for a name %s requested by you."
+   "An offering has just been created for a name <a href=%s>%s</a> requested by you."
    (form-link offering)
    (gstring/htmlEscape name)))
 
@@ -25,17 +32,17 @@
 
       (= k :owner)
     (gstring/format
-     "Your auction %s has just been finalized. The winning bid was <b>%s</b>. See the <a href=%s>offering</a>."
+     "Your auction <a href=%s>%s</a> has just been finalized. The winning bid was <b>%s</b>."
+     (form-link offering)
      (gstring/htmlEscape name)
-     (str (shared-utils/wei->eth price) " ETH")
-     (form-link offering))
+     (str (shared-utils/wei->eth price) " ETH"))
 
     (= k :winner)
     (gstring/format
-     "Congratulations! You won the auction %s. The winning bid was <b>%s</b>. See the <a href=%s>offering</a>."
+     "Congratulations! You won the auction <a href=%s>%s</a>. You final bid was <b>%s</b>."
+     (form-link offering)
      (gstring/htmlEscape name)
-     (str (shared-utils/wei->eth price) " ETH")
-     (form-link offering))))
+     (str (shared-utils/wei->eth price) " ETH"))))
 
 (defn on-offering-bought [offering name price]
   "Seller's Buy Now offering was bought"
@@ -48,7 +55,7 @@
 (defn on-new-bid [offering name price]
   "Seller's Auction offering got new bid"
   (gstring/format
-   "Your <a href=%s>offering</a> just got a new bid for <b>%s</b>."
+   "Your <a href=%s>auction</a> just got a new bid for <b>%s</b>."
    (form-link offering)
    (str (shared-utils/wei->eth price) " ETH")))
 

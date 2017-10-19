@@ -18,7 +18,8 @@
                          :api-port 6200
                          :testrpc-port 8549
                          :mainnet-port 8545
-                         :frontend-url "http://0.0.0.0:4544"
+                         :pushroute-hosts ["beta.namebazaar.io" "namebazaar.io"]
+                         :frontend {:host "0.0.0.0" :port "4544"}
                          :logging {:level :info
                                    :console true}})
 
