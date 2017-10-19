@@ -301,3 +301,128 @@
                                     (time/in-seconds (time/days 3)))
                                  10))) ;;threashold on operations
                         (done)))))))))))
+
+(deftest freezed-auction-offering-behaviour
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+             (testing "Offering the name for a bid"
+               (is (tx-sent? (<! (auction-offering-factory/create-offering!
+                                  ss
+                                  {:offering/name "abc.eth"
+                                   :offering/price (eth->wei 0.1)
+                                   :auction-offering/end-time (to-epoch (time/plus (time/now) (time/weeks 2)))
+                                   :auction-offering/extension-duration 0
+                                   :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                                  {:from (state/my-address 1)})))))
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing "on-offering event should fire"
+                 (is (not (nil? offering))))
+               (when offering
+                 (testing "Transferrnig ownership to the offer"
+                   (is (tx-sent? (<! (registrar/transfer! ss
+                                                          {:ens.record/label "abc" :ens.record/owner offering}
+                                                          {:from (state/my-address 1)})))))
+                 (testing "Emergency multisig can pause the registry"
+                   (is (tx-sent? (<! (offering-registry/emergency-pause!
+                                      ss
+                                      {:from (state/my-address 0)})))))
+                 (testing "Can't place a bid, while the registry is paused "
+                   (is (tx-failed? (<! (auction-offering/bid! ss
+                                                              {:offering/address offering}
+                                                              {:value (web3/to-wei 0.1 :ether)
+                                                               :from (state/my-address 2)})))))
+                 (testing "Emergency multisig can release the registry"
+                   (is (tx-sent? (<! (offering-registry/emergency-release!
+                                      ss
+                                      {:from (state/my-address 0)})))))
+                 (testing "Can place a bid, whe it's resumed "
+                   (is (tx-sent? (<! (auction-offering/bid! ss
+                                                              {:offering/address offering}
+                                                              {:value (web3/to-wei 0.1 :ether)
+                                                               :from (state/my-address 2)})))))
+                 (web3-evm/increase-time!
+                  (state/web3 ss)
+                  [(time/in-seconds (time/days 15))]
+                  (fn nearfuture [_]
+                    (go
+
+                      (testing "Emergency multisig can pause the registry"
+                        (is (tx-sent? (<! (offering-registry/emergency-pause!
+                                           ss
+                                           {:from (state/my-address 0)})))))
+                      (testing "Finalizing is not possible on frozen registry"
+                        (is (tx-failed? (<! (auction-offering/finalize! ss
+                                                                      {:offering/address offering
+                                                                       :offering/transferPrice true}
+                                                                      {:from (state/my-address 1)})))))
+                      (testing "Emergency multisig can release the registry"
+                        (is (tx-sent? (<! (offering-registry/emergency-release!
+                                           ss
+                                           {:from (state/my-address 0)})))))
+                      (testing "Finalizing works when it's time"
+                        (is (tx-sent? (<! (auction-offering/finalize! ss
+                                                                      {:offering/address offering
+                                                                       :offering/transferPrice true}
+                                                                      {:from (state/my-address 1)})))))
+                      (done))))))))))
+
+(deftest freezed-buy-now-offering-behaviour
+  (async done
+         (let [ss @*server-state*]
+           (go
+             (testing "Registering name"
+               (is (tx-sent? (<! (registrar/register! ss
+                                                      {:ens.record/label "abc"}
+                                                      {:from (state/my-address 1)})))))
+
+             (testing "Making an instant offer"
+               (is (tx-sent? (<! (buy-now-offering-factory/create-offering! ss
+                                                                            {:offering/name "abc.eth"
+                                                                             :offering/price (eth->wei 0.1)}
+                                                                            {:from (state/my-address 1)})))))
+             (let [[[_ {{:keys [:offering]} :args}]]
+                   (alts! [(offering-registry/on-offering-added-once ss
+                                                                     {:node
+                                                                      (namehash
+                                                                       "abc.eth")
+                                                                      :from-block 0
+                                                                      :owner (state/my-address 1)})
+                           (timeout 5000)])]
+               (testing "Transferrnig ownership to the offering"
+                 (is (tx-sent? (<! (registrar/transfer! ss
+                                                        {:ens.record/label "abc" :ens.record/owner offering}
+                                                        {:from (state/my-address 1)})))))
+
+               (testing "Emergency multisig can pause the registry"
+                 (is (tx-sent? (<! (offering-registry/emergency-pause!
+                                    ss
+                                    {:from (state/my-address 0)})))))
+               (testing "Offering can't be bought while registry is frozen"
+                 (is (tx-failed?
+                      (<! (buy-now-offering/buy! ss
+                                                 {:offering/address offering}
+                                                 {:value (eth->wei 0.1)
+                                                  :from (state/my-address 2)})))))
+               (testing "Emergency multisig can release the registry"
+                 (is (tx-sent? (<! (offering-registry/emergency-release!
+                                    ss
+                                    {:from (state/my-address 0)})))))
+               (testing "Offering accepts the exact value"
+                 (is (tx-sent?
+                      (<! (buy-now-offering/buy! ss
+                                                 {:offering/address offering}
+                                                 {:value (eth->wei 0.1)
+                                                  :from (state/my-address 2)})))))
+               (done))))))
