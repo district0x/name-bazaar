@@ -9,10 +9,15 @@
     [taoensso.timbre :as logging])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+(defn trim-request [req]
+  (-> req
+      (js->clj :keywordize-keys true)      
+      (select-keys [:path :ip :protocol :method :params :hostname :httpVersion :headers :url])))
+
 (api-server/reg-get!
   "/offerings"
   (fn [req res]
-    (let [parsed-req (aget req "parsed")]
+    (let [parsed-req (trim-request (aget req "parsed"))]
       (logging/info "Received request" {:request parsed-req})
       (go
         (try     
@@ -25,7 +30,7 @@
 (api-server/reg-get!
   "/offering-requests"
   (fn [req res]
-    (let [parsed-req (aget req "parsed")]
+    (let [parsed-req (trim-request (aget req "parsed"))]
       (logging/info "Received request" {:request parsed-req})
       (go
         (try
@@ -38,7 +43,7 @@
 (api-server/reg-route! :get
                        "/config/:key"
                        (fn [req res]
-                         (let [parsed-req (aget req "parsed")
+                         (let [parsed-req (trim-request (aget req "parsed"))
                                config-key (-> (aget req "params")
                                                   (js->clj :keywordize-keys true)
                                                   vals
@@ -59,7 +64,7 @@
 (api-server/reg-route! :get
                        "/config"
                        (fn [req res]
-                         (let [parsed-req (aget req "parsed")]
+                         (let [parsed-req (trim-request (aget req "parsed"))]
                            (try
                              (logging/info "Received request" {:request parsed-req})
                              (-> res

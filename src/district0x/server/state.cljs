@@ -20,8 +20,7 @@
                          :mainnet-port 8545
                          :frontend-url "http://0.0.0.0:4544"
                          :logging {:level :info
-                                   :console true
-                                   :file {:path "/tmp/district0x.log"}}})
+                                   :console true}})
 
 (defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
 

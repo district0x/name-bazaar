@@ -2,7 +2,8 @@
   (:require
     [district0x.shared.utils :refer [wei->eth]]
     [district0x.ui.components.misc :refer [etherscan-link]]
-    [district0x.ui.utils :refer [time-ago to-locale-string truncate format-eth-with-code]]
+    [district0x.ui.location-fx :as location-fx]
+    [district0x.ui.utils :as d0x-ui-utils :refer [time-ago to-locale-string truncate format-eth-with-code]]
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
@@ -90,7 +91,9 @@
       :on-click (fn [e]
                   (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                              result-href)
-                    (set! (.-hash js/location) result-href)
+                    (if (d0x-ui-utils/hashroutes?)
+                      (location-fx/set-location-hash! result-href)
+                      (location-fx/set-history! result-href))
                     (dispatch [:district0x.transaction-log/set-open false])))}
      [transaction-name {:transaction transaction}]
      [:div.transaction-content

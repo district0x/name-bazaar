@@ -16,9 +16,9 @@
                  [cljsjs/react-infinite "0.12.1-0"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
-                 [honeysql "0.9.0"]
-                 [lein-doo "0.1.7"]
-                 [medley "0.8.3"]
+                 [honeysql "0.9.1"]
+                 [lein-doo "0.1.8"]
+                 [medley "1.0.0"]
                  [org.clojure/clojurescript "1.9.946"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
@@ -27,23 +27,23 @@
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
-                 [bidi "2.1.1"]
+                 [bidi "2.1.2"]
                  [camel-snake-kebab "0.4.0"]
-                 [cljs-ajax "0.5.8"]
+                 [cljs-ajax "0.7.2"]
                  [cljs-node-io "0.5.0"]
                  [cljsjs/bignumber "2.1.4-1"]
                  [cljsjs/react-flexbox-grid "1.0.0-0"]
                  [cljsjs/react-highlight "1.0.5-0"]
                  [cljsjs/react-truncate "2.0.3-0"]
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
-                 [com.andrewmcveigh/cljs-time "0.4.0"]
-                 [com.cognitect/transit-cljs "0.8.239"]
+                 [com.andrewmcveigh/cljs-time "0.5.1"]
+                 [com.cognitect/transit-cljs "0.8.243"]
                  [com.taoensso/encore "2.92.0"]
                  [com.taoensso/timbre "4.10.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
                  ;[com.cemerick/url "0.1.1"]
-                 [day8.re-frame/http-fx "0.1.3"]
-                 [kibu/pushy "0.3.6"]
+                 [day8.re-frame/http-fx "0.1.4"]
+                 [kibu/pushy "0.3.8"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas.re-frame/web3-fx "0.2.1"]]
 
@@ -84,7 +84,7 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-  :figwheel {:server-port 4544
+  :figwheel {:server-port 4544       
              :css-dirs ["resources/public/css"]}
 
   :repl-options {:timeout 120000}
@@ -100,9 +100,9 @@
             "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
-                                  [binaryage/devtools "0.9.4"]
-                                  [com.cemerick/piggieback "0.2.1"]
-                                  [figwheel-sidecar "0.5.13" :exclusions [org.clojure/core.async]]
+                                  [binaryage/devtools "0.9.7"]
+                                  [com.cemerick/piggieback "0.2.2"]                                  
+                                  [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev"]
                    :resource-paths ["resources"]}}
@@ -139,8 +139,7 @@
                                    :optimizations :simple,
                                    :source-map "server/name-bazaar.js.map"
                                    :closure-defines {goog.DEBUG false}
-                                   :pretty-print false
-                                   :pseudo-names false}}
+                                   :pretty-print false}}
                        {:id "min"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"

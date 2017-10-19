@@ -18,11 +18,8 @@ Example config file:
 
 ```
 {"sendgrid-api-key" : "SG.uJM-W5OCNkxhyXx0XNTOZY",
-          "logging" : {"logstash" : {"protocol" : "http", 
-                                         "host" : "0.0.0.0",
-                                         "port" : 12345,
-                                         "user" : "moose",
-                                     "password" : "YuckyBananas"}}}
+          "logging" : {"level"    : "debug"
+                        "console" : true}}
 ```
 
 Setting CONFIG process.ENV variable:
