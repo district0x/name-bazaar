@@ -25,3 +25,20 @@
            :body (server-utils/clj->json body)}
           :handler success-handler
           :error-handler error-handler)))
+
+
+(comment
+  (defn sendmail []
+           (let [name "BLA"]
+             (try
+               (send-notification-email {:from-email "district0x@district0x.io"
+                                         :to-email "filip@district0x.io"
+                                         :subject (str "Your offering was bought: " name)
+                                         :content "Hello"}
+                                        {:header (str name "was bought")
+                                         :button-title "See offering details"
+                                         :button-href "www.google.be"}
+                                        #(prn "Success")
+                                        #(prn (str "Error " (district0x.shared.utils/jsobj->clj %))))
+               (catch :default e
+                 (prn (str "Exception" (district0x.shared.utils/jsobj->clj e))))))))
