@@ -40,15 +40,15 @@
                 (for [address addresses]
                   (let [[_ base64-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address address}))]
                     (when-let [to-email (validate-email base64-encrypted-email)]
-                      (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+                      (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                                          :to-email to-email
-                                                         :subject ("Offering has been added:" name)
+                                                         :subject ("Offering has been added: " name)
                                                          :content (templates/on-offering-added offering name)}
-                                                        {:header (str name "offering added")
+                                                        {:header (str name " offering added")
                                                          :button-title "See offering details"
                                                          :button-href (templates/form-link offering)}
                                                         #(logging/info "Success sending email to requesting address" {:address address})
-                                                        #(logging/error "Error sending email to requesting address" {:error %}))))))
+                                                        #(logging/error "Error sending email to requesting address" {:error (d0x-shared-utils/jsobj->clj %)}))))))
               (logging/info "No requesters found for offering" {:offering offering})))))
       (catch :default e
         (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
@@ -60,27 +60,27 @@
       (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))
             [_ winner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address winning-bidder}))]      
         (if-let [to-email (validate-email owner-encrypted-email)]
-          (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+          (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                              :to-email to-email
-                                             :subject (str "Your auction was finalized:" name)
+                                             :subject (str "Your auction was finalized: " name)
                                              :content (templates/on-auction-finalized :owner offering name price)}
-                                            {:header (str name "auction has ended")
+                                            {:header (str name " auction has ended")
                                              :button-title "See auction details"
                                              :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to owner" {:address original-owner})
-                                            #(logging/error "Error sending email to owner" {:error %}))
+                                            #(logging/error "Error sending email to owner" {:error (d0x-shared-utils/jsobj->clj %)}))
           (logging/warn "Empty or malformed email" {:address original-owner}))
         
         (if-let [to-email winner-encrypted-email]
-          (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+          (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                              :to-email to-email
-                                             :subject (str "Auction was finalized:" name)
+                                             :subject (str "Auction was finalized: " name)
                                              :content (templates/on-auction-finalized :winner offering name price)}
-                                            {:header (str name "auction has ended")
+                                            {:header (str name " auction has ended")
                                              :button-title "See auction details"
                                              :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to winner" {:address winning-bidder})
-                                            #(logging/error "Error sending email to winner" {:error %}))
+                                            #(logging/error "Error sending email to winner" {:error (d0x-shared-utils/jsobj->clj %)}))
           (logging/warn "Empty or malformed winner email" {:address winning-bidder})))
       (catch :default e
         (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
@@ -90,15 +90,15 @@
     (try
       (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
         (when-let [to-email (validate-email owner-encrypted-email)]
-          (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+          (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                              :to-email to-email
                                              :subject (str "Your offering was bought: " name)
                                              :content (templates/on-offering-bought offering name price)}
-                                            {:header (str name "was bought")
+                                            {:header (str name " was bought")
                                              :button-title "See offering details"
                                              :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending email to owner" {:address original-owner})
-                                            #(logging/error "Error sending email" {:error %}))))
+                                            #(logging/error "Error sending email" {:error (d0x-shared-utils/jsobj->clj %)}))))
       (catch :default e
         (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
@@ -121,15 +121,15 @@
       (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))
             [_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
         (when-let [to-email (validate-email owner-encrypted-email)]
-          (sendgrid/send-notification-email {:from-email "hello@district0x.io"
+          (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                              :to-email to-email
                                              :subject (str "Your auction received a new bid: "name)
                                              :content (templates/on-new-bid offering name price)}
-                                            {:header (str name "auction")
+                                            {:header (str name " auction")
                                              :button-title "See auction details"
                                              :button-href (templates/form-link offering)}
                                             #(logging/info "Success sending on-new-bid email")
-                                            #(logging/error "Error when sending on-new-bid email" {:error %}))))
+                                            #(logging/error "Error when sending on-new-bid email" {:error (d0x-shared-utils/jsobj->clj %)}))))
       (catch :default e
         (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
