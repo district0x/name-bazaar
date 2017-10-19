@@ -6,7 +6,7 @@
     [clojure.string :as string]   
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :refer [prepend-address-zeros]]
+    [district0x.shared.utils :as d0x-shared-utils :refer [prepend-address-zeros]]
     [district0x.server.effects :as d0x-effects]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
@@ -39,7 +39,7 @@
                 (= (second (<! ens-owner-ch))                 ;; For other names just basic ENS ownership check
                    offering-address))))
         (catch :default e
-          (logging/error {:error e}))))
+          (logging/error {:error (d0x-shared-utils/jsobj->clj e)}))))
     ch))
 
 (defn auction? [version]
@@ -59,7 +59,7 @@
                            (assoc :offering/node-owner? owner?))]
           (>! ch offering))
         (catch :default e
-          (logging/error {:error e}))))
+          (logging/error {:error (d0x-shared-utils/jsobj->clj e)}))))
     ch))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
@@ -72,7 +72,7 @@
           (db/upsert-offering! (state/db server-state) offering)
           (warn [:MAILFORMED-NAME-OFFERING offering])))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn on-offering-bid [server-state err {{:keys [:offering :version :extra-data] :as args} :args}]
   (logging/info "Handling blockchain event" {:args args})
@@ -84,7 +84,7 @@
         (assoc :bid/offering offering)
         (->> (db/insert-bid! (state/db server-state))))
     (catch :default e
-      (logging/error "Error handling blockchain event" {:error e}))))
+      (logging/error "Error handling blockchain event" {:error (d0x-shared-utils/jsobj->clj e)}))))
 
 (defn stop-watching-filters! []
   (doseq [filter @event-filters]
@@ -114,7 +114,7 @@
                                                      :round latest-round
                                                      :requesters-count (:offering-request/requesters-count request)}})))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn on-ens-new-owner [server-state err {{:keys [:node :owner] :as args} :args}]  
   (go
@@ -127,7 +127,7 @@
               (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                      :offering/node-owner? owner?})))))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn start-syncing! [server-state]
   (db/create-tables! (state/db server-state))

@@ -53,7 +53,7 @@
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
-            [lein-figwheel "0.5.13"]
+            [lein-figwheel "0.5.14"]
             [lein-shell "0.5.0"]
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]

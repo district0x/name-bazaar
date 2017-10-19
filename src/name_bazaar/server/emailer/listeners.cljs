@@ -2,6 +2,7 @@
   (:require [cljs-web3.eth :as web3-eth]
             [cljs.core.async :refer [<! >! chan]]        
             [district0x.server.state :as state]
+            [district0x.shared.utils :as d0x-shared-utils]
             [goog.format.EmailAddress :as email-address]
             [name-bazaar.server.contracts-api.district0x-emails :as district0x-emails-api]
             [name-bazaar.server.contracts-api.offering :as offering-api]
@@ -50,7 +51,7 @@
                                                         #(logging/error "Error sending email to requesting address" {:error %}))))))
               (logging/info "No requesters found for offering" {:offering offering})))))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn- on-auction-finalized
   [server-state offering original-owner winning-bidder name price]
@@ -82,7 +83,7 @@
                                             #(logging/error "Error sending email to winner" {:error %}))
           (logging/warn "Empty or malformed winner email" {:address winning-bidder})))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn- on-offering-bought [server-state offering original-owner name price]
   (go
@@ -99,7 +100,7 @@
                                             #(logging/info "Success sending email to owner" {:address original-owner})
                                             #(logging/error "Error sending email" {:error %}))))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (logging/info "Handling blockchain event" {:args args})
@@ -110,7 +111,7 @@
           (on-auction-finalized server-state offering original-owner winning-bidder name price)
           (on-offering-bought server-state offering original-owner name price)))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn on-new-bid
   [server-state {:keys [:offering] :as args}]
@@ -130,7 +131,7 @@
                                             #(logging/info "Success sending on-new-bid email")
                                             #(logging/error "Error when sending on-new-bid email" {:error %}))))
       (catch :default e
-        (logging/error {:error e})))))
+        (logging/error {:error (d0x-shared-utils/jsobj->clj e)})))))
 
 (defn stop-event-listeners! []
   (doseq [listener @event-listeners]
