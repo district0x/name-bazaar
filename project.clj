@@ -117,7 +117,8 @@
                                    :asset-path "js/compiled/out"
                                    :source-map-timestamp true
                                    :preloads [print.foo.preloads.devtools]
-                                   :closure-defines {goog.DEBUG true}
+                                   :closure-defines {goog.DEBUG true
+                                                     name-bazaar.ui.db.environment "dev"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
@@ -128,7 +129,8 @@
                                    :output-dir "dev-server",
                                    :target :nodejs,
                                    :optimizations :none,
-                                   :closure-defines {goog.DEBUG true}
+                                   :closure-defines {goog.DEBUG true
+                                                     name-bazaar.ui.db.environment "dev"}
                                    :source-map true}}
                        {:id "server"
                         :source-paths ["src"]
@@ -138,14 +140,16 @@
                                    :target :nodejs,
                                    :optimizations :simple,
                                    :source-map "server/name-bazaar.js.map"
-                                   :closure-defines {goog.DEBUG false}
+                                   :closure-defines {goog.DEBUG false
+                                                     name-bazaar.ui.db.environment "prod"}
                                    :pretty-print false}}
                        {:id "min"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
                                    :optimizations :advanced
-                                   :closure-defines {goog.DEBUG false}
+                                   :closure-defines {goog.DEBUG false
+                                                     name-bazaar.ui.db.environment "prod"}
                                    :pretty-print false
                                    :pseudo-names false}}
                        {:id "server-tests"

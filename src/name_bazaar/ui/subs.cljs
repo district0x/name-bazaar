@@ -26,6 +26,11 @@
     (:now db)))
 
 (reg-sub
+ :root-url
+ (fn [db]
+   (:root-url db)))
+
+(reg-sub
   :saved-searches
   (fn [db [_ saved-searches-key]]
     (get-in db [:saved-searches saved-searches-key])))
