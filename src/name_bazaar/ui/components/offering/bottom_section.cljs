@@ -37,13 +37,16 @@
   (let [{:keys [:offering/address :offering/buy-now? :auction-offering/bid-count]} offering
         needs-transfer? (false? @(subscribe [:offering/node-owner? address]))
         offering-status @(subscribe [:offering/status address])
-        editable? (or buy-now? (zero? bid-count))]
+        editable? (or buy-now? (zero? bid-count))
+        finalizable? (and (not editable?)
+                          (= offering-status :offering.status/auction-ended))]
     (when-not (contains? #{:offering.status/finalized :offering.status/emergency} offering-status)
       [:div.bottom-section-buttons
        (when needs-transfer?
          [transfer-ownership-button
           {:offering offering}])
-       (when (and (not needs-transfer?))
+       (when (and (not needs-transfer?)
+                  (not finalizable?))
          [transaction-button
           {:color :pink
            :pending-text "Reclaiming..."
@@ -51,16 +54,16 @@
            :pending? @(subscribe [:offering.reclaim-ownership/tx-pending? address])
            :on-click #(dispatch [:offering/reclaim-ownership {:offering/address address}])}
           "Reclaim Ownership"])
-       (when (and (not editable?)
-                  (= offering-status :offering.status/auction-ended))
+       (when finalizable?
          [auction-finalize-button
           {:offering offering}])
-       [ui/Button
-        {:as "a"
-         :disabled (not editable?)
-         :color "purple"
-         :href (path-for :route.offerings/edit {:offering/address address})}
-        "Edit"]])))
+       (when-not finalizable?
+         [ui/Button
+          {:as "a"
+           :disabled (not editable?)
+           :color "purple"
+           :href (path-for :route.offerings/edit {:offering/address address})}
+          "Edit"])])))
 
 (defn- offering-buyable? [offering-status]
   (not (contains? #{:offering.status/auction-ended :offering.status/finalized :offering.status/emergency} offering-status)))
@@ -75,11 +78,14 @@
             pending-returns (or @(subscribe [:auction-offering/active-address-pending-returns address]) 0)
             active-address-winning? @(subscribe [:auction-offering/active-address-winning-bidder? address])
             min-bid @(subscribe [:auction-offering/min-bid address])]
-        (when (and active-address-winning?
-                   (= offering-status :offering.status/auction-ended))
-          [auction-finalize-button
-           {:offering offering}])
-        (when (offering-buyable? offering-status)
+        (cond
+          (and active-address-winning?
+               (= offering-status :offering.status/auction-ended))
+          [:div.bottom-section-buttons
+           [auction-finalize-button
+            {:offering offering}]]
+
+          (offering-buyable? offering-status)
           [ui/GridColumn
            {:widescreen 6
             :large-screen 7
@@ -101,9 +107,9 @@
                :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
                :pending-text "Bidding..."
                :disabled (or
-                          invalid-name?
-                          (not (>= (or @bid-value min-bid) min-bid))
-                          (= offering-status :offering.status/missing-ownership))
+                           invalid-name?
+                           (not (>= (or @bid-value min-bid) min-bid))
+                           (= offering-status :offering.status/missing-ownership))
                :on-click #(dispatch [:auction-offering/bid {:offering/address address
                                                             :offering/price (or @bid-value min-bid)}])}
               "Bid Now"]]]])))))
@@ -120,8 +126,8 @@
          :pending? @(subscribe [:buy-now-offering.buy/tx-pending? address])
          :pending-text "Buying..."
          :disabled (or
-                    invalid-name?
-                    (= offering-status :offering.status/missing-ownership))
+                     invalid-name?
+                     (= offering-status :offering.status/missing-ownership))
          :on-click #(dispatch [:buy-now-offering/buy {:offering/address address
                                                       :offering/price price}])}
         "Buy"]])))

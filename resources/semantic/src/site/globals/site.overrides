@@ -989,6 +989,9 @@ h4, h5, h6 {
           padding: @segmentGutterMobile;
         }
         box-shadow: none !important;
+        &:empty {
+          display: none;
+        }
       }
     }
 

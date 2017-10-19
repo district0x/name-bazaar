@@ -138,7 +138,7 @@
 
 (reg-event-fx
   :auction-offering/finalize
-  [interceptors (validate-first-arg (s/keys :req [:offering/address :auction-offering/transfer-price?]))]
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
     (let [offering-name (get-offering-name db (:offering/address form-data))]
       {:dispatch [:district0x/make-transaction
@@ -147,7 +147,6 @@
                    :contract-method :finalize
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :args-order [:auction-offering/transfer-price?]
                    :result-href (path-for :route.offerings/detail form-data)
                    :tx-opts {:gas 120000
                              :gas-price default-gas-price
