@@ -4,6 +4,7 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
+    [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]
     [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining time-biggest-unit format-time-duration-unit]]
     [goog.string :as gstring]
@@ -17,13 +18,18 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
-    [name-bazaar.ui.utils :refer [parse-query-params]]
+    [name-bazaar.ui.utils :refer [parse-query-params path-for]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
   :now
   (fn [db]
     (:now db)))
+
+(reg-sub
+ :root-url
+ (fn [db]
+   (:root-url db)))
 
 (reg-sub
   :saved-searches
@@ -42,3 +48,19 @@
   :search-results
   (fn [db [_ db-path]]
     (get-in db (concat [:search-results] db-path))))
+
+(reg-sub
+ :page-share-url
+ :<- [:root-url]
+ :<- [:district0x/active-address]
+ (fn [[root-url my-address] [_ route params]]
+   (string/replace
+    (str
+     root-url
+     "/"
+     (path-for route (merge
+                      (when my-address
+                        {:user/address (str my-address)})
+                      params)))
+    "#"
+    "%23")))

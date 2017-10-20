@@ -51,7 +51,8 @@
             :on-change #(dispatch [:offerings.user-offerings/set-params-and-search {:finalized? (aget %2 "checked")}])}]]]))))
 
 (defn user-offerings []
-  (let [search-results (subscribe [:offerings/user-offerings])]
+  (let [search-results (subscribe [:offerings/user-offerings])
+        route-params (subscribe [:district0x/route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [app-layout
@@ -71,7 +72,15 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             [share-buttons]]]
+             [share-buttons
+              {:url
+               @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
+               :title
+               (str
+                (if (:user/address @route-params)
+                  (truncate (:user/address @route-params) 10)
+                  "My")
+                " ENS Offerings")}]]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn
