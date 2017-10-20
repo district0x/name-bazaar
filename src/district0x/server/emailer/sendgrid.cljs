@@ -27,13 +27,14 @@
            :handler success-handler
            :error-handler error-handler})))
 
-(defn sendmail []
-  (district0x.server.emailer.sendgrid/send-notification-email {:from-email "test@test.com"
-                                                               :to-email "asfuh@sharklasers.com"
-                                                               :subject "Subject"
-                                                               :content "content"}
-                                                              {:header "was bought"
-                                                               :button-title "See offering details"
-                                                               :button-href "www.google.be"}
-                                                              #(prn "Success!")
-                                                              #(prn "Error: " %)))
+(comment
+  (defn sendmail []
+    (district0x.server.emailer.sendgrid/send-notification-email {:from-email "test@test.com"
+                                                                 :to-email "asfuh@sharklasers.com"
+                                                                 :subject "Subject"
+                                                                 :content "content"}
+                                                                {:header "was bought"
+                                                                 :button-title "See offering details"
+                                                                 :button-href "www.google.be"}
+                                                                #(prn "Success!")
+                                                                #(prn "Error: " %))))
