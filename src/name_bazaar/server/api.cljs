@@ -7,7 +7,8 @@
     [medley.core :as medley]
     [name-bazaar.server.db :as db]
     [taoensso.timbre :as logging])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [district0x.server.macros :refer [gotry]]))
 
 (defn trim-request [req]
   (-> req
@@ -19,26 +20,20 @@
   (fn [req res]
     (let [parsed-req (trim-request (aget req "parsed"))]
       (logging/info "Received request" {:request parsed-req})
-      (go
-        (try     
-          (send-json! res (<! (db/search-offerings
-                               (state/db)
-                               (api-server/sanitized-query-params req))))
-          (catch :default e
-            (logging/error "Error handling request" {:error e :request parsed-req})))))))
+      (gotry
+        (send-json! res (<! (db/search-offerings
+                             (state/db)
+                             (api-server/sanitized-query-params req))))))))
 
 (api-server/reg-get!
   "/offering-requests"
   (fn [req res]
     (let [parsed-req (trim-request (aget req "parsed"))]
       (logging/info "Received request" {:request parsed-req})
-      (go
-        (try
-          (send-json! res (<! (db/search-offering-requests
-                               (state/db)
-                               (api-server/sanitized-query-params req))))
-          (catch :default e
-            (logging/error "Error handling request" {:error e :request parsed-req})))))))
+      (gotry
+        (send-json! res (<! (db/search-offering-requests
+                             (state/db)
+                             (api-server/sanitized-query-params req))))))))
 
 (api-server/reg-route! :get
                        "/config/:key"

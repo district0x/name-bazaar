@@ -6,16 +6,8 @@
             [name-bazaar.shared.constants :as shared-constants]))
 
 (defn form-link [offering]
-  "If frontens host is not among pushroute-hosts form link with a #."
-  (let [frontend (state/config :frontend)
-        host (:host frontend)
-        port (:port frontend)
-        url (str host (when port (str ":" port)))]
-    (str "\""
-         url
-         (when-not (contains (set (state/config :pushroute-hosts)) host)
-           "/#"
-           "/")
+ (let [client (:client state/config)]
+    (str "\"" client "/"
          (bidi/path-for shared-constants/routes :route.offerings/detail :offering/address offering)
          "\"")))
 

@@ -80,8 +80,8 @@
 
   :min-lein-version "2.5.3"
 
-  :source-paths []
-
+  :source-paths ["src" "test"]
+  
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :figwheel {:server-port 4544       
@@ -104,7 +104,7 @@
                                   [com.cemerick/piggieback "0.2.2"]                                  
                                   [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
-                   :source-paths ["dev"]
+                   :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
   :cljsbuild {:builds [{:id "dev"
