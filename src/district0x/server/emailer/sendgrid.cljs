@@ -14,7 +14,8 @@
               :personalizations [{:to [{:email to-email}]
                                   :substitutions {":header" header
                                                   ":button-title" button-title
-                                                  ":button-href" button-href}}]
+                                                  ":button-href" button-href
+                                                  ":unsubscribe-href" (str (state/config :client) "/my-settings")}}]
               :subject subject
               :content [{:type "text/html"
                          :value content}]
