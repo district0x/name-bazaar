@@ -2,13 +2,13 @@
   (:require [re-frame.core :refer [reg-sub subscribe]]
             [reagent.ratom :refer-macros [reaction]]))
 
-(defn share-buttons [page-url title]
+(defn share-buttons [{:keys [url title]}]
   [:div.share-buttons
    [:div.title "Share On:"]
    [:a {:target "_blank"
-        :href (str "https://www.facebook.com/sharer/sharer.php?u=" page-url "&title=" title)}
+        :href (str "https://www.facebook.com/sharer/sharer.php?u=" url "&title=" title)}
     [:i.icon.fb]]
    [:a {:target "_blank"
-        :href (str "https://twitter.com/home?status=" title "+" page-url)}
+        :href (str "https://twitter.com/home?status=" title "+" url)}
     [:i.icon.twitter]]])
 

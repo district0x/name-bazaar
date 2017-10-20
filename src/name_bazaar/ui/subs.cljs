@@ -58,9 +58,9 @@
     (str
      root-url
      "/"
-     (path-for route (merge {:user/address (if my-address
-                                             (str my-address)
-                                             "")}
-                            params)))
+     (path-for route (merge
+                      (when my-address
+                        {:user/address (str my-address)})
+                      params)))
     "#"
     "%23")))
