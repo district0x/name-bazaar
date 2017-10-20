@@ -96,8 +96,9 @@
                              :gas-price default-gas-price
                              :value (eth->wei (:offering/price form-data))}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "You successfully bought %s!" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "You successfully bought %s!" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :buy-now-offering/set-settings
@@ -114,7 +115,8 @@
                  :tx-opts {:gas 200000 :gas-price default-gas-price}
                  :form-id (select-keys form-data [:offering/address])
                  :wei-keys #{:offering/price}
-                 :on-tx-receipt [:offering/set-settings-tx-receipt form-data]}]}))
+                 :on-tx-receipt-n [[:offering/set-settings-tx-receipt form-data]
+                                   [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]}))
 
 (reg-event-fx
   :auction-offering/bid
@@ -133,8 +135,9 @@
                              :value (eth->wei (:offering/price form-data))}
                    :wei-keys #{:offering/price}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Bid for %s was processed" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Bid for %s was processed" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/finalize
@@ -152,8 +155,9 @@
                              :gas-price default-gas-price
                              :value (:offering/price form-data)}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Auction %s was finalized" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Auction %s was finalized" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/withdraw
@@ -178,8 +182,9 @@
                    :result-href (path-for :route.offerings/detail form-data)
                    :tx-opts {:gas 150000 :gas-price default-gas-price}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "%s ETH was withdrawn from auction" formatted-returns)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "%s ETH was withdrawn from auction" formatted-returns)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/set-settings
@@ -203,7 +208,8 @@
                                 :auction-offering/min-bid-increase]
                    :form-id (select-keys form-data [:offering/address])
                    :tx-opts {:gas 200000 :gas-price default-gas-price}
-                   :on-tx-receipt [:offering/set-settings-tx-receipt form-data]
+                   :on-tx-receipt-n [[:offering/set-settings-tx-receipt form-data]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]
                    :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]})))
 
 (reg-event-fx
@@ -230,8 +236,9 @@
                    :result-href (path-for :route.offerings/detail form-data)
                    :form-id (select-keys form-data [:offering/address])
                    :tx-opts {:gas 200000 :gas-price default-gas-price}
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Ownership of %s was reclaimed" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Ownership of %s was reclaimed" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :offerings/search
@@ -357,7 +364,7 @@
 (reg-event-fx
   :offerings/on-offering-changed
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering :version]}]]
+  (fn [{:keys [:db]} [{:keys [:offering]}]]
     (merge
       {:dispatch-n [[:offerings/load [offering]]
                     [:offerings.ownership/load [offering]]
