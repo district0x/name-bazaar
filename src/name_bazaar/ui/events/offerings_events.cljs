@@ -122,7 +122,7 @@
   (fn [{:keys [:db]} [form-data]]
     (let [offering-name (get-offering-name db (:offering/address form-data))]
       {:dispatch [:district0x/make-transaction
-                  {:name offering-name
+                  {:name (gstring/format "Bid for %s" offering-name)
                    :contract-key :auction-offering
                    :contract-method :bid
                    :form-data form-data
