@@ -71,7 +71,9 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             [share-buttons]]]
+             [share-buttons
+              @(subscribe [:page-share-url :route.user/offerings {}])
+              "My ENS Offerings"]]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn
