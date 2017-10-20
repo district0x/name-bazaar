@@ -53,7 +53,7 @@
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
-            [lein-figwheel "0.5.13"]
+            [lein-figwheel "0.5.14"]
             [lein-shell "0.5.0"]
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]
@@ -80,8 +80,8 @@
 
   :min-lein-version "2.5.3"
 
-  :source-paths []
-
+  :source-paths ["src" "test"]
+  
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :figwheel {:server-port 4544       
@@ -104,7 +104,7 @@
                                   [com.cemerick/piggieback "0.2.2"]                                  
                                   [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
-                   :source-paths ["dev"]
+                   :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
   :cljsbuild {:builds [{:id "dev"
