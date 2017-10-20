@@ -2,7 +2,7 @@
   (:require [cljs-web3.eth :as web3-eth]
             [cljs.core.async :refer [<! >! chan]]        
             [district0x.server.state :as state]
-            [district0x.shared.utils :as d0x-shared-utils :refer [jsobj->clj]]
+            [district0x.shared.utils :as d0x-shared-utils]
             [goog.format.EmailAddress :as email-address]
             [name-bazaar.server.contracts-api.district0x-emails :as district0x-emails-api]
             [name-bazaar.server.contracts-api.offering :as offering-api]
@@ -48,7 +48,7 @@
                                                        :button-title "See offering details"
                                                        :button-href (templates/form-link offering)}
                                                       #(logging/info "Success sending email to requesting address" {:address address})
-                                                      #(logging/error "Error sending email to requesting address" {:error (jsobj->clj %)}))))))
+                                                      #(logging/error "Error sending email to requesting address" {:error %}))))))
             (logging/info "No requesters found for offering" {:offering offering})))))))
 
 (defn- on-auction-finalized
@@ -65,7 +65,7 @@
                                            :button-title "See auction details"
                                            :button-href (templates/form-link offering)}
                                           #(logging/info "Success sending email to owner" {:address original-owner})
-                                          #(logging/error "Error sending email to owner" {:error (jsobj->clj %)}))
+                                          #(logging/error "Error sending email to owner" {:error %}))
         (logging/warn "Empty or malformed email" {:address original-owner}))
       
       (if-let [to-email winner-encrypted-email]
@@ -77,7 +77,7 @@
                                            :button-title "See auction details"
                                            :button-href (templates/form-link offering)}
                                           #(logging/info "Success sending email to winner" {:address winning-bidder})
-                                          #(logging/error "Error sending email to winner" {:error (jsobj->clj %)}))
+                                          #(logging/error "Error sending email to winner" {:error %}))
         (logging/warn "Empty or malformed winner email" {:address winning-bidder})))))
 
 (defn- on-offering-bought [server-state offering original-owner name price]
@@ -92,7 +92,7 @@
                                            :button-title "See offering details"
                                            :button-href (templates/form-link offering)}
                                           #(logging/info "Success sending email to owner" {:address original-owner})
-                                          #(logging/error "Error sending email" {:error (jsobj->clj %)}))))))
+                                          #(logging/error "Error sending email" {:error %}))))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (logging/info "Handling blockchain event" {:args args})
@@ -117,7 +117,7 @@
                                            :button-title "See auction details"
                                            :button-href (templates/form-link offering)}
                                           #(logging/info "Success sending on-new-bid email")
-                                          #(logging/error "Error when sending on-new-bid email" {:error (jsobj->clj %)}))))))
+                                          #(logging/error "Error when sending on-new-bid email" {:error %}))))))
 
 (defn stop-event-listeners! []
   (doseq [listener @event-listeners]

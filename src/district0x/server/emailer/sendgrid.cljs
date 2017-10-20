@@ -22,19 +22,18 @@
               :template_id "93c0f083-1fcc-4a47-ae7c-2c8aef50c3ea"}]    
     (POST sendgrid-public-api
           {:headers {"Authorization" (str "Bearer " (state/config :sendgrid-api-key))
-                     "Content-type" "application/json"}
-           :body (server-utils/clj->json body)}
-          :handler success-handler
-          :error-handler error-handler)))
+                     "Content-Type" "application/json"}
+           :body (server-utils/clj->json body)
+           :handler success-handler
+           :error-handler error-handler})))
 
-(comment
-  (defn sendmail []
-    (district0x.server.emailer.sendgrid/send-notification-email {:from-email "test@test.com"
-                                                                 :to-email "asfuh@sharklasers.com"
-                                                                 :subject "Subject"
-                                                                 :content "content"}
-                                                                {:header "was bought"
-                                                                 :button-title "See offering details"
-                                                                 :button-href "www.google.be"}
-                                                                #(prn "Success!")
-                                                                #(prn "Error: " (district0x.shared.utils/jsobj->clj %)))))
+(defn sendmail []
+  (district0x.server.emailer.sendgrid/send-notification-email {:from-email "test@test.com"
+                                                               :to-email "asfuh@sharklasers.com"
+                                                               :subject "Subject"
+                                                               :content "content"}
+                                                              {:header "was bought"
+                                                               :button-title "See offering details"
+                                                               :button-href "www.google.be"}
+                                                              #(prn "Success!")
+                                                              #(prn "Error: " %)))
