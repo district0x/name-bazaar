@@ -163,8 +163,7 @@
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
                                    :bidder :winning-bidder :exclude-winning-bidder :finalized?]
                             :or {offset 0 limit -1 root-name "eth"}}]
-  (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
+  (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
         max-price (js/parseInt max-price)
         min-length (js/parseInt min-length)
@@ -222,8 +221,7 @@
 (defn search-offering-requests [db {:keys [:limit :offset :name :name-position
                                            :order-by :root-name :select-fields :total-count?]
                                     :or {offset 0 limit -1 root-name "eth"}}]
-  (let [select-fields (collify select-fields)
-        select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:offering-requests.node])
+  (let [select-fields (if (s/valid? ::offering-requests-select-fields select-fields) select-fields [:offering-requests.node])
         name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
