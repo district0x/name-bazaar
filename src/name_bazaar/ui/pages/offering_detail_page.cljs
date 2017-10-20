@@ -175,7 +175,9 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             [share-buttons]]]]
+             [share-buttons
+              {:url @(subscribe [:page-share-url :route.offerings/detail offering])
+               :title (str "I'm offering " (:offering/name offering) " on namebazaar.io")}]]]]
           (if offering-loaded?
             [offering-detail]
             [:div.padded [content-placeholder]])]

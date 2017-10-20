@@ -12,21 +12,28 @@
     [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [dispatch]]))
 
+(goog-define environment "production")
+
 (def development-config
   {:node-url "http://localhost:8549"
    :load-node-addresses? true
+   :root-url "https://beta.namebazaar.io"
    :server-url "http://localhost:6200"})
 
 (def production-config
   {:node-url "https://ropsten.infura.io/"
    :load-node-addresses? false
+   :root-url "https://namebazaar.io"
    :server-url "https://api.namebazaar.io"})
+
+(defn get-config [env-name]
+  (get {"dev" development-config
+        "prod" production-config} env-name production-config))
 
 (def default-db
   (merge
     district0x.ui.db/default-db
-    ;development-config
-    production-config
+    (get-config environment)
     {:active-page (if (d0x-ui-utils/hashroutes?)
                     (d0x-ui-utils/match-current-location constants/routes)
                     (d0x-ui-utils/match-current-location constants/routes (history/get-state)))
