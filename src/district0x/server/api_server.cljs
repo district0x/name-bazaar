@@ -105,7 +105,7 @@
 
 (defn parse-order-by [{:keys [:order-by-columns :order-by-dirs] :as query}]
   (-> query
-    (assoc :order-by (parse-order-by-search-params (collify order-by-columns) (collify order-by-dirs)))
+    (assoc :order-by (map (partial mapv keyword) (parse-order-by-search-params (collify order-by-columns) (collify order-by-dirs))))
     (dissoc :order-by-columns :order-by-dirs)))
 
 (def sanitize-query (comp restrict-limit
