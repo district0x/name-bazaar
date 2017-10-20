@@ -1,6 +1,7 @@
 (ns name-bazaar.ui.utils
   (:require
     [cemerick.url :as url]
+    [clojure.data :as data]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -128,3 +129,12 @@
    :registrar.entry.state/forbidden "Forbidden"
    :registrar.entry.state/reveal "Reveal Period"
    :registrar.entry.state/not-yet-available "Not Yet Available"})
+
+(defn debounce?
+  "if the newly changed params are exactly one of expected ks"
+  [old new ks]
+  (let [changed-keys (-> (data/diff old new)
+                       second
+                       keys)]
+    (and (= (count changed-keys) 1)
+         (contains? (set ks) (first changed-keys)))))

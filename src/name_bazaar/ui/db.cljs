@@ -18,18 +18,18 @@
    :server-url "http://localhost:6200"})
 
 (def production-config
-  {:node-url "https://kovan.infura.io/"
+  {:node-url "https://ropsten.infura.io/"
    :load-node-addresses? false
    :server-url "https://api.namebazaar.io"})
 
 (def default-db
   (merge
     district0x.ui.db/default-db
-    development-config
-    ;production-config
+    ;development-config
+    production-config
     {:active-page (if (d0x-ui-utils/hashroutes?)                    
                     (d0x-ui-utils/match-current-location constants/routes)
-                    (d0x-ui-utils/match-current-location @history/routes (history/get-state)))
+                    (d0x-ui-utils/match-current-location @history/routes (history/get-state))) 
      :smart-contracts smart-contracts
      :now (t/now)
 

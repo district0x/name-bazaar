@@ -13,7 +13,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -96,8 +96,9 @@
                              :gas-price default-gas-price
                              :value (eth->wei (:offering/price form-data))}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "You successfully bought %s!" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "You successfully bought %s!" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :buy-now-offering/set-settings
@@ -111,10 +112,11 @@
                  :contract-address (:offering/address form-data)
                  :args-order [:offering/price]
                  :result-href (path-for :route.offerings/detail form-data)
-                 :tx-opts {:gas 250000 :gas-price default-gas-price}
+                 :tx-opts {:gas 200000 :gas-price default-gas-price}
                  :form-id (select-keys form-data [:offering/address])
                  :wei-keys #{:offering/price}
-                 :on-tx-receipt [:offering/set-settings-tx-receipt form-data]}]}))
+                 :on-tx-receipt-n [[:offering/set-settings-tx-receipt form-data]
+                                   [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]}))
 
 (reg-event-fx
   :auction-offering/bid
@@ -122,7 +124,7 @@
   (fn [{:keys [:db]} [form-data]]
     (let [offering-name (get-offering-name db (:offering/address form-data))]
       {:dispatch [:district0x/make-transaction
-                  {:name offering-name
+                  {:name (gstring/format "Bid for %s" offering-name)
                    :contract-key :auction-offering
                    :contract-method :bid
                    :form-data form-data
@@ -133,8 +135,9 @@
                              :value (eth->wei (:offering/price form-data))}
                    :wei-keys #{:offering/price}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Bid for %s was processed" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Bid for %s was processed" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/finalize
@@ -152,8 +155,9 @@
                              :gas-price default-gas-price
                              :value (:offering/price form-data)}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Auction %s was finalized" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Auction %s was finalized" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/withdraw
@@ -178,8 +182,9 @@
                    :result-href (path-for :route.offerings/detail form-data)
                    :tx-opts {:gas 150000 :gas-price default-gas-price}
                    :form-id (select-keys form-data [:offering/address])
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "%s ETH was withdrawn from auction" formatted-returns)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "%s ETH was withdrawn from auction" formatted-returns)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :auction-offering/set-settings
@@ -202,8 +207,9 @@
                                 :auction-offering/extension-duration
                                 :auction-offering/min-bid-increase]
                    :form-id (select-keys form-data [:offering/address])
-                   :tx-opts {:gas 1000000 :gas-price default-gas-price}
-                   :on-tx-receipt [:offering/set-settings-tx-receipt form-data]
+                   :tx-opts {:gas 200000 :gas-price default-gas-price}
+                   :on-tx-receipt-n [[:offering/set-settings-tx-receipt form-data]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]
                    :wei-keys #{:offering/price :auction-offering/min-bid-increase}}]})))
 
 (reg-event-fx
@@ -230,8 +236,9 @@
                    :result-href (path-for :route.offerings/detail form-data)
                    :form-id (select-keys form-data [:offering/address])
                    :tx-opts {:gas 200000 :gas-price default-gas-price}
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Ownership of %s was reclaimed" offering-name)]}]})))
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Ownership of %s was reclaimed" offering-name)]
+                                     [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
 (reg-event-fx
   :offerings/search
@@ -357,7 +364,7 @@
 (reg-event-fx
   :offerings/on-offering-changed
   interceptors
-  (fn [{:keys [:db]} [{:keys [:offering :version]}]]
+  (fn [{:keys [:db]} [{:keys [:offering]}]]
     (merge
       {:dispatch-n [[:offerings/load [offering]]
                     [:offerings.ownership/load [offering]]
@@ -413,17 +420,23 @@
 (reg-event-fx
   :offerings.main-search/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]
+  (fn [{old-db :db} [search-params opts]]
     (let [search-results-path [:search-results :offerings :main-search]
           search-params-path (conj search-results-path :params)
-          {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
-      {:db db
-       :dispatch [:offerings/search {:search-results-path search-results-path
-                                     :append? (:append? opts)
-                                     :params (d0x-shared-utils/update-multi
-                                               search-params
-                                               [:min-price :max-price]
-                                               d0x-shared-utils/safe-eth->wei->num)}]})))
+          {new-db :db new-search-params :search-params} (update-search-results-params old-db search-params-path search-params opts)]
+      {:db new-db
+       :dispatch-debounce {:key :offerings/search
+                           :event [:offerings/search {:search-results-path search-results-path
+                                                      :append? (:append? opts)
+                                                      :params (d0x-shared-utils/update-multi
+                                                                new-search-params
+                                                                [:min-price :max-price]
+                                                                d0x-shared-utils/safe-eth->wei->num)}]
+                           :delay (if (debounce? (get-in old-db search-params-path)
+                                                 new-search-params
+                                                 [:name :min-price :max-price])
+                                    300
+                                    0)}})))
 
 (reg-event-fx
   :offerings.ens-record-offerings/set-params-and-search

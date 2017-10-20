@@ -266,6 +266,12 @@
   identity)
 
 (reg-sub
+  :buy-now-offering.set-settings/tx-pending?
+  (fn [[_ offering-address]]
+    (subscribe [:district0x/tx-pending? :buy-now-offering :set-settings {:offering/address offering-address}]))
+  identity)
+
+(reg-sub
   :auction-offering.bid/tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :auction-offering :bid {:offering/address offering-address}]))
@@ -287,4 +293,10 @@
   :auction-offering.finalize/tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :auction-offering :finalize {:offering/address offering-address}]))
+  identity)
+
+(reg-sub
+  :auction-offering.set-settings/tx-pending?
+  (fn [[_ offering-address]]
+    (subscribe [:district0x/tx-pending? :auction-offering :set-settings {:offering/address offering-address}]))
   identity)

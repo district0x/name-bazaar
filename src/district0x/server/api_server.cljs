@@ -105,11 +105,15 @@
 
 (defn parse-order-by [{:keys [:order-by-columns :order-by-dirs] :as query}]
   (-> query
-    (assoc :order-by (parse-order-by-search-params (collify order-by-columns) (collify order-by-dirs)))
+    (assoc :order-by (map (partial mapv keyword) (parse-order-by-search-params (collify order-by-columns) (collify order-by-dirs))))
     (dissoc :order-by-columns :order-by-dirs)))
+
+(defn parse-select-fields [{:keys [:select-fields] :as query}]
+  (update query :select-fields (comp (partial map keyword) collify)))
 
 (def sanitize-query (comp restrict-limit
                           parse-order-by
+                          parse-select-fields
                           parse-keyword-values
                           parse-boolean-values))
 
