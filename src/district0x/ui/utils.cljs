@@ -23,13 +23,14 @@
     (>= width 768) 1
     :else 0))
 
-;; TODO: get whitelisted domains from config
+;; TODO: get pushroute-hosts  from config
 (defn hashroutes? []
-  (when-not (contains? #{"beta.namebazaar.io" "namebazaar.io"}
-                       (-> js/window
-                           .-location
-                           .-hostname))
-    true))
+  (let [pushroute-hosts #{"beta.namebazaar.io" "namebazaar.io"}]
+    (when-not (contains? pushroute-hosts
+                         (-> js/window
+                             .-location
+                             .-hostname))
+      true)))
 
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
