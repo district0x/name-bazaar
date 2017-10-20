@@ -84,7 +84,8 @@
   
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-  :figwheel {:server-port 4544       
+  :figwheel {:server-port 4544
+             :ring-handler dev-server/web-handler
              :css-dirs ["resources/public/css"]}
 
   :repl-options {:timeout 120000}
@@ -101,7 +102,8 @@
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [binaryage/devtools "0.9.7"]
-                                  [com.cemerick/piggieback "0.2.2"]                                  
+                                  [com.cemerick/piggieback "0.2.2"]
+                                  [compojure "1.6.0"]
                                   [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev" "src"]

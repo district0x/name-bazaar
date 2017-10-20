@@ -25,11 +25,11 @@
 (def default-db
   (merge
     district0x.ui.db/default-db
-    ;development-config
-    production-config
-    {:active-page (if (d0x-ui-utils/hashroutes?)                    
+    development-config
+    ;production-config
+    {:active-page (if (d0x-ui-utils/hashroutes?)
                     (d0x-ui-utils/match-current-location constants/routes)
-                    (d0x-ui-utils/match-current-location @history/routes (history/get-state))) 
+                    (d0x-ui-utils/match-current-location constants/routes (history/get-state)))
      :smart-contracts smart-contracts
      :now (t/now)
 
