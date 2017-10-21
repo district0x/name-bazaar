@@ -80,7 +80,7 @@
                 (if (:user/address @route-params)
                   (truncate (:user/address @route-params) 10)
                   "My")
-                " ENS Offerings")}]]]
+                " Name Offerings")}]]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn

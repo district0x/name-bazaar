@@ -61,5 +61,4 @@
                       (when my-address
                         {:user/address (str my-address)})
                       params)))
-    "#"
-    "%23")))
+    "#" "")))
