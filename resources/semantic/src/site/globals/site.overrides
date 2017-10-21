@@ -468,6 +468,10 @@ h4, h5, h6 {
     animation-name: placeholder-shimmer-short;
   }
 
+  @media only screen and (max-width: @largestMobileScreen) {
+    animation-name: placeholder-shimmer-short;
+  }
+
   &.list-item-placeholder {
     display: flex;
     align-self: stretch;
@@ -520,7 +524,11 @@ h4, h5, h6 {
       &.masker-1 {
         height: 15px;
         width: 80%;
-        left: 20%
+        left: 20%;
+        @media only screen and (max-width: @largestMobileScreen) {
+          width: 70%;
+          left: 30%;
+        }
       }
       &.masker-2 {
         height: 10px;
@@ -531,7 +539,11 @@ h4, h5, h6 {
         height: 15px;
         width: 70%;
         left: 30%;
-        top: 25px
+        top: 25px;
+        @media only screen and (max-width: @largestMobileScreen) {
+          width: 55%;
+          left: 45%;
+        }
       }
       &.masker-4 {
         height: 10px;
@@ -542,7 +554,11 @@ h4, h5, h6 {
         height: 15px;
         width: 60%;
         left: 40%;
-        top: 50px
+        top: 50px;
+        @media only screen and (max-width: @largestMobileScreen) {
+          width: 40%;
+          left: 60%;
+        }
       }
     }
   }
