@@ -57,7 +57,6 @@
    (string/replace
     (str
      root-url
-     "/"
      (path-for route (merge
                       (when my-address
                         {:user/address (str my-address)})
