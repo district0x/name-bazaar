@@ -7,8 +7,8 @@
    [:div.title "Share On:"]
    [:a {:on-click (fn []
                     (js/FB.ui (clj->js {:method "feed"
-                                        :link (print.foo/look url)
-                                        :caption (print.foo/look title)})))}
+                                        :link url
+                                        :caption title})))}
     [:i.icon.fb]]
    [:a {:target "_blank"
         :href (str "https://twitter.com/intent/tweet?text=" title "&url=" url)}
