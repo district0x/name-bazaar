@@ -21,7 +21,7 @@
           name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Transfer %s ownership" name)
-                   :contract-key :mock-registrar #_:registrar ;; TODO handling mock-registrar vs registrar
+                   :contract-key :registrar
                    :contract-method :transfer
                    :form-data form-data
                    :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
@@ -41,7 +41,7 @@
           form-data (assoc form-data :ens.record/label-hash (sha3 label))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Register %s" ens-record-name)
-                   :contract-key :mock-registrar
+                   :contract-key :registrar
                    :contract-method :register
                    :form-data form-data
                    :result-href (path-for :route.ens-record/detail {:ens.record/name ens-record-name})
@@ -54,7 +54,7 @@
   :registrar.entries/load
   interceptors
   (fn [{:keys [:db]} [label-hashes]]
-    (let [instance (get-instance db :mock-registrar)]
+    (let [instance (get-instance db :registrar)]
       {:web3-fx.contract/constant-fns
        {:fns (for [label-hash label-hashes]
                {:instance instance

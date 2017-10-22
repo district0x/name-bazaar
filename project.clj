@@ -133,8 +133,7 @@
                                    :output-dir "dev-server",
                                    :target :nodejs,
                                    :optimizations :none,
-                                   :closure-defines {goog.DEBUG true
-                                                     name-bazaar.ui.db.environment "dev"}
+                                   :closure-defines {goog.DEBUG true}
                                    :source-map true}}
                        {:id "server"
                         :source-paths ["src"]
@@ -144,8 +143,7 @@
                                    :target :nodejs,
                                    :optimizations :simple,
                                    :source-map "server/name-bazaar.js.map"
-                                   :closure-defines {goog.DEBUG false
-                                                     name-bazaar.ui.db.environment "prod"}
+                                   :closure-defines {goog.DEBUG false}
                                    :pretty-print false}}
                        {:id "min"
                         :source-paths ["src"]

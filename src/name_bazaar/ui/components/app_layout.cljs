@@ -4,6 +4,7 @@
     [district0x.ui.components.active-address-select :refer [active-address-select]]
     [district0x.ui.components.snackbar :refer [snackbar]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
+    [district0x.ui.utils :refer [hashroutes?]]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for]]
     [re-frame.core :refer [subscribe dispatch]]
@@ -66,7 +67,7 @@
                             :class :my-settings
                             :icon "settings"}
                            {:text "Register Name"
-                            :route :route.mock-registrar/register
+                            :route :route.registrar/register
                             :class :register-name
                             :icon "pencil"}
                            {:text "How it works"
@@ -77,6 +78,8 @@
                             :route :route/about
                             :class :about
                             :icon "question"}])
+
+(def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
@@ -105,7 +108,8 @@
   (let [drawer-open? (subscribe [:district0x/menu-drawer-open?])
         min-computer-screen? (subscribe [:district0x.screen-size/min-computer-screen?])
         active-page (subscribe [:district0x/active-page])
-        app-container-ref (r/atom nil)]
+        app-container-ref (r/atom nil)
+        use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])]
     (fn [& children]
       [:div.app-container
        {:ref (fn [el]
@@ -122,7 +126,9 @@
          {:style {:overflow-y :scroll}}
          [side-nav-menu-logo]
          (doall
-           (for [{:keys [:text :route :href :class :icon :on-click]} nav-menu-items-props]
+           (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
+                                                                       nav-menu-items-props
+                                                                       nav-menu-items-props-no-register)]
              (let [href (or href (path-for route))]
                [ui/MenuItem
                 {:key text
@@ -130,7 +136,7 @@
                  :href href
                  :class class
                  :on-click #(dispatch [:district0x.window/scroll-to-top])
-                 :active (= (str "#" (:path @active-page)) href)}
+                 :active (= (str (when (hashroutes?) "#") (:path @active-page)) href)}
                 [:i.icon
                  {:class icon}]
                 text])))

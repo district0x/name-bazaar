@@ -15,7 +15,7 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.db :as db]
     [name-bazaar.shared.utils :refer [offering-version->type]]
-    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
+    [name-bazaar.server.contracts-api.registrar :as registrar]
     [taoensso.timbre :as logging :refer-macros [info warn error]])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [district0x.server.macros :refer [gotry]]))

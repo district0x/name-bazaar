@@ -239,4 +239,8 @@ contract AuctionOffering is Offering {
     function pendingReturns(address bidder) public constant returns (uint) {
         return auctionOffering.pendingReturns[bidder];
     }
+
+    function() payable {
+        bid();
+    }
 }

@@ -2,7 +2,7 @@
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
-        ["register" :route.mock-registrar/register]
+        ["register" :route.registrar/register]
         ["watched-names" :route/watched-names]
         [["user/" :user/address "/offerings"] :route.user/offerings]
         [["user/" :user/address "/purchases"] :route.user/purchases]

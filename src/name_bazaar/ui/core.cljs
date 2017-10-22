@@ -52,5 +52,5 @@
                                      :dispatch-to [:active-page-changed]}
                     :dispatch-n [[:setup-update-now-interval]
                                  [:district0x/load-conversion-rates [:USD]]
-                                 [:district0x.config/load]]}}])
+                                  [:district0x.config/load]]}}])
   (mount-root))

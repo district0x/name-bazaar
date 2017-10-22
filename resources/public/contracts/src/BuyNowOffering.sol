@@ -38,4 +38,8 @@ contract BuyNowOffering is Offering {
         super.doSetSettings(_price);
         fireOnChanged("setSettings");
     }
+
+    function() payable {
+        buy();
+    }
 }

@@ -41,7 +41,7 @@
                          (reset! label "")))}
           "Register"]]]])))
 
-(defmethod page :route.mock-registrar/register []
+(defmethod page :route.registrar/register []
   [app-layout
    [ui/Segment
     [:h1.ui.header.padded "Register Name"]

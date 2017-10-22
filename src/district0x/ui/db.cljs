@@ -10,6 +10,7 @@
    :contracts-not-found? false
    :screen-size (get-screen-size js/window.innerWidth)
    :ui-disabled? false
+   :config {}
    :snackbar {:open? false
               :message ""
               :action-href nil

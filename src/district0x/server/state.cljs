@@ -20,10 +20,13 @@
                          :mainnet-port 8545
                          :pushroute-hosts ["beta.namebazaar.io" "namebazaar.io"]
                          :client "http://0.0.0.0:4544"
+                         :use-instant-registrar? true
                          :logging {:level :info
                                    :console true}})
 
-(defonce whitelisted-config-keys ^{:doc "Config keys that are safe to be propagated to the UI"} #{:public-key :frontend-url})
+(defonce whitelisted-config-keys
+         ^{:doc "Config keys that are safe to be propagated to the UI"}
+         #{:public-key :frontend-url :use-instant-registrar?})
 
 (defn web3
   ([]

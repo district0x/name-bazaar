@@ -40,7 +40,7 @@
 (s/def :db/blockchain-connection-error? boolean?)
 (s/def :balance/currency keyword?)
 (s/def :db/balances (s/map-of address? (s/map-of :balance/currency not-neg?)))
-(s/def :db/ui-disabled? boolean?)
+(s/def :db/config (s/map-of keyword? any?))
 
 (s/def :form/key keyword?)
 (s/def :form/field keyword?)
@@ -142,8 +142,8 @@
                                           :db/smart-contracts
                                           :db/snackbar
                                           :db/web3
-                                          :db/ui-disabled?
-                                          :db/transaction-log]
+                                          :db/transaction-log
+                                          :db/config]
                                  :opt-un [:db/active-page
                                           :db/menu-drawer
                                           :db/balances

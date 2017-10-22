@@ -32,7 +32,7 @@
 (defn deploy-registrar! [server-state-atom default-opts]
   (d0x-effects/deploy-smart-contract! server-state-atom
                                       (merge default-opts
-                                             {:contract-key :mock-registrar
+                                             {:contract-key :registrar
                                               :gas 2700000
                                               :args [(state/contract-address @server-state-atom :ens)
                                                      (namehash "eth")]})))
@@ -105,7 +105,7 @@
       (<! (ens/set-subnode-owner! @server-state-atom
                                   {:ens.record/label "eth"
                                    :ens.record/node ""
-                                   :ens.record/owner (state/contract-address @server-state-atom :mock-registrar)}))
+                                   :ens.record/owner (state/contract-address @server-state-atom :registrar)}))
 
       (<! (deploy-offering-registry! server-state-atom deploy-opts {:emergency-multisig emergency-wallet}))
       (<! (deploy-offering-requests! server-state-atom deploy-opts))

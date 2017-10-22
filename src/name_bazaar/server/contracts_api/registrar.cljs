@@ -1,4 +1,4 @@
-(ns name-bazaar.server.contracts-api.mock-registrar
+(ns name-bazaar.server.contracts-api.registrar
   (:require
     [cljs-web3.async.eth :as web3-eth-async]
     [cljs-web3.eth :as web3-eth]
@@ -14,7 +14,7 @@
 
 (defn register! [server-state {:keys [:ens.record/hash :ens.record/label]} & [opts]]
   (effects/logged-contract-call! server-state
-                                 (state/instance server-state :mock-registrar)
+                                 (state/instance server-state :registrar)
                                  :register
                                  (d0x-server-utils/sha3 label hash)
                                  (merge {:gas 2000000
@@ -23,7 +23,7 @@
 
 (defn transfer! [server-state {:keys [:ens.record/hash :ens.record/label :ens.record/owner]} & [opts]]
   (effects/logged-contract-call! server-state
-                                 (state/instance server-state :mock-registrar)
+                                 (state/instance server-state :registrar)
                                  :transfer
                                  (d0x-server-utils/sha3 label hash)
                                  owner
@@ -35,7 +35,7 @@
   (web3-eth-async/contract-call
     (chan 1 (map (fn [[err res]]
                    [err (parse-registrar-entry res)])))
-    (state/instance :mock-registrar) :entries (d0x-server-utils/sha3 label hash)))
+    (state/instance :registrar) :entries (d0x-server-utils/sha3 label hash)))
 
 (defn entry-deed-owner [server-state args & [opts]]
   (let [ch (chan)]
@@ -45,5 +45,5 @@
     ch))
 
 (defn ens [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :mock-registrar) :ens))
+  (web3-eth-async/contract-call (state/instance server-state :registrar) :ens))
 

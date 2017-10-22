@@ -12,7 +12,7 @@
     [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [dispatch]]))
 
-(goog-define environment "production")
+(goog-define environment "prod")
 
 (def development-config
   {:node-url "http://localhost:8549"

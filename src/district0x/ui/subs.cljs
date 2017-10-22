@@ -125,6 +125,11 @@
     (:screen-size db)))
 
 (reg-sub
+  :district0x/config
+  (fn [db [_ config-key]]
+    (get-in db [:config config-key])))
+
+(reg-sub
   :district0x.screen-size/min-large-screen?
   :<- [:district0x/screen-size]
   (fn [screen-size]

@@ -12,7 +12,7 @@
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
     [name-bazaar.server.contracts-api.ens :as ens]
-    [name-bazaar.server.contracts-api.mock-registrar :as registrar]
+    [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [district0x.shared.utils :as d0x-shared-utils])

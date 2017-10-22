@@ -40,7 +40,7 @@
 (reg-sub
   :registrar.transfer/tx-pending?
   (fn [[_ ens-record-label]]
-    [(subscribe [:district0x/tx-pending? :mock-registrar #_:registrar :transfer {:ens.record/label ens-record-label}])])
+    [(subscribe [:district0x/tx-pending? :registrar :transfer {:ens.record/label ens-record-label}])])
   first)
 
 

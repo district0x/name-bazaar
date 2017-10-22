@@ -12,7 +12,7 @@
     :address "0x4c3f9d8079c42453efde2cd3b530cbaf3f047010"},
    :registrar
    {:name "Registrar",
-    :address "0x542d337975c2f9b436621024df371244bd53a0af"},
+    :address "0x9efb658ad2c9e11700999c93b859d87e88cba2a1"},
    :buy-now-offering
    {:name "BuyNowOffering",
     :address "0x0a41e7d965e87f1c1d341435e9f5871bc475408d"},
@@ -23,9 +23,6 @@
    {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
    :ens
    {:name "ENS", :address "0x7eaf663a2e94548102e46ffa64297f72b164b095"},
-   :mock-registrar
-   {:name "MockRegistrar",
-    :address "0x9efb658ad2c9e11700999c93b859d87e88cba2a1"},
    :offering-registry
    {:name "OfferingRegistry",
     :address "0x8657447dd8b9f047f441efef421c5014b434b860"},
