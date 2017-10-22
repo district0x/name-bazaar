@@ -15,16 +15,17 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.shared.encryption-utils :as encryption-utils]
     [district0x.shared.big-number :as bn]
+    [district0x.shared.encryption-utils :as encryption-utils]
     [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
+    [district0x.ui.history :as history]
     [district0x.ui.interval-fx]
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size path-for to-locale-string]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size path-for to-locale-string hashroutes? current-location-hash]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -95,7 +96,9 @@
                                             transactions)]
       (merge
         {:db db
-         :ga/page-view [(d0x-ui-utils/current-location-hash)]
+         :ga/page-view [(if (hashroutes?)
+                          (current-location-hash)
+                          (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
          :district0x/dispatch-n (vec (concat
@@ -127,7 +130,9 @@
                (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
                                                  :path path}))
                (assoc-in [:menu-drawer :open?] false))
-         :ga/page-view [(d0x-ui-utils/current-location-hash)]}
+         :ga/page-view [(if (hashroutes?)
+                          (current-location-hash)
+                          (history/get-state))]}
         (when-not (= handler (:handler (:active-page db)))
           {:window/scroll-to-top true})))))
 
@@ -676,8 +681,7 @@
   interceptors
   (fn [{:keys [:db]} errors]
     (apply console :error errors)
-    {:db db
-     :ga/event ["error" (first errors) (str (rest errors))]}))
+    nil))
 
 (reg-event-fx
   :district0x.log/info
