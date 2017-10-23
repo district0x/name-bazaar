@@ -6,15 +6,15 @@
             [name-bazaar.shared.constants :as shared-constants]))
 
 (defn form-link [offering]
- (let [client (:client state/config)]
-    (str "\"" client "/"
+  (let [client (state/config :client)]
+    (str "\"" client
          (bidi/path-for shared-constants/routes :route.offerings/detail :offering/address offering)
          "\"")))
 
 (defn on-offering-added [offering name]
   "Offering was created for name requested by user"
   (gstring/format
-   "An <a style=\"color:black\" href=%s>offering</a> has just been created for a name <b>%s</b> requested by you."
+   "An <a class=\"link\" href=%s>offering</a> has just been created for a name <b>%s</b> requested by you."
    (form-link offering)
    (gstring/htmlEscape name)))
 
@@ -24,7 +24,7 @@
 
       (= k :owner)
     (gstring/format
-     "Your <a style=\"color:black\" href=%s>auction</a> of a name <b>%s</b> has just been finalized. The winning bid was <b>%s</b>."
+     "Your <a class=\"link\" href=%s>auction</a> of a name <b>%s</b> has just been finalized. The winning bid was <b>%s</b>."
      (form-link offering)
      (gstring/htmlEscape name)
      (str (shared-utils/wei->eth price) " ETH"))
@@ -39,7 +39,7 @@
 (defn on-offering-bought [offering name price]
   "Seller's Buy Now offering was bought"
   (gstring/format
-   "Your Buy Now <a style=\"color:black\" href=%s>offering</a> for a name <b>%s</b> has just been bought for %s."
+   "Your Buy Now <a class=\"link\" href=%s>offering</a> for a name <b>%s</b> has just been bought for %s."
    (form-link offering)
    (gstring/htmlEscape name)
    (str (shared-utils/wei->eth price) " ETH")))
@@ -47,6 +47,6 @@
 (defn on-new-bid [offering name price]
   "Seller's Auction offering got new bid"
   (gstring/format
-   "Your <a style=\"color:black\" href=%s>auction</a> of a name <b>%s</b> just got a new bid for <b>%s</b>."
+   "Your <a class=\"link\" href=%s>auction</a> of a name <b>%s</b> just got a new bid for <b>%s</b>."
    (form-link offering)
    (str (shared-utils/wei->eth price) " ETH")))

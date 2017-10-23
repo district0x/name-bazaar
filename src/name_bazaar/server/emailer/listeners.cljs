@@ -42,7 +42,7 @@
                   (when-let [to-email (validate-email base64-encrypted-email)]
                     (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                                        :to-email to-email
-                                                       :subject ("Offering has been added: " name)
+                                                       :subject (str "Offering has been added: " name)
                                                        :content (templates/on-offering-added offering name)}
                                                       {:header (str name " offering added")
                                                        :button-title "See offering details"
@@ -113,7 +113,7 @@
       (when-let [to-email (validate-email owner-encrypted-email)]
         (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                            :to-email to-email
-                                           :subject (str "Your auction received a new bid: "name)
+                                           :subject (str "Your auction received a new bid: " name)
                                            :content (templates/on-new-bid offering name price)}
                                           {:header (str name " auction")
                                            :button-title "See auction details"
