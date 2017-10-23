@@ -71,7 +71,7 @@
     (<! (stop!))
     (setup-app!)
     (reset! *server* (.listen @*app* port (fn []
-                                            (logging/info "Server started" {:port port}))))))
+                                            (logging/info "Server started" {:port port} ::start!))))))
 
 
 

@@ -56,7 +56,7 @@
     ch))
 
 (defn on-offering-changed [server-state err {:keys [:args]}]
-  (logging/info "Handling blockchain event [on-offering-changed]" {:args args})
+  (logging/info "Handling blockchain event" {:args args} ::on-offering-changed)
   (gotry
     (let [offering (<! (get-offering-from-event server-state args))]
       (if (and (:offering/valid-name? offering)
@@ -65,7 +65,7 @@
         (warn [:MAILFORMED-NAME-OFFERING offering])))))
 
 (defn on-offering-bid [server-state err {{:keys [:offering :version :extra-data] :as args} :args}]
-  (logging/info "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args} ::on-offering-bid)
   (try
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
       (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
@@ -74,7 +74,7 @@
       (assoc :bid/offering offering)
       (->> (db/insert-bid! (state/db server-state))))
     (catch :default e
-      (logging/error "Error handling blockchain event" {:error (jsobj->clj e)}))))
+      (logging/error "Error handling blockchain event" {:error (jsobj->clj e)} ::on-offering-bid))))
 
 (defn stop-watching-filters! []
   (doseq [filter @event-filters]
@@ -82,14 +82,14 @@
       (web3-eth/stop-watching! filter (fn [])))))
 
 (defn on-request-added [server-state err {{:keys [:node :round :requesters-count] :as args} :args}]
-  (logging/info "Handling block event" {:args args})
+  (logging/info "Handling block event" {:args args} ::on-request-added)
   (db/upsert-offering-requests-rounds! (state/db server-state)
                                        {:offering-request/node node
                                         :offering-request/round (bn/->number round)
                                         :offering-request/requesters-count (bn/->number requesters-count)}))
 
 (defn on-round-changed [server-state err {{:keys [:node :latest-round] :as args} :args}]
-  (logging/info "Handling blockchain event" {:args args})
+  (logging/info "Handling blockchain event" {:args args} ::on-round-changed)
   (gotry
     (let [latest-round (bn/->number latest-round)
           request (second (<! (offering-requests/get-request server-state {:offering-request/node node})))]
@@ -108,7 +108,7 @@
     (let [offering (second (<! (offering/get-offering server-state owner)))]
       (when offering
         (do
-          (logging/info "Handling blockchain event" {:args args})
+          (logging/info "Handling blockchain event" {:args args} ::on-ens-new-owner)
           (let [owner? (<! (node-owner? server-state owner offering))]
             (db/set-offering-node-owner?! (state/db server-state) {:offering/address owner
                                                                    :offering/node-owner? owner?})))))))
