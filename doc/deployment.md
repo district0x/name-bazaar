@@ -9,8 +9,9 @@ Create configuration file in JSON format, for example namebazaar.json:
  "public-key" : "256ebc161b4751583b3718e7",
  "sendgrid-api-key" : "SG.SM1ZLW7YREWS6I",
  "client" : "https://namebazaar.io",
- "logging" : {"console" : true,
-                 "file" : {"path" : "/tmp/namebazaar.log"}}}
+ "logging" : {"level" : "info"
+              "console" : true,
+              "file" : {"path" : "/tmp/namebazaar.log"}}}
 ```
   - public-key will be used to encode information on the UI.
   - matching private-key will be used to decode information on the backend server (**protect your production config private-key!**).
