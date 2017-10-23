@@ -132,7 +132,7 @@
 
 (defn setup-listener!
   ([server-state contract-key event-key callback]
-   (setup-listener! server-state contract-key event-key true nil callback))
+   (setup-listener! server-state contract-key event-key false nil callback))
   ([server-state contract-key event-key retrieve-events? event-type callback]
    (web3-eth/contract-call (state/instance @server-state contract-key)
                            event-key
