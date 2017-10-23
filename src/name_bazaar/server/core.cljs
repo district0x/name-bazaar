@@ -18,6 +18,9 @@
 (def Web3 (nodejs/require "web3"))
 (set! js/Web3 Web3)
 
+(def ecc (nodejs/require "eccjs"))
+(set! js/ecc ecc)
+
 (defn -main [& _]
   (d0x-effects/load-config! *server-state* state/default-config)
   (d0x-logging/setup! (state/config @*server-state* :logging))

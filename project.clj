@@ -60,6 +60,7 @@
             [lein-pdo "0.1.1"]]
 
   :npm {:dependencies [[cors "2.8.4"]
+                       [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
                        [ethereumjs-testrpc "4.1.3"]
                        [express "4.15.3"]
