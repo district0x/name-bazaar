@@ -94,18 +94,18 @@
                                                                {:gas 500000
                                                                 :contract-key :district0x-emails})))
 
-(defn deploy-smart-contracts! [server-state-atom & [deploy-opts]]
+(defn deploy-smart-contracts! [server-state-atom & [{:keys [:persist? :emergency-multisig :skip-ens-registrar?] :as deploy-opts}]]
   (let [ch (chan)
         deploy-opts (merge default-deploy-opts deploy-opts)
-        emergency-wallet (state/active-address @server-state-atom)]
+        emergency-wallet (or emergency-multisig (state/active-address @server-state-atom))]
     (go
-      (<! (deploy-ens! server-state-atom deploy-opts))
-      (<! (deploy-registrar! server-state-atom deploy-opts))
-
-      (<! (ens/set-subnode-owner! @server-state-atom
-                                  {:ens.record/label "eth"
-                                   :ens.record/node ""
-                                   :ens.record/owner (state/contract-address @server-state-atom :registrar)}))
+      (when-not skip-ens-registrar?
+        (<! (deploy-ens! server-state-atom deploy-opts))
+        (<! (deploy-registrar! server-state-atom deploy-opts))
+        (<! (ens/set-subnode-owner! @server-state-atom
+                                    {:ens.record/label "eth"
+                                     :ens.record/node ""
+                                     :ens.record/owner (state/contract-address @server-state-atom :registrar)})))
 
       (<! (deploy-offering-registry! server-state-atom deploy-opts {:emergency-multisig emergency-wallet}))
       (<! (deploy-offering-requests! server-state-atom deploy-opts))
@@ -121,7 +121,7 @@
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-registry}))
       (<! (used-by-factories/set-factories! @server-state-atom {:contract-key :offering-requests}))
 
-      (when (:persist? deploy-opts)
+      (when persist?
         (d0x-effects/store-smart-contracts! (:smart-contracts @server-state-atom)
                                             {:file-path (:contracts-file-path deploy-opts)
                                              :namespace (:contracts-file-namespace deploy-opts)}))

@@ -27,6 +27,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
     * @param price uint The price of the offering
     */
     function createOffering(
+        // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name,
         uint price
     ) {

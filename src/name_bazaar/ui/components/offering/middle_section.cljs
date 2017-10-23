@@ -83,10 +83,10 @@
 
 (defn sub-level-name-warning [{:keys [:offering]}]
   (let [{:keys [:offering/name]} offering
-        parent-name (string/replace name (name-label name) "")]
+        parent-name (subs (string/replace name (name-label name) "") 1)]
     [:div.description.warning
-     [:b "WARNING:"] " This is not top level name. Beware, that owner of " parent-name " will be always able to take this "
-     "name back. Buy only when you trust a owner of " parent-name "."]))
+     [:b "WARNING:"] " This is" [:b " not top level name"] ". Beware, owner of " parent-name " will be always able to take this "
+     "name back. Buy only when you trust the owner of " parent-name "."]))
 
 (defn emergency-cancel-info []
   [:div.description.warning
@@ -105,7 +105,8 @@
      {:text-align :center
       :computer 10
       :tablet 12
-      :mobile 16}
+      :mobile 16
+      :class "offering-middle-section"}
      (when name-not-valid?
        [non-valid-name-warning])
 

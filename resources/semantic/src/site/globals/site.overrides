@@ -1242,6 +1242,12 @@ h4, h5, h6 {
   }
 }
 
+.offering-middle-section {
+  .description {
+    margin: 3px 0;
+  }
+}
+
 @keyframes placeholder-shimmer {
 
   0% {

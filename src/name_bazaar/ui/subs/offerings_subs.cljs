@@ -133,14 +133,19 @@
 (reg-sub
   :offering/node-owner?
   (fn [[_ offering-address]]
-    [(subscribe [:offering/ens-record offering-address])
+    [(subscribe [:offering offering-address])
+     (subscribe [:offering/ens-record offering-address])
      (subscribe [:offering/registrar-entry offering-address])])
-  (fn [[ens-record registrar-entry] [_ offering-address]]
+  (fn [[{:keys [:offering/top-level-name?]} ens-record registrar-entry] [_ offering-address]]
     (when (and (:ens.record/owner ens-record)
-               (:registrar.entry.deed/owner registrar-entry))
+               (if top-level-name?
+                 (:registrar.entry.deed/owner registrar-entry)
+                 true))
       (= offering-address
          (:ens.record/owner ens-record)
-         (:registrar.entry.deed/owner registrar-entry)))))
+         (if top-level-name?
+           (:registrar.entry.deed/owner registrar-entry)
+           offering-address)))))
 
 (reg-sub
   :offering/missing-ownership?

@@ -3,7 +3,7 @@
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
-    [clojure.string :as string]   
+    [clojure.string :as string]
     [district0x.server.state :as state]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [prepend-address-zeros jsobj->clj]]
@@ -22,19 +22,19 @@
 
 (defonce event-filters (atom []))
 
-(defn node-owner? [server-state offering-address {:keys [:offering/name :offering/node] :as offering}]
+(defn node-owner? [server-state
+                   offering-address
+                   {:keys [:offering/name :offering/node :offering/top-level-name? :offering/label] :as offering}]
   (let [ch (chan)]
     (gotry
-      (let [ens-owner-ch (ens/owner server-state {:ens.record/node node})
-            split-name (string/split name ".")]
+      (let [ens-owner-ch (ens/owner server-state {:ens.record/node node})]
         (>! ch
-            (if (and (= (count split-name) 2)               ;; For TLD .eth names we must also verify deed ownership
-                     (= (last split-name) "eth"))
-              (and (= (second (<! (registrar/entry-deed-owner server-state {:ens.record/label (first split-name)})))
+            (if top-level-name?
+              (and (= (second (<! (registrar/entry-deed-owner server-state {:ens.record/label label})))
                       offering-address)
                    (= (second (<! ens-owner-ch))
                       offering-address))
-              (= (second (<! ens-owner-ch))                 ;; For other names just basic ENS ownership check
+              (= (second (<! ens-owner-ch))                 ;; For sub names just basic ENS ownership check
                  offering-address)))))
     ch))
 
@@ -50,8 +50,8 @@
                                                                                   (:offering event-args)))))
             owner? (<! (node-owner? server-state (:offering event-args) offering))
             offering (-> offering
-                         (merge auction-offering)
-                         (assoc :offering/node-owner? owner?))]
+                       (merge auction-offering)
+                       (assoc :offering/node-owner? owner?))]
         (>! ch offering)))
     ch))
 
@@ -68,11 +68,11 @@
   (logging/info "Handling blockchain event" {:args args})
   (try
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
-        (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
-        (update :bid/value bn/->number)
-        (update :bid/datetime bn/->number)
-        (assoc :bid/offering offering)
-        (->> (db/insert-bid! (state/db server-state))))
+      (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
+      (update :bid/value bn/->number)
+      (update :bid/datetime bn/->number)
+      (assoc :bid/offering offering)
+      (->> (db/insert-bid! (state/db server-state))))
     (catch :default e
       (logging/error "Error handling blockchain event" {:error (jsobj->clj e)}))))
 
@@ -95,7 +95,7 @@
           request (second (<! (offering-requests/get-request server-state {:offering-request/node node})))]
       (db/upsert-offering-requests! (state/db server-state)
                                     (-> request
-                                        (assoc :offering-request/latest-round latest-round)))
+                                      (assoc :offering-request/latest-round latest-round)))
       (when (= latest-round (:offering-request/latest-round request))
         ;; This is optimisation so we don't have to go through all on-request-added from block 0
         ;; We just save current count of latest round, because it's all we need. Don't need all history
@@ -103,7 +103,7 @@
                                                    :round latest-round
                                                    :requesters-count (:offering-request/requesters-count request)}})))))
 
-(defn on-ens-new-owner [server-state err {{:keys [:node :owner] :as args} :args}]  
+(defn on-ens-transfer [server-state err {{:keys [:node :owner] :as args} :args}]
   (gotry
     (let [offering (second (<! (offering/get-offering server-state owner)))]
       (when offering
@@ -129,7 +129,12 @@
            (ens/on-new-owner server-state
                              {}
                              "latest"
-                             (partial on-ens-new-owner server-state))
+                             (partial on-ens-transfer server-state))
+
+           (ens/on-transfer server-state
+                            {}
+                            "latest"
+                            (partial on-ens-transfer server-state))
 
            (offering-registry/on-offering-added server-state
                                                 {}

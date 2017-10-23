@@ -20,7 +20,7 @@
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (assoc form-data :ens.record/node (namehash (:ens.record/name form-data)))]
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Set ENS owner for %s" (:ens.record/name form-data))
+                  {:name (gstring/format "Transfer %s ownership" (:ens.record/name form-data))
                    :contract-key :ens
                    :contract-method :set-owner
                    :form-data form-data

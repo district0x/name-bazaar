@@ -40,8 +40,9 @@
       :mobile 16}
      [ens-record-general-info
       {:ens.record/name name}]
-     [registrar-entry-general-info
-      {:ens.record/name name}]]
+     (when (top-level-name? name)
+       [registrar-entry-general-info
+        {:ens.record/name name}])]
     [ui/GridColumn
      {:computer 8
       :tablet 8

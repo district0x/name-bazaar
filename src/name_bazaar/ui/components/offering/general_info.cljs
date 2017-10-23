@@ -80,7 +80,7 @@
   (let [{:keys [:offering/name :offering/created-on :offering/address :offering/original-owner
                 :offering/new-owner :offering/finalized-on :offering/auction? :auction-offering/end-time
                 :auction-offering/min-bid-increase :auction-offering/extension-duration
-                :auction-offering/winning-bidder]} offering
+                :auction-offering/winning-bidder :offering/top-level-name?]} offering
         registrar-entry @(subscribe [:offering/registrar-entry address])]
     [:div.description.ellipsis
      (dissoc props :offering)
@@ -111,5 +111,6 @@
          :offering/address address}])
      [offering-address-line
       {:offering/address address}]
-     [registrar-entry-deed-value-line
-      {:registrar-entry registrar-entry}]]))
+     (when top-level-name?
+       [registrar-entry-deed-value-line
+        {:registrar-entry registrar-entry}])]))

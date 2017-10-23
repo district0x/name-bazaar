@@ -14,6 +14,7 @@ contract Offering {
     struct Offering {
         // Order here is important for gas optimisations. Must be fitting into uint265 slots.
         bytes32 node;                       // ENS node
+        // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name;                        // full ENS name
         bytes32 labelHash;                  // hash of ENS label
         address originalOwner;              // owner of ENS name, creator of offering

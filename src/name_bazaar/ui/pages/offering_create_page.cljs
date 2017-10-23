@@ -40,7 +40,8 @@
       (not @(subscribe [:ens.record/active-address-owner? node]))
       :not-ens-record-owner
 
-      (not @(subscribe [:registrar.entry.deed/active-address-owner? label-hash]))
+      (and (top-level-name? full-name)
+           (not @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])))
       :not-deed-owner
 
       :else :owner)))

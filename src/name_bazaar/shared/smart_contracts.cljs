@@ -1,40 +1,40 @@
-(ns name-bazaar.shared.smart-contracts)
+(ns name-bazaar.shared.smart-contracts) 
 
-(def smart-contracts
-  {:auction-offering-factory
-   {:name "AuctionOfferingFactory",
-    :address "0xce5f6a9591e187d09d0dc0276483db2dab3d0976"},
-   :buy-now-offering-library
-   {:name "BuyNowOfferingLibrary",
-    :address "0x367decc92cbc3054d597c8314475c2f9c9aab47a"},
-   :buy-now-offering-factory
-   {:name "BuyNowOfferingFactory",
-    :address "0x4c3f9d8079c42453efde2cd3b530cbaf3f047010"},
-   :registrar
-   {:name "Registrar",
-    :address "0x9efb658ad2c9e11700999c93b859d87e88cba2a1"},
-   :buy-now-offering
-   {:name "BuyNowOffering",
-    :address "0x0a41e7d965e87f1c1d341435e9f5871bc475408d"},
-   :auction-offering-library
-   {:name "AuctionOfferingLibrary",
-    :address "0x132e4c91077eca527a4c8136e2c51e13379fd741"},
-   :deed
-   {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
-   :ens
-   {:name "ENS", :address "0x7eaf663a2e94548102e46ffa64297f72b164b095"},
-   :offering-registry
-   {:name "OfferingRegistry",
-    :address "0x8657447dd8b9f047f441efef421c5014b434b860"},
-   :district0x-emails
-   {:name "District0xEmails",
-    :address "0x174d0c7b58ee5a6159b45d3a1c2e185df03dcaa3"},
-   :offering-requests
-   {:name "OfferingRequests",
-    :address "0xdd96309aaf3370222146c72aafbbfdbf02328584"},
-   :offering-library
-   {:name "OfferingLibrary",
-    :address "0x8936ff910fc6244573d5b19683c5423e38cdfd49"},
-   :auction-offering
-   {:name "AuctionOffering",
-    :address "0xf5d61e55e0e6e69845a466ad05585278cfa7f5c7"}})
+(def smart-contracts 
+{:auction-offering-factory
+ {:name "AuctionOfferingFactory",
+  :address "0x287631d399e08b917403986a949084877d2f39a5"},
+ :buy-now-offering-library
+ {:name "BuyNowOfferingLibrary",
+  :address "0x367decc92cbc3054d597c8314475c2f9c9aab47a"},
+ :buy-now-offering-factory
+ {:name "BuyNowOfferingFactory",
+  :address "0x6815ad140b152157634be9ffc8c51d57e02da38e"},
+ :registrar
+ {:name "Registrar",
+  :address "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef"},
+ :buy-now-offering
+ {:name "BuyNowOffering",
+  :address "0xaf8a60b8d53f0563abadc3b33d0bf28517a6b696"},
+ :auction-offering-library
+ {:name "AuctionOfferingLibrary",
+  :address "0x132e4c91077eca527a4c8136e2c51e13379fd741"},
+ :deed
+ {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
+ :ens
+ {:name "ENS", :address "0x314159265dD8dbb310642f98f50C066173C1259b"},
+ :offering-registry
+ {:name "OfferingRegistry",
+  :address "0x34e400a8b4da8a23b5eaf81b46d3a887669a45b9"},
+ :district0x-emails
+ {:name "District0xEmails",
+  :address "0x5065ef0724b76421aeaafa87ba752d6c5d5499b5"},
+ :offering-requests
+ {:name "OfferingRequests",
+  :address "0x016bdfcf49ecdd9592e493cd4a75048ce09d6d75"},
+ :offering-library
+ {:name "OfferingLibrary",
+  :address "0x8936ff910fc6244573d5b19683c5423e38cdfd49"},
+ :auction-offering
+ {:name "AuctionOffering",
+  :address "0x24b6ee04740ce5051539117409660f15e29ea329"}})

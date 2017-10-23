@@ -14,7 +14,6 @@
     [district0x.server.api-server :as api-server]
     [district0x.server.effects :as d0x-effects]
     [district0x.server.logging :as d0x-logging]
-    [taoensso.timbre :as logging]
     [district0x.server.state :as state :refer [*server-state*]]
     [district0x.server.utils :as u :refer [watch-event-once]]
     [goog.date.Date]
@@ -27,18 +26,20 @@
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
     [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.server.contracts-api.ens :as ens]
-    [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
+    [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
+    [name-bazaar.server.core]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.db-generator :as db-generator]
     [name-bazaar.server.db-sync :as db-sync]
-    [name-bazaar.server.watchdog :as watchdog]
     [name-bazaar.server.effects :refer [deploy-smart-contracts!]]
     [name-bazaar.server.emailer.listeners :as listeners]
+    [name-bazaar.server.watchdog :as watchdog]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
+    [taoensso.timbre :as logging]
     [print.foo :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -58,13 +59,14 @@
   (api-server/start! (state/config :api-port))
   (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)}))
 
-(defn deploy-to-mainnet! [& [port]]
+(defn deploy-to-mainnet! [& [port deploy-opts]]
   (go
     (d0x-effects/load-config! *server-state* state/default-config)
     (d0x-effects/create-web3! *server-state* {:port (or port (state/config :mainnet-port))})
     (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
     (<! (d0x-effects/load-my-addresses! *server-state*))
-    (<! (deploy-smart-contracts! *server-state* {:persist? true}))))
+    (<! (deploy-smart-contracts! *server-state* (merge {:persist? true}
+                                                       deploy-opts)))))
 
 (defn initialize! [server-state-atom]
   (let [ch (chan)]

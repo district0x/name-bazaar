@@ -21,7 +21,7 @@
    :server-url "http://localhost:6200"})
 
 (def production-config
-  {:node-url "https://ropsten.infura.io/"
+  {:node-url "https://mainnet.infura.io/"
    :load-node-addresses? false
    :root-url "https://namebazaar.io"
    :server-url "https://api.namebazaar.io"})

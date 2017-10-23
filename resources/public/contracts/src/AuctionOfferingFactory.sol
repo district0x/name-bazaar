@@ -30,6 +30,7 @@ contract AuctionOfferingFactory is OfferingFactory {
     * @param minBidIncrease uint The min bid increase of the auction
     */
     function createOffering(
+        // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name,
         uint startPrice,
         uint64 endTime,
