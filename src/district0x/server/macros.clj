@@ -5,4 +5,4 @@
      (try 
        ~@body 
        (catch js/Object e# 
-         (taoensso.timbre/error {:error (district0x.shared.utils/jsobj->clj e#)})))))
+         (taoensso.timbre/error "Unexpected error occured" {:raw-error e# :error (district0x.shared.utils/jsobj->clj e#)})))))
