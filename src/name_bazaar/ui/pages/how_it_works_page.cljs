@@ -8,4 +8,4 @@
   [app-layout
    [ui/Segment
     [:h1.ui.header.padded "How it works"]
-    [:div.padded "Enter text here"]]])
+    [:div.padded ""]]])
