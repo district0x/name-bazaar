@@ -31,7 +31,7 @@
 
     (= k :winner)
     (gstring/format
-     "Congratulations! You won the <a href=%s>auction</a> of a name <b>%s</b>. Your final bid was <b>%s</b>."
+     "Congratulations! You won the <a class=\"link\" href=%s>auction</a> of a name <b>%s</b>. Your final bid was <b>%s</b>."
      (form-link offering)
      (gstring/htmlEscape name)
      (str (shared-utils/wei->eth price) " ETH"))))
