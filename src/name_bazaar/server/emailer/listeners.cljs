@@ -53,6 +53,7 @@
 
 (defn- on-auction-finalized
   [server-state offering original-owner winning-bidder name price]
+  (logging/info "Auction has been finalized" {:offering offering} ::on-offering-bought)
   (gotry
     (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))
           [_ winner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address winning-bidder}))]      
@@ -81,9 +82,13 @@
         (logging/warn "Empty or malformed winner email" {:address winning-bidder} ::on-auction-finalized)))))
 
 (defn- on-offering-bought [server-state offering original-owner name price]
+  (logging/info "Offerings has been bought" {:offering offering} ::on-offering-bought)
   (gotry
-    (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
-      (when-let [to-email (validate-email owner-encrypted-email)]
+   (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
+     (logging/info "Retrieved encrypted owner email" {:encrypted-email owner-encrypted-email} ::on-offering-bought)
+     (if-let [to-email (validate-email owner-encrypted-email)]
+       (do
+        (logging/info "Sending email to offering owner" {:email to-email} ::on-offering-bought)
         (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                            :to-email to-email
                                            :subject (str "Your offering was bought: " name)
@@ -92,7 +97,8 @@
                                            :button-title "See offering details"
                                            :button-href (templates/form-link offering)}
                                           #(logging/info "Success sending email to owner" {:address original-owner} ::on-offering-bought)
-                                          #(logging/error "Error sending email" {:error %} ::on-offering-bought))))))
+                                          #(logging/error "Error sending email" {:error %} ::on-offering-bought)))
+       (logging/warn "Failed to decrypt owner email" {:encrypted-email owner-encrypted-email :offering offering} ::on-offering-bought)))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-offering-changed)
