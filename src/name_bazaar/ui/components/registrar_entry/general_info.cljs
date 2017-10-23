@@ -4,6 +4,7 @@
     [district0x.ui.components.misc :refer [etherscan-link]]
     [district0x.ui.utils :refer [format-local-datetime format-eth-with-code]]
     [name-bazaar.ui.utils :refer [name->label-hash registrar-entry-state->text]]
+    [name-bazaar.shared.utils :refer [name-label top-level-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
@@ -16,7 +17,10 @@
     [:div.description
      (dissoc props :ens.record/name)
      [:div [:b "Registrar Information"]]
-     [:div "Status: " (registrar-entry-state->text state)]
+     [:div "Status: " (registrar-entry-state->text (if (and (top-level-name? name)
+                                                            (< (count (name-label name)) 7))
+                                                     :registrar.entry.state/not-yet-available
+                                                     state))]
      [:div.ellipsis
       "Registration Date: " (if registration-date
                               (format-local-datetime registration-date)
