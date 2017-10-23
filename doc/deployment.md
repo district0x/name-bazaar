@@ -9,7 +9,7 @@ Create configuration file in JSON format, for example namebazaar.json:
  "public-key" : "256ebc161b4751583b3718e7",
  "sendgrid-api-key" : "SG.SM1ZLW7YREWS6I",
  "client" : "https://namebazaar.io",
- "logging" : {"level" : "info"
+ "logging" : {"level" : "info",
               "console" : true,
               "file" : {"path" : "/tmp/namebazaar.log"}}}
 ```
@@ -130,7 +130,7 @@ sudo nano /etc/nginx/logs.namebazaar.io
 
 Create a server listening on port 443 and make sure that the following entry is there:
 
-```json
+```
 location = / { rewrite ^ /_plugin/kibana/ redirect; }
 location / {
     proxy_pass ES_SERVER_DOMAIN
