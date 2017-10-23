@@ -4,9 +4,6 @@
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
   :address "0x287631d399e08b917403986a949084877d2f39a5"},
- :buy-now-offering-library
- {:name "BuyNowOfferingLibrary",
-  :address "0x367decc92cbc3054d597c8314475c2f9c9aab47a"},
  :buy-now-offering-factory
  {:name "BuyNowOfferingFactory",
   :address "0x6815ad140b152157634be9ffc8c51d57e02da38e"},
@@ -16,9 +13,6 @@
  :buy-now-offering
  {:name "BuyNowOffering",
   :address "0xaf8a60b8d53f0563abadc3b33d0bf28517a6b696"},
- :auction-offering-library
- {:name "AuctionOfferingLibrary",
-  :address "0x132e4c91077eca527a4c8136e2c51e13379fd741"},
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :ens
@@ -32,9 +26,6 @@
  :offering-requests
  {:name "OfferingRequests",
   :address "0x016bdfcf49ecdd9592e493cd4a75048ce09d6d75"},
- :offering-library
- {:name "OfferingLibrary",
-  :address "0x8936ff910fc6244573d5b19683c5423e38cdfd49"},
  :auction-offering
  {:name "AuctionOffering",
   :address "0x24b6ee04740ce5051539117409660f15e29ea329"}})
