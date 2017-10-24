@@ -24,7 +24,8 @@
 (defn youtube [props]
   [:iframe
    (r/merge-props
-     {:width 560
+     {:class "youtube"
+      :width 560
       :height 315
       :frameBorder 0
       :allowFullScreen true}

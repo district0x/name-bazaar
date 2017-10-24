@@ -43,6 +43,10 @@ h4, h5, h6 {
   }
 }
 
+.centered {
+  text-align: center;
+}
+
 .home-page {
   padding-bottom: 30px;
   .logo {
@@ -1245,6 +1249,25 @@ h4, h5, h6 {
 .offering-middle-section {
   .description {
     margin: 3px 0;
+  }
+}
+
+.how-it-works-page {
+  .youtube {
+    margin: 20px 0;
+    max-width: 100%;
+  }
+  .flow-image {
+    height: 550px;
+    margin: 35px 0;
+    &.buy {
+      background: url(../images/buy-flow.png) no-repeat center;;
+      background-size: contain;
+    }
+    &.sell {
+      background: url(../images/sell-flow.png) no-repeat center;;
+      background-size: contain;
+    }
   }
 }
 
