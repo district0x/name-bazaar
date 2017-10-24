@@ -51,7 +51,6 @@
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
                     :dispatch-n [[:setup-update-now-interval]
-                                 [:setup-address-reload-interval]
                                  [:district0x/load-conversion-rates [:USD]]
                                   [:district0x.config/load]]}}])
   (mount-root))
