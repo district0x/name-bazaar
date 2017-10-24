@@ -81,7 +81,8 @@
         "⌃"]])))
 
 (defn infinite-list []
-  (let [container-ref (r/atom nil)]
+  (let [container-ref (r/atom nil)
+        load-disabled? (r/atom false)]
     (fn [{:keys [:initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
                  :collapsed-item-height :on-infinite-load :on-initial-load :on-next-load
                  :total-count :no-items-element] :as props}
@@ -100,23 +101,26 @@
               {:class "infinite-list"
                :element-height @(subscribe [:infinite-list/items-heights (count list-items) collapsed-item-height])
                :use-window-as-scroll-container true
-               :infinite-load-begin-edge-offset 0
-               :is-infinite-loading (and loading? (not all-items-loaded?))
+               :infinite-load-begin-edge-offset -250
+               :is-infinite-loading (and loading?
+                                         (not all-items-loaded?)
+                                         (not @load-disabled?))
                :on-infinite-load (fn []
                                    (when (and (not loading?)
-                                              (not all-items-loaded?))
+                                              (not all-items-loaded?)
+                                              (not @load-disabled?))
+                                     (reset! load-disabled? true) ;; To prevent too many firings
+                                     (js/setTimeout #(reset! load-disabled? false) 300)
                                      (if (and (zero? offset)
                                               (empty? list-items))
-                                       (do
-                                         (when (fn? on-infinite-load)
-                                           (on-infinite-load 0 initial-load-limit))
-                                         (when on-initial-load
-                                           (on-initial-load 0 initial-load-limit)))
+                                       (when (fn? on-infinite-load)
+                                         (on-infinite-load 0 initial-load-limit))
                                        (let [next-offset (if (zero? offset) initial-load-limit (+ offset next-load-limit))]
-                                         (when (fn? on-initial-load)
-                                           (on-infinite-load next-offset next-load-limit))
-                                         (when (fn? on-next-load)
-                                           (on-next-load next-offset next-load-limit))))))
+                                         (when (= next-offset (count list-items))
+                                           (when (fn? on-initial-load)
+                                             (on-infinite-load next-offset next-load-limit))
+                                           (when (fn? on-next-load)
+                                             (on-next-load (min next-offset total-count) next-load-limit)))))))
                :loading-spinner-delegate (when (and loading? (not all-items-loaded?))
                                            loading-spinner-delegate)}
               (dissoc props :initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
