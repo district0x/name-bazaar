@@ -167,25 +167,9 @@
     {:db (assoc db :now (t/now))}))
 
 (reg-event-fx
- :reload-address
- interceptors
- (fn [{:keys [db]}]
-   {:dispatch-n [[:district0x/load-my-addresses]
-                 [:district0x/watch-my-eth-balances]]}))
-
-(reg-event-fx
   :setup-update-now-interval
   interceptors
   (fn [{:keys [db]}]
     {:dispatch-interval {:dispatch [:update-now]
                          :ms 1000
                          :db-path [:update-now-interval]}}))
-
-(reg-event-fx
- :setup-address-reload-interval
- interceptors
- (fn [{:keys [db]}]
-   {:dispatch-interval {:dispatch [:reload-address]
-                        :ms 1000
-                        :db-path [:reload-address-interval]}}))
-
