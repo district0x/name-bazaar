@@ -94,7 +94,7 @@
                                           :button-title "See offering details"
                                           :button-href (templates/form-link offering)}
                                          #(logging/info "Success sending email to owner" {:address original-owner} ::on-offering-bought)
-                                         #(logging/error "Error sending email" {:error %} ::on-offering-bought))))))
+                                         #(logging/error "Error sending email to owner" {:error %} ::on-offering-bought))))))
 
 (defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-offering-changed)
@@ -118,8 +118,8 @@
                                           {:header (str name " auction")
                                            :button-title "See auction details"
                                            :button-href (templates/form-link offering)}
-                                          #(logging/info "Success sending on-new-bid email" {:address original-owner} ::on-new-bid)
-                                          #(logging/error "Error when sending on-new-bid email" {:error %} ::on-new-bid))))))
+                                          #(logging/info "Success sending email" {:address original-owner} ::on-new-bid)
+                                          #(logging/error "Error when sending email" {:error %} ::on-new-bid))))))
 
 (defn stop-event-listeners! []
   (doseq [listener @event-listeners]
