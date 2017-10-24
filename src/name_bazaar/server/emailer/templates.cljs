@@ -49,4 +49,5 @@
   (gstring/format
    "Your <a class=\"link\" href=%s>auction</a> of a name <b>%s</b> just got a new bid for <b>%s</b>."
    (form-link offering)
+   (gstring/htmlEscape name)
    (str (shared-utils/wei->eth price) " ETH")))

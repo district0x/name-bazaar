@@ -82,7 +82,7 @@
       (web3-eth/stop-watching! filter (fn [])))))
 
 (defn on-request-added [server-state err {{:keys [:node :round :requesters-count] :as args} :args}]
-  (logging/info "Handling block event" {:args args} ::on-request-added)
+  (logging/info "Handling blockchain event" {:args args} ::on-request-added)
   (db/upsert-offering-requests-rounds! (state/db server-state)
                                        {:offering-request/node node
                                         :offering-request/round (bn/->number round)
