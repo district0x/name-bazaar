@@ -52,17 +52,17 @@
                   " You'd need to send at least " min-bid-str "."]
 
                  :else
-                 [:div "You need to send at least " min-bid-str " to become higest bidder."])))
+                 [:div "You need to send at least " min-bid-str " to become the higest bidder."])))
 
            (when active?
-             [:div "To place a bid, you can send Ether directly into " [d0x-misc/etherscan-link
-                                                                        {:address address}
-                                                                        "offering address"]
+             [:div "To place a bid, you can send Ether directly into the " [d0x-misc/etherscan-link
+                                                                            {:address address}
+                                                                            "offering address"]
               " or you can use the form below."])])))))
 (defn non-valid-name-warning [props]
-   [:div.description.warning
-    [:b "WARNING: "] "Offered name is not compatible with UTS46 normalisation, "
-    "therefore buying or bidding is disabled."])
+  [:div.description.warning
+   [:b "WARNING: "] "Offered name is not compatible with UTS46 normalisation, "
+   "therefore buying or bidding is disabled."])
 
 (defn non-ascii-characters-warning [props]
   [:div.description.warning

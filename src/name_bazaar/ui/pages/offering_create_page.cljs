@@ -112,7 +112,7 @@
         "Auction will end exactly at end time with no possible extension."
         (str
           "If new highest bid arrives less than " duration-formatted " before auction end time, "
-          "the auction will be extended by another ")) duration-formatted "."]]))
+          "the auction will be extended by another " duration-formatted "."))]]))
 
 (defn auction-end-time-date-picker [props]
   [:div.ui.input.labeled.dirty.fluid.auction-end-time
@@ -229,14 +229,17 @@
               [ui/GridColumn
                {:mobile 16
                 :class "join-upper"}
-               [:div.input-info
+               [:p.input-info
                 (if auction?
                   "You will be able to edit parameters of this auction as long as there are no bids."
                   "You will be able to edit offering price even after creation.")]
-               [:div.input-info
-                [:b "IMPORTANT:"] " After you create offering contract, you will need to transfer name ownership into it "
-                "in order to display it in search and for others being able to buy it. You will be notified once the contract "
-                "is ready, or you can do it from " [:a {:href (path-for :route.user/my-offerings)} "My Offerings"] " page later."]])])
+               [:p.input-info
+                [:b "IMPORTANT:"]
+                " After creating an auction, you must transfer ownership of the name to the auction contract
+                in order for it to display in search and for the name to be able to be sold. You will be notified once
+                the name can be transferred, or you can complete this process from the "
+                [:a {:href (path-for :route.user/my-offerings)} "My Offerings page"]
+                " at a later time."]])])
          [ui/GridRow
           {:centered true}
           [:div

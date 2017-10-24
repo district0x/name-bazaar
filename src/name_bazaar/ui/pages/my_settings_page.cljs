@@ -35,7 +35,7 @@
            (when @active-address-has-email?
              [:div.description.success "Your address has encrypted email associated already"])
            [:div.description
-            "Email associated with your address will be encrypted and stored on a public blockchain."
+            "Email associated with your address will be encrypted and stored on a public blockchain. "
             "Only our email server will be able to decrypt it. We'll use it to send you notifications about
              your purchases, sells and offering requests."]]]
          [ui/GridRow
