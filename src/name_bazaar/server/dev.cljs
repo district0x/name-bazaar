@@ -87,12 +87,9 @@
       (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
                                                       :port testrpc-port}))
       (d0x-effects/create-web3! *server-state* {:port testrpc-port})
-      (<! (d0x-effects/create-db! *server-state*))
       (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
       (api-server/start! (state/config :api-port))
-      (<! (d0x-effects/load-my-addresses! *server-state*))
-      ;;(watchdog/start-syncing! *server-state*)
-      )))
+      (<! (d0x-effects/load-my-addresses! *server-state*)))))
 
 (set! *main-cli-fn* -main)
 
