@@ -34,7 +34,8 @@
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 
 (def active-address-changed-forwarding {:register :active-address-changed
@@ -172,5 +173,3 @@
     {:dispatch-interval {:dispatch [:update-now]
                          :ms 1000
                          :db-path [:update-now-interval]}}))
-
-
