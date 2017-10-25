@@ -55,9 +55,9 @@
 (defn on-jsload []
   (d0x-effects/load-config! *server-state* state/default-config)
   (d0x-logging/setup! (state/config @*server-state* :logging))
-  (logging/info "Final loaded config" (state/config) ::on-jsload)
-  (api-server/start! (state/config :api-port))
-  (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)}))
+  (logging/info "Final loaded config" (state/config @*server-state*) ::on-jsload)
+  (api-server/start! (state/config  @*server-state* :api-port))
+  (d0x-effects/create-web3! *server-state* {:port (state/config @*server-state* :testrpc-port)}))
 
 (defn deploy-to-mainnet! [& [port deploy-opts]]
   (go

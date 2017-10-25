@@ -35,10 +35,9 @@
   (s/check-asserts goog.DEBUG)
   (dev-setup)
   (google-analytics-fx/set-enabled! (not debug?))
-  (if (d0x-ui-utils/hashroutes?)   
-    (set! (.-onhashchange js/window)
-          #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
-     (history/start! constants/routes))
+  
+  
+
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects
@@ -46,11 +45,24 @@
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n [[:district0x/watch-my-eth-balances]
-                                                       [:active-page-changed]]}]}
+                                                       [:active-page-changed]]}
+
+                                         {:when :seen?
+                                          :events [:district0x.config/loaded]
+                                          :dispatch [:district0x.browsing/setup! constants/routes]}
+
+                                         ]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
                     :dispatch-n [[:setup-update-now-interval]
                                  [:district0x/load-conversion-rates [:USD]]
-                                  [:district0x.config/load]]}}])
+                                 [:district0x.config/load]]}}])
+
+
+(if (d0x-ui-utils/hashroutes?)
+    (set! (.-onhashchange js/window)
+          #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
+     (history/start! constants/routes))
+  
   (mount-root))
