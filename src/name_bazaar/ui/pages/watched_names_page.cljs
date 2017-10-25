@@ -9,7 +9,7 @@
     [name-bazaar.ui.components.offering.list-header :refer [offering-list-header]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [valid-ens-name?]]
+    [name-bazaar.ui.utils :refer [valid-ens-name? normalize]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -32,7 +32,7 @@
          :on-change (fn [e data]
                       (let [value (aget data "value")]
                         (when (valid-ens-name? value)
-                          (reset! new-name value))))}]
+                          (reset! new-name (normalize value)))))}]
        [:i.icon.plus-circle
         {:on-click #(add-to-watched-names! new-name)}]])))
 

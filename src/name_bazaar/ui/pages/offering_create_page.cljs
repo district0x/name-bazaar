@@ -14,7 +14,7 @@
     [name-bazaar.ui.components.loading-placeholders :refer [content-placeholder]]
     [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [namehash sha3 strip-eth-suffix valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize strip-eth-suffix valid-ens-name? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -68,7 +68,9 @@
          :on-change (fn [e data]
                       (let [value (aget data "value")]
                         (when (valid-ens-name? value)
-                          (let [[full-name node] (label->full-name+node value)]
+                          (let [value (normalize value)
+                                [full-name node] (label->full-name+node value)]
+                            (aset data "value" value)
                             (on-change e data)
                             (dispatch [:ens.records/load [node]])
                             (when (top-level-name? full-name)

@@ -30,4 +30,4 @@
          :on-change (fn [e]
                       (let [value (aget e "target" "value")]
                         (when (valid-ens-name? value)
-                          (reset! searched-name value))))}]])))
+                          (reset! searched-name (normalize value)))))}]])))
