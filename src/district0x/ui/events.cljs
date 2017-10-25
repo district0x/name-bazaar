@@ -815,5 +815,5 @@
  interceptors
  (fn [{:keys [db]}]
    {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
-                        :ms 4000
+                        :ms 6000
                         :db-path [:district0x-reload-address-interval]}}))
