@@ -63,7 +63,7 @@
 
 @appBarHeight: 45px;
 @transactionLogWidth: 300px;
-@transactionLogHeight: 383px;
+@transactionLogHeight: 424px;
 
 
 @transactionSuccessColor: #5edb0b;

@@ -226,9 +226,10 @@
     (let [active-address (if (contains? (set addresses) (:active-address localstorage))
                            (:active-address localstorage)
                            (first addresses))]
-      {:db (-> db
-             (assoc :my-addresses addresses)
-             (assoc :active-address active-address))})))
+      (merge
+        {:db (assoc db :my-addresses addresses)}
+        (when-not (= (:active-address db) active-address)
+          {:dispatch [:district0x/set-active-address active-address]})))))
 
 (reg-event-fx
   :district0x/deploy-contract
@@ -801,9 +802,9 @@
     {:dispatch-n (mapv #(vec (concat % args)) (remove nil? events))}))
 
 (reg-event-fx
- :district0x/reload-address
- interceptors
- (fn [{:keys [db]}]
+  :district0x/reload-my-addresses
+  interceptors
+  (fn [{:keys [db]}]
    {:async-flow {:first-dispatch [:district0x/load-my-addresses]
                  :rules [{:when :seen?
                           :events [:district0x/my-addresses-loaded]
@@ -813,6 +814,6 @@
  :district0x/setup-address-reload-interval
  interceptors
  (fn [{:keys [db]}]
-   {:dispatch-interval {:dispatch [:district0x/reload-address]
+   {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
                         :ms 4000
                         :db-path [:district0x-reload-address-interval]}}))

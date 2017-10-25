@@ -16,20 +16,18 @@
    "TRANSACTION LOG"])
 
 (defn settings []
-  (let [settings (subscribe [:district0x.transaction-log/settings])
-        single-address? (subscribe [:district0x.my-addresses/single-address?])]
+  (let [settings (subscribe [:district0x.transaction-log/settings])]
     (fn [{:keys [:container-props :from-active-address-only-toggle-props]}]
       (let [{:keys [:from-active-address-only?]} @settings]
-        (when-not @single-address?
-          [:div.settings
-           container-props
-           [ui/Checkbox
-            (r/merge-props
-              {:toggle true
-               :label "Show transactions from active address only."
-               :on-change #(dispatch [:district0x.transaction-log.settings/set :from-active-address-only? (aget %2 "checked")])
-               :checked from-active-address-only?}
-              from-active-address-only-toggle-props)]])))))
+        [:div.settings
+         container-props
+         [ui/Checkbox
+          (r/merge-props
+            {:toggle true
+             :label "Show transactions from active address only."
+             :on-change #(dispatch [:district0x.transaction-log.settings/set :from-active-address-only? (aget %2 "checked")])
+             :checked from-active-address-only?}
+            from-active-address-only-toggle-props)]]))))
 
 (defn transaction-time-ago [{{:keys [:created-on]} :transaction}]
   [:div.transaction-time-ago
