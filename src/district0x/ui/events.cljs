@@ -102,16 +102,19 @@
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
          :district0x/dispatch-n (vec (concat
-                                       (for [tx-hash (keys txs-to-reload)]
-                                         [:district0x/load-transaction-receipt tx-hash])
-                                       (for [tx-hash (keys txs-to-reload)]
-                                         [:web3-fx.contract/add-transaction-hash-to-watch
-                                          {:web3 (:web3 db)
-                                           :db-path [:contract/state-fns]
-                                           :transaction-hash tx-hash
-                                           :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
+                                      (for [tx-hash (keys txs-to-reload)]
+                                        [:district0x/load-transaction-receipt tx-hash])
+                                      (for [tx-hash (keys txs-to-reload)]
+                                        [:web3-fx.contract/add-transaction-hash-to-watch
+                                         {:web3 (:web3 db)
+                                          :db-path [:contract/state-fns]
+                                          :transaction-hash tx-hash
+                                          :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
          ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
-         :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000) :dispatch [:district0x/load-my-addresses]}]}
+         :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000)
+                           :dispatch [:district0x/load-my-addresses]}
+                          {:ms (if (d0x-ui-utils/provides-web3?) 0 2000)
+                           :dispatch [:district0x/setup-address-reload-interval]}]}
         (when conversion-rates
           {:district0x/dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
            :dispatch-interval {:dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
@@ -796,3 +799,20 @@
   interceptors
   (fn [_ [events & args]]
     {:dispatch-n (mapv #(vec (concat % args)) (remove nil? events))}))
+
+(reg-event-fx
+ :district0x/reload-address
+ interceptors
+ (fn [{:keys [db]}]
+   {:async-flow {:first-dispatch [:district0x/load-my-addresses]
+                 :rules [{:when :seen?
+                          :events [:district0x/my-addresses-loaded]
+                          :dispatch [:district0x/watch-my-eth-balances]}]}}))
+
+(reg-event-fx
+ :district0x/setup-address-reload-interval
+ interceptors
+ (fn [{:keys [db]}]
+   {:dispatch-interval {:dispatch [:district0x/reload-address]
+                        :ms 4000
+                        :db-path [:district0x-reload-address-interval]}}))
