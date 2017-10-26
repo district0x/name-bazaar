@@ -23,13 +23,6 @@
     (>= width 768) 1
     :else 0))
 
-#_(defn hashroutes? []
-  (when-not (contains? #{"beta.namebazaar.io" "namebazaar.io"}
-                       (-> js/window
-                           .-location
-                           .-hostname))
-    true))
-
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
 

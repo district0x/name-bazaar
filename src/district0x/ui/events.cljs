@@ -86,7 +86,6 @@
 (defn- contains-tx-status? [tx-statuses {:keys [:status]}]
   (contains? tx-statuses status))
 
-;; TODO: hashroutes? bool
 (reg-event-fx
   :district0x/initialize
   [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
@@ -96,12 +95,9 @@
           transactions (get-in db [:transaction-log :transactions])
           txs-to-reload (medley/filter-vals #(contains-tx-status? #{:tx.status/not-loaded :tx.status/pending} %)
                                             transactions)]
-
-(prn "@:district0x/initialize" hashroutes?)
-      
       (merge
         {:db db
-         :ga/page-view [(if hashroutes? ;;(d0x-ui-utils/hashroutes?)
+         :ga/page-view [(if hashroutes?
                           (current-location-hash)
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
@@ -178,17 +174,14 @@
   (fn [db [config]]
     (assoc-in db [:config] config)))
 
-;; TODO
+;; TODO: set routes in db, remove atom cancer in history/browser
 (reg-event-fx
  :district0x.browsing/setup!
  interceptors
  (fn [{:keys [db]} [routes]]
    (let [pushroute-hosts (-> db
                              (get-in [:config :pushroute-hosts])
-                             set)]
-     
-     (prn "@setup-browsing" )
-
+                             set)]    
      (if (contains? pushroute-hosts
                     (-> js/window
                         .-location
@@ -197,31 +190,19 @@
                 ;;(assoc-in [:browsing :routes] routes)
                 (assoc-in [:browsing :hashroutes?] false))
         :district0x.browsing/pushroutes! routes}
-       {:db (-> db
-                ;;(assoc-in [:browsing :routes] routes)
-                (assoc-in [:browsing :hashroutes?] true))
+       {:db (assoc-in db [:browsing :hashroutes?] true)
         :district0x.browsing/hashroutes! routes}))))
 
-;; TODO
 (reg-fx
   :district0x.browsing/pushroutes!
   (fn [routes]
-
-    (prn "@pushroutes!" )
-    
      (history/start! routes)))
 
-;; TODO
 (reg-fx
   :district0x.browsing/hashroutes!
   (fn [routes]
-
-    (prn "@hashroutes!" )
-
     (set! (.-onhashchange js/window)
           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location routes)]))))
-
-
 
 (reg-event-fx
   :district0x/load-smart-contracts
@@ -801,14 +782,12 @@
              [:district0x.log/info]
              [:district0x.log/error :blockchain/unlock-account]]]}}))
 
-;; TODO
 (reg-event-fx
   :district0x.location/set-query
   interceptors
   (fn [_ [hashroutes? args]]
     {:location/set-query [hashroutes? args]}))
 
-; TODO
 (reg-event-fx
   :district0x.location/nav-to
   interceptors

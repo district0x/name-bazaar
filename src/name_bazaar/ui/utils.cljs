@@ -48,19 +48,16 @@
                           :routes constants/routes
                           :hashroutes? hashroutes?}))
 
-;; TODO
 (defn offerings-newest-url [hashroutes?]
   (str (path-for hashroutes? :route.offerings/search) "?"
        (url/map->query {:order-by-columns [(name :created-on)]
                         :order-by-dirs [(name :desc)]})))
 
-;; TODO : calls
 (defn offerings-most-active-url [hashroutes?]
   (str (path-for hashroutes? :route.offerings/search) "?"
        (url/map->query {:order-by-columns [(name :bid-count)]
                         :order-by-dirs [(name :desc)]})))
 
-;; TODO : calls
 (defn offerings-ending-soon-url [hashroutes?]
   (str (path-for hashroutes? :route.offerings/search) "?"
        (url/map->query {:order-by-columns [(name :end-time)]
