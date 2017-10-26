@@ -4,9 +4,46 @@
             [cljs-node-io.file :refer [File]]
             [clojure.set :as clj-set]
             [clojure.string :as string]
+            [clojure.pprint :as pprint]
             [district0x.server.state :as state]
             [district0x.shared.encryption-utils :as encryption-utils]
+            [cljs.nodejs :as nodejs]
             [taoensso.timbre :as timbre]))
+
+(def chalk (nodejs/require "chalk"))
+
+(defn console-logline [logdata]
+  (-> logdata
+      (select-keys [:instant :level :ns :message :meta :?file :?line])
+      (clj-set/rename-keys {:instant :timestamp}))
+  (string/join " "
+               [((.keyword chalk (case (:level logdata)
+                                   :info "cyan"
+                                   :warn "yellow"
+                                   :error "red"
+                                   "red"))
+                 (.bold chalk (string/upper-case (name (:level logdata)))))
+                (.bold chalk (str (:message logdata)
+                                  (if-let [md (:meta logdata)]
+                                    (.reset chalk (str "\n" (with-out-str (pprint/pprint md)))))))
+                (.bold chalk "in")
+                (if (get-in logdata [:meta :raw-error])
+                  (str
+                   (.reset chalk (get-in logdata [:meta :ns]))
+                   "["
+                   (get-in logdata [:meta :file])
+                   ":"
+                   (get-in logdata [:meta :line])
+                   "]")
+                  (str
+                   (.reset chalk (:ns logdata))
+                   "["
+                   (:?file logdata)
+                   ":"
+                   (:?line logdata)
+                   "]"))
+                (.bold chalk "at")
+                (.white chalk (:instant logdata))]))
 
 (defn logline [logdata]
   (-> logdata
@@ -34,7 +71,7 @@
    :rate-limit nil
    :output-fn  nil
    :fn (fn [data]
-         (prn (logline data)))})
+         (print (console-logline data)))})
 
 (defn file-appender
   [{:keys [path] :as options}]
