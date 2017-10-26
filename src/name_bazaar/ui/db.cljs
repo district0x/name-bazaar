@@ -13,6 +13,7 @@
     [re-frame.core :refer [dispatch]]))
 
 (goog-define environment "prod")
+(goog-define log-level "error")
 
 (def development-config
   {:node-url "http://localhost:8549"

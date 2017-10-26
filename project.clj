@@ -126,7 +126,8 @@
                                    :preloads [print.foo.preloads.devtools]
                                    :closure-defines {goog.DEBUG true
                                                      name-bazaar.ui.db.environment "dev"
-                                                     district0x.ui.history.pushroute-hosts "localhost"}
+                                                     district0x.ui.history.pushroute-hosts "localhost"
+                                                     name-bazaar.ui.db.log-level "debug"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
