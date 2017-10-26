@@ -35,7 +35,8 @@
              requesters-count (pluralize " request" requesters-count)]])]))))
 
 (defn offering-request-list-item []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.screen-size/mobile?])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]    
     (fn [{:keys [:offering-request :expanded? :on-expand :key]}]
       (let [{:keys [:offering-request/node :offering-request/name]} offering-request]
         [expandable-list-item
@@ -47,4 +48,5 @@
           {:offering-request offering-request}]
          [ens-name-details
           {:show-name-detail-link? true
-           :ens.record/name name}]]))))
+           :ens.record/name name
+           :hashroutes? hashroutes?}]]))))

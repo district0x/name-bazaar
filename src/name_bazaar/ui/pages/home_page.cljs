@@ -11,9 +11,9 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-(defn- nav-to-ens-record-detail [name]
+(defn- nav-to-ens-record-detail [hashroutes? name]
   (when-not (empty? name)
-    (dispatch [:district0x.location/nav-to :route.ens-record/detail
+    (dispatch [:district0x.location/nav-to hashroutes? :route.ens-record/detail
                {:ens.record/name (ensure-registrar-root name)}
                constants/routes])))
 
@@ -26,7 +26,8 @@
 
 (defn search-bar []
   (let [search-name (r/atom "")
-        search-results (subscribe [:offerings/home-page-autocomplete])]
+        search-results (subscribe [:offerings/home-page-autocomplete])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       (let [{:keys [:items :loading?]} @search-results]
         [ui/Search
@@ -36,10 +37,10 @@
           :placeholder "Enter Keyword"
           :results (transform-search-results items)
           :icon (r/as-element [:i.icon.magnifier
-                               {:on-click #(nav-to-ens-record-detail @search-name)}])
+                               {:on-click #(nav-to-ens-record-detail hashroutes? @search-name)}])
           :on-key-press (fn [e]
                           (when (= (aget e "key") "Enter")
-                            (nav-to-ens-record-detail @search-name)))
+                            (nav-to-ens-record-detail hashroutes? @search-name)))
           :on-result-select (fn [_ data]
                               (dispatch [:district0x.location/nav-to
                                          :route.offerings/detail
@@ -102,13 +103,13 @@
            :class :offering-column}
           [offerings-column props]])])))
 
-(defn namebazaar-logo []
+(defn namebazaar-logo [hashroutes?]
   [:a
-   {:href (path-for :route/home)}
+   {:href (path-for hashroutes? :route/home)}
    [:img.logo
     {:src "./images/logo@2x.png"}]])
 
-(defn app-pages []
+(defn app-pages [hashroutes?]
   [ui/Grid
    {:columns 1
     :centered true
@@ -122,17 +123,17 @@
      :text-align "center"}
     [:div.app-page-button-links
      [:a.ui.button
-      {:href (path-for :route.offerings/search)}
+      {:href (path-for hashroutes? :route.offerings/search)}
       "View Offerings"
       [:i.hand.icon]]
 
      [:a.ui.button
-      {:href (path-for :route.offerings/create)}
+      {:href (path-for hashroutes? :route.offerings/create)}
       "Create Offering"
       [:i.price-tag.icon]]
 
      [:a.ui.button
-      {:href (path-for :route/how-it-works)}
+      {:href (path-for hashroutes? :route/how-it-works)}
       "How It Works"
       [:i.book.icon]]]]])
 
@@ -160,11 +161,12 @@
      "district0x Network"]]])
 
 (defmethod page :route/home []
-  (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])]
+  (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [:div.home-page
        [:div.top-segment
-        [namebazaar-logo]]
+        [namebazaar-logo hashroutes?]]
        [app-headline]
        [ui/Grid
         {:columns 1
@@ -176,6 +178,6 @@
           :tablet 12
           :mobile 15}
          [search-bar]]]
-       [app-pages]
+       [app-pages hashroutes?]
        [offerings-columns]
        [footer]])))

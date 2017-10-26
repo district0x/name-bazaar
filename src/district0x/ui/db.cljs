@@ -10,7 +10,6 @@
    :contracts-not-found? false
    :screen-size (get-screen-size js/window.innerWidth)
    :ui-disabled? false
-   :config {}
    :snackbar {:open? false
               :message ""
               :action-href nil
@@ -24,8 +23,6 @@
    :transaction-log {:transactions {}
                      :ids-chronological '()
                      :ids-by-form {}
-                     :settings {:from-active-address-only? false}}})
-
-
-
-
+                     :settings {:from-active-address-only? false}}
+   :config {}
+   :browsing {:hashroutes? true}})

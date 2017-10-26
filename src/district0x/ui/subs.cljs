@@ -129,6 +129,12 @@
   (fn [db [_ config-key]]
     (get-in db [:config config-key])))
 
+;; TODO
+(reg-sub
+  :district0x.browsing/hashroutes?
+  (fn [db _]
+    (get-in db [:browsing :hashroutes?])))
+
 (reg-sub
   :district0x.screen-size/min-large-screen?
   :<- [:district0x/screen-size]

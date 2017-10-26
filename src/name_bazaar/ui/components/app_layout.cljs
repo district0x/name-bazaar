@@ -12,9 +12,9 @@
     [soda-ash.core :as ui]
     [name-bazaar.ui.constants :as constants]))
 
-(defn side-nav-menu-logo []
+(defn side-nav-menu-logo [hashroutes?]
   [:a.side-nav-logo
-   {:href (path-for :route/home)}])
+   {:href (path-for hashroutes? :route/home)}])
 
 (defn district0x-banner []
   [:div.district0x-banner
@@ -83,7 +83,8 @@
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])]
+        my-addresses (subscribe [:district0x/my-addresses])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [:div.app-bar
        [:div.left-section
@@ -97,7 +98,7 @@
        [:div.right-section
         {:on-click (fn []
                      (if (empty? @my-addresses)
-                       (dispatch [:district0x.location/nav-to :route/how-it-works {} constants/routes])
+                       (dispatch [:district0x.location/nav-to hashroutes? :route/how-it-works {} constants/routes])
                        (dispatch [:district0x.transaction-log/set-open (not @open?)])))}
         (if (empty? @my-addresses)
           [:div "No Accounts"]
@@ -109,7 +110,8 @@
         min-computer-screen? (subscribe [:district0x.screen-size/min-computer-screen?])
         active-page (subscribe [:district0x/active-page])
         app-container-ref (r/atom nil)
-        use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])]
+        use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn [& children]
       [:div.app-container
        {:ref (fn [el]
@@ -124,12 +126,12 @@
          :fixed :left}
         [:div.menu-content
          {:style {:overflow-y :scroll}}
-         [side-nav-menu-logo]
+         [side-nav-menu-logo hashroutes?]
          (doall
            (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
                                                                        nav-menu-items-props
                                                                        nav-menu-items-props-no-register)]
-             (let [href (or href (path-for route))]
+             (let [href (or href (path-for hashroutes? route))]
                [ui/MenuItem
                 {:key text
                  :as "a"

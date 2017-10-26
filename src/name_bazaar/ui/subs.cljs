@@ -53,12 +53,20 @@
  :page-share-url
  :<- [:root-url]
  :<- [:district0x/active-address]
- (fn [[root-url my-address] [_ route params]]
-   (string/replace
-    (str
-     root-url
-     (path-for route (merge
-                      (when my-address
-                        {:user/address (str my-address)})
-                      params)))
-    "#" "")))
+ :<- [:district0x.browsing/hashroutes?]
+ (fn [[root-url my-address hashroutes?] [_ route params]]
+   (str
+    root-url
+    (path-for hashroutes? route
+              (merge
+               (when my-address
+                 {:user/address (str my-address)})
+               params)))
+   #_(string/replace
+      (str
+       root-url
+       (path-for hashroutes? route (merge
+                                    (when my-address
+                                      {:user/address (str my-address)})
+                                    params)))
+      "#" "")))

@@ -172,6 +172,51 @@
   (fn [db [config]]
     (assoc-in db [:config] config)))
 
+;; TODO
+(reg-event-fx
+ :district0x.browsing/setup!
+ interceptors
+ (fn [{:keys [db]} [routes]]
+   (let [pushroute-hosts (-> db
+                             (get-in [:config :pushroute-hosts])
+                             set)]
+     
+     (prn "@setup-browsing" )
+
+     (if (contains? pushroute-hosts
+                    (-> js/window
+                        .-location
+                        .-hostname))
+       {:db (-> db
+                ;;(assoc-in [:browsing :routes] routes)
+                (assoc-in [:browsing :hashroutes?] false))
+        :district0x.browsing/pushroutes! routes}
+       {:db (-> db
+                ;;(assoc-in [:browsing :routes] routes)
+                (assoc-in [:browsing :hashroutes?] true))
+        :district0x.browsing/hashroutes! routes}))))
+
+;; TODO
+(reg-fx
+  :district0x.browsing/pushroutes!
+  (fn [routes]
+
+    (prn "@pushroutes!" )
+    
+     (history/start! routes)))
+
+;; TODO
+(reg-fx
+  :district0x.browsing/hashroutes!
+  (fn [routes]
+
+    (prn "@hashroutes!" )
+
+    (set! (.-onhashchange js/window)
+          #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location routes)]))))
+
+
+
 (reg-event-fx
   :district0x/load-smart-contracts
   interceptors
@@ -721,7 +766,8 @@
     {:db (update db :snackbar merge
                  {:open? true
                   :message message
-                  :action-href (path-for (select-keys params [:route :route-params :routes]))})
+                  :action-href (path-for (-> (select-keys params [:route :route-params :routes])
+                                             (assoc :hashroutes? (get-in db [:browsing :hashroutes?]))))})
      :dispatch-later [{:ms (get-in db [:snackbar :timeout])
                        :dispatch [:district0x.snackbar/close]}]}))
 
@@ -755,11 +801,12 @@
   (fn [_ args]
     {:location/set-query args}))
 
+; TODO
 (reg-event-fx
   :district0x.location/nav-to
   interceptors
-  (fn [{:keys [:db]} [route route-params routes]]
-    {:location/nav-to [route route-params routes]}))
+  (fn [{:keys [:db]} [hashroutes? route route-params routes]]
+    {:location/nav-to [hashroutes? route route-params routes]}))
 
 (reg-event-fx
   :district0x.location/add-to-query

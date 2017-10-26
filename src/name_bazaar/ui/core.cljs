@@ -60,7 +60,7 @@
                                  [:district0x.config/load]]}}])
 
 
-(if (d0x-ui-utils/hashroutes?)
+#_(if (d0x-ui-utils/hashroutes?)
     (set! (.-onhashchange js/window)
           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
      (history/start! constants/routes))

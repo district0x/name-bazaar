@@ -23,14 +23,13 @@
     (>= width 768) 1
     :else 0))
 
-;; TODO: get pushroute-hosts  from config
+;; TODO: remove when components sub to browsing
 (defn hashroutes? []
-  (let [pushroute-hosts #{"beta.namebazaar.io" "namebazaar.io"}]
-    (when-not (contains? pushroute-hosts
-                         (-> js/window
-                             .-location
-                             .-hostname))
-      true)))
+  (when-not (contains? #{"beta.namebazaar.io" "namebazaar.io"}
+                       (-> js/window
+                           .-location
+                           .-hostname))
+    true))
 
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
@@ -44,9 +43,10 @@
                (string/replace "#" ""))]
     (if (empty? hash) "/" hash)))
 
-(defn path-for [{:keys [:route :route-params :routes]}]
+(defn path-for [{:keys [:route :route-params :routes :hashroutes?]}]
+  {:pre [(not (nil? hashroutes?))]}
   (let [path (medley/mapply bidi/path-for routes route route-params)]
-    (if (hashroutes?)
+    (if hashroutes?
       (str "#" path)
       path)))
 

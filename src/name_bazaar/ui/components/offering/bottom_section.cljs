@@ -39,7 +39,8 @@
         offering-status @(subscribe [:offering/status address])
         editable? (or buy-now? (zero? bid-count))
         finalizable? (and (not editable?)
-                          (= offering-status :offering.status/auction-ended))]
+                          (= offering-status :offering.status/auction-ended))
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (when-not (contains? #{:offering.status/finalized :offering.status/emergency} offering-status)
       [:div.bottom-section-buttons
        (when needs-transfer?
@@ -62,7 +63,7 @@
           {:as "a"
            :disabled (not editable?)
            :color "purple"
-           :href (path-for :route.offerings/edit {:offering/address address})}
+           :href (path-for hashroutes? :route.offerings/edit {:offering/address address})}
           "Edit"])])))
 
 (defn- offering-buyable? [offering-status]

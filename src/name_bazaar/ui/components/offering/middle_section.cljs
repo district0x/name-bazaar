@@ -8,7 +8,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth-with-code]]
     [name-bazaar.shared.utils :refer [name-label emergency-state-new-owner]]
     [name-bazaar.ui.components.offering.auction-finalize-button :refer [auction-finalize-button]]
-    [name-bazaar.ui.utils :refer [namehash sha3 path-for]]
+    [name-bazaar.ui.utils :refer [namehash sha3]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))

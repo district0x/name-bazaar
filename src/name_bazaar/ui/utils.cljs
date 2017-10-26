@@ -42,11 +42,13 @@
 (defn parse-query-params [query-params route-key]
   (d0x-shared-utils/apply-parsers query-params (constants/query-params-parsers route-key)))
 
-(defn path-for [route & [route-params]]
+(defn path-for [hashroutes? route & [route-params]]
   (d0x-ui-utils/path-for {:route route
                           :route-params route-params
-                          :routes constants/routes}))
+                          :routes constants/routes
+                          :hashroutes? hashroutes?}))
 
+;; TODO : add hashroutes bool
 (def offerings-newest-url (str (path-for :route.offerings/search) "?"
                                (url/map->query {:order-by-columns [(name :created-on)]
                                                 :order-by-dirs [(name :desc)]})))

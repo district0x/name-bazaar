@@ -139,7 +139,7 @@
     auction? (update :auction-offering/end-time to-date)
     auction? (update :auction-offering/extension-duration seconds->hours)))
 
-(defn offering-form [{:keys [:offering]}]
+(defn offering-form [{:keys [:offering :hashroutes?]}]
   (let [now (subscribe [:now])
         form-data (r/atom (or offering (offering-default-form-data)))]
     (fn [{:keys [:editing?]}]
@@ -238,7 +238,7 @@
                 " After creating an auction, you must transfer ownership of the name to the auction contract
                 in order for it to display in search and for the name to be able to be sold. You will be notified once
                 the name can be transferred, or you can complete this process from the "
-                [:a {:href (path-for :route.user/my-offerings)} "My Offerings page"]
+                [:a {:href (path-for hashroutes? :route.user/my-offerings)} "My Offerings page"]
                 " at a later time."]])])
          [ui/GridRow
           {:centered true}
@@ -270,7 +270,8 @@
               "Save Changes"])]]]))))
 
 (defmethod page :route.offerings/edit []
-  (let [route-params (subscribe [:district0x/route-params])]
+  (let [route-params (subscribe [:district0x/route-params])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       (let [{:keys [:offering/address]} @route-params
             offering-loaded? @(subscribe [:offering/loaded? address])
@@ -289,7 +290,7 @@
             (:offering/new-owner offering)
             [:div.padded "This offering was already bought by "
              [:a
-              {:href (path-for :route.user/purchases (:offering/new-owner offering))}
+              {:href (path-for hashroutes? :route.user/purchases (:offering/new-owner offering))}
               (:offering/new-owner offering)]]
 
             (and (:offering/auction? offering)
@@ -300,7 +301,8 @@
             :else
             [offering-form
              {:editing? true
-              :offering (transaction-data->form-data offering)}])]]))))
+              :offering (transaction-data->form-data offering)
+              :hashroutes? hashroutes?}])]]))))
 
 (defmethod page :route.offerings/create []
   [app-layout

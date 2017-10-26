@@ -4,7 +4,7 @@
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
-    [name-bazaar.ui.utils :refer [valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [valid-ens-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
