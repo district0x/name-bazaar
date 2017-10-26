@@ -9,6 +9,7 @@ Create configuration file in JSON format, for example namebazaar.json:
  "public-key" : "256ebc161b4751583b3718e7",
  "sendgrid-api-key" : "SG.SM1ZLW7YREWS6I",
  "client" : "https://namebazaar.io",
+ "pushroute-hosts" : ["beta.namebazaar.io", "namebazaar.io"],
  "logging" : {"level" : "info",
               "console" : true,
               "file" : {"path" : "/tmp/namebazaar.log"}}}

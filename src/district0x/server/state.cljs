@@ -18,7 +18,7 @@
                          :api-port 6200
                          :testrpc-port 8549
                          :mainnet-port 8545
-                         :pushroute-hosts ["beta.namebazaar.io" "namebazaar.io"]
+                         :pushroute-hosts nil
                          :client "http://0.0.0.0:4544"
                          :use-instant-registrar? true
                          :logging {:level :info
