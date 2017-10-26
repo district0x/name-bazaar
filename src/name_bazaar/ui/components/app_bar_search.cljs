@@ -14,7 +14,7 @@
                constants/routes])))
 
 (defn app-bar-search []
-  (let [hashroutes? @(subscribe [:district0x.browsing/hashroutes?])
+  (let [hashroutes? (subscribe [:district0x.browsing/hashroutes?])
         searched-name (r/atom "")]
     (fn [props]
       [:div.app-bar-search-container
@@ -23,7 +23,7 @@
         {:value @searched-name
          :on-key-press (fn [e]
                          (when (= (aget e "key") "Enter")
-                           (nav-to-ens-record-detail hashroutes? @searched-name)
+                           (nav-to-ens-record-detail @hashroutes? @searched-name)
                            (reset! searched-name "")))
          :icon (r/as-element [:i.icon.magnifier2
                               {:on-click (fn []

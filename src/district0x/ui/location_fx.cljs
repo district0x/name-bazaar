@@ -47,7 +47,6 @@
   (fn [[hashroutes? route route-params routes]]
     (nav-to! hashroutes? route route-params routes)))
 
-; TODO
 (reg-fx
   :location/add-to-query
   (fn [[hashroutes? query-params]]

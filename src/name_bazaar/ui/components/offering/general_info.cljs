@@ -8,16 +8,16 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
-(defn offering-original-owner-line [{:keys [:offering/original-owner :offering/address :hashroutes?]}]
+(defn offering-original-owner-line [{:keys [:offering/original-owner :offering/address]}]
   [:div.ellipsis
    "Offered by"
    (when @(subscribe [:offering/active-address-original-owner? address]) " (You)")
    ": "
    [:a
-    {:href (path-for hashroutes? :route.user/offerings {:user/address original-owner})}
+    {:href (path-for @(subscribe [:district0x.browsing/hashroutes?]) :route.user/offerings {:user/address original-owner})}
     original-owner]])
 
-(defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address :hashroutes?]}]
+(defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address]}]
   (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])]
     [:div.ellipsis
      [:span
@@ -26,7 +26,7 @@
       (when active-address-new-owner? " you")
       ": "]
      [:a
-      {:href (path-for hashroutes? :route.user/purchases {:user/address new-owner})}
+      {:href (path-for @(subscribe [:district0x.browsing/hashroutes?]) :route.user/purchases {:user/address new-owner})}
       new-owner]]))
 
 (defn offering-address-line [{:keys [:offering/address]}]
@@ -41,10 +41,10 @@
                        {:address address}
                        (format-eth-with-code value)]]))
 
-(defn auction-offering-winning-bidder-line [{:keys [:auction-offering/winning-bidder :hashroutes?]}]
+(defn auction-offering-winning-bidder-line [{:keys [:auction-offering/winning-bidder]}]
   [:div.ellipsis "Winning bidder: " (if winning-bidder
                                       [:a
-                                       {:href (path-for hashroutes? :route.user/bids {:user/address winning-bidder})}
+                                       {:href (path-for @(subscribe [:district0x.browsing/hashroutes?]) :route.user/bids {:user/address winning-bidder})}
                                        winning-bidder]
                                       "none")])
 
@@ -58,10 +58,10 @@
    "Finalized on: " (format-local-datetime finalized-on)
    "(" (time-ago finalized-on) ")"])
 
-(defn offering-name-line [{:keys [:offering/name :hashroutes?]}]
+(defn offering-name-line [{:keys [:offering/name]}]
   [:div "Name: " (when name
                    [:a
-                    {:href (path-for hashroutes? :route.ens-record/detail {:ens.record/name name})}
+                    {:href (path-for @(subscribe [:district0x.browsing/hashroutes?]) :route.ens-record/detail {:ens.record/name name})}
                     name])])
 
 (defn offering-auction-end-time-line [{:keys [:offering]}]
@@ -81,13 +81,11 @@
                 :offering/new-owner :offering/finalized-on :offering/auction? :auction-offering/end-time
                 :auction-offering/min-bid-increase :auction-offering/extension-duration
                 :auction-offering/winning-bidder :offering/top-level-name?]} offering
-        registrar-entry @(subscribe [:offering/registrar-entry address])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        registrar-entry @(subscribe [:offering/registrar-entry address])]
     [:div.description.ellipsis
      (dissoc props :offering)
      [offering-name-line
-      {:offering/name name
-       :hashroutes? hashroutes?}]
+      {:offering/name name}]
      [offering-created-on-line
       {:offering/created-on created-on}]
      (when auction?
@@ -100,20 +98,17 @@
         (format-time-duration-units (epoch->long extension-duration))])
      (when (and auction? (not finalized-on))
        [auction-offering-winning-bidder-line
-        {:auction-offering/winning-bidder winning-bidder
-         :hashroutes? hashroutes?}])
+        {:auction-offering/winning-bidder winning-bidder}])
      (when finalized-on
        [offering-finalized-on-line
         {:offering/finalized-on finalized-on}])
      [offering-original-owner-line
       {:offering/original-owner original-owner
-       :offering/address address
-       :hashroutes? hashroutes?}]
+       :offering/address address}]
      (when-not (empty-address? new-owner)
        [offering-new-owner-line
         {:offering/new-owner new-owner
-         :offering/address address
-         :hashroutes? hashroutes?}])
+         :offering/address address}])
      [offering-address-line
       {:offering/address address}]
      (when top-level-name?

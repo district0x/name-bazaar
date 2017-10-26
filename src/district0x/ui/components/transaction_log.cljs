@@ -91,7 +91,7 @@
       :on-click (fn [e]
                   (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                              result-href)
-                    (if (d0x-ui-utils/hashroutes?)
+                    (if @(subscribe [:district0x.browsing/hashroutes?])
                       (location-fx/set-location-hash! result-href)
                       (location-fx/set-history! result-href))
                     (dispatch [:district0x.transaction-log/set-open false])))}

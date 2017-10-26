@@ -129,7 +129,6 @@
   (fn [db [_ config-key]]
     (get-in db [:config config-key])))
 
-;; TODO
 (reg-sub
   :district0x.browsing/hashroutes?
   (fn [db _]

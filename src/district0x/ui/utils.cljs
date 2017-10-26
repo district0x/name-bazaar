@@ -23,8 +23,7 @@
     (>= width 768) 1
     :else 0))
 
-;; TODO: remove when components sub to browsing
-(defn hashroutes? []
+#_(defn hashroutes? []
   (when-not (contains? #{"beta.namebazaar.io" "namebazaar.io"}
                        (-> js/window
                            .-location
@@ -33,6 +32,11 @@
 
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
+
+(defn current-location []
+  (-> js/window
+      .-location
+      .-pathname))
 
 (defn current-location-hash []
   (let [hash (-> js/document

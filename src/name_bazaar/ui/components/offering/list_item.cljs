@@ -20,10 +20,10 @@
     [soda-ash.core :as ui]))
 
 (defn offering-detail-link [{:keys [:offering/address]}]
-  (let [hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+  (let [hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     [:div
      [:a.no-decor
-      {:href (path-for hashroutes? :route.offerings/detail {:offering/address address})}
+      {:href (path-for @hashroutes? :route.offerings/detail {:offering/address address})}
       "Open Offering Detail"]]))
 
 (defn links-section [{:keys [:offering]}]

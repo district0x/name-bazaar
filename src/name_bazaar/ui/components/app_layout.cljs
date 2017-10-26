@@ -4,7 +4,6 @@
     [district0x.ui.components.active-address-select :refer [active-address-select]]
     [district0x.ui.components.snackbar :refer [snackbar]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
-    [district0x.ui.utils :refer [hashroutes?]]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for]]
     [re-frame.core :refer [subscribe dispatch]]
@@ -85,9 +84,6 @@
       items
       (remove #(= (:route %) :route.registrar/register) items))))
 
-;; TODO
-#_(def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
-
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
         my-addresses (subscribe [:district0x/my-addresses])
@@ -105,7 +101,7 @@
        [:div.right-section
         {:on-click (fn []
                      (if (empty? @my-addresses)
-                       (dispatch [:district0x.location/nav-to hashroutes? :route/how-it-works {} constants/routes])
+                       (dispatch [:district0x.location/nav-to @hashroutes? :route/how-it-works {} constants/routes])
                        (dispatch [:district0x.transaction-log/set-open (not @open?)])))}
         (if (empty? @my-addresses)
           [:div "No Accounts"]
@@ -118,7 +114,7 @@
         active-page (subscribe [:district0x/active-page])
         app-container-ref (r/atom nil)
         use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     (fn [& children]
       [:div.app-container
        {:ref (fn [el]
@@ -133,19 +129,19 @@
          :fixed :left}
         [:div.menu-content
          {:style {:overflow-y :scroll}}
-         [side-nav-menu-logo hashroutes?]
+         [side-nav-menu-logo @hashroutes?]
          (doall
            (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
-                                                                       (nav-menu-items-props hashroutes? true)
-                                                                       (nav-menu-items-props hashroutes? false))]
-             (let [href (or href (path-for hashroutes? route))]
+                                                                       (nav-menu-items-props @hashroutes? true)
+                                                                       (nav-menu-items-props @hashroutes? false))]
+             (let [href (or href (path-for @hashroutes? route))]
                [ui/MenuItem
                 {:key text
                  :as "a"
                  :href href
                  :class class
                  :on-click #(dispatch [:district0x.window/scroll-to-top])
-                 :active (= (str (when (hashroutes?) "#") (:path @active-page)) href)}
+                 :active (= (str (when @hashroutes? "#") (:path @active-page)) href)}
                 [:i.icon
                  {:class icon}]
                 text])))

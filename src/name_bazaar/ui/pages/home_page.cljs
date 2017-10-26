@@ -27,7 +27,7 @@
 (defn search-bar []
   (let [search-name (r/atom "")
         search-results (subscribe [:offerings/home-page-autocomplete])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       (let [{:keys [:items :loading?]} @search-results]
         [ui/Search
@@ -37,10 +37,10 @@
           :placeholder "Enter Keyword"
           :results (transform-search-results items)
           :icon (r/as-element [:i.icon.magnifier
-                               {:on-click #(nav-to-ens-record-detail hashroutes? @search-name)}])
+                               {:on-click #(nav-to-ens-record-detail @hashroutes? @search-name)}])
           :on-key-press (fn [e]
                           (when (= (aget e "key") "Enter")
-                            (nav-to-ens-record-detail hashroutes? @search-name)))
+                            (nav-to-ens-record-detail @hashroutes? @search-name)))
           :on-result-select (fn [_ data]
                               (dispatch [:district0x.location/nav-to
                                          :route.offerings/detail
@@ -75,7 +75,7 @@
   (let [offerings-newest (subscribe [:offerings/home-page-newest])
         offerings-most-active (subscribe [:offerings/home-page-most-active])
         offerings-ending-soon (subscribe [:offerings/home-page-ending-soon])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [ui/Grid
        {:class :offerings-grid
@@ -83,15 +83,15 @@
         :centered true}
        (for [props [{:title "Latest"
                      :offerings (:items @offerings-newest)
-                     :show-more-href (offerings-newest-url hashroutes?)
+                     :show-more-href (offerings-newest-url @hashroutes?)
                      :icon-class "leaf"}
                     {:title "Most Active"
                      :offerings (:items @offerings-most-active)
-                     :show-more-href (offerings-most-active-url hashroutes?)
+                     :show-more-href (offerings-most-active-url @hashroutes?)
                      :icon-class "pulse"}
                     {:title "Ending Soon"
                      :offerings (:items @offerings-ending-soon)
-                     :show-more-href (offerings-ending-soon-url hashroutes?)
+                     :show-more-href (offerings-ending-soon-url @hashroutes?)
                      :icon-class "flag"}]]
          [ui/GridColumn
           {:key (:title props)
@@ -163,11 +163,11 @@
 
 (defmethod page :route/home []
   (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [:div.home-page
        [:div.top-segment
-        [namebazaar-logo hashroutes?]]
+        [namebazaar-logo @hashroutes?]]
        [app-headline]
        [ui/Grid
         {:columns 1
@@ -179,6 +179,6 @@
           :tablet 12
           :mobile 15}
          [search-bar]]]
-       [app-pages hashroutes?]
+       [app-pages @hashroutes?]
        [offerings-columns]
        [footer]])))

@@ -8,7 +8,7 @@
 
 (defn ens-record-general-info [{:keys [:ens.record/name] :as props}]
   (let [{:keys [:ens.record/owner :ens.record/resolver]} @(subscribe [:ens/record (namehash name)])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     [:div.ens-record-general-info.description
      (dissoc props :ens.record/name)
      [:div [:b "ENS Information"]]
@@ -16,7 +16,7 @@
       "Owner: " (cond
                   (not (empty-address? owner))
                   [:a
-                   {:href (path-for hashroutes? :route.user/offerings {:user/address owner})}
+                   {:href (path-for @hashroutes? :route.user/offerings {:user/address owner})}
                    owner]
 
                   (zero-address? owner)
