@@ -4,7 +4,7 @@
     [cemerick.url :as url]
     [cljs.spec.alpha :as s]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :refer [path-for] :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils]
     [goog.events :as events]
     [medley.core :as medley]
     [re-frame.core :as re-frame :refer [reg-fx]]))
@@ -17,9 +17,10 @@
   (re-frame/dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location @history/routes (history/get-state))]))
 
 (defn nav-to! [hashroutes? route route-params routes]
-  (let [path (path-for {:route route
-                        :route-params route-params
-                        :routes routes})]
+  (let [path (d0x-ui-utils/path-for
+              {:route route
+               :route-params route-params
+               :routes routes})]
     (if hashroutes?
       (set-location-hash! path)
       (set-history! path))))

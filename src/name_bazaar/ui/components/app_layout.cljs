@@ -87,7 +87,7 @@
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
         my-addresses (subscribe [:district0x/my-addresses])
-        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
+        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [:div.app-bar
        [:div.left-section

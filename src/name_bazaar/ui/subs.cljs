@@ -61,12 +61,4 @@
               (merge
                (when my-address
                  {:user/address (str my-address)})
-               params)))
-   #_(string/replace
-      (str
-       root-url
-       (path-for hashroutes? route (merge
-                                    (when my-address
-                                      {:user/address (str my-address)})
-                                    params)))
-      "#" "")))
+               params)))))

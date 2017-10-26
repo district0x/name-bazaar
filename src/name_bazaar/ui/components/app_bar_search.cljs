@@ -27,7 +27,7 @@
                            (reset! searched-name "")))
          :icon (r/as-element [:i.icon.magnifier2
                               {:on-click (fn []
-                                           (nav-to-ens-record-detail hashroutes? @searched-name)
+                                           (nav-to-ens-record-detail @hashroutes? @searched-name)
                                            (reset! searched-name ""))}])
          :on-change (fn [e]
                       (let [value (aget e "target" "value")]

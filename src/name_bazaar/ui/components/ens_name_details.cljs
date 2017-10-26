@@ -23,13 +23,13 @@
       :on-click #(dispatch [:offering-requests/add-request {:ens.record/name name}])}
      (if has-requested? "Requested" "Request")]))
 
-(defn name-detail-link [{:keys [:ens.record/name]} hashroutes?]
+(defn name-detail-link [{:keys [:ens.record/name]}]
   [:div
    [:a.no-decor
-    {:href (path-for hashroutes? :route.ens-record/detail {:ens.record/name name})}
+    {:href (path-for @(subscribe [:district0x.browsing/hashroutes?]) :route.ens-record/detail {:ens.record/name name})}
     "Open Name Detail"]])
 
-(defn ens-name-details [{:keys [:ens.record/name :show-name-detail-link? :hashroutes?] :as props}]
+(defn ens-name-details [{:keys [:ens.record/name :show-name-detail-link?] :as props}]
   [ui/Grid
    {:class "layout-grid submit-footer ens-name-detail"
     :celled :internally}

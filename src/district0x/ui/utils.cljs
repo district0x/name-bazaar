@@ -23,6 +23,11 @@
     (>= width 768) 1
     :else 0))
 
+(defn current-host []
+  (-> js/window
+      .-location
+      .-hostname))
+
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
 

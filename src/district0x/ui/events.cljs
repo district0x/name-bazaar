@@ -90,14 +90,13 @@
   :district0x/initialize
   [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
   (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
-    (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)
-          hashroutes? (get-in db [:browsing :hashroutes?])
+    (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)          
           transactions (get-in db [:transaction-log :transactions])
           txs-to-reload (medley/filter-vals #(contains-tx-status? #{:tx.status/not-loaded :tx.status/pending} %)
                                             transactions)]
       (merge
         {:db db
-         :ga/page-view [(if hashroutes?
+         :ga/page-view [(if (get-in db [:browsing :hashroutes?])
                           (current-location-hash)
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
@@ -125,14 +124,13 @@
   :district0x/set-active-page
   [interceptors (inject-cofx :current-url)]
   (fn [{:keys [:db :current-url]} [{:keys [:handler] :as match}]]
-    (let [{:keys [:query :path]} current-url
-          hashroutes? (get-in db [:browsing :hashroutes?])]      
+    (let [{:keys [:query :path]} current-url]      
       (merge
         {:db (-> db
                (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
                                                  :path path}))
                (assoc-in [:menu-drawer :open?] false))
-         :ga/page-view [(if hashroutes?
+         :ga/page-view [(if (get-in db [:browsing :hashroutes?])
                           (current-location-hash)
                           (history/get-state))]}
         (when-not (= handler (:handler (:active-page db)))
@@ -176,22 +174,19 @@
 
 ;; TODO: set routes in db, remove atom cancer in history/browser
 (reg-event-fx
- :district0x.browsing/setup!
- interceptors
- (fn [{:keys [db]} [routes]]
-   (let [pushroute-hosts (-> db
-                             (get-in [:config :pushroute-hosts])
-                             set)]    
-     (if (contains? pushroute-hosts
-                    (-> js/window
-                        .-location
-                        .-hostname))
-       {:db (-> db
-                ;;(assoc-in [:browsing :routes] routes)
-                (assoc-in [:browsing :hashroutes?] false))
-        :district0x.browsing/pushroutes! routes}
-       {:db (assoc-in db [:browsing :hashroutes?] true)
-        :district0x.browsing/hashroutes! routes}))))
+  :district0x.browsing/setup!
+  interceptors
+  (fn [{:keys [db]} [routes]]
+    (if (contains? (-> db
+                       (get-in [:config :pushroute-hosts])
+                       set)
+                   (d0x-ui-utils/current-host))
+      {:db (-> db
+               ;;(assoc-in [:browsing :routes] routes)
+               (assoc-in [:browsing :hashroutes?] false))
+       :district0x.browsing/pushroutes! routes}
+      {:db (assoc-in db [:browsing :hashroutes?] true)
+       :district0x.browsing/hashroutes! routes})))
 
 (reg-fx
   :district0x.browsing/pushroutes!
