@@ -24,35 +24,36 @@
       (set-location-hash! path)
       (set-history! path))))
 
-(defn set-location-query! [query-params]
+(defn set-location-query! [hashroutes? query-params]
   (let [url-query (cond
                     (map? query-params) (when-let [query (url/map->query query-params)]
                                           (str "?" query))
                     (string? query-params) (when (seq query-params)
                                              (str "?" query-params)))]    
-    (if (d0x-ui-utils/hashroutes?)
+    (if hashroutes?
       (set-location-hash! (str (d0x-ui-utils/current-location-hash) url-query))
       (let [{:keys [:path]} (url/url (history/get-state))]
         (set-history! (str path url-query))))))
 
-(defn add-to-location-query! [query-params]
+(defn add-to-location-query! [hashroutes? query-params]
   (let [current-query (:query (d0x-ui-utils/current-url))
         new-query (merge current-query (->> query-params
                                          (medley/remove-keys nil?)
                                          (medley/map-keys name)))]
-    (set-location-query! new-query)))
+    (set-location-query! hashroutes? new-query)))
 
 (reg-fx
   :location/nav-to
   (fn [[hashroutes? route route-params routes]]
     (nav-to! hashroutes? route route-params routes)))
 
+; TODO
 (reg-fx
   :location/add-to-query
-  (fn [[query-params]]
-    (add-to-location-query! query-params)))
+  (fn [[hashroutes? query-params]]
+    (add-to-location-query! hashroutes? query-params)))
 
 (reg-fx
   :location/set-query
-  (fn [[query-params]]
-    (set-location-query! query-params)))
+  (fn [[hashroutes? query-params]]
+    (set-location-query! hashroutes? query-params)))

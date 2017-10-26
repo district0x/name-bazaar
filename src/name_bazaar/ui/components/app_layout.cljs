@@ -12,7 +12,8 @@
     [soda-ash.core :as ui]
     [name-bazaar.ui.constants :as constants]))
 
-(defn side-nav-menu-logo [hashroutes?]
+(defn side-nav-menu-logo
+  [hashroutes?]
   [:a.side-nav-logo
    {:href (path-for hashroutes? :route/home)}])
 
@@ -25,61 +26,67 @@
      :target :_blank}
     "district0x Network"]])
 
-(def nav-menu-items-props [{:text "Offerings"
-                            :route :route.offerings/search
-                            :class :offerings-search
-                            :icon "hand"}
-                           {:text "Latest"
-                            :href offerings-newest-url
-                            :class "nested-item offerings-newest"}
-                           {:text "Most Active"
-                            :href offerings-most-active-url
-                            :class "nested-item offerings-most-active"}
-                           {:text "Ending Soon"
-                            :href offerings-ending-soon-url
-                            :class "nested-item offerings-ending-soon"}
-                           {:text "Requests"
-                            :route :route.offering-requests/search
-                            :class :offering-requests-search
-                            :icon "message-box"}
-                           {:text "Watched Names"
-                            :route :route/watched-names
-                            :class :watched-names
-                            :icon "eye"}
-                           {:text "Create Offering"
-                            :route :route.offerings/create
-                            :class :create-offering
-                            :icon "price-tag-plus"}
-                           {:text "My Offerings"
-                            :route :route.user/my-offerings
-                            :class :my-offerings
-                            :icon "price-tag"}
-                           {:text "My Purchases"
-                            :route :route.user/my-purchases
-                            :class :my-purchases
-                            :icon "bag"}
-                           {:text "My Bids"
-                            :route :route.user/my-bids
-                            :class :my-bids
-                            :icon "hammer"}
-                           {:text "My Settings"
-                            :route :route.user/my-settings
-                            :class :my-settings
-                            :icon "settings"}
-                           {:text "Register Name"
-                            :route :route.registrar/register
-                            :class :register-name
-                            :icon "pencil"}
-                           {:text "How it works"
-                            :route :route/how-it-works
-                            :class :how-it-works
-                            :icon "book"}
-                           {:text "About"
-                            :route :route/about
-                            :class :about
-                            :icon "question"}])
+(defn nav-menu-items-props
+  [hashroutes? register-name?]
+  (let [items [{:text "Offerings"
+                :route :route.offerings/search
+                :class :offerings-search
+                :icon "hand"}
+               {:text "Latest"
+                :href (offerings-newest-url hashroutes?)
+                :class "nested-item offerings-newest"}
+               {:text "Most Active"
+                :href (offerings-most-active-url hashroutes?)
+                :class "nested-item offerings-most-active"}
+               {:text "Ending Soon"
+                :href (offerings-ending-soon-url hashroutes?)
+                :class "nested-item offerings-ending-soon"}
+               {:text "Requests"
+                :route :route.offering-requests/search
+                :class :offering-requests-search
+                :icon "message-box"}
+               {:text "Watched Names"
+                :route :route/watched-names
+                :class :watched-names
+                :icon "eye"}
+               {:text "Create Offering"
+                :route :route.offerings/create
+                :class :create-offering
+                :icon "price-tag-plus"}
+               {:text "My Offerings"
+                :route :route.user/my-offerings
+                :class :my-offerings
+                :icon "price-tag"}
+               {:text "My Purchases"
+                :route :route.user/my-purchases
+                :class :my-purchases
+                :icon "bag"}
+               {:text "My Bids"
+                :route :route.user/my-bids
+                :class :my-bids
+                :icon "hammer"}
+               {:text "My Settings"
+                :route :route.user/my-settings
+                :class :my-settings
+                :icon "settings"}
+               {:text "Register Name"
+                :route :route.registrar/register
+                :class :register-name
+                :icon "pencil"}
+               {:text "How it works"
+                :route :route/how-it-works
+                :class :how-it-works
+                :icon "book"}
+               {:text "About"
+                :route :route/about
+                :class :about
+                :icon "question"}]]
+    (if register-name?
+      items
+      (remove #(= (:route %) :route.registrar/register) items))))
 
-(def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
+;; TODO
+#_(def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
@@ -129,8 +136,8 @@
          [side-nav-menu-logo hashroutes?]
          (doall
            (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
-                                                                       nav-menu-items-props
-                                                                       nav-menu-items-props-no-register)]
+                                                                       (nav-menu-items-props hashroutes? true)
+                                                                       (nav-menu-items-props hashroutes? false))]
              (let [href (or href (path-for hashroutes? route))]
                [ui/MenuItem
                 {:key text

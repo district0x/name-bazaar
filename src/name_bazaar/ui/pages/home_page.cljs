@@ -74,7 +74,8 @@
 (defn offerings-columns []
   (let [offerings-newest (subscribe [:offerings/home-page-newest])
         offerings-most-active (subscribe [:offerings/home-page-most-active])
-        offerings-ending-soon (subscribe [:offerings/home-page-ending-soon])]
+        offerings-ending-soon (subscribe [:offerings/home-page-ending-soon])
+        hashroutes? @(subscribe [:district0x.browsing/hashroutes?])]
     (fn []
       [ui/Grid
        {:class :offerings-grid
@@ -82,15 +83,15 @@
         :centered true}
        (for [props [{:title "Latest"
                      :offerings (:items @offerings-newest)
-                     :show-more-href offerings-newest-url
+                     :show-more-href (offerings-newest-url hashroutes?)
                      :icon-class "leaf"}
                     {:title "Most Active"
                      :offerings (:items @offerings-most-active)
-                     :show-more-href offerings-most-active-url
+                     :show-more-href (offerings-most-active-url hashroutes?)
                      :icon-class "pulse"}
                     {:title "Ending Soon"
                      :offerings (:items @offerings-ending-soon)
-                     :show-more-href offerings-ending-soon-url
+                     :show-more-href (offerings-ending-soon-url hashroutes?)
                      :icon-class "flag"}]]
          [ui/GridColumn
           {:key (:title props)

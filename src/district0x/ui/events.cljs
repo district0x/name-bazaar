@@ -795,11 +795,12 @@
              [:district0x.log/info]
              [:district0x.log/error :blockchain/unlock-account]]]}}))
 
+;; TODO
 (reg-event-fx
   :district0x.location/set-query
   interceptors
-  (fn [_ args]
-    {:location/set-query args}))
+  (fn [_ [hashroutes? args]]
+    {:location/set-query [hashroutes? args]}))
 
 ; TODO
 (reg-event-fx
@@ -811,8 +812,8 @@
 (reg-event-fx
   :district0x.location/add-to-query
   interceptors
-  (fn [_ [query-params]]
-    {:location/add-to-query [query-params]}))
+  (fn [_ [hashroutes? query-params]]
+    {:location/add-to-query [hashroutes? query-params]}))
 
 (reg-event-fx
   :district0x.window/resized

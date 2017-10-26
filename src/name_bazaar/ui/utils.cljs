@@ -48,18 +48,23 @@
                           :routes constants/routes
                           :hashroutes? hashroutes?}))
 
-;; TODO : add hashroutes bool
-(def offerings-newest-url (str (path-for :route.offerings/search) "?"
-                               (url/map->query {:order-by-columns [(name :created-on)]
-                                                :order-by-dirs [(name :desc)]})))
+;; TODO
+(defn offerings-newest-url [hashroutes?]
+  (str (path-for hashroutes? :route.offerings/search) "?"
+       (url/map->query {:order-by-columns [(name :created-on)]
+                        :order-by-dirs [(name :desc)]})))
 
-(def offerings-most-active-url (str (path-for :route.offerings/search) "?"
-                                    (url/map->query {:order-by-columns [(name :bid-count)]
-                                                     :order-by-dirs [(name :desc)]})))
+;; TODO : calls
+(defn offerings-most-active-url [hashroutes?]
+  (str (path-for hashroutes? :route.offerings/search) "?"
+       (url/map->query {:order-by-columns [(name :bid-count)]
+                        :order-by-dirs [(name :desc)]})))
 
-(def offerings-ending-soon-url (str (path-for :route.offerings/search) "?"
-                                    (url/map->query {:order-by-columns [(name :end-time)]
-                                                     :order-by-dirs [(name :asc)]})))
+;; TODO : calls
+(defn offerings-ending-soon-url [hashroutes?]
+  (str (path-for hashroutes? :route.offerings/search) "?"
+       (url/map->query {:order-by-columns [(name :end-time)]
+                        :order-by-dirs [(name :asc)]})))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))
