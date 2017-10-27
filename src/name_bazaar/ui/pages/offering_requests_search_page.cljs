@@ -15,23 +15,23 @@
     [soda-ash.core :as ui]))
 
 (defn offerings-keyword-text-field []
-  (let [search-params (subscribe [:offering-requests.main-search/params])
-        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
+  (let [search-params (subscribe [:offering-requests.main-search/params])]
     (fn []
       [input
        {:label "Keyword"
         :fluid true
         :value (:name @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query @hashroutes? {:name (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
+                               {:name (aget %2 "value")}])}])))
 
 (defn offering-requests-keyword-position-select []
-  (let [search-params (subscribe [:offering-requests.main-search/params])
-        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
+  (let [search-params (subscribe [:offering-requests.main-search/params])]
     (fn []
       [keyword-position-select
        {:value (:name-position @search-params)
         :fluid true
-        :on-change #(dispatch [:district0x.location/add-to-query @hashroutes? {:name-position (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
+                               {:name-position (aget %2 "value")}])}])))
 
 (defn search-params-panel []
   [ui/Segment
