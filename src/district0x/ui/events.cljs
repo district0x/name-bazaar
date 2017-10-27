@@ -292,8 +292,10 @@
   :district0x/watch-my-eth-balances
   interceptors
   (fn [{:keys [db]} [args]]
-    (let [addresses (:my-addresses db)]
-      {:dispatch [:district0x/watch-eth-balances (assoc args :addresses addresses)]})))
+    (let [my-addresses (set (:my-addresses db))]
+      (when-not (= (set/intersection (get-in db [:district0x/watch-eth-balances :addresses]) my-addresses)
+                   my-addresses)
+        {:dispatch [:district0x/watch-eth-balances (assoc args :addresses my-addresses)]}))))
 
 (reg-event-fx
   :district0x/watch-token-balances
