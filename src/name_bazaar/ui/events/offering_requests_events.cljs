@@ -10,7 +10,7 @@
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params debounce?]]
+    [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params debounce? get-hashroutes?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -25,7 +25,7 @@
                    :contract-method :add-request
                    :form-data form-data
                    :args-order [:ens.record/name]
-                   :result-href (path-for (get-in db [:browsing :hashroutes?]) :route.ens-record/detail form-data)
+                   :result-href (path-for (get-hashroutes? db) :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/name])
                    :tx-opts {:gas 200000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:offering-requests/load [node]]

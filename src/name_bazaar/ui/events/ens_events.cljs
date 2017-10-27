@@ -9,7 +9,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering get-hashroutes?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley]))
@@ -25,7 +25,7 @@
                    :contract-method :set-owner
                    :form-data form-data
                    :args-order [:ens.record/node :ens.record/owner]
-                   :result-href (path-for (get-in db [:browsing :hashroutes?]) :route.ens-record/detail form-data)
+                   :result-href (path-for (get-hashroutes? db) :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt [:district0x.snackbar/show-message
