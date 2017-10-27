@@ -96,7 +96,7 @@
                                             transactions)]
       (merge
         {:db db
-         :ga/page-view [(if (get-in db [:browsing :hashroutes?])
+         :ga/page-view [(if (d0x-ui-utils/get-hashroutes? db)
                           (current-location-hash)
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
@@ -130,7 +130,7 @@
                (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
                                                  :path path}))
                (assoc-in [:menu-drawer :open?] false))
-         :ga/page-view [(if (get-in db [:browsing :hashroutes?])
+         :ga/page-view [(if (d0x-ui-utils/get-hashroutes? db)
                           (current-location-hash)
                           (history/get-state))]}
         (when-not (= handler (:handler (:active-page db)))
@@ -746,7 +746,7 @@
                  {:open? true
                   :message message
                   :action-href (path-for (-> (select-keys params [:route :route-params :routes])
-                                             (assoc :hashroutes? (get-in db [:browsing :hashroutes?]))))})
+                                             (assoc :hashroutes? (d0x-ui-utils/get-hashroutes? db))))})
      :dispatch-later [{:ms (get-in db [:snackbar :timeout])
                        :dispatch [:district0x.snackbar/close]}]}))
 

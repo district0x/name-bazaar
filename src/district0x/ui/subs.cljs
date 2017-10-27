@@ -132,7 +132,7 @@
 (reg-sub
   :district0x.browsing/hashroutes?
   (fn [db _]
-    (get-in db [:browsing :hashroutes?])))
+    (d0x-ui-utils/get-hashroutes? db)))
 
 (reg-sub
   :district0x.screen-size/min-large-screen?
