@@ -17,10 +17,10 @@
   (re-frame/dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location @history/routes (history/get-state))]))
 
 (defn nav-to! [route route-params routes]
-  (let [path (d0x-ui-utils/path-for {:route route
-                                     :route-params route-params
-                                     :routes routes})]
-    (if (d0x-ui-utils/hashroutes?)
+  (let [path (history/path-for {:route route
+                                :route-params route-params
+                                :routes routes})]
+    (if history/hashroutes?
       (set-location-hash! path)
       (set-history! path))))
 
@@ -30,7 +30,7 @@
                                           (str "?" query))
                     (string? query-params) (when (seq query-params)
                                              (str "?" query-params)))]    
-    (if (d0x-ui-utils/hashroutes?)
+    (if history/hashroutes?
       (set-location-hash! (str (d0x-ui-utils/current-location-hash) url-query))
       (let [{:keys [:path]} (url/url (history/get-state))]
         (set-history! (str path url-query))))))

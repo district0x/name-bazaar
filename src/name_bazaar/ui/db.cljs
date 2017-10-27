@@ -34,7 +34,7 @@
   (merge
     district0x.ui.db/default-db
     (get-config environment)
-    {:active-page (if (d0x-ui-utils/hashroutes?)
+    {:active-page (if history/hashroutes?
                     (d0x-ui-utils/match-current-location constants/routes)
                     (d0x-ui-utils/match-current-location constants/routes (history/get-state)))
      :smart-contracts smart-contracts

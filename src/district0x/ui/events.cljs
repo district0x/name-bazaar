@@ -25,7 +25,7 @@
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size path-for to-locale-string hashroutes? current-location-hash]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size to-locale-string]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -96,8 +96,8 @@
                                             transactions)]
       (merge
         {:db db
-         :ga/page-view [(if (hashroutes?)
-                          (current-location-hash)
+         :ga/page-view [(if history/hashroutes?
+                          (d0x-ui-utils/current-location-hash)
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
@@ -133,8 +133,8 @@
                (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
                                                  :path path}))
                (assoc-in [:menu-drawer :open?] false))
-         :ga/page-view [(if (hashroutes?)
-                          (current-location-hash)
+         :ga/page-view [(if history/hashroutes?
+                          (d0x-ui-utils/current-location-hash)
                           (history/get-state))]}
         (when-not (= handler (:handler (:active-page db)))
           {:window/scroll-to-top true})))))
@@ -725,7 +725,7 @@
     {:db (update db :snackbar merge
                  {:open? true
                   :message message
-                  :action-href (path-for (select-keys params [:route :route-params :routes]))})
+                  :action-href (history/path-for (select-keys params [:route :route-params :routes]))})
      :dispatch-later [{:ms (get-in db [:snackbar :timeout])
                        :dispatch [:district0x.snackbar/close]}]}))
 

@@ -4,7 +4,7 @@
     [district0x.ui.components.active-address-select :refer [active-address-select]]
     [district0x.ui.components.snackbar :refer [snackbar]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
-    [district0x.ui.utils :refer [hashroutes?]]
+    [district0x.ui.history :as history]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for]]
     [re-frame.core :refer [subscribe dispatch]]
@@ -136,7 +136,7 @@
                  :href href
                  :class class
                  :on-click #(dispatch [:district0x.window/scroll-to-top])
-                 :active (= (str (when (hashroutes?) "#") (:path @active-page)) href)}
+                 :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
                 [:i.icon
                  {:class icon}]
                 text])))

@@ -1,6 +1,7 @@
 (ns district0x.ui.components.transaction-log
   (:require
     [district0x.shared.utils :refer [wei->eth]]
+    [district0x.ui.history :as history]
     [district0x.ui.components.misc :refer [etherscan-link]]
     [district0x.ui.location-fx :as location-fx]
     [district0x.ui.utils :as d0x-ui-utils :refer [time-ago to-locale-string truncate format-eth-with-code]]
@@ -89,7 +90,7 @@
       :on-click (fn [e]
                   (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                              result-href)
-                    (if (d0x-ui-utils/hashroutes?)
+                    (if history/hashroutes?
                       (location-fx/set-location-hash! result-href)
                       (location-fx/set-history! result-href))
                     (dispatch [:district0x.transaction-log/set-open false])))}

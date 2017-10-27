@@ -35,7 +35,7 @@
   (s/check-asserts goog.DEBUG)
   (dev-setup)
   (google-analytics-fx/set-enabled! (not debug?))
-  (if (d0x-ui-utils/hashroutes?)   
+  (if history/hashroutes?   
     (set! (.-onhashchange js/window)
           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
      (history/start! constants/routes))

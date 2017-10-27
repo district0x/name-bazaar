@@ -23,15 +23,6 @@
     (>= width 768) 1
     :else 0))
 
-;; TODO: get pushroute-hosts  from config
-(defn hashroutes? []
-  (let [pushroute-hosts #{"beta.namebazaar.io" "namebazaar.io"}]
-    (when-not (contains? pushroute-hosts
-                         (-> js/window
-                             .-location
-                             .-hostname))
-      true)))
-
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
 
@@ -43,12 +34,6 @@
                first
                (string/replace "#" ""))]
     (if (empty? hash) "/" hash)))
-
-(defn path-for [{:keys [:route :route-params :routes]}]
-  (let [path (medley/mapply bidi/path-for routes route route-params)]
-    (if (hashroutes?)
-      (str "#" path)
-      path)))
 
 (defn match-current-location
   ([routes route]

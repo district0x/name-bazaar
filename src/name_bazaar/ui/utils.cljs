@@ -4,6 +4,7 @@
     [clojure.data :as data]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils]
+    [district0x.ui.history :as history]
     [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
@@ -43,9 +44,9 @@
   (d0x-shared-utils/apply-parsers query-params (constants/query-params-parsers route-key)))
 
 (defn path-for [route & [route-params]]
-  (d0x-ui-utils/path-for {:route route
-                          :route-params route-params
-                          :routes constants/routes}))
+  (history/path-for {:route route
+                     :route-params route-params
+                     :routes constants/routes}))
 
 (def offerings-newest-url (str (path-for :route.offerings/search) "?"
                                (url/map->query {:order-by-columns [(name :created-on)]
