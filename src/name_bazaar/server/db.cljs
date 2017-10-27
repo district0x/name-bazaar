@@ -8,7 +8,8 @@
     [district0x.server.honeysql-extensions]
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
-    [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]])
+    [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]]
+    [name-bazaar.shared.utils :refer [emergency-state-new-owner]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn create-tables! [db]
@@ -161,7 +162,7 @@
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder :finalized?]
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
@@ -180,9 +181,13 @@
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
               (not (js/isNaN min-length)) (merge-where [:>= :label-length min-length])
               (not (js/isNaN max-length)) (merge-where [:<= :label-length max-length])
-              min-end-time-now? (merge-where [:or
+              (and min-end-time-now?
+                   (not sold?)) (merge-where [:or
                                               [:>= :end-time (to-epoch (t/now))]
                                               [:= :end-time nil]])
+              sold? (merge-where [:and
+                                  [:<> :new-owner nil]
+                                  [:<> :new-owner emergency-state-new-owner]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder bidder])
               bidder (update-in [:modifiers] concat [:distinct])
@@ -191,7 +196,8 @@
               version (merge-where [:= :version version])
               (false? finalized?) (merge-where [:= :finalized-on 0])
               (true? finalized?) (merge-where [:<> :finalized-on 0])
-              (boolean? node-owner?) (merge-where [:= :node-owner node-owner?])
+              (and (boolean? node-owner?)
+                   (not sold?)) (merge-where [:= :node-owner node-owner?])
               (or buy-now? auction?) (merge-where [:or
                                                    (when buy-now?
                                                      [:< :version 100000])

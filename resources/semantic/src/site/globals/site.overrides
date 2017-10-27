@@ -601,7 +601,7 @@ h4, h5, h6 {
         &:before {
           background: none;
         }
-        &.offerings-ending-soon {
+        &.offerings-sold {
           padding-bottom: 16px;
         }
       }
@@ -969,6 +969,9 @@ h4, h5, h6 {
       padding: @segmentGutter;
       padding-bottom: 0;
       font-size: 12px;
+      .sold-for {
+        padding-right: 5px;
+      }
       @media only screen and (max-width: @largestMobileScreen) {
         display: none;
       }

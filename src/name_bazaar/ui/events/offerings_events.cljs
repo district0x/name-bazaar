@@ -531,14 +531,19 @@
                                                {:name-position :any
                                                 :offset 0
                                                 :limit 10
-                                                :node-owner? true}
+                                                :node-owner? true
+                                                :top-level-names? true}
                                                search-params)}]})))
 
 (reg-event-fx
   :offerings.home-page/search
   interceptors
   (fn [{:keys [:db]}]
-    (let [common-params {:limit 5 :node-owner? true :min-end-time-now? true}]
+    (let [common-params {:limit 5
+                         :node-owner? true
+                         :min-end-time-now? true
+                         :exclude-special-chars? true
+                         :top-level-names? true}]
       {:dispatch-n [[:offerings/search {:search-results-path [:search-results :offerings :home-page-newest]
                                         :params (merge common-params
                                                        {:order-by-columns [:created-on]

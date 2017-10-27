@@ -53,7 +53,8 @@
             :offset (:offset params)
             :loading? loading?
             :no-items-text no-items-text
-            :header-props {:show-time-ago? true}
+            :header-props {:show-time-ago? true
+                           :show-sold-for? true}
             :on-next-load (fn [offset limit]
                             (dispatch [:offerings.user-purchases/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}

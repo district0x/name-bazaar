@@ -6,7 +6,7 @@
     [district0x.ui.components.transaction-log :refer [transaction-log]]
     [district0x.ui.utils :refer [hashroutes?]]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
-    [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for]]
+    [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for offerings-sold-url]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]
@@ -38,6 +38,9 @@
                            {:text "Ending Soon"
                             :href offerings-ending-soon-url
                             :class "nested-item offerings-ending-soon"}
+                           {:text "Sold"
+                            :href offerings-sold-url
+                            :class "nested-item offerings-sold"}
                            {:text "Requests"
                             :route :route.offering-requests/search
                             :class :offering-requests-search

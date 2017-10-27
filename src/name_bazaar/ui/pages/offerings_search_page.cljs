@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.pages.offerings-search-page
   (:require
+    [cemerick.url :as url]
     [district0x.shared.utils :refer [non-neg-ether-value?]]
     [district0x.ui.components.input :refer [input]]
     [district0x.ui.components.misc :refer [page]]
@@ -194,7 +195,7 @@
     (fn []
       [offerings-order-by-select
        {:fluid true
-         :order-by-column (first (:order-by-columns @search-params))
+        :order-by-column (first (:order-by-columns @search-params))
         :order-by-dir (first (:order-by-dirs @search-params))
         :options [:offering.order-by/newest
                   :offering.order-by/most-active
@@ -207,6 +208,19 @@
                        (dispatch [:district0x.location/add-to-query
                                   {:order-by-columns [(name order-by-column)]
                                    :order-by-dirs [(name order-by-dir)]}])))}])))
+
+(defn reset-filter-button []
+  (let [sold-page? (subscribe [:offerings.main-search/sold-page?])]
+    (fn [{:keys [:on-click] :as props}]
+      [:i.icon.filter.search-options-icon-button
+       (r/merge-props
+         props
+         {:on-click (fn []
+                      (when (fn? on-click)
+                        (on-click))
+                      (dispatch [:district0x.location/set-query (if @sold-page?
+                                                                  (url/map->query {:sold? true})
+                                                                  "")]))})])))
 
 (defn search-params-panel []
   (let [open? (r/atom false)
@@ -227,10 +241,8 @@
              :mobile 16}
             [:div.offerings-search-options-section
              [order-by-select-field]
-             [:i.icon.filter.search-options-icon-button
-              {:on-click (fn []
-                           (reset! open? false)
-                           (dispatch [:district0x.location/set-query ""]))}]]])
+             [reset-filter-button
+              {:on-click #(reset! open? false)}]]])
          [ui/GridColumn
           {:vertical-align :bottom
            :class "hide-divider join-upper"
@@ -321,8 +333,7 @@
                  {:width 16}
                  [order-by-select-field]])]
              (when-not @mobile?
-               [:i.icon.filter.search-options-icon-button
-                {:on-click #(dispatch [:district0x.location/set-query ""])}])]]]
+               [reset-filter-button])]]]
           [ui/GridRow
            {:centered true}
            [:div.show-advanced-search-options
@@ -330,7 +341,9 @@
             "Show Advanced Options ▾"]])]])))
 
 (defn offerings-search-results []
-  (let [search-results (subscribe [:offerings/main-search])]
+  (let [search-results (subscribe [:offerings/main-search])
+        sold-page? (subscribe [:offerings.main-search/sold-page?])
+        mobile? (subscribe [:district0x.screen-size/mobile?])]
     (fn []
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [ui/Segment
@@ -340,6 +353,8 @@
            :offset (:offset params)
            :loading? loading?
            :no-items-text "No offerings found matching your search criteria"
+           :header-props {:show-time-ago? @sold-page?
+                          :show-sold-for? @sold-page?}
            :on-next-load (fn [offset limit]
                            (dispatch [:offerings.main-search/set-params-and-search
                                       {:offset offset :limit limit}
@@ -348,7 +363,9 @@
             (for [[i offering] (medley/indexed items)]
               [offering-list-item
                {:key i
-                :offering offering}]))]]))))
+                :offering offering
+                :header-props {:show-finalized-on? @sold-page?
+                               :show-sold? (and @sold-page? @mobile?)}}]))]]))))
 
 (defmethod page :route.offerings/search []
   (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])]

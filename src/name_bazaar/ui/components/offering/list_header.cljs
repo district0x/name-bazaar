@@ -6,7 +6,7 @@
 
 (defn offering-list-header []
   (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
-    (fn [{:keys [:show-time-ago?] :as props}]
+    (fn [{:keys [:show-time-ago? :show-sold-for?] :as props}]
       [:div.ui.grid.padded.search-results-list-item.list-header.opacity-1
        (dissoc props :show-time-ago?)
        [ui/GridRow
@@ -23,4 +23,10 @@
           :text-align :center}
          [:div (if show-time-ago?
                  "Time Ago"
-                 "Time Left")]]]])))
+                 "Time Left")]]
+        (when show-sold-for?
+          [ui/GridColumn
+           {:width 4
+            :text-align :right
+            :class "sold-for"}
+           [:div "Sold For"]])]])))

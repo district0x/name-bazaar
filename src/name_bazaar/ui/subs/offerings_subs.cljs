@@ -214,6 +214,12 @@
   :params)
 
 (reg-sub
+  :offerings.main-search/sold-page?
+  :<- [:offerings.main-search/params]
+  (fn [params]
+    (:sold? params)))
+
+(reg-sub
   :offerings/ens-record-offerings
   :<- [:offerings/search-results :ens-record-offerings]
   identity)
