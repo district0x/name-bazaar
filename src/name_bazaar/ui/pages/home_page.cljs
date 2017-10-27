@@ -13,7 +13,7 @@
 
 (defn- nav-to-ens-record-detail [hashroutes? name]
   (when-not (empty? name)
-    (dispatch [:district0x.location/nav-to hashroutes? :route.ens-record/detail
+    (dispatch [:district0x.location/nav-to :route.ens-record/detail
                {:ens.record/name (ensure-registrar-root name)}
                constants/routes])))
 
@@ -42,8 +42,7 @@
                           (when (= (aget e "key") "Enter")
                             (nav-to-ens-record-detail @hashroutes? @search-name)))
           :on-result-select (fn [_ data]
-                              (dispatch [:district0x.location/nav-to
-                                         :route.offerings/detail
+                              (dispatch [:district0x.location/nav-to :route.offerings/detail
                                          {:offering/address (aget data "result" "id")}
                                          constants/routes]))
           :on-search-change (fn [_ data]

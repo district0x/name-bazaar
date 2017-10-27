@@ -4,6 +4,7 @@
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [cljs.spec.alpha :as s]
+    [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
     [district0x.ui.db]
     [district0x.ui.history :as history]
@@ -34,7 +35,9 @@
   (merge
     district0x.ui.db/default-db
     (get-config environment)
-    {:active-page (d0x-ui-utils/match-current-location constants/routes (d0x-ui-utils/current-location))
+    {:active-page (if (string/includes? (.-href js/location) "#")
+                    (d0x-ui-utils/match-current-location constants/routes)
+                    (d0x-ui-utils/match-current-location constants/routes (d0x-ui-utils/current-location)))
      
      :smart-contracts smart-contracts
      :now (t/now)

@@ -111,6 +111,9 @@
                                             :transaction-log/ids-chronological
                                             :transaction-log/settings]))
 
+(s/def :browsing/hashroutes? boolean?)
+(s/def :db/browsing (:req-un [:browsing/hashroutes?]))
+
 (s/def :search-params/order-by-dir (partial contains? #{:asc :desc}))
 (s/def :search-params/order-by (s/coll-of (s/tuple keyword? :search-params/order-by-dir)))
 (s/def :search-params/offset integer?)

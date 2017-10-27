@@ -13,7 +13,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? get-hashroutes?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? using-hashroutes?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -26,7 +26,7 @@
                  :contract-method :create-offering
                  :form-data form-data
                  :tx-opts {:gas 320000 :gas-price default-gas-price}
-                 :result-href (path-for (get-hashroutes? db)
+                 :result-href (path-for (using-hashroutes? db)
                                         :route.ens-record/detail
                                         {:ens.record/name (:offering/name form-data)})
                  :args-order [:offering/name
@@ -51,7 +51,7 @@
                    :contract-method :create-offering
                    :form-data form-data
                    :tx-opts {:gas 370000 :gas-price default-gas-price}
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.ens-record/detail
                                           {:ens.record/name (:offering/name form-data)})
                    :args-order [:offering/name
@@ -95,7 +95,7 @@
                    :contract-method :buy
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :tx-opts {:gas 200000
@@ -117,7 +117,7 @@
                  :form-data form-data
                  :contract-address (:offering/address form-data)
                  :args-order [:offering/price]
-                 :result-href (path-for (get-hashroutes? db)
+                 :result-href (path-for (using-hashroutes? db)
                                         :route.offerings/detail
                                         form-data)
                  :tx-opts {:gas 200000 :gas-price default-gas-price}
@@ -137,7 +137,7 @@
                    :contract-method :bid
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :tx-opts {:gas 200000
@@ -160,7 +160,7 @@
                    :contract-method :finalize
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :tx-opts {:gas 120000
@@ -191,7 +191,7 @@
                    :form-data form-data
                    :contract-address (:offering/address form-data)
                    :args-order [:auction-offering/bidder]
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :tx-opts {:gas 150000 :gas-price default-gas-price}
@@ -215,7 +215,7 @@
                    :contract-method :set-settings
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :args-order [:offering/price
@@ -249,7 +249,7 @@
                    :contract-method :reclaim-ownership
                    :form-data form-data
                    :contract-address (:offering/address form-data)
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           form-data)
                    :form-id (select-keys form-data [:offering/address])

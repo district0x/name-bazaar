@@ -22,7 +22,7 @@
        {:label "Keyword"
         :fluid true
         :value (:name @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?]) {:name (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name (aget %2 "value")}])}])))
 
 (defn offerings-keyword-position-select []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -30,8 +30,7 @@
       [keyword-position-select
        {:fluid true
         :value (:name-position @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:name-position (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name-position (aget %2 "value")}])}])))
 
 (defn saved-searches-select []
   (let [saved-searches (subscribe [:offerings/saved-searches])
@@ -44,7 +43,7 @@
       :value (when (get @saved-searches @query-string) @query-string)
       :options (for [[value text] @saved-searches]
                  {:value value :text text})
-      :on-change #(dispatch [:district0x.location/set-query @(subscribe [:district0x.browsing/hashroutes?]) (aget %2 "value")])}]))
+      :on-change #(dispatch [:district0x.location/set-query (aget %2 "value")])}]))
 
 (defn save-search-button []
   (let [open? (r/atom false)
@@ -104,8 +103,7 @@
       [ui/Checkbox
        {:label "Buy Now Offerings"
         :checked (boolean (:buy-now? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:buy-now? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:buy-now? (aget %2 "checked")}])}])))
 
 (defn auction-offerings-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -113,8 +111,7 @@
       [ui/Checkbox
        {:label "Auction Offerings"
         :checked (boolean (:auction? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @ (subscribe [:district0x.browsing/hashroutes?])
-                               {:auction? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:auction? (aget %2 "checked")}])}])))
 
 (defn top-level-names-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -122,8 +119,7 @@
       [ui/Checkbox
        {:label "Top Level Names"
         :checked (boolean (:top-level-names? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:top-level-names? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:top-level-names? (aget %2 "checked")}])}])))
 
 (defn subnames-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -131,8 +127,7 @@
       [ui/Checkbox
        {:label "Subnames"
         :checked (boolean (:sub-level-names? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:sub-level-names? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:sub-level-names? (aget %2 "checked")}])}])))
 
 (defn exclude-numbers-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -140,8 +135,7 @@
       [ui/Checkbox
        {:label "Exclude Numbers"
         :checked (boolean (:exclude-numbers? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:exclude-numbers? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:exclude-numbers? (aget %2 "checked")}])}])))
 
 (defn exclude-special-chars-checkbox []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -149,12 +143,10 @@
       [ui/Checkbox
        {:label "Exclude Special Char."
         :checked (boolean (:exclude-special-chars? @search-params))
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:exclude-special-chars? (aget %2 "checked")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:exclude-special-chars? (aget %2 "checked")}])}])))
 
 (defn min-price-input []
-  (let [search-params (subscribe [:offerings.main-search/params])
-        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
+  (let [search-params (subscribe [:offerings.main-search/params])]
     (fn []
       (let [{:keys [:min-price]} @search-params]
         [input
@@ -162,7 +154,7 @@
           :fluid true
           :value min-price
           :error (not (non-neg-ether-value? min-price {:allow-empty? true}))
-          :on-change #(dispatch [:district0x.location/add-to-query @hashroutes? {:min-price (aget %2 "value")}])}]))))
+          :on-change #(dispatch [:district0x.location/add-to-query {:min-price (aget %2 "value")}])}]))))
 
 (defn max-price-input []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -173,7 +165,7 @@
           :fluid true
           :value max-price
           :error (not (non-neg-ether-value? max-price {:allow-empty? true}))
-          :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?]) {:max-price (aget %2 "value")}])}]))))
+          :on-change #(dispatch [:district0x.location/add-to-query {:max-price (aget %2 "value")}])}]))))
 
 (defn min-length-input []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -184,8 +176,7 @@
           :fluid true
           :value min-length
           :error (not (non-neg-ether-value? min-length {:allow-empty? true}))
-          :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                                 {:min-length (aget %2 "value")}])}]))))
+          :on-change #(dispatch [:district0x.location/add-to-query {:min-length (aget %2 "value")}])}]))))
 
 (defn max-length-input []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -196,8 +187,7 @@
           :fluid true
           :value max-length
           :error (not (non-neg-ether-value? max-length {:allow-empty? true}))
-          :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                                 {:max-length (aget %2 "value")}])}]))))
+          :on-change #(dispatch [:district0x.location/add-to-query {:max-length (aget %2 "value")}])}]))))
 
 (defn order-by-select-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -214,14 +204,12 @@
                   :offering.order-by/most-relevant]
         :on-change (fn [e data]
                      (let [[order-by-column order-by-dir] (aget data "value")]
-                       (dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                                  {:order-by-columns [(name order-by-column)]
-                                   :order-by-dirs [(name order-by-dir)]}])))}])))
+                       (dispatch [:district0x.location/add-to-query {:order-by-columns [(name order-by-column)]
+                                                                     :order-by-dirs [(name order-by-dir)]}])))}])))
 
 (defn search-params-panel []
   (let [open? (r/atom false)
-        mobile? (subscribe [:district0x.screen-size/mobile?])
-        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
+        mobile? (subscribe [:district0x.screen-size/mobile?])]
     (fn []
       [ui/Segment
        [ui/Grid
@@ -241,7 +229,7 @@
              [:i.icon.filter.search-options-icon-button
               {:on-click (fn []
                            (reset! open? false)
-                           (dispatch [:district0x.location/set-query @hashroutes? ""]))}]]])
+                           (dispatch [:district0x.location/set-query ""]))}]]])
          [ui/GridColumn
           {:vertical-align :bottom
            :class "hide-divider join-upper"
@@ -333,7 +321,7 @@
                  [order-by-select-field]])]
              (when-not @mobile?
                [:i.icon.filter.search-options-icon-button
-                {:on-click #(dispatch [:district0x.location/set-query @hashroutes? ""])}])]]]
+                {:on-click #(dispatch [:district0x.location/set-query ""])}])]]]
           [ui/GridRow
            {:centered true}
            [:div.show-advanced-search-options

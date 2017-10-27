@@ -21,8 +21,7 @@
        {:label "Keyword"
         :fluid true
         :value (:name @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:name (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name (aget %2 "value")}])}])))
 
 (defn offering-requests-keyword-position-select []
   (let [search-params (subscribe [:offering-requests.main-search/params])]
@@ -30,8 +29,7 @@
       [keyword-position-select
        {:value (:name-position @search-params)
         :fluid true
-        :on-change #(dispatch [:district0x.location/add-to-query @(subscribe [:district0x.browsing/hashroutes?])
-                               {:name-position (aget %2 "value")}])}])))
+        :on-change #(dispatch [:district0x.location/add-to-query {:name-position (aget %2 "value")}])}])))
 
 (defn search-params-panel []
   [ui/Segment

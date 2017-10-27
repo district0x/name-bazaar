@@ -10,7 +10,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering get-hashroutes?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering using-hashroutes?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx
@@ -24,7 +24,7 @@
                    :contract-key :registrar
                    :contract-method :transfer
                    :form-data form-data
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.offerings/detail
                                           {:offering/address
                                           (:ens.record/owner form-data)})
@@ -47,7 +47,7 @@
                    :contract-key :registrar
                    :contract-method :register
                    :form-data form-data
-                   :result-href (path-for (get-hashroutes? db)
+                   :result-href (path-for (using-hashroutes? db)
                                           :route.ens-record/detail
                                           {:ens.record/name ens-record-name})
                    :args-order [:ens.record/label-hash]

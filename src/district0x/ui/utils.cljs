@@ -262,5 +262,5 @@
 (defn parse-kw-coll-query-params [x]
   (mapv keyword (d0x-shared-utils/collify x)))
 
-(defn get-hashroutes? [db]
+(defn using-hashroutes? [db]
   (get-in db [:browsing :hashroutes?]))

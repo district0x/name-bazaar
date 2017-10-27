@@ -45,7 +45,7 @@
                                                        [:active-page-changed]]}
                                          {:when :seen?
                                           :events [:district0x.config/loaded]
-                                          :dispatch [:district0x.browsing/setup! constants/routes]}]}
+                                          :dispatch [:district0x.browsing/setup constants/routes]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}

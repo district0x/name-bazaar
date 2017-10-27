@@ -96,7 +96,7 @@
                                             transactions)]
       (merge
         {:db db
-         :ga/page-view [(if (d0x-ui-utils/get-hashroutes? db)
+         :ga/page-view [(if (d0x-ui-utils/using-hashroutes? db)
                           (current-location-hash)
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
@@ -130,7 +130,7 @@
                (assoc :active-page (merge match {:query-params (medley/map-keys keyword (:query current-url))
                                                  :path path}))
                (assoc-in [:menu-drawer :open?] false))
-         :ga/page-view [(if (d0x-ui-utils/get-hashroutes? db)
+         :ga/page-view [(if (d0x-ui-utils/using-hashroutes? db)
                           (current-location-hash)
                           (history/get-state))]}
         (when-not (= handler (:handler (:active-page db)))
@@ -173,7 +173,7 @@
     (assoc-in db [:config] config)))
 
 (reg-event-fx
-  :district0x.browsing/setup!
+  :district0x.browsing/setup
   interceptors
   (fn [{:keys [db]} [routes]]
     (if (contains? (-> db
@@ -181,17 +181,17 @@
                        set)
                    (d0x-ui-utils/current-host))
       {:db (assoc-in db [:browsing :hashroutes?] false)
-       :district0x.browsing/pushroutes! routes}
+       :district0x.browsing/setup-pushroutes routes}
       {:db (assoc-in db [:browsing :hashroutes?] true)
-       :district0x.browsing/hashroutes! routes})))
+       :district0x.browsing/setup-hashroutes routes})))
 
 (reg-fx
-  :district0x.browsing/pushroutes!
+  :district0x.browsing/setup-pushroutes
   (fn [routes]
      (history/start! routes)))
 
 (reg-fx
-  :district0x.browsing/hashroutes!
+  :district0x.browsing/setup-hashroutes
   (fn [routes]
     (set! (.-onhashchange js/window)
           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location routes)]))))
@@ -746,7 +746,7 @@
                  {:open? true
                   :message message
                   :action-href (path-for (-> (select-keys params [:route :route-params :routes])
-                                             (assoc :hashroutes? (d0x-ui-utils/get-hashroutes? db))))})
+                                             (assoc :hashroutes? (d0x-ui-utils/using-hashroutes? db))))})
      :dispatch-later [{:ms (get-in db [:snackbar :timeout])
                        :dispatch [:district0x.snackbar/close]}]}))
 
@@ -777,20 +777,20 @@
 (reg-event-fx
   :district0x.location/set-query
   interceptors
-  (fn [_ [hashroutes? args]]
-    {:location/set-query [hashroutes? args]}))
+  (fn [{:keys [:db]} [args]]
+    {:location/set-query [(d0x-ui-utils/using-hashroutes? db) args]}))
 
 (reg-event-fx
   :district0x.location/nav-to
   interceptors
-  (fn [{:keys [:db]} [hashroutes? route route-params routes]]
-    {:location/nav-to [hashroutes? route route-params routes]}))
+  (fn [{:keys [:db]} [route route-params routes]]
+    {:location/nav-to [(d0x-ui-utils/using-hashroutes? db) route route-params routes]}))
 
 (reg-event-fx
   :district0x.location/add-to-query
   interceptors
-  (fn [_ [hashroutes? query-params]]
-    {:location/add-to-query [hashroutes? query-params]}))
+  (fn [{:keys [:db]} [query-params]]
+    {:location/add-to-query [(d0x-ui-utils/using-hashroutes? db) query-params]}))
 
 (reg-event-fx
   :district0x.window/resized

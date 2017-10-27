@@ -86,8 +86,7 @@
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])
-        hashroutes? (subscribe [:district0x.browsing/hashroutes?])]
+        my-addresses (subscribe [:district0x/my-addresses])]
     (fn []
       [:div.app-bar
        [:div.left-section
@@ -101,7 +100,7 @@
        [:div.right-section
         {:on-click (fn []
                      (if (empty? @my-addresses)
-                       (dispatch [:district0x.location/nav-to @hashroutes? :route/how-it-works {} constants/routes])
+                       (dispatch [:district0x.location/nav-to :route/how-it-works {} constants/routes])
                        (dispatch [:district0x.transaction-log/set-open (not @open?)])))}
         (if (empty? @my-addresses)
           [:div "No Accounts"]

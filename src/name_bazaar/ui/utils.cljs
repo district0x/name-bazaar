@@ -81,7 +81,7 @@
    :offering.status/missing-ownership "Missing Ownership"
    :offering.status/auction-ended "Auction Ended"})
 
-(defn get-hashroutes? [db]
+(defn using-hashroutes? [db]
   (get-in db [:browsing :hashroutes?]))
 
 (defn get-ens-record-name [db node]

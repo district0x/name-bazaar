@@ -6,16 +6,14 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-(defn- nav-to-ens-record-detail [hashroutes? name]
+(defn- nav-to-ens-record-detail [name]
   (when-not (empty? name)
-    (dispatch [:district0x.location/nav-to hashroutes?
-               :route.ens-record/detail
+    (dispatch [:district0x.location/nav-to :route.ens-record/detail
                {:ens.record/name (normalize (ensure-registrar-root name))}
                constants/routes])))
 
 (defn app-bar-search []
-  (let [hashroutes? (subscribe [:district0x.browsing/hashroutes?])
-        searched-name (r/atom "")]
+  (let [searched-name (r/atom "")]
     (fn [props]
       [:div.app-bar-search-container
        props
@@ -23,11 +21,11 @@
         {:value @searched-name
          :on-key-press (fn [e]
                          (when (= (aget e "key") "Enter")
-                           (nav-to-ens-record-detail @hashroutes? @searched-name)
+                           (nav-to-ens-record-detail @searched-name)
                            (reset! searched-name "")))
          :icon (r/as-element [:i.icon.magnifier2
                               {:on-click (fn []
-                                           (nav-to-ens-record-detail @hashroutes? @searched-name)
+                                           (nav-to-ens-record-detail @searched-name)
                                            (reset! searched-name ""))}])
          :on-change (fn [e]
                       (let [value (aget e "target" "value")]
