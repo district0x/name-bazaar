@@ -20,6 +20,7 @@
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [url-query-params->form-data]]
+    [district0x.ui.db :refer [try-resolving-address]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
@@ -43,6 +44,7 @@
                                         :dispatch-to [:active-page-changed]})
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
+  (info [:HANDLER handler])
   (condp = handler
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
@@ -104,9 +106,13 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/offerings
-    {:dispatch [:offerings.user-offerings/set-params-and-search
-                {:original-owner (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:district0x/try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:ens.records.resolve/loaded]
+                           :dispatch [:offerings.user-offerings/set-params-and-search
+                                      (fn [db]
+                                        {:original-owner (try-resolving-address db (:user/address route-params))})
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-offerings
     {:dispatch [:offerings.user-offerings/set-params-and-search

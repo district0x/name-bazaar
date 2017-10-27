@@ -4,12 +4,15 @@
     [cljs-time.coerce :refer [from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
-    [district0x.ui.utils :as d0x-ui-utils :refer [to-locale-string]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [to-locale-string namehash]]
+    [district0x.ui.db :refer [try-resolving-address]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [re-frame.core :refer [reg-sub subscribe]]))
-
+    [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]
+    [reagent.ratom :refer-macros [reaction]]
+    ))
 (reg-sub
   :district0x/db
   (fn [db [_ key]]
@@ -47,6 +50,15 @@
   :<- [:district0x/active-page]
   (fn [active-page]
     (:route-params active-page)))
+
+(reg-sub-raw
+ :district0x/resolved-route-params
+ (fn [db p]
+   (reaction
+    (let [route-params @(subscribe [:district0x/route-params])]
+      (update
+       route-params
+       :user/address (partial try-resolving-address @db))))))
 
 (reg-sub
   :district0x/query-params
