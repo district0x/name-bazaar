@@ -35,3 +35,4 @@ start_tests.sh
 /resources/public/css/
 /resources/semantic/dist/
 /config.json
+/config-beta.json
