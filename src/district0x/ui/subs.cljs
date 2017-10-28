@@ -120,49 +120,44 @@
     (:snackbar db)))
 
 (reg-sub
-  :district0x/screen-size
-  (fn [db]
-    (:screen-size db)))
-
-(reg-sub
   :district0x/config
   (fn [db [_ config-key]]
     (get-in db [:config config-key])))
 
 (reg-sub
-  :district0x.screen-size/min-large-screen?
-  :<- [:district0x/screen-size]
-  (fn [screen-size]
-    (>= screen-size 3)))
+  :district0x.window/size
+  (fn [db]
+    (get-in db [:window :size])))
 
 (reg-sub
-  :district0x.screen-size/min-computer-screen?
-  :<- [:district0x/screen-size]
-  (fn [screen-size]
-    (>= screen-size 2)))
+  :district0x.window.size/min-large-screen?
+  :<- [:district0x.window/size]
+  (fn [window-size]
+    (>= window-size 3)))
 
 (reg-sub
-  :district0x.screen-size/min-computer?
-  :<- [:district0x/screen-size]
-  (fn [screen-size]
-    (>= screen-size 2)))
+  :district0x.window.size/min-computer-screen?
+  :<- [:district0x.window/size]
+  (fn [window-size]
+    (>= window-size 2)))
 
 (reg-sub
-  :district0x.screen-size/mobile?
-  :<- [:district0x/screen-size]
-  (fn [screen-size]
-    (= screen-size 0)))
+  :district0x.window.size/min-computer?
+  :<- [:district0x.window/size]
+  (fn [window-size]
+    (>= window-size 2)))
 
 (reg-sub
-  :district0x.screen-size/max-tablet?
-  :<- [:district0x/screen-size]
-  (fn [screen-size]
-    (<= screen-size 1)))
+  :district0x.window.size/mobile?
+  :<- [:district0x.window/size]
+  (fn [window-size]
+    (= window-size 0)))
 
 (reg-sub
-  :district0x/ui-disabled?
-  (fn [db _]
-    (:ui-disabled? db)))
+  :district0x.window.size/max-tablet?
+  :<- [:district0x.window/size]
+  (fn [window-size]
+    (<= window-size 1)))
 
 (reg-sub
   :district0x/transaction-log

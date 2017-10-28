@@ -21,6 +21,16 @@
       (events/listen js/window events/EventType.RESIZE (partial on-resize config timer)))))
 
 (reg-fx
+  :window/on-focus
+  (fn [{:keys [:dispatch]}]
+    (events/listen js/window events/EventType.FOCUS #(re-frame/dispatch dispatch))))
+
+(reg-fx
+  :window/on-blur
+  (fn [{:keys [:dispatch]}]
+    (events/listen js/window events/EventType.BLUR #(re-frame/dispatch dispatch))))
+
+(reg-fx
   :window/scroll-to-top
   (fn [_]
     (.scrollTo js/window 0 0)))

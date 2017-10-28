@@ -5,10 +5,10 @@
     [soda-ash.core :as ui]))
 
 (defn offering-list-header []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:show-time-ago? :show-sold-for?] :as props}]
       [:div.ui.grid.padded.search-results-list-item.list-header.opacity-1
-       (dissoc props :show-time-ago?)
+       (dissoc props :show-time-ago? :show-sold-for?)
        [ui/GridRow
         {:style {:height (constants/infinite-list-collapsed-item-height @mobile?)}
          :vertical-align :middle}

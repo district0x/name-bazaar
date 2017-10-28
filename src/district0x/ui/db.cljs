@@ -2,13 +2,14 @@
   (:require
     [cljs.spec.alpha :as s]
     [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3?]]
-    [district0x.ui.utils :refer [get-screen-size]]
+    [district0x.ui.utils :refer [get-window-size]]
     [re-frame.core :refer [dispatch]]))
 
 (def default-db
   {:web3 nil
    :contracts-not-found? false
-   :screen-size (get-screen-size js/window.innerWidth)
+   :window {:focused? true
+            :size (get-window-size js/window.innerWidth)}
    :ui-disabled? false
    :config {}
    :snackbar {:open? false

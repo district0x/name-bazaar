@@ -238,7 +238,7 @@
               {:offering offering}]]])]))))
 
 (defn offering-list-item []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:offering :expanded? :on-expand :key :header-props :body-props :disable-expand? :on-click]
           :as props}]
       (let [{:keys [:offering/address :offering/auction?]} offering

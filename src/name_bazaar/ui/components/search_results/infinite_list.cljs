@@ -9,7 +9,7 @@
     [reagent.core :as r]))
 
 (defn search-results-infinite-list []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:no-items-text] :as props} list-items]
       (let [collapsed-height (constants/infinite-list-collapsed-item-height @mobile?)]
         [infinite-list

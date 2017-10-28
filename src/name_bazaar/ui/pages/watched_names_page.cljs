@@ -37,7 +37,7 @@
         {:on-click #(add-to-watched-names! new-name)}]])))
 
 (defn watch-item-placeholder []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:watched-name] :as props}]
       (let [{:keys [:ens.record/name]} watched-name]
         [expandable-list-item
@@ -53,7 +53,7 @@
             name]]]]))))
 
 (defn watched-names-infinite-list []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])
         watched-items (subscribe [:watched-names/watched-items])]
     (fn []
       [:div.infinite-list-container

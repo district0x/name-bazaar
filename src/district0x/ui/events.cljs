@@ -25,7 +25,7 @@
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-screen-size to-locale-string]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -101,15 +101,17 @@
                           (history/get-state))]
          :window/on-resize {:dispatch [:district0x.window/resized]
                             :resize-interval 166}
+         :window/on-focus {:dispatch [:district0x.window/set-focus true]}
+         :window/on-blur {:dispatch [:district0x.window/set-focus false]}
          :district0x/dispatch-n (vec (concat
-                                      (for [tx-hash (keys txs-to-reload)]
-                                        [:district0x/load-transaction-receipt tx-hash])
-                                      (for [tx-hash (keys txs-to-reload)]
-                                        [:web3-fx.contract/add-transaction-hash-to-watch
-                                         {:web3 (:web3 db)
-                                          :db-path [:contract/state-fns]
-                                          :transaction-hash tx-hash
-                                          :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
+                                       (for [tx-hash (keys txs-to-reload)]
+                                         [:district0x/load-transaction-receipt tx-hash])
+                                       (for [tx-hash (keys txs-to-reload)]
+                                         [:web3-fx.contract/add-transaction-hash-to-watch
+                                          {:web3 (:web3 db)
+                                           :db-path [:contract/state-fns]
+                                           :transaction-hash tx-hash
+                                           :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
          ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
          :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000)
                            :dispatch [:district0x/load-my-addresses]}
@@ -774,10 +776,16 @@
     {:location/add-to-query [query-params]}))
 
 (reg-event-fx
+  :district0x.window/set-focus
+  interceptors
+  (fn [{:keys [db]} [focused?]]
+    {:db (assoc-in db [:window :focused?] focused?)}))
+
+(reg-event-fx
   :district0x.window/resized
   interceptors
   (fn [{:keys [db]} [width]]
-    {:db (assoc db :screen-size (get-screen-size width))}))
+    {:db (assoc-in db [:window :size] (get-window-size width))}))
 
 (reg-event-fx
   :district0x.window/scroll-to-top
@@ -807,15 +815,18 @@
   :district0x/reload-my-addresses
   interceptors
   (fn [{:keys [db]}]
-   {:async-flow {:first-dispatch [:district0x/load-my-addresses]
-                 :rules [{:when :seen?
-                          :events [:district0x/my-addresses-loaded]
-                          :dispatch [:district0x/watch-my-eth-balances]}]}}))
+    (when (get-in db [:window :focused?])
+      ;; Running this for longer time makes app to do little freeze every 4s. Not known why.
+      ;; To make it less likely to happen, we run this only when app is focused
+      {:async-flow {:first-dispatch [:district0x/load-my-addresses]
+                    :rules [{:when :seen?
+                             :events [:district0x/my-addresses-loaded]
+                             :dispatch [:district0x/watch-my-eth-balances]}]}})))
 
 (reg-event-fx
- :district0x/setup-address-reload-interval
- interceptors
- (fn [{:keys [db]}]
-   {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
-                        :ms 4000
-                        :db-path [:district0x-reload-address-interval]}}))
+  :district0x/setup-address-reload-interval
+  interceptors
+  (fn [{:keys [db]}]
+    {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
+                         :ms 4000
+                         :db-path [:district0x-reload-address-interval]}}))

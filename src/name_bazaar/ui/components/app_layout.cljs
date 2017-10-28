@@ -109,7 +109,7 @@
 
 (defn app-layout []
   (let [drawer-open? (subscribe [:district0x/menu-drawer-open?])
-        min-computer-screen? (subscribe [:district0x.screen-size/min-computer-screen?])
+        min-computer-screen? (subscribe [:district0x.window.size/min-computer-screen?])
         active-page (subscribe [:district0x/active-page])
         app-container-ref (r/atom nil)
         use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])]

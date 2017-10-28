@@ -160,7 +160,7 @@
      "district0x Network"]]])
 
 (defmethod page :route/home []
-  (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])]
+  (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
     (fn []
       [:div.home-page
        [:div.top-segment

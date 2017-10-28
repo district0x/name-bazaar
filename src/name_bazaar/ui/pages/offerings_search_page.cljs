@@ -224,7 +224,7 @@
 
 (defn search-params-panel []
   (let [open? (r/atom false)
-        mobile? (subscribe [:district0x.screen-size/mobile?])]
+        mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn []
       [ui/Segment
        [ui/Grid
@@ -343,7 +343,7 @@
 (defn offerings-search-results []
   (let [search-results (subscribe [:offerings/main-search])
         sold-page? (subscribe [:offerings.main-search/sold-page?])
-        mobile? (subscribe [:district0x.screen-size/mobile?])]
+        mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn []
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [ui/Segment
@@ -368,7 +368,7 @@
                                :show-sold? (and @sold-page? @mobile?)}}]))]]))))
 
 (defmethod page :route.offerings/search []
-  (let [xs-sm? (subscribe [:district0x.screen-size/max-tablet?])]
+  (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
     (fn []
       [app-layout
        [search-params-panel]

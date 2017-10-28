@@ -15,7 +15,7 @@
     [re-frame.core :refer [reg-sub]]
     [reagent.core :as r]))
 
-(defn get-screen-size [width]
+(defn get-window-size [width]
   (cond
     (>= width 1920) 4
     (>= width 1200) 3

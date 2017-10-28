@@ -15,7 +15,10 @@
 (s/def :db/active-page (s/keys :req-un [:route/handler] :opt-un [:route/route-params
                                                                  :route/query-params
                                                                  :route/path]))
-(s/def :db/window-width-size int?)
+(s/def :window/focused? boolean?)
+(s/def :window/size not-neg?)
+(s/def :db/window (s/keys :req-un [:window/size :window/focused?]))
+
 (s/def :drawer/open? boolean?)
 (s/def :snackbar/open? boolean?)
 (s/def :snackbar/message string?)
@@ -143,7 +146,8 @@
                                           :db/snackbar
                                           :db/web3
                                           :db/transaction-log
-                                          :db/config]
+                                          :db/config
+                                          :db/window]
                                  :opt-un [:db/active-page
                                           :db/menu-drawer
                                           :db/balances

@@ -12,7 +12,7 @@
 
 (defn offering-request-list-item-header []
   (let [visible? (r/atom false)
-        mobile? (subscribe [:district0x.screen-size/mobile?])]
+        mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:offering-request] :as props}]
       (let [{:keys [:offering-request/node :offering-request/name :offering-request/requesters-count]} offering-request]
         [:div.ui.grid.padded.search-results-list-item.offering-request
@@ -35,7 +35,7 @@
              requesters-count (pluralize " request" requesters-count)]])]))))
 
 (defn offering-request-list-item []
-  (let [mobile? (subscribe [:district0x.screen-size/mobile?])]
+  (let [mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:offering-request :expanded? :on-expand :key]}]
       (let [{:keys [:offering-request/node :offering-request/name]} offering-request]
         [expandable-list-item
