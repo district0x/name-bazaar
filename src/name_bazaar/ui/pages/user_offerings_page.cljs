@@ -72,16 +72,9 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             (when (:user/address @route-params)
-               [share-buttons
-                {:url
-                 @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
-                 :title
-                 (str
-                   (if (:user/address @route-params)
-                     (truncate (:user/address @route-params) 10)
-                     "My")
-                   " Name Offerings")}])]]
+             [share-buttons
+              {:url @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
+               :title (str title " on NameBazaar")}]]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn

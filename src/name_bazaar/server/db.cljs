@@ -4,6 +4,7 @@
     [cljs-time.core :as t]
     [cljs.core.async :refer [<! >! chan]]
     [cljs.spec.alpha :as s]
+    [clojure.string :as string]
     [district0x.server.db-utils :refer [log-error db-get db-run! db-all keywords->sql-cols sql-results-chan order-by-closest-like if-null]]
     [district0x.server.honeysql-extensions]
     [district0x.server.state :as state]
@@ -175,7 +176,7 @@
                      :from [:offerings]
                      :offset offset
                      :limit limit}
-              original-owner (merge-where [:= :original-owner original-owner])
+              original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
@@ -189,10 +190,10 @@
                                   [:<> :new-owner nil]
                                   [:<> :new-owner emergency-state-new-owner]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
-              bidder (merge-where [:= :b.bidder bidder])
+              bidder (merge-where [:= :b.bidder (string/lower-case bidder)])
               bidder (update-in [:modifiers] concat [:distinct])
-              winning-bidder (merge-where [:= :winning-bidder winning-bidder])
-              exclude-winning-bidder (merge-where [:<> :winning-bidder exclude-winning-bidder])
+              winning-bidder (merge-where [:= :winning-bidder (string/lower-case winning-bidder)])
+              exclude-winning-bidder (merge-where [:<> :winning-bidder (string/lower-case exclude-winning-bidder)])
               version (merge-where [:= :version version])
               (false? finalized?) (merge-where [:= :finalized-on 0])
               (true? finalized?) (merge-where [:<> :finalized-on 0])

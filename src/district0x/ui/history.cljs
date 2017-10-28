@@ -10,7 +10,7 @@
 
 (def routes (atom nil))
 
-(def hashroutes?  
+(def hashroutes?
   (when-not (contains? (-> pushroute-hosts
                            (string/split ",")
                            set)
