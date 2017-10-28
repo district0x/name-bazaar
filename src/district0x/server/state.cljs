@@ -26,7 +26,7 @@
 
 (defonce whitelisted-config-keys
          ^{:doc "Config keys that are safe to be propagated to the UI"}
-         #{:public-key :frontend-url :use-instant-registrar?})
+         #{:public-key :client :use-instant-registrar?})
 
 (defn web3
   ([]

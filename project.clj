@@ -123,7 +123,8 @@
                                    :source-map-timestamp true
                                    :preloads [print.foo.preloads.devtools]
                                    :closure-defines {goog.DEBUG true
-                                                     name-bazaar.ui.db.environment "dev"}
+                                                     name-bazaar.ui.db.environment "dev"
+                                                     district0x.ui.history.pushroute-hosts "0.0.0.0"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
@@ -152,7 +153,8 @@
                                    :output-to "resources/public/js/compiled/app.js"
                                    :optimizations :advanced
                                    :closure-defines {goog.DEBUG false
-                                                     name-bazaar.ui.db.environment "prod"}
+                                                     name-bazaar.ui.db.environment "prod"
+                                                     district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
                                    :pretty-print false
                                    :pseudo-names false}}
                        {:id "server-tests"
