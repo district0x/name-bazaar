@@ -6,7 +6,7 @@
     [medley.core :as medley]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [ensure-registrar-root offerings-newest-url offerings-most-active-url offerings-ending-soon-url valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [ensure-registrar-root offerings-newest-url offerings-most-active-url offerings-ending-soon-url valid-ens-name? path-for normalize]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -48,7 +48,7 @@
           :on-search-change (fn [_ data]
                               (let [value (aget data "value")]
                                 (when (valid-ens-name? value)
-                                  (reset! search-name value)
+                                  (reset! search-name (normalize value))
                                   (dispatch [:offerings.home-page-autocomplete/search {:name @search-name}]))))}]))))
 
 (defn offerings-column [{:keys [:title :icon-class :offerings :show-more-href]}]
