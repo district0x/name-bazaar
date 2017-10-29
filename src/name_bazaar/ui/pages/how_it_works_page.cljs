@@ -37,5 +37,5 @@
      [:p.centered
       [youtube
        {:src "https://www.youtube.com/embed/CMKyiU2qco8"}]]
-     [:p "Still have questions? Join the district0x " [a "https://www.reddit.com/r/district0x" "Reddit"] ", " [a "https://t.me/district0x" "Telegram"] ", or Slack to chat with the creators and community."]
+     [:p "Still have questions? Join the district0x " [a "https://www.reddit.com/r/district0x" "Reddit"] ", " [a "https://t.me/district0x" "Telegram"] ", or " [a "https://district0x.chat/" "Rocket Chat"] " to chat with the creators and community."]
      [:p "Found a bug or have an improvement in mind? Open up an issue in Name Bazaar's " [a "https://github.com/district0x/name-bazaar" "Github"] " and we'll be sure to take a look!"]]]])
