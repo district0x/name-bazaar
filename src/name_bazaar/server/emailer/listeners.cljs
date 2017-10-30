@@ -27,29 +27,25 @@
 (defn on-offering-added [server-state {:keys [:offering :node :owner :version] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-offering-added)
   (gotry
-    (let [[error offering-request] (<! (offering-requests-api/get-request @server-state {:offering-request/node node}))]
-      (if error
-        (logging/error "Error retrieving requests for offering" {:error error} ::on-offering-added)
-        (let [{:keys [:offering-request/name 
-                      :offering-request/requesters-count 
-                      :offering-request/latest-round
-                      :offering-request/node]} offering-request]
-          (if (pos? requesters-count)
-            (let [[_ addresses] (<! (offering-requests-api/get-requesters @server-state {:offering-request/node node
-                                                                                         :offering-request/round (dec latest-round)}))]
-              (for [address addresses]
-                (let [[_ base64-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address address}))]
-                  (when-let [to-email (validate-email base64-encrypted-email)]
-                    (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
-                                                       :to-email to-email
-                                                       :subject (str "Offering has been added: " name)
-                                                       :content (templates/on-offering-added offering name)}
-                                                      {:header (str name " offering added")
-                                                       :button-title "See offering details"
-                                                       :button-href (templates/form-link offering)}
-                                                      #(logging/info "Success sending email to requesting address" {:address address} ::on-offering-added)
-                                                      #(logging/error "Error sending email to requesting address" {:error %} ::on-offering-added))))))
-            (logging/info "No requesters found for offering" {:offering offering} ::on-offering-added)))))))
+    (let [{:keys [:offering-request/name 
+                  :offering-request/latest-round] :as request} (second (<! (offering-requests-api/get-request @server-state {:offering-request/node node})))
+          requesters (second (<! (offering-requests-api/get-requesters @server-state {:offering-request/node node :offering-request/round (dec latest-round)})))]
+      (if (empty? requesters)
+        (logging/info "No requesters found for offering" {:offering offering :name name :node node :round (dec latest-round)} ::on-offering-added)
+        (doall
+         (for [requester requesters]
+           (gotry
+            (let [[_ base64-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address requester}))]
+              (when-let [to-email (validate-email base64-encrypted-email)]
+                (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
+                                                   :to-email to-email
+                                                   :subject (str "Offering has been added: " name)
+                                                   :content (templates/on-offering-added offering name)}
+                                                  {:header (str name " offering added")
+                                                   :button-title "See offering details"
+                                                   :button-href (templates/form-link offering)}
+                                                  #(logging/info "Success sending email to requesting address" {:address requester} ::on-offering-added)
+                                                  #(logging/error "Error sending email to requesting address" {:error %} ::on-offering-added)))))))))))
 
 (defn- on-auction-finalized
   [server-state offering original-owner winning-bidder name price]
