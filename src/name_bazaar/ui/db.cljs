@@ -11,7 +11,7 @@
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [name-bazaar.ui.constants :as constants]
     [re-frame.core :refer [dispatch]]
-    [district0x.ui.utils :refer [get-screen-size namehash]]))
+    [district0x.ui.utils :refer [get-window-size namehash]]))
 
 (goog-define environment "prod")
 (goog-define log-level "error")
@@ -29,7 +29,7 @@
    :server-url "https://api.namebazaar.io"})
 
 (defn get-config [env-name]
-  (get {"dev" development-config
+  (get {;;"dev" development-config
         "prod" production-config} env-name production-config))
 
 (def default-db

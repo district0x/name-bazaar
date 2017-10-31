@@ -25,7 +25,7 @@
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size path-for to-locale-string hashroutes? current-location-hash namehash]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
