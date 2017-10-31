@@ -10,7 +10,8 @@
     [district0x.ui.utils :as d0x-ui-utils]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [name-bazaar.ui.constants :as constants]
-    [re-frame.core :refer [dispatch]]))
+    [re-frame.core :refer [dispatch]]
+    [district0x.ui.utils :refer [get-screen-size namehash]]))
 
 (goog-define environment "prod")
 (goog-define log-level "error")
@@ -117,3 +118,14 @@
      :saved-searches {:offerings-search {}}
      :watched-names {:ens/records {} :order '()}
      :infinite-list {:expanded-items {}}}))
+
+(defn try-resolving-address [db addr]
+  (if-not (web3/address? addr)
+    (if-let [resolved (some (fn [r]
+                              (get-in r [:public-resolver/records
+                                         (namehash addr)
+                                         :public-resolver.record/addr]))
+                            (:public-resolver db))]
+      resolved
+      "0x")
+    addr))

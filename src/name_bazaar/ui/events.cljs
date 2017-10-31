@@ -20,7 +20,6 @@
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [url-query-params->form-data]]
-    [district0x.ui.db :refer [try-resolving-address]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
@@ -33,6 +32,7 @@
     [name-bazaar.ui.events.offerings-events]
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
+    [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -106,12 +106,11 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/offerings
-    {:async-flow {:first-dispatch [:district0x/try-resolving-address]
+    {:async-flow {:first-dispatch [:try-resolving-address]
                   :rules [{:when :seen?
                            :events [:ens.records.resolve/loaded]
                            :dispatch [:offerings.user-offerings/set-params-and-search
-                                      (fn [db]
-                                        {:original-owner (try-resolving-address db (:user/address route-params))})
+                                      {:original-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
 
     :route.user/my-offerings
@@ -179,3 +178,15 @@
     {:dispatch-interval {:dispatch [:update-now]
                          :ms 1000
                          :db-path [:update-now-interval]}}))
+
+(reg-event-fx
+ :try-resolving-address
+ interceptors
+ (fn [{:keys [db]}]
+   (let [addr (get-in db [:active-page :route-params :user/address])]
+     (info ["Try address" addr (web3/address? addr)])
+     {:db db
+      :dispatch
+      (if-not (web3/address? addr)
+        [:ens.records/load [(namehash addr)] {:load-resolver? true}]
+        [:ens.records.resolve/loaded])})))

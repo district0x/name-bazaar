@@ -53,7 +53,7 @@
 (defn user-offerings []
   (let [search-results (subscribe [:offerings/user-offerings])
         route-params (subscribe [:district0x/route-params])
-        r-route-params (subscribe [:district0x/resolved-route-params])]
+        r-route-params (subscribe [:resolved-route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [app-layout
@@ -117,7 +117,7 @@
 
 (defmethod page :route.user/offerings []
   (let [route-params (subscribe [:district0x/route-params])
-        r-route-params (subscribe [:district0x/resolved-route-params])]
+        r-route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-offerings
        {:title (str (truncate (:user/address @r-route-params) 10) " Offerings")

@@ -28,9 +28,3 @@
                      :ids-by-form {}
                      :settings {:from-active-address-only? false}}})
 
-(defn try-resolving-address [db addr]
-  (if-not (web3/address? addr)
-    (get-in db [:ens/records (namehash addr) :ens.record/address] "0x")
-    addr))
-
-

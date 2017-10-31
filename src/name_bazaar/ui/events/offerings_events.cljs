@@ -2,6 +2,7 @@
   (:require
     [cljs-time.coerce :refer [to-epoch]]
     [cljs.spec.alpha :as s]
+    [cljs-web3.core :as web3]
     [clojure.set :as set]
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
@@ -9,12 +10,14 @@
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
+    [name-bazaar.ui.db :refer [try-resolving-address]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
@@ -483,8 +486,9 @@
   :offerings.user-offerings/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-params (if (fn? search-params)
-                          (search-params db)
+    (let [search-params (if (and (:original-owner search-params)
+                                 (not (web3/address? (:original-owner search-params))))
+                          (update search-params :original-owner (partial try-resolving-address db))
                           search-params)
           _ (info [:SP search-params])
           search-results-path [:search-results :offerings :user-offerings]

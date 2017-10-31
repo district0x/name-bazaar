@@ -814,30 +814,16 @@
     {:dispatch-n (mapv #(vec (concat % args)) (remove nil? events))}))
 
 (reg-event-fx
-  :district0x/reload-my-addresses
-  interceptors
-  (fn [{:keys [db]}]
-<<<<<<< HEAD
-    (when (get-in db [:window :focused?])
-      ;; Running this for longer time makes app to do little freeze every 4s. Not known why.
-      ;; To make it less likely to happen, we run this only when app is focused
-      {:async-flow {:first-dispatch [:district0x/load-my-addresses]
-                    :rules [{:when :seen?
-                             :events [:district0x/my-addresses-loaded]
-                             :dispatch [:district0x/watch-my-eth-balances]}]}})))
-
-(reg-event-fx
-  :district0x/setup-address-reload-interval
-  interceptors
-  (fn [{:keys [db]}]
-    {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
-                         :ms 4000
-                         :db-path [:district0x-reload-address-interval]}}))
-=======
-   {:async-flow {:first-dispatch [:district0x/load-my-addresses]
-                 :rules [{:when :seen?
-                          :events [:district0x/my-addresses-loaded]
-                          :dispatch [:district0x/watch-my-eth-balances]}]}}))
+ :district0x/reload-my-addresses
+ interceptors
+ (fn [{:keys [db]}]
+   (when (get-in db [:window :focused?])
+     ;; Running this for longer time makes app to do little freeze every 4s. Not known why.
+     ;; To make it less likely to happen, we run this only when app is focused
+     {:async-flow {:first-dispatch [:district0x/load-my-addresses]
+                   :rules [{:when :seen?
+                            :events [:district0x/my-addresses-loaded]
+                            :dispatch [:district0x/watch-my-eth-balances]}]}})))
 
 (reg-event-fx
  :district0x/setup-address-reload-interval
@@ -858,4 +844,3 @@
       (if-not (web3/address? addr)
         [:ens.records/load [(namehash addr)] {:load-resolver? true}]
         [:ens.records.resolve/loaded])})))
->>>>>>> Working draft, ref #69

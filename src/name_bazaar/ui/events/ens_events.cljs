@@ -84,32 +84,7 @@
     {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
                                                                  d0x-shared-utils/zero-address
                                                                  resolver))
-     :dispatch [:ens.records/resolve node resolver]}))
-
-(reg-event-fx
- :ens.records/resolve
- interceptors
- (fn [{:keys [:db]} [node resolver]]
-   (let [instance (get-instance db :public-resolver resolver)]
-     (info [:RESOLVING-NODE node resolver instance])
-     {:web3-fx.contract/constant-fns
-      {:fns
-       [{:instance instance
-         :method :addr
-         :args [node]
-         :on-success [:ens.records.resolve/loaded node]
-         :on-error [:district0x.log/error]}]}})))
-
-(reg-event-fx
- :ens.records.resolve/loaded
- interceptors
- (fn [{:keys [:db]} [node addr]]
-   (info ["Resolved node" node addr])
-   {:db (if-not node
-          db
-          (assoc-in db [:ens/records node :ens.record/address] (if (= addr "0x")
-                                                                           d0x-shared-utils/zero-address
-                                                                           addr)))}))
+     :dispatch [:public-resolver.record.addr/load resolver node]}))
 
 (reg-event-fx
   :ens.records.active-offerings/loaded
