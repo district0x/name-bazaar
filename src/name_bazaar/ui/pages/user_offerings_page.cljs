@@ -9,6 +9,7 @@
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.share-buttons :refer [share-buttons]]
     [re-frame.core :refer [subscribe dispatch]]
+    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-offerings-order-by-select []
@@ -57,7 +58,6 @@
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [app-layout
-         [:div (str @r-route-params)]
          [ui/Segment
           [ui/Grid
            {:padded true
@@ -77,7 +77,7 @@
              (when (:user/address @r-route-params)
                [share-buttons
                 {:url
-                 @(subscribe [:page-share-url :route.user/offerings (select-keys @r-route-params [:user/address])])
+                 @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
                  :title
                  (str title " on NameBazaar")}])]]
            [ui/GridRow
@@ -116,10 +116,11 @@
     :no-items-text "You haven't created any offerings yet"}])
 
 (defmethod page :route.user/offerings []
-  (let [route-params (subscribe [:district0x/route-params])
-        r-route-params (subscribe [:resolved-route-params])]
+  (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       [user-offerings
-       {:title (str (truncate (:user/address @r-route-params) 10) " Offerings")
+       {:title (str ((if-not (web3/address? (:user/address @route-params))
+                       identity
+                       #(truncate % 10)) (:user/address @route-params)) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))
 

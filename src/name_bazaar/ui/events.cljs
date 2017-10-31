@@ -108,7 +108,7 @@
     :route.user/offerings
     {:async-flow {:first-dispatch [:try-resolving-address]
                   :rules [{:when :seen?
-                           :events [:ens.records.resolve/loaded]
+                           :events [:public-resolver.record.addr/loaded]
                            :dispatch [:offerings.user-offerings/set-params-and-search
                                       {:original-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
