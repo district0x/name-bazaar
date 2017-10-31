@@ -272,8 +272,8 @@
               "Save Changes"])]]]))))
 
 (defmethod page :route.offerings/edit []
-  (let [route-params (subscribe [:district0x/route-params])]
-    (fn []
+  (let [route-params (subscribe [:district0x/route-params])
+        ] (fn []
       (let [{:keys [:offering/address]} @route-params
             offering-loaded? @(subscribe [:offering/loaded? address])
             offering @(subscribe [:offering address])]

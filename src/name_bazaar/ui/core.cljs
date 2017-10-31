@@ -7,10 +7,11 @@
     [district0x.ui.history :as history]
     [district0x.ui.subs]
     [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.logging :as d0x-logging]
     [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
     [name-bazaar.ui.components.main-panel :refer [main-panel]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.db]
+    [name-bazaar.ui.db :as ui-db]
     [name-bazaar.ui.events]
     [name-bazaar.ui.subs]
     [print.foo :include-macros true]
@@ -24,6 +25,7 @@
 (defn dev-setup []
   (when debug?
     (enable-console-print!)
+    (d0x-logging/setup! ui-db/log-level)
     (enable-re-frisk!)))
 
 (defn mount-root []
@@ -46,7 +48,8 @@
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n [[:district0x/watch-my-eth-balances]
-                                                       [:active-page-changed]]}]}
+                                                       [:active-page-changed]
+                                                       [:try-resolving-address]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}

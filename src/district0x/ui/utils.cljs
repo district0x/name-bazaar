@@ -245,7 +245,8 @@
 (defn parse-kw-coll-query-params [x]
   (mapv keyword (d0x-shared-utils/collify x)))
 
-
+(defn namehash [name]
+  (js/EthEnsNamehash.hash name))
 
 
 

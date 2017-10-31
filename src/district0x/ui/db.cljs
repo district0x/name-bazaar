@@ -1,9 +1,10 @@
 (ns district0x.ui.db
   (:require
-    [cljs.spec.alpha :as s]
-    [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3?]]
-    [district0x.ui.utils :refer [get-window-size]]
-    [re-frame.core :refer [dispatch]]))
+   [cljs-web3.core :as web3]
+   [cljs.spec.alpha :as s]
+   [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3?]]
+   [district0x.ui.utils :refer [get-window-size namehash]]
+   [re-frame.core :refer [dispatch]]))
 
 (def default-db
   {:web3 nil
@@ -26,7 +27,4 @@
                      :ids-chronological '()
                      :ids-by-form {}
                      :settings {:from-active-address-only? false}}})
-
-
-
 

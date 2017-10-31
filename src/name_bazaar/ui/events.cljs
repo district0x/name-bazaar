@@ -32,6 +32,7 @@
     [name-bazaar.ui.events.offerings-events]
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
+    [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -43,6 +44,7 @@
                                         :dispatch-to [:active-page-changed]})
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
+  (info [:HANDLER handler])
   (condp = handler
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
@@ -82,9 +84,12 @@
     {:dispatch [:watched-names/load-all]}
 
     :route.user/purchases
-    {:dispatch [:offerings.user-purchases/set-params-and-search
-                {:new-owner (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:public-resolver.record.addr/loaded]
+                           :dispatch [:offerings.user-purchases/set-params-and-search
+                                      {:new-owner (:user/address route-params)}
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-purchases
     {:dispatch [:offerings.user-purchases/set-params-and-search
@@ -93,9 +98,12 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/bids
-    {:dispatch [:offerings.user-bids/set-params-and-search
-                {:bidder (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:public-resolver.record.addr/loaded]
+                           :dispatch [:offerings.user-bids/set-params-and-search
+                                      {:bidder (:user/address route-params)}
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-bids
     {:dispatch [:offerings.user-bids/set-params-and-search
@@ -104,9 +112,12 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/offerings
-    {:dispatch [:offerings.user-offerings/set-params-and-search
-                {:original-owner (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:public-resolver.record.addr/loaded]
+                           :dispatch [:offerings.user-offerings/set-params-and-search
+                                      {:original-owner (:user/address route-params)}
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-offerings
     {:dispatch [:offerings.user-offerings/set-params-and-search
@@ -173,3 +184,15 @@
     {:dispatch-interval {:dispatch [:update-now]
                          :ms 1000
                          :db-path [:update-now-interval]}}))
+
+(reg-event-fx
+ :try-resolving-address
+ interceptors
+ (fn [{:keys [db]}]
+   (let [addr (get-in db [:active-page :route-params :user/address])]
+     (info ["Try address" addr (web3/address? addr)])
+     {:db db
+      :dispatch
+      (if-not (web3/address? addr)
+        [:ens.records/load [(namehash addr)] {:load-resolver? true}]
+        [:ens.records.resolve/loaded])})))

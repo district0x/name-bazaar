@@ -12,7 +12,9 @@
     [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]
-    [medley.core :as medley]))
+    [medley.core :as medley]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]
+    ))
 
 (reg-event-fx
   :ens/set-owner
@@ -36,6 +38,7 @@
   interceptors
   (fn [{:keys [:db]} [nodes {:keys [:load-resolver?]}]]
     (let [instance (get-instance db :ens)]
+      (info [:LOADING-NODES nodes instance])
       {:web3-fx.contract/constant-fns
        {:fns (concat
                (for [node nodes]
@@ -68,6 +71,7 @@
   :ens.records.owner/loaded
   interceptors
   (fn [{:keys [:db]} [node owner]]
+    (info ["Loaded owner" node owner])
     {:db (assoc-in db [:ens/records node :ens.record/owner] (if (= owner "0x")
                                                               d0x-shared-utils/zero-address
                                                               owner))}))
@@ -76,9 +80,11 @@
   :ens.records.resolver/loaded
   interceptors
   (fn [{:keys [:db]} [node resolver]]
+    (info ["Loaded resolver" node resolver])
     {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
                                                                  d0x-shared-utils/zero-address
-                                                                 resolver))}))
+                                                                 resolver))
+     :dispatch [:public-resolver.record.addr/load resolver node]}))
 
 (reg-event-fx
   :ens.records.active-offerings/loaded
