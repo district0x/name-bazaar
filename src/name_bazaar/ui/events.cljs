@@ -84,9 +84,12 @@
     {:dispatch [:watched-names/load-all]}
 
     :route.user/purchases
-    {:dispatch [:offerings.user-purchases/set-params-and-search
-                {:new-owner (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:public-resolver.record.addr/loaded]
+                           :dispatch [:offerings.user-purchases/set-params-and-search
+                                      {:new-owner (:user/address route-params)}
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-purchases
     {:dispatch [:offerings.user-purchases/set-params-and-search
@@ -95,9 +98,12 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/bids
-    {:dispatch [:offerings.user-bids/set-params-and-search
-                {:bidder (:user/address route-params)}
-                {:reset-params? true}]}
+    {:async-flow {:first-dispatch [:try-resolving-address]
+                  :rules [{:when :seen?
+                           :events [:public-resolver.record.addr/loaded]
+                           :dispatch [:offerings.user-bids/set-params-and-search
+                                      {:bidder (:user/address route-params)}
+                                      {:reset-params? true}]}]}}
 
     :route.user/my-bids
     {:dispatch [:offerings.user-bids/set-params-and-search

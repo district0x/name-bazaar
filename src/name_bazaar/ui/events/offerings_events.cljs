@@ -473,7 +473,11 @@
   :offerings.user-purchases/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :user-purchases]
+    (let [search-params (if (and (:new-owner search-params)
+                                 (not (web3/address? (:new-owner search-params))))
+                          (update search-params :new-owner (partial try-resolving-address db))
+                          search-params)
+          search-results-path [:search-results :offerings :user-purchases]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
       {:db db
@@ -489,7 +493,6 @@
                                  (not (web3/address? (:original-owner search-params))))
                           (update search-params :original-owner (partial try-resolving-address db))
                           search-params)
-          _ (info [:SP search-params])
           search-results-path [:search-results :offerings :user-offerings]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
@@ -509,7 +512,11 @@
   :offerings.user-bids/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :user-bids]
+    (let [search-params (if (and (:bidder search-params)
+                                 (not (web3/address? (:bidder search-params))))
+                          (update search-params :bidder (partial try-resolving-address db))
+                          search-params)
+          search-results-path [:search-results :offerings :user-bids]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
           {:keys [:winning? :outbid? :bidder]} search-params]
