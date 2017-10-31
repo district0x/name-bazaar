@@ -3,6 +3,7 @@
     [cemerick.url :as url]
     [clojure.data :as data]
     [clojure.string :as string]
+    [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -142,3 +143,14 @@
                        keys)]
     (and (= (count changed-keys) 1)
          (contains? (set ks) (first changed-keys)))))
+
+(defn try-resolving-address [db addr]
+  (if-not (web3/address? addr)
+    (if-let [resolved (some (fn [r]
+                              (get-in r [:public-resolver/records
+                                         (namehash addr)
+                                         :public-resolver.record/addr]))
+                            (:public-resolver db))]
+      resolved
+      "0x")
+    addr))

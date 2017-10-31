@@ -118,14 +118,3 @@
      :saved-searches {:offerings-search {}}
      :watched-names {:ens/records {} :order '()}
      :infinite-list {:expanded-items {}}}))
-
-(defn try-resolving-address [db addr]
-  (if-not (web3/address? addr)
-    (if-let [resolved (some (fn [r]
-                              (get-in r [:public-resolver/records
-                                         (namehash addr)
-                                         :public-resolver.record/addr]))
-                            (:public-resolver db))]
-      resolved
-      "0x")
-    addr))

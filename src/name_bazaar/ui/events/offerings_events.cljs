@@ -10,12 +10,11 @@
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
-    [name-bazaar.ui.db :refer [try-resolving-address]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? try-resolving-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
 
     [taoensso.timbre :as logging :refer-macros [info warn error]]))

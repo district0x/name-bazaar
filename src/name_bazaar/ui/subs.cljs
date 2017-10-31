@@ -18,8 +18,7 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
-    [name-bazaar.ui.utils :refer [parse-query-params path-for]]
-    [name-bazaar.ui.db :refer [try-resolving-address]]
+    [name-bazaar.ui.utils :refer [parse-query-params path-for try-resolving-address]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
     [reagent.ratom :refer-macros [reaction]]))
 
