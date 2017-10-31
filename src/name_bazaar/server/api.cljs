@@ -16,24 +16,27 @@
       (select-keys [:path :ip :protocol :method :params :hostname :httpVersion :headers :url])))
 
 (api-server/reg-get!
-  "/offerings"
-  (fn [req res]
-    (let [parsed-req (trim-request (aget req "parsed"))]
-      (logging/info "Received request" {:request parsed-req} ::get-offerings)
-      (gotry
-        (send-json! res (<! (db/search-offerings
-                             (state/db)
-                             (api-server/sanitized-query-params req))))))))
+ "/offerings"
+ (fn [req res]
+   (let [parsed-req (trim-request (aget req "parsed"))]
+     (logging/info "Received request" {:request parsed-req} ::get-offerings)
+     (gotry
+      (if-let [database (state/db)]
+        (send-json! res (<! (db/search-offerings database (api-server/sanitized-query-params req))))
+        (-> res
+            (api-server/status 503)
+            (api-server/send "Service unavailiable")))))))
 
 (api-server/reg-get!
-  "/offering-requests"
-  (fn [req res]
-    (let [parsed-req (trim-request (aget req "parsed"))]
-      (logging/info "Received request" {:request parsed-req} ::get-offering-requests)
-      (gotry
-        (send-json! res (<! (db/search-offering-requests
-                             (state/db)
-                             (api-server/sanitized-query-params req))))))))
+ "/offering-requests"
+ (fn [req res]
+   (let [parsed-req (trim-request (aget req "parsed"))]
+     (logging/info "Received request" {:request parsed-req} ::get-offering-requests)
+     (if-let [database (state/db)]
+       (send-json! res (<! (db/search-offering-requests (state/db) (api-server/sanitized-query-params req))))
+       (-> res
+           (api-server/status 503)
+           (api-server/send "Service unavailiable"))))))
 
 (api-server/reg-route! :get
                        "/config/:key"
