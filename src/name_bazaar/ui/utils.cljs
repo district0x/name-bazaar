@@ -11,7 +11,8 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.db :refer [default-db]]))
+    [name-bazaar.ui.db :refer [default-db]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (defn namehash [name]
   (js/EthEnsNamehash.hash name))
@@ -150,7 +151,7 @@
                               (get-in r [:public-resolver/records
                                          (namehash addr)
                                          :public-resolver.record/addr]))
-                            (:public-resolver db))]
+                            (vals (:public-resolvers db)))]
       resolved
       "0x")
     addr))
