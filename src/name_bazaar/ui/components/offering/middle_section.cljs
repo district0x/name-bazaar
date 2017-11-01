@@ -99,7 +99,7 @@
 
 (defn offering-middle-section [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/auction? :offering/top-level-name?
-                :offering/new-owner :offering/valid-name? :offering/normalized? :offering/deleted?]} offering
+                :offering/new-owner :offering/valid-name? :offering/normalized? :offering/unregistered?]} offering
         missing-ownership? @(subscribe [:offering/missing-ownership? address])
         active-address-owner? @(subscribe [:offering/active-address-original-owner? address])
         show-auction-bid-info? (and auction? (not active-address-owner?))
@@ -132,5 +132,5 @@
      (when emergency-cancel?
        [emergency-cancel-info])
 
-     (when deleted?
+     (when unregistered?
        [deleted-info])]))

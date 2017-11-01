@@ -1,12 +1,15 @@
 (ns name-bazaar.shared.utils
   (:require
+    [cljs.core.match :refer-macros [match]]
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address]]
     [cljs-web3.core :as web3]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
-(def deleted-new-owner         "0x00000000000000000000000000000000deaddead")
+(def unregistered-new-owner         "0x00000000000000000000000000000000deaddead")
+(def buy-now-offering-min-version 2)
+(def auction-offering-min-version 100001)
 
 (defn offering-version->type [version]
   (if (>= (bn/->number version) 100000)
@@ -50,6 +53,11 @@
     (catch js/Error e
       false)))
 
+(defn supports-unregister? [offering-type offering-version]
+  (match [offering-type]
+         [:auction-offering] (>= offering-version auction-offering-min-version)
+         [:buy-now-offering] (>= offering-version buy-now-offering-min-version)))
+
 (def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
                      :offering/new-owner :offering/price :offering/version :offering/created-on
                      :offering/finalized-on])
@@ -78,7 +86,8 @@
         (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
         (assoc :offering/normalized? (normalized? (:offering/name offering)))
         (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
-        (assoc :offering/deleted? (= deleted-new-owner (:offering/new-owner offering)))))))
+        (assoc :offering/supports-unregister? (supports-unregister? offering-type (-> offering :offering/version bn/->number)))
+        (assoc :offering/unregistered? (= unregistered-new-owner (:offering/new-owner offering)))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase

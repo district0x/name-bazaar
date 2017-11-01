@@ -133,7 +133,7 @@
      [offering-header-missing-ownership-tag
       {:offering offering}])
 
-   (when (and show-sold? (not (:offering/deleted? offering)))
+   (when (and show-sold? (not (:offering/unregistered? offering)))
      [offering-header-sold-tag
       {:offering offering}])])
 

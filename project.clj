@@ -20,6 +20,7 @@
                  [lein-doo "0.1.8"]
                  [medley "1.0.0"]
                  [org.clojure/clojurescript "1.9.946"]
+                 [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
                  [re-frisk "0.4.4"]

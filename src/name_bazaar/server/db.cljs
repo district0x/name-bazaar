@@ -10,7 +10,7 @@
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
     [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]]
-    [name-bazaar.shared.utils :refer [emergency-state-new-owner deleted-new-owner]])
+    [name-bazaar.shared.utils :refer [emergency-state-new-owner unregistered-new-owner]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn create-tables! [db]
@@ -189,7 +189,7 @@
               sold? (merge-where [:and
                                   [:<> :new-owner nil]
                                   [:<> :new-owner emergency-state-new-owner]
-                                  [:<> :new-owner deleted-new-owner]])
+                                  [:<> :new-owner unregistered-new-owner]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder (string/lower-case bidder)])
               bidder (update-in [:modifiers] concat [:distinct])
