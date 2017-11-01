@@ -113,8 +113,9 @@
        (format-local-datetime created-on)
        name)]))
 
+;; TODO
 (defn offering-header-tags [{:keys [:show-sold? :show-active? :show-auction-winning?
-                                    :show-auction-pending-returns? :show-missing-ownership? :offering] :as p}]
+                                    :show-auction-pending-returns? :show-missing-ownership? :offering] :as p}]  
   [:div.tags
    (when show-active?
      [offering-header-active-tag
@@ -132,7 +133,7 @@
      [offering-header-missing-ownership-tag
       {:offering offering}])
 
-   (when show-sold?
+   (when (and show-sold? (not (:offering/deleted? offering)))
      [offering-header-sold-tag
       {:offering offering}])])
 

@@ -10,7 +10,7 @@
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
     [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]]
-    [name-bazaar.shared.utils :refer [emergency-state-new-owner]])
+    [name-bazaar.shared.utils :refer [emergency-state-new-owner deleted-new-owner]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn create-tables! [db]
@@ -163,7 +163,7 @@
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?]
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?] :as offering
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
@@ -188,7 +188,8 @@
                                               [:= :end-time nil]])
               sold? (merge-where [:and
                                   [:<> :new-owner nil]
-                                  [:<> :new-owner emergency-state-new-owner]])
+                                  [:<> :new-owner emergency-state-new-owner]
+                                  [:<> :new-owner deleted-new-owner]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder (string/lower-case bidder)])
               bidder (update-in [:modifiers] concat [:distinct])

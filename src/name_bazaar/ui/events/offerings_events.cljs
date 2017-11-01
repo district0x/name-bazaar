@@ -240,6 +240,27 @@
                                       (gstring/format "Ownership of %s was reclaimed" offering-name)]
                                      [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
+;; TODO
+(reg-event-fx
+  :offering/unregister
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
+  (fn [{:keys [:db]} [form-data]]
+    (let [offering-address (:offering/address form-data)
+          offering-name (get-offering-name db offering-address)]
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Unregister %s offering" offering-name)
+                   ;; TODO: buy-now or auction?
+                   :contract-key :buy-now-offering
+                   :contract-method :unregister
+                   :form-data form-data
+                   :contract-address offering-address
+                   :result-href (path-for :route.offerings/detail form-data)
+                   :form-id (select-keys form-data [:offering/address])
+                   :tx-opts {:gas 200000 :gas-price default-gas-price}
+                   :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                      (gstring/format "Unregistered offering %s" offering-name)]
+                                     [:offerings/on-offering-changed {:offering offering-address}]]}]})))
+
 (reg-event-fx
   :offerings/search
   interceptors

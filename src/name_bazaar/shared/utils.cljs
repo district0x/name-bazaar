@@ -5,6 +5,9 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address]]
     [cljs-web3.core :as web3]))
 
+(def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
+(def deleted-new-owner         "0x00000000000000000000000000000000deaddead")
+
 (defn offering-version->type [version]
   (if (>= (bn/->number version) 100000)
     :auction-offering
@@ -74,7 +77,8 @@
         (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
         (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
         (assoc :offering/normalized? (normalized? (:offering/name offering)))
-        (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))))))
+        (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
+        (assoc :offering/deleted? (= deleted-new-owner (:offering/new-owner offering)))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase
@@ -124,8 +128,3 @@
   ([price min-bid-increase bid-count pending-returns]
    (let [min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
      (bn/->number (bn/- (bn/+ (web3/to-big-number price) min-bid-increase) pending-returns)))))
-
-(def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
-
-
-

@@ -300,6 +300,14 @@
     (subscribe [:district0x/tx-pending? :buy-now-offering :reclaim-ownership {:offering/address offering-address}]))
   identity)
 
+;; TODO
+(reg-sub
+  :offering.unregister/tx-pending?
+  (fn [[_ offering-address]]
+    ;; TODO: buy now or auction
+    (subscribe [:district0x/tx-pending? :buy-now-offering :unregister {:offering/address offering-address}]))
+  identity)
+
 (reg-sub
   :auction-offering.finalize/tx-pending?
   (fn [[_ offering-address]]

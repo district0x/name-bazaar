@@ -34,7 +34,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
         var node = namehash(name);
         var labelHash = getLabelHash(name);
         var forwarder = address(new Forwarder());
-        var version = 1; // versioning for BuyNow offerings starts at number 1
+        var version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
             node,
