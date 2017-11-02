@@ -1,7 +1,7 @@
 (ns name-bazaar.ui.pages.user-offerings-page
   (:require
     [district0x.ui.components.misc :as misc :refer [page]]
-    [district0x.ui.utils :refer [truncate]]
+    [district0x.ui.utils :refer [truncate namehash]]
     [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
@@ -9,6 +9,7 @@
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.share-buttons :refer [share-buttons]]
     [re-frame.core :refer [subscribe dispatch]]
+    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-offerings-order-by-select []
@@ -72,9 +73,12 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             [share-buttons
-              {:url @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
-               :title (str title " on NameBazaar")}]]]
+             (when (:user/address @route-params)
+               [share-buttons
+                {:url
+                 @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
+                 :title
+                 (str title " on NameBazaar")}])]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn
@@ -114,5 +118,8 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       [user-offerings
-       {:title (str (truncate (:user/address @route-params) 10) " Offerings")
+       {:title (str ((if-not (web3/address? (:user/address @route-params))
+                       identity
+                       #(truncate % 10)) (:user/address @route-params)) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))
+

@@ -70,7 +70,9 @@
                        [web3 "0.19.0"]
                        [ws "2.0.1"]
                        [xhr2 "0.1.4"]
-                       [semantic-ui "2.2.13"]]
+                       [semantic-ui "2.2.13"]
+                       [chalk "2.3.0"] ;;ANSI colors for logging
+                       ]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -124,7 +126,8 @@
                                    :preloads [print.foo.preloads.devtools]
                                    :closure-defines {goog.DEBUG true
                                                      name-bazaar.ui.db.environment "dev"
-                                                     district0x.ui.history.pushroute-hosts "localhost"}
+                                                     district0x.ui.history.pushroute-hosts "localhost"
+                                                     name-bazaar.ui.db.log-level "debug"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
