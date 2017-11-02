@@ -56,7 +56,9 @@
         route-params (subscribe [:district0x/route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
-        [app-layout
+        [app-layout {:meta {:title (str "NameBazaar - " title)
+                            :description (if-let [address (:user/address @route-params)]
+                                           (str "See all ENS name offerings of " address))}}
          [ui/Segment
           [ui/Grid
            {:padded true
@@ -122,4 +124,3 @@
                        identity
                        #(truncate % 10)) (:user/address @route-params)) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))
-

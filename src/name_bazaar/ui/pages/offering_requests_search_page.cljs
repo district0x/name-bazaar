@@ -70,6 +70,6 @@
                 :offering-request offering-request}]))]]))))
 
 (defmethod page :route.offering-requests/search []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - Search Offerings Requests"}}
    [search-params-panel]
    [offering-requests-search-results]])

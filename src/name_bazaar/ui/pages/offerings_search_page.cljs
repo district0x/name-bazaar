@@ -370,6 +370,6 @@
 (defmethod page :route.offerings/search []
   (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
     (fn []
-      [app-layout
+      [app-layout {:meta {:title "NameBazaar - Search ENS Offerings"}}
        [search-params-panel]
        [offerings-search-results]])))

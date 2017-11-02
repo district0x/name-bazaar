@@ -40,20 +40,23 @@
   (if history/hashroutes?
     (set! (.-onhashchange js/window)
           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
-    (history/start! constants/routes))
+     (history/start! constants/routes))
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects
                    {:async-flow {:first-dispatch [:district0x/load-smart-contracts {:version constants/contracts-version}]
                                  :rules [{:when :seen?
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
-                                          :dispatch-n [[:district0x/watch-my-eth-balances]
-                                                       [:active-page-changed]
-                                                       [:try-resolving-address]]}]}
+                                          :dispatch-n (remove nil?
+                                                              [[:district0x/watch-my-eth-balances]
+                                                               (when history/hashroutes?
+                                                                 [:try-resolving-address])
+                                                               (when history/hashroutes?
+                                                                 [:active-page-changed])])}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
                     :dispatch-n [[:setup-update-now-interval]
                                  [:district0x/load-conversion-rates [:USD]]
-                                 [:district0x.config/load]]}}])
+                                  [:district0x.config/load]]}}])
   (mount-root))

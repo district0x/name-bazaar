@@ -4,7 +4,7 @@
     [cljs-time.core :as t]
     [district0x.ui.components.misc :as misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
-    [district0x.ui.utils :refer [to-locale-string time-unit->text pluralize]]
+    [district0x.ui.utils :refer [to-locale-string time-unit->text pluralize format-eth-with-code]]
     [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.loading-placeholders :refer [content-placeholder]]
@@ -57,11 +57,12 @@
               [:div.stat-number amount]
               [:div.time-unit (pluralize (time-unit->text unit) amount)]]))]))))
 
-(defn offering-stats [{:keys [:offering]}]
+(defn offering-stats []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn []
-      (let [{:keys [:offering/price :offering/type :offering/auction? :auction-offering/bid-count]} @offering
-            price-formatted (str (to-locale-string price 4) " ETH")]
+      (let [{:keys [:offering/price
+                    :offering/type :offering/auction? :auction-offering/bid-count]} @offering
+            price-formatted (format-eth-with-code price)]
         [:div.offering-stats
          {:class type}
          (if auction?
@@ -157,8 +158,15 @@
     (fn []
       (let [{:keys [:offering/address]} @route-params
             offering-loaded? @(subscribe [:offering/loaded? address])
-            offering @(subscribe [:offering address])]
-        [app-layout
+            {:keys [:offering/name :offering/type] :as offering} @(subscribe [:offering address])
+            {:keys [:offering/price]} @(subscribe [:offerings/route-offering])]
+        [app-layout (case type
+                      :auction-offering {:meta {:title (str name " Auction")
+                                                :description (str name " is offered on NameBazaar! Minimum bid: " (format-eth-with-code price))}}
+                      :buy-now-offering {:meta {:title (str name " Offering")
+                                                :description (str name " is offered on NameBazaar! Price: " (format-eth-with-code price))}}
+                      :else {:meta {:title (str name " Auction")
+                                    :description (str name " is offered on NameBazaar!")}})
          [ui/Segment
           [ui/Grid
            {:class "layout-grid"}
@@ -168,7 +176,7 @@
               :computer 8
               :tablet 8
               :mobile 16}
-             [:h1.ui.header "Offering " (:offering/name offering)]]
+             [:h1.ui.header "Offering " name]]
             [ui/GridColumn
              {:class :join-lower
               :computer 8
@@ -177,7 +185,7 @@
               :floated "right"}
              [share-buttons
               {:url @(subscribe [:page-share-url :route.offerings/detail {:offering/address address}])
-               :title (str "Check out offering for " (:offering/name offering) " on NameBazaar")}]]]]
+               :title (str "Check out offering for " name " on NameBazaar")}]]]]
           (if offering-loaded?
             [offering-detail]
             [:div.padded [content-placeholder]])]

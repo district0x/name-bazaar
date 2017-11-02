@@ -30,10 +30,13 @@
                                      :order-by-dirs [order-by-dir]}])))}]))))
 
 (defn user-purchases []
-  (let [search-results (subscribe [:offerings/user-purchases])]
+  (let [search-results (subscribe [:offerings/user-purchases])
+        route-params (subscribe [:district0x/route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
-        [app-layout
+        [app-layout {:meta {:title (str "NameBazaar - " title)
+                            :description (if-let [address (:user/address @route-params)]
+                                           (str "See all ENS name purchases of " address))}}
          [ui/Segment
           [ui/Grid
            {:padded true
@@ -60,11 +63,11 @@
                             (dispatch [:offerings.user-purchases/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}
            (doall
-             (for [[i offering] (medley/indexed items)]
-               [offering-list-item
-                {:key i
-                 :offering offering
-                 :header-props {:show-finalized-on? true}}]))]]]))))
+            (for [[i offering] (medley/indexed items)]
+              [offering-list-item
+               {:key i
+                :offering offering
+                :header-props {:show-finalized-on? true}}]))]]]))))
 
 (defmethod page :route.user/my-purchases []
   [user-purchases

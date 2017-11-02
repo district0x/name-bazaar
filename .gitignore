@@ -6,10 +6,10 @@ pom.xml.asc
 *.jar
 *.class
 package-lock.json
+package.json
 /.lein-*
 /.nrepl-port
 .hgignore
-package-lock.json
 start_server.sh
 .hg/
 /.idea/

@@ -42,7 +42,8 @@
           "Register"]]]])))
 
 (defmethod page :route.registrar/register []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - Register ENS Name"
+                      :description "Simplest way to register a new ENS name."}}
    [ui/Segment
     [:h1.ui.header.padded "Register Name"]
     [register-name-form]]])
