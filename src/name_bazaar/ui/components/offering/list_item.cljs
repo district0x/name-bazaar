@@ -94,7 +94,8 @@
 (defn offering-header-sold-tag [{:keys [:offering] :as props}]
   (let [{:keys [:offering/new-owner]} offering]
     (when (and (not (empty? new-owner))
-               (not= emergency-state-new-owner new-owner))
+               (not= emergency-state-new-owner new-owner)
+               (not (:offering/unregistered? offering)))
       [offering-sold-tag])))
 
 (defn offering-header-offering-type [{:keys [:offering]}]
@@ -133,7 +134,7 @@
      [offering-header-missing-ownership-tag
       {:offering offering}])
 
-   (when (and show-sold? (not (:offering/unregistered? offering)))
+   (when show-sold?
      [offering-header-sold-tag
       {:offering offering}])])
 

@@ -33,13 +33,13 @@
        (dissoc props :offering))
      "Transfer Ownership"]))
 
-(defn delete-offering-button [{:keys [:address :offering-type] :as props}]
+(defn delete-offering-button [{:keys [:offering/address :offering/type] :as props}]
   [transaction-button
-   {:color :violet
+   {:color :pink
     :pending-text "Deleting..."
-    :pending? @(subscribe [:offering.unregister/tx-pending? address offering-type])
+    :pending? @(subscribe [:offering.unregister/tx-pending? address type])
     :on-click #(dispatch [:offering/unregister {:offering/address address}])}
-   "Delete Offering"])
+   "Delete"])
 
 (defn section-for-original-owner [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/buy-now? :auction-offering/bid-count :offering/type]} offering
@@ -74,7 +74,7 @@
            :href (path-for :route.offerings/edit {:offering/address address})}
           "Edit"])
        (when can-delete?
-         [delete-offering-button {:address address :offering-type type}])])))
+         [delete-offering-button {:offering/address address :offering/type type}])])))
 
 (defn- offering-buyable? [offering-status]
   (not (contains? #{:offering.status/auction-ended :offering.status/finalized :offering.status/emergency} offering-status)))

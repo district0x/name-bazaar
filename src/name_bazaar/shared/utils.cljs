@@ -7,10 +7,10 @@
     [cljs-web3.core :as web3]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
-(def unregistered-new-owner    "0x00000000000000000000000000000000deaddead")
-(def unregistered-price-wei                                        63466346)
-(def buy-now-offering-min-version 2)
-(def auction-offering-min-version 100001)
+(def unregistered-new-owner "0x00000000000000000000000000000000deaddead")
+(def unregistered-price-wei 63466346)
+(def buy-now-offering-unregister-min-version 2)
+(def auction-offering-unregister-min-version 100001)
 
 (def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
                      :offering/new-owner :offering/price :offering/version :offering/created-on
@@ -58,24 +58,25 @@
     (catch js/Error e
       false)))
 
-(defn supports-unregister? [offering-type offering-version]
+(defn offering-supports-unregister? [offering-type offering-version]
   (match [offering-type]
-         [:auction-offering] (>= offering-version auction-offering-min-version)
-         [:buy-now-offering] (>= offering-version buy-now-offering-min-version)))
+         [:auction-offering] (>= offering-version auction-offering-unregister-min-version)
+         [:buy-now-offering] (>= offering-version buy-now-offering-unregister-min-version)))
 
-(defn unregistered? [offering]
+(defn unregistered? [supports-unregister? offering]
   (let [new-owner (:offering/new-owner offering)
         price (-> offering :offering/price bn/->number)]
-    (match [(= unregistered-new-owner new-owner) (= unregistered-price-wei price)]
-           [true _ ] true
-           [_ true] true       
+    (match [supports-unregister? (= unregistered-new-owner new-owner) (= unregistered-price-wei price)]
+           [true true _] true
+           [false _ true] true
            :else false)))
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
     (let [offering (zipmap offering-props offering)
           offering-type (offering-version->type (:offering/version offering))
-          label (name-label (:offering/name offering))]
+          label (name-label (:offering/name offering))
+          supports-unregister? (offering-supports-unregister? offering-type (-> offering :offering/version bn/->number))]
       (-> offering
         (assoc :offering/address offering-address)
         (update :offering/version bn/->number)
@@ -95,8 +96,8 @@
         (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
         (assoc :offering/normalized? (normalized? (:offering/name offering)))
         (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
-        (assoc :offering/supports-unregister? (supports-unregister? offering-type (-> offering :offering/version bn/->number)))
-        (assoc :offering/unregistered? (unregistered? offering))))))
+        (assoc :offering/supports-unregister? supports-unregister?)
+        (assoc :offering/unregistered? (unregistered? supports-unregister? offering))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase

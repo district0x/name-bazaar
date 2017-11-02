@@ -11,7 +11,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering unregistered-price-wei supports-unregister?]]
+    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
@@ -252,16 +252,16 @@
           (get-offering db offering-address)]      
       {:dispatch [:district0x/make-transaction
                   (merge
-                   {:name (gstring/format "Unregister %s offering" name)
+                   {:name (gstring/format "Delete %s offering" name)
                     :tx-opts {:gas 200000 :gas-price default-gas-price}   
                     :contract-key type
                     :contract-address offering-address
                     :form-id (select-keys form-data [:offering/address])
                     :result-href (path-for :route.offerings/detail form-data)                   
                     :on-tx-receipt-n [[:district0x.snackbar/show-message
-                                       (gstring/format "Unregistered offering %s" name)]
+                                       (gstring/format "Offering for %s was deleted" name)]
                                       [:offerings/on-offering-changed {:offering offering-address}]]}
-                   (if (supports-unregister? type version)
+                   (if (offering-supports-unregister? type version)
                      {:contract-method :unregister
                       :form-data form-data}                    
                      (case type                       
@@ -537,10 +537,8 @@
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
-                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
-                                     ;; TODO: or just exclude in db/search-offerings
-                                     :params (-> search-params
-                                                 (assoc :exclude-unregistered? true))}]})))
+                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]                                
+                                     :params search-params}]})))
 
 (reg-event-fx
   :offerings.user-bids/set-params-and-search
@@ -613,3 +611,23 @@
   interceptors
   (fn [{:keys [:db]} [query-string]]
     {:dispatch [:saved-searches/remove :offerings-search query-string]}))
+
+
+(defn reproduce-bug []
+  (re-frame/dispatch [:district0x/make-transaction {:tx-opts {:gas 200000, :gas-price 4000000000},
+                                                    :contract-address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
+                                                    :name "Unregister 4on18u.eth offering",
+                                                    :on-tx-receipt-n [[:district0x.snackbar/show-message "Unregistered offering 4on18u.eth"] [:offerings/on-offering-changed {:offering "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]],
+                                                    :form-data {:offering/address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
+                                                                :offering/price 63466346,
+                                                                :auction-offering/end-time :20171105T170000,
+                                                                :auction-offering/extension-duration 3600,
+                                                                :auction-offering/min-bid-increase 0.1},
+                                                    :contract-method :set-settings,
+                                                    :contract-key :auction-offering,
+                                                    :args-order [:offering/price
+                                                                 :auction-offering/end-time
+                                                                 :auction-offering/extension-duration
+                                                                 :auction-offering/min-bid-increase],
+                                                    :form-id {:offering/address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"},
+                                                    :result-href "/offerings/0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]))

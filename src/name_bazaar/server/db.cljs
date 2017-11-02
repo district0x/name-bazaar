@@ -163,7 +163,7 @@
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold? :exclude-unregistered?] :as search-parameters
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?] :as search-parameters
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
@@ -177,8 +177,9 @@
                      :offset offset
                      :limit limit}
               original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])      
-              exclude-unregistered? (merge-where [:and
-                                                  [:<> :price unregistered-price-wei]])                 
+              ;; exclude-unregistered? (merge-where [:and
+              ;;                                     [:<> :price unregistered-price-wei]])           
+              
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
@@ -190,8 +191,7 @@
                                               [:= :end-time nil]])
               sold? (merge-where [:and
                                   [:<> :new-owner nil]
-                                  [:<> :new-owner emergency-state-new-owner]
-                                  [:<> :new-owner unregistered-new-owner]])
+                                  [:<> :new-owner emergency-state-new-owner]])
               bidder (merge-left-join [:bids :b] [:= :b.offering :offerings.address])
               bidder (merge-where [:= :b.bidder (string/lower-case bidder)])
               bidder (update-in [:modifiers] concat [:distinct])

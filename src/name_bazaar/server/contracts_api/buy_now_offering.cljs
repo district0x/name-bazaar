@@ -32,18 +32,6 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-(defn unregister! [server-state contract-address opts]
-  (effects/logged-contract-call! server-state
-                                 (web3-eth-async/contract-at (state/web3 server-state)
-                                                             (:abi (state/contract
-                                                                    server-state
-                                                                    :buy-now-offering))
-                                                             contract-address)
-                                 :unregister
-                                 (merge {:gas 300000
-                                         :from (state/active-address server-state)}
-                                        opts)))
-
 (defn set-settings! [server-state {:keys [:offering/address
                                           :offering/price]} opts]
   (effects/logged-contract-call! server-state
