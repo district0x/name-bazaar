@@ -821,13 +821,13 @@
       ;; To make it less likely to happen, we run this only when app is focused
       {:async-flow {:first-dispatch [:district0x/load-my-addresses]
                     :rules [{:when :seen?
-                              :events [:district0x/my-addresses-loaded]
-                              :dispatch [:district0x/watch-my-eth-balances]}]}})))
+                             :events [:district0x/my-addresses-loaded]
+                             :dispatch [:district0x/watch-my-eth-balances]}]}})))
 
 (reg-event-fx
   :district0x/setup-address-reload-interval
   interceptors
   (fn [{:keys [db]}]
     {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
-                          :ms 4000
-                          :db-path [:district0x-reload-address-interval]}}))
+                         :ms 4000
+                         :db-path [:district0x-reload-address-interval]}}))
