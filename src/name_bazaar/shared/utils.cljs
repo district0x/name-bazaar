@@ -7,9 +7,14 @@
     [cljs-web3.core :as web3]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
-(def unregistered-new-owner         "0x00000000000000000000000000000000deaddead")
+(def unregistered-new-owner    "0x00000000000000000000000000000000deaddead")
+(def unregistered-price-wei                                63466346)
 (def buy-now-offering-min-version 2)
 (def auction-offering-min-version 100001)
+
+(def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
+                     :offering/new-owner :offering/price :offering/version :offering/created-on
+                     :offering/finalized-on])
 
 (defn offering-version->type [version]
   (if (>= (bn/->number version) 100000)
@@ -58,9 +63,13 @@
          [:auction-offering] (>= offering-version auction-offering-min-version)
          [:buy-now-offering] (>= offering-version buy-now-offering-min-version)))
 
-(def offering-props [:offering/node :offering/name :offering/label-hash :offering/original-owner
-                     :offering/new-owner :offering/price :offering/version :offering/created-on
-                     :offering/finalized-on])
+(defn unregistered? [offering]
+  (let [new-owner (:offering/new-owner offering)
+        price (-> offering :offering/price bn/->number)]
+    (match [(= unregistered-new-owner new-owner) (= unregistered-price-wei price)]
+           [true _ ] true
+           [_ true] true       
+           :else false)))
 
 (defn parse-offering [offering-address offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when offering
@@ -87,7 +96,7 @@
         (assoc :offering/normalized? (normalized? (:offering/name offering)))
         (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
         (assoc :offering/supports-unregister? (supports-unregister? offering-type (-> offering :offering/version bn/->number)))
-        (assoc :offering/unregistered? (= unregistered-new-owner (:offering/new-owner offering)))))))
+        (assoc :offering/unregistered? (unregistered? offering))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase

@@ -96,7 +96,7 @@
             :no-items-text no-items-text
             :on-next-load (fn [offset limit]
                             (dispatch [:offerings.user-offerings/set-params-and-search
-                                       {:offset offset :limit limit} {:append? true}]))}
+                                       {:offset offset :limit limit} {:append? true}]))}           
            (doall
              (for [[i offering] (medley/indexed items)]
                [offering-list-item

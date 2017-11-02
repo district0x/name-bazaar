@@ -11,7 +11,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
+    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering unregistered-price-wei supports-unregister?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
@@ -103,7 +103,7 @@
 (reg-event-fx
   :buy-now-offering/set-settings
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
-  (fn [{:keys [:db]} [form-data]]
+  (fn [{:keys [:db]} [form-data]]    
     {:dispatch [:district0x/make-transaction
                 {:name (gstring/format "Edit %s offering" (get-offering-name db (:offering/address form-data)))
                  :contract-key :buy-now-offering
@@ -240,26 +240,48 @@
                                       (gstring/format "Ownership of %s was reclaimed" offering-name)]
                                      [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
-;; TODO
+
+;; TODO : test old contract versions
 (reg-event-fx
   :offering/unregister
   [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
   (fn [{:keys [:db]} [form-data]]
     (let [offering-address (:offering/address form-data)
-          offering-name (get-offering-name db offering-address)]
+          {:keys [:offering/type :offering/name :offering/version :offering/price
+                  :auction-offering/end-time :auction-offering/extension-duration :auction-offering/min-bid-increase] :as offering}
+          (get-offering db offering-address)]      
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Unregister %s offering" offering-name)
-                   ;; TODO: buy-now or auction?
-                   :contract-key :buy-now-offering
-                   :contract-method :unregister
-                   :form-data form-data
-                   :contract-address offering-address
-                   :result-href (path-for :route.offerings/detail form-data)
-                   :form-id (select-keys form-data [:offering/address])
-                   :tx-opts {:gas 200000 :gas-price default-gas-price}
-                   :on-tx-receipt-n [[:district0x.snackbar/show-message
-                                      (gstring/format "Unregistered offering %s" offering-name)]
-                                     [:offerings/on-offering-changed {:offering offering-address}]]}]})))
+                  (merge
+                   {:name (gstring/format "Unregister %s offering" name)
+                    :tx-opts {:gas 200000 :gas-price default-gas-price}   
+                    :contract-key type
+                    :contract-address offering-address
+                    :form-id (select-keys form-data [:offering/address])
+                    :result-href (path-for :route.offerings/detail form-data)                   
+                    :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                       (gstring/format "Unregistered offering %s" name)]
+                                      [:offerings/on-offering-changed {:offering offering-address}]]}
+                   (if (supports-unregister? type version)
+                     {:contract-method :unregister
+                      :form-data form-data}                    
+                     (case type                       
+
+                       :buy-now-offering
+                       {:contract-method :set-settings
+                        :form-data (assoc form-data :offering/price unregistered-price-wei)
+                        :args-order [:offering/price]}
+                       
+                       :auction-offering
+                       {:contract-method :set-settings
+                        :form-data (-> form-data
+                                       (assoc :offering/price unregistered-price-wei)
+                                       (assoc :auction-offering/end-time end-time)
+                                       (assoc :auction-offering/extension-duration extension-duration)
+                                       (assoc :auction-offering/min-bid-increase min-bid-increase))
+                        :args-order [:offering/price
+                                     :auction-offering/end-time
+                                     :auction-offering/extension-duration
+                                     :auction-offering/min-bid-increase]})))]})))
 
 (reg-event-fx
   :offerings/search
@@ -499,10 +521,11 @@
                                      :append? (:append? opts)
                                      :params search-params}]})))
 
+;; TODO
 (reg-event-fx
   :offerings.user-offerings/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]
+  (fn [{:keys [:db]} [search-params opts]]    
     (let [search-results-path [:search-results :offerings :user-offerings]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
@@ -516,7 +539,9 @@
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
                                      :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
-                                     :params search-params}]})))
+                                     ;; TODO
+                                     :params (-> search-params
+                                                 (assoc :exclude-unregistered? true))}]})))
 
 (reg-event-fx
   :offerings.user-bids/set-params-and-search
