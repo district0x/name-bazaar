@@ -1,0 +1,15 @@
+namebazaar:
+ build: .
+ expose:
+   - "6200"
+ ports:
+  - "3002:6200"
+
+nginx:
+ build: builds/nginx
+ ports:
+   - "3001:80"
+ volumes:
+   - "./resources/public:/usr/share/nginx/html/ipns/QmaxtM46eQBdpQq6TKDSAHoarB1Qx9SDrZkag7RbpDbdJx"
+ links:
+   - namebazaar
