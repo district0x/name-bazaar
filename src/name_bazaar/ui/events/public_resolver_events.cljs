@@ -13,8 +13,7 @@
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]
-    ))
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
  :public-resolver.record.addr/load
