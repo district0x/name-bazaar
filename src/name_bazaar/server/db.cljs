@@ -177,11 +177,12 @@
                      :from [:offerings]
                      :offset offset
                      :limit limit}
-              original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])      
-              exclude-unregistered? (merge-where   ;;[:<> :new-owner unregistered-new-owner]
-                                                   [:<> :price unregistered-price-wei]
-                                                  )           
-              
+              original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])
+              exclude-unregistered? (merge-where [:and
+                                                  [:<> :price unregistered-price-wei]
+                                                  [:or
+                                                   [:= :new-owner nil]
+                                                   [:<> :new-owner unregistered-new-owner]]])
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
@@ -248,5 +249,3 @@
               (s/valid? ::offering-requests-order-by order-by) (merge-order-by order-by))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
-
-

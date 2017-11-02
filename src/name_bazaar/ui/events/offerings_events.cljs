@@ -240,8 +240,6 @@
                                       (gstring/format "Ownership of %s was reclaimed" offering-name)]
                                      [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
 
-
-;; TODO : test old contract versions
 (reg-event-fx
   :offering/unregister
   [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
@@ -249,7 +247,7 @@
     (let [offering-address (:offering/address form-data)
           {:keys [:offering/type :offering/name :offering/version :offering/price
                   :auction-offering/end-time :auction-offering/extension-duration :auction-offering/min-bid-increase] :as offering}
-          (get-offering db offering-address)]      
+          (get-offering db offering-address)]
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Delete %s offering" name)
@@ -261,7 +259,7 @@
                     :on-tx-receipt-n [[:district0x.snackbar/show-message
                                        (gstring/format "Offering for %s was deleted" name)]
                                       [:offerings/on-offering-changed {:offering offering-address}]]}
-                   (if false;;(offering-supports-unregister? type version)
+                   (if (offering-supports-unregister? type version)
                      {:contract-method :unregister
                       :form-data form-data}                    
                      (case type                       
@@ -275,14 +273,13 @@
                        {:contract-method :set-settings
                         :form-data (-> form-data
                                        (assoc :offering/price unregistered-price-wei)
-                                       (assoc :auction-offering/end-time end-time)
+                                       (assoc :auction-offering/end-time (to-epoch (.valueOf end-time)))
                                        (assoc :auction-offering/extension-duration extension-duration)
-                                       (assoc :auction-offering/min-bid-increase min-bid-increase))
+                                       (assoc :auction-offering/min-bid-increase (d0x-shared-utils/eth->wei min-bid-increase)))
                         :args-order [:offering/price
                                      :auction-offering/end-time
                                      :auction-offering/extension-duration
-                                     :auction-offering/min-bid-increase]
-                        :wei-keys #{:offering/price :auction-offering/min-bid-increase}})))]})))
+                                     :auction-offering/min-bid-increase]})))]})))
 
 (reg-event-fx
   :offerings/search
@@ -612,24 +609,3 @@
   interceptors
   (fn [{:keys [:db]} [query-string]]
     {:dispatch [:saved-searches/remove :offerings-search query-string]}))
-
-
-(defn reproduce-bug []
-  (re-frame/dispatch [:district0x/make-transaction {:tx-opts {:gas 200000, :gas-price 4000000000},
-                                                    :contract-address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
-                                                    :name "Unregister 4on18u.eth offering",
-                                                    :on-tx-receipt-n [[:district0x.snackbar/show-message "Unregistered offering 4on18u.eth"]
-                                                                      [:offerings/on-offering-changed {:offering "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]],
-                                                    :form-data {:offering/address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
-                                                                :offering/price 63466346,
-                                                                :auction-offering/end-time #inst "2005-01-20"
-                                                                :auction-offering/extension-duration 3600,
-                                                                :auction-offering/min-bid-increase 0.1},
-                                                    :contract-method :set-settings,
-                                                    :contract-key :auction-offering,
-                                                    :args-order [:offering/price
-                                                                 :auction-offering/end-time
-                                                                 :auction-offering/extension-duration
-                                                                 :auction-offering/min-bid-increase],
-                                                    :form-id {:offering/address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"},
-                                                    :result-href "/offerings/0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]))
