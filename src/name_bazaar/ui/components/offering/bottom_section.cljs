@@ -33,10 +33,9 @@
        (dissoc props :offering))
      "Transfer Ownership"]))
 
-;; TODO
 (defn delete-offering-button [{:keys [:address] :as props}]
   [transaction-button
-   {:color "violet"
+   {:color :violet
     :pending-text "Deleting..."
     :pending? @(subscribe [:offering.unregister/tx-pending? address])
     :on-click #(dispatch [:offering/unregister {:offering/address address}])}
@@ -58,7 +57,7 @@
        (when (and (not needs-transfer?)
                   (not finalizable?))
          [transaction-button
-          {:color "pink"
+          {:color :pink
            :pending-text "Reclaiming..."
            :disabled (not editable?)
            :pending? @(subscribe [:offering.reclaim-ownership/tx-pending? address])

@@ -67,7 +67,6 @@
                                          :from (state/active-address server-state)}
                                         opts)))
 
-;; TODO
 (defn unregister! [server-state contract-address opts]
   (effects/logged-contract-call! server-state
                                  (web3-eth-async/contract-at (state/web3 server-state)

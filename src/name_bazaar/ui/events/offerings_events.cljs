@@ -103,7 +103,7 @@
 (reg-event-fx
   :buy-now-offering/set-settings
   [interceptors (validate-first-arg (s/keys :req [:offering/address :offering/price]))]
-  (fn [{:keys [:db]} [form-data]]    
+  (fn [{:keys [:db]} [form-data]]
     {:dispatch [:district0x/make-transaction
                 {:name (gstring/format "Edit %s offering" (get-offering-name db (:offering/address form-data)))
                  :contract-key :buy-now-offering
@@ -521,11 +521,10 @@
                                      :append? (:append? opts)
                                      :params search-params}]})))
 
-;; TODO
 (reg-event-fx
   :offerings.user-offerings/set-params-and-search
   interceptors
-  (fn [{:keys [:db]} [search-params opts]]    
+  (fn [{:keys [:db]} [search-params opts]]
     (let [search-results-path [:search-results :offerings :user-offerings]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
@@ -539,7 +538,7 @@
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
                                      :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
-                                     ;; TODO
+                                     ;; TODO: or just exclude in db/search-offerings
                                      :params (-> search-params
                                                  (assoc :exclude-unregistered? true))}]})))
 

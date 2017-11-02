@@ -8,7 +8,7 @@
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
 (def unregistered-new-owner    "0x00000000000000000000000000000000deaddead")
-(def unregistered-price-wei                                63466346)
+(def unregistered-price-wei                                        63466346)
 (def buy-now-offering-min-version 2)
 (def auction-offering-min-version 100001)
 

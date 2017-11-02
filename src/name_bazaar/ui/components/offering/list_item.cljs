@@ -115,7 +115,7 @@
 
 
 (defn offering-header-tags [{:keys [:show-sold? :show-active? :show-auction-winning?
-                                    :show-auction-pending-returns? :show-missing-ownership? :offering] :as p}]  
+                                    :show-auction-pending-returns? :show-missing-ownership? :offering] :as p}]
   [:div.tags
    (when show-active?
      [offering-header-active-tag
@@ -133,7 +133,6 @@
      [offering-header-missing-ownership-tag
       {:offering offering}])
 
-   ;; TODO
    (when (and show-sold? (not (:offering/unregistered? offering)))
      [offering-header-sold-tag
       {:offering offering}])])
