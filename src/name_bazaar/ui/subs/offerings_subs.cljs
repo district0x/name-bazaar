@@ -303,7 +303,6 @@
 (reg-sub
   :offering.unregister/tx-pending?
   (fn [[_ offering-address offering-type]]
-    ;; TODO: buy now or auction
     (subscribe [:district0x/tx-pending? offering-type :unregister {:offering/address offering-address}]))
   identity)
 
