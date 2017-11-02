@@ -4,11 +4,12 @@
     [cljs-time.coerce :refer [from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
-    [district0x.ui.utils :as d0x-ui-utils :refer [to-locale-string]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [to-locale-string namehash]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [re-frame.core :refer [reg-sub subscribe]]))
+    [re-frame.core :refer [reg-sub subscribe]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-sub
   :district0x/db

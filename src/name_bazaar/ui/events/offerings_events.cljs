@@ -2,6 +2,7 @@
   (:require
     [cljs-time.coerce :refer [to-epoch]]
     [cljs.spec.alpha :as s]
+    [cljs-web3.core :as web3]
     [clojure.set :as set]
     [clojure.string :as string]
     [district0x.shared.big-number :as bn]
@@ -13,8 +14,10 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce?]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? try-resolving-address]]
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
   :buy-now-offering-factory/create-offering
@@ -470,7 +473,11 @@
   :offerings.user-purchases/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :user-purchases]
+    (let [search-params (if (and (:new-owner search-params)
+                                 (not (web3/address? (:new-owner search-params))))
+                          (update search-params :new-owner (partial try-resolving-address db))
+                          search-params)
+          search-results-path [:search-results :offerings :user-purchases]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)]
       {:db db
@@ -482,7 +489,11 @@
   :offerings.user-offerings/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :user-offerings]
+    (let [search-params (if (and (:original-owner search-params)
+                                 (not (web3/address? (:original-owner search-params))))
+                          (update search-params :original-owner (partial try-resolving-address db))
+                          search-params)
+          search-results-path [:search-results :offerings :user-offerings]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
           {:keys [:open? :finalized?]} search-params
@@ -501,7 +512,11 @@
   :offerings.user-bids/set-params-and-search
   interceptors
   (fn [{:keys [:db]} [search-params opts]]
-    (let [search-results-path [:search-results :offerings :user-bids]
+    (let [search-params (if (and (:bidder search-params)
+                                 (not (web3/address? (:bidder search-params))))
+                          (update search-params :bidder (partial try-resolving-address db))
+                          search-params)
+          search-results-path [:search-results :offerings :user-bids]
           search-params-path (conj search-results-path :params)
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
           {:keys [:winning? :outbid? :bidder]} search-params]

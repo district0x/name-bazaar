@@ -25,7 +25,7 @@
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -33,7 +33,8 @@
     [madvas.re-frame.web3-fx]
     [medley.core :as medley]
     [print.foo :include-macros true]
-    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]))
+    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -820,13 +821,13 @@
       ;; To make it less likely to happen, we run this only when app is focused
       {:async-flow {:first-dispatch [:district0x/load-my-addresses]
                     :rules [{:when :seen?
-                             :events [:district0x/my-addresses-loaded]
-                             :dispatch [:district0x/watch-my-eth-balances]}]}})))
+                              :events [:district0x/my-addresses-loaded]
+                              :dispatch [:district0x/watch-my-eth-balances]}]}})))
 
 (reg-event-fx
   :district0x/setup-address-reload-interval
   interceptors
   (fn [{:keys [db]}]
     {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
-                         :ms 4000
-                         :db-path [:district0x-reload-address-interval]}}))
+                          :ms 4000
+                          :db-path [:district0x-reload-address-interval]}}))

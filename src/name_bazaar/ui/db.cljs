@@ -10,9 +10,11 @@
     [district0x.ui.utils :as d0x-ui-utils]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [name-bazaar.ui.constants :as constants]
-    [re-frame.core :refer [dispatch]]))
+    [re-frame.core :refer [dispatch]]
+    [district0x.ui.utils :refer [get-window-size namehash]]))
 
 (goog-define environment "prod")
+(goog-define log-level "error")
 
 (def development-config
   {:node-url "http://localhost:8549"
@@ -27,7 +29,7 @@
    :server-url "https://api.namebazaar.io"})
 
 (defn get-config [env-name]
-  (get {"dev" development-config
+  (get {;;"dev" development-config
         "prod" production-config} env-name production-config))
 
 (def default-db

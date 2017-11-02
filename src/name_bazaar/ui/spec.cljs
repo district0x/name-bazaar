@@ -119,6 +119,17 @@
 
 (s/def ::now date?)
 
+(s/def :public-resolver.record/addr address?)
+(s/def :public-resolver/record
+  (s/keys :opt [:public-resolver.record/addr]))
+
+(s/def :resolver-records/entry (s/map-of :ens.record/node :public-resolver/record))
+
+(s/def :public-resolver/records
+  (s/keys :opt [:resolver-records/entry]))
+
+(s/def ::public-resolvers (s/map-of address? :public-resolver/records))
+
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
@@ -130,4 +141,5 @@
                                                 ::now
                                                 ::search-results
                                                 ::saved-searches
-                                                ::offerings-main-search-drawer])))
+                                                ::offerings-main-search-drawer]
+                                       :opt-un [::public-resolvers])))

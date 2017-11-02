@@ -18,8 +18,9 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
-    [name-bazaar.ui.utils :refer [parse-query-params path-for]]
-    [re-frame.core :refer [reg-sub subscribe]]))
+    [name-bazaar.ui.utils :refer [parse-query-params path-for try-resolving-address]]
+    [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
+    [reagent.ratom :refer-macros [reaction]]))
 
 (reg-sub
   :now
@@ -62,3 +63,12 @@
                         {:user/address (str my-address)})
                       params)))
     "#" "")))
+
+(reg-sub-raw
+ :resolved-route-params
+ (fn [db p]
+   (reaction
+    (let [route-params @(subscribe [:district0x/route-params])]
+      (update
+       route-params
+       :user/address (partial try-resolving-address @db))))))

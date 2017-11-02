@@ -3,6 +3,7 @@
     [cemerick.url :as url]
     [clojure.data :as data]
     [clojure.string :as string]
+    [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -10,7 +11,8 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.db :refer [default-db]]))
+    [name-bazaar.ui.db :refer [default-db]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (defn namehash [name]
   (js/EthEnsNamehash.hash name))
@@ -142,3 +144,22 @@
                        keys)]
     (and (= (count changed-keys) 1)
          (contains? (set ks) (first changed-keys)))))
+
+(defn tldize [name]
+  (when name
+    (if (re-matches #"(?i).*\.etH$" name)
+      name
+      (str name ".eth"))))
+
+(defn try-resolving-address [db addr]
+  (if-not (web3/address? addr)
+    (let [addr-patched (tldize addr)]
+      (if-let [resolved (some (fn [r]
+                                (get-in r [:public-resolver/records
+                                           (namehash addr-patched)
+                                           :public-resolver.record/addr]))
+                              (vals (:public-resolvers db)))]
+        resolved
+        "0x"))
+    addr))
+

@@ -17,6 +17,8 @@
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :ens
  {:name "ENS", :address "0x314159265dD8dbb310642f98f50C066173C1259b"},
+ :public-resolver
+ {:name "PublicResolver", :address "0x0000000000000000000000000000000000000000"},
  :offering-registry
  {:name "OfferingRegistry",
   :address "0x34e400a8b4da8a23b5eaf81b46d3a887669a45b9"},

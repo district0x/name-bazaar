@@ -8,6 +8,7 @@
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [re-frame.core :refer [subscribe dispatch]]
+    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-bids-order-by-select []
@@ -106,5 +107,7 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       [user-bids
-       {:title (str (truncate (:user/address @route-params) 10) " Bids")
+       {:title (str ((if-not (web3/address? (:user/address @route-params))
+                       identity
+                       #(truncate % 10)) (:user/address @route-params)) " Bids")
         :no-items-text "This user currently doesn't have bids in any active auction"}])))
