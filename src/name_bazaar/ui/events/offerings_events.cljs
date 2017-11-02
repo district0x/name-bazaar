@@ -261,7 +261,7 @@
                     :on-tx-receipt-n [[:district0x.snackbar/show-message
                                        (gstring/format "Offering for %s was deleted" name)]
                                       [:offerings/on-offering-changed {:offering offering-address}]]}
-                   (if (offering-supports-unregister? type version)
+                   (if false;;(offering-supports-unregister? type version)
                      {:contract-method :unregister
                       :form-data form-data}                    
                      (case type                       
@@ -281,7 +281,8 @@
                         :args-order [:offering/price
                                      :auction-offering/end-time
                                      :auction-offering/extension-duration
-                                     :auction-offering/min-bid-increase]})))]})))
+                                     :auction-offering/min-bid-increase]
+                        :wei-keys #{:offering/price :auction-offering/min-bid-increase}})))]})))
 
 (reg-event-fx
   :offerings/search
@@ -617,10 +618,11 @@
   (re-frame/dispatch [:district0x/make-transaction {:tx-opts {:gas 200000, :gas-price 4000000000},
                                                     :contract-address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
                                                     :name "Unregister 4on18u.eth offering",
-                                                    :on-tx-receipt-n [[:district0x.snackbar/show-message "Unregistered offering 4on18u.eth"] [:offerings/on-offering-changed {:offering "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]],
+                                                    :on-tx-receipt-n [[:district0x.snackbar/show-message "Unregistered offering 4on18u.eth"]
+                                                                      [:offerings/on-offering-changed {:offering "0xcb0ef43382f00a539b718e88da27ef3c7092dea2"}]],
                                                     :form-data {:offering/address "0xcb0ef43382f00a539b718e88da27ef3c7092dea2",
                                                                 :offering/price 63466346,
-                                                                :auction-offering/end-time :20171105T170000,
+                                                                :auction-offering/end-time #inst "2005-01-20"
                                                                 :auction-offering/extension-duration 3600,
                                                                 :auction-offering/min-bid-increase 0.1},
                                                     :contract-method :set-settings,

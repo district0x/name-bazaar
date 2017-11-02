@@ -170,15 +170,17 @@
         max-price (js/parseInt max-price)
         min-length (js/parseInt min-length)
         max-length (js/parseInt max-length)
-        name (when (seq name) name)]
+        name (when (seq name) name)
+        exclude-unregistered? true]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offerings]
                      :offset offset
                      :limit limit}
               original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])      
-              ;; exclude-unregistered? (merge-where [:and
-              ;;                                     [:<> :price unregistered-price-wei]])           
+              exclude-unregistered? (merge-where   ;;[:<> :new-owner unregistered-new-owner]
+                                                   [:<> :price unregistered-price-wei]
+                                                  )           
               
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
