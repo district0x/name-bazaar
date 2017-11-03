@@ -1,5 +1,5 @@
 FROM "node:8"
-MAINTAINER "Mike Konkov" <noospheratum@gmail.com>
+MAINTAINER "Mike Konkov" <mike@district0x.io>
 EXPOSE 8080
 RUN mkdir -p /usr/local/www
 ADD server /usr/local/www/server
