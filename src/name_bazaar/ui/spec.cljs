@@ -130,6 +130,8 @@
 
 (s/def ::public-resolvers (s/map-of address? :public-resolver/records))
 
+(s/def :offerings/total-count (s/nilable not-neg?))
+
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
@@ -142,4 +144,5 @@
                                                 ::search-results
                                                 ::saved-searches
                                                 ::offerings-main-search-drawer]
-                                       :opt-un [::public-resolvers])))
+                                       :opt-un [::public-resolvers]
+                                       :opts [:offerings/total-count])))

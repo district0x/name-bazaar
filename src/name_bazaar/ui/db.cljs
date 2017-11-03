@@ -50,6 +50,8 @@
      :registrar/entries {}
      :district0x-emails {}
 
+     :offerings/total-count nil
+
      :search-results
      {:offerings {:home-page-autocomplete {:ids []}
                   :home-page-newest {:ids [] :loading? true}

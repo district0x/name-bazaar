@@ -130,7 +130,8 @@
      :forward-events active-address-changed-forwarding}
 
     :route/home
-    {:dispatch [:offerings.home-page/search]}
+    {:dispatch-n [[:offerings.home-page/search]
+                  [:offerings.total-count/load]]}
 
 
     nil))

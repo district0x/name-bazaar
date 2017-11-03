@@ -17,6 +17,11 @@
     (:offerings db)))
 
 (reg-sub
+  :offerings/total-count
+  (fn [db]
+    (:offerings/total-count db)))
+
+(reg-sub
   :offering
   :<- [:offerings]
   (fn [offerings [_ offering-address]]

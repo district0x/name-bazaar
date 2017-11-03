@@ -148,6 +148,20 @@
     [:h1.intro-headline
      "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."]]])
 
+(defn offerings-total-count []
+  (let [total-count (subscribe [:offerings/total-count])]
+    (fn []
+      (when @total-count
+        [:div.offerings-total-count
+         [:h5.ui.header.sub "Names Offered"]
+         [:div.count @total-count]]))))
+
+(defn offerings-total-count-mobile []
+  (let [total-count (subscribe [:offerings/total-count])]
+    (fn []
+      [:div.offerings-total-count-mobile
+       "Names Offered: " @total-count])))
+
 (defn footer []
   [ui/Grid
    {:text-align :center
@@ -164,7 +178,9 @@
     (fn []
       [:div.home-page
        [:div.top-segment
+        [offerings-total-count]
         [namebazaar-logo]]
+       [offerings-total-count-mobile]
        [app-headline]
        [ui/Grid
         {:columns 1

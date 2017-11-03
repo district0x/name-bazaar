@@ -61,9 +61,45 @@ h4, h5, h6 {
     background: @brown url(../images/header-bg.png) 0 5px;
     background-size: auto 86px;
     background-position: top;
+    position: relative;
+    margin-bottom: 60px;
+    .offerings-total-count {
+        @media only screen and (max-width: @largestMobileScreen) {
+            display: none;
+        }
+        position: absolute;
+        top: 0;
+        right: 10%;
+        background-color: @white;
+        text-align: center;
+        border-bottom-right-radius: 13px;
+        border-bottom-left-radius: 13px;
+        .ui.sub.header {
+            text-transform: uppercase;
+            font-size: 8.5px;
+            padding: 5px 15px 3px;
+
+            border-bottom: 1px solid @borderColor;
+        }
+        .count {
+            font-family: @secondaryHeaderFont;
+            font-size: 26px;
+            color: @brown;
+            padding: 9px 33px 5px;
+        }
+    }
+  }
+  .offerings-total-count-mobile {
+    @media only screen and (min-width: @tabletBreakpoint) {
+        display: none;
+    }
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
   }
   .intro-headline {
-    margin-top: 60px;
     font-size: 20px;
     font-weight: 300;
     line-height: 1.5;

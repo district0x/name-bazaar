@@ -614,6 +614,23 @@
                                                         :order-by-dirs [:asc]})}]]})))
 
 (reg-event-fx
+  :offerings.total-count/load
+  interceptors
+  (fn [{:keys [:db]}]
+    {:dispatch [:district0x.server/http-get {:endpoint "/offerings"
+                                             :params {:limit 0
+                                                      :node-owner? true
+                                                      :min-end-time-now? true
+                                                      :total-count? true}
+                                             :on-success [:offerings.total-count/loaded]}]}))
+
+(reg-event-fx
+  :offerings.total-count/loaded
+  interceptors
+  (fn [{:keys [:db]} [{:keys [:total-count]}]]
+    {:db (assoc db :offerings/total-count total-count)}))
+
+(reg-event-fx
   :offerings.saved-searches/add
   interceptors
   (fn [{:keys [:db]} [query-string saved-search-name]]
