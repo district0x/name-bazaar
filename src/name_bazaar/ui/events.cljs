@@ -189,8 +189,7 @@
  :try-resolving-address
  interceptors
  (fn [{:keys [db]}]
-   (let [addr (get-in db [:active-page :route-params :user/address])
-         ]
+   (let [addr (get-in db [:active-page :route-params :user/address])]
      (info ["Try address" addr (web3/address? addr)])
      {:db db
       :dispatch

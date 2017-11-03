@@ -254,7 +254,7 @@
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Delete %s offering" name)
-                    :tx-opts {:gas 200000 :gas-price default-gas-price}   
+                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                     :contract-key type
                     :contract-address offering-address
                     :form-id (select-keys form-data [:offering/address])

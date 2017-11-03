@@ -159,30 +159,38 @@
                    order-by-item))
                order-by)))
 
+(def unregistered-where-query
+  [:or
+   [:and [:or
+          [:= :version 1]
+          [:= :version 100000]]
+    [:<> :price unregistered-price-wei]]
+   [:and
+    [:not= :version 1]
+    [:not= :version 100000]
+    [:or
+     [:not= :new-owner unregistered-new-owner]
+     [:= :new-owner nil]]]])
+
 (defn search-offerings [db {:keys [:original-owner :new-owner :node :nodes :name :min-price :max-price :buy-now? :auction?
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?] :as search-parameters
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?]
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
         max-price (js/parseInt max-price)
         min-length (js/parseInt min-length)
         max-length (js/parseInt max-length)
-        name (when (seq name) name)
-        exclude-unregistered? true]
+        name (when (seq name) name)]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offerings]
+                     :where unregistered-where-query
                      :offset offset
                      :limit limit}
               original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])
-              exclude-unregistered? (merge-where [:and
-                                                  [:<> :price unregistered-price-wei]
-                                                  [:or
-                                                   [:= :new-owner nil]
-                                                   [:<> :new-owner unregistered-new-owner]]])
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])

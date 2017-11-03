@@ -42,14 +42,15 @@
    "Delete"])
 
 (defn section-for-original-owner [{:keys [:offering]}]
-  (let [{:keys [:offering/address :offering/buy-now? :auction-offering/bid-count :offering/type]} offering
+  (let [{:keys [:offering/address :offering/buy-now? :auction-offering/bid-count :offering/unregistered? :offering/type]} offering
         needs-transfer? (false? @(subscribe [:offering/node-owner? address]))
         can-delete? needs-transfer?
         offering-status @(subscribe [:offering/status address])
         editable? (or buy-now? (zero? bid-count))
         finalizable? (and (not editable?)
                           (= offering-status :offering.status/auction-ended))]
-    (when-not (contains? #{:offering.status/finalized :offering.status/emergency} offering-status)
+    (when (and (not (contains? #{:offering.status/finalized :offering.status/emergency} offering-status))
+               (not unregistered?))
       [:div.bottom-section-buttons
        (when needs-transfer?
          [transfer-ownership-button

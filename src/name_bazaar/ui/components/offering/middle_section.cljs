@@ -95,7 +95,7 @@
 
 (defn deleted-info []
   [:div.description.warning
-   "This offering was deleted."])
+   "This offering was deleted by original owner."])
 
 (defn offering-middle-section [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/auction? :offering/top-level-name?
@@ -114,7 +114,7 @@
      (when name-not-valid?
        [non-valid-name-warning])
 
-     (when missing-ownership?
+     (when (and missing-ownership? (not unregistered?))
        [missing-ownership-warning
         {:offering offering}])
 

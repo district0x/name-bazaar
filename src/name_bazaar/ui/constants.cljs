@@ -12,7 +12,7 @@
 (def contracts-version "1.0.1")
 (def registrar-root ".eth")
 
-(def default-gas-price 4000000000)
+(def default-gas-price 2000000000)
 
 (def infinite-lists-init-load-limit 25)
 (def infinite-lists-next-load-limit 10)

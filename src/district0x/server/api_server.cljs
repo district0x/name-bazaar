@@ -3,7 +3,7 @@
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
     [clojure.string :as string]
-    [cognitect.transit :as transit]  
+    [cognitect.transit :as transit]
     [district0x.shared.utils :as d0x-shared-utils :refer [collify parse-order-by-search-params]]
     [medley.core :as medley]
     [taoensso.timbre :as logging])
@@ -70,8 +70,11 @@
   (go
     (<! (stop!))
     (setup-app!)
-    (reset! *server* (.listen @*app* port (fn []
-                                            (logging/info "Server started" {:port port} ::start!))))))
+    (try
+      (reset! *server* (.listen @*app* port (fn []
+                                              (logging/info "Server started" {:port port} ::start!))))
+      (catch js/Error e
+        (logging/error "Error starting server" {:error e})))))
 
 
 

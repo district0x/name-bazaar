@@ -94,7 +94,10 @@
 (set! *main-cli-fn* -main)
 
 (comment
-  (deploy-to-mainnet!)
+  (deploy-to-mainnet! 8545 {:from "0x2a2A57a98a07D3CA5a46A0e1d51dEFffBeF54E4F"
+                            :emergency-multisig "0x52f3f521c5f573686a78912995e9dedc5aae9928"
+                            :skip-ens-registrar? true
+                            :gas-price (web3/to-wei 4 :gwei)})
   (run-mainnet!)
   (name-bazaar.server.core/-main)
   (state/my-addresses)
