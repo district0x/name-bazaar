@@ -104,7 +104,9 @@
                      :offering/label
                      :offering/buy-now?
                      :offering/contains-number?
-                     :offering/new-owner]))
+                     :offering/new-owner
+                     :offering/supports-unregister?
+                     :offering/unregistered?]))
 
 (deftest create-buy-now-offering
   (async done
@@ -145,12 +147,14 @@
                              :offering/contains-non-ascii? false
                              :offering/label-hash (sha3 "abc")
                              :offering/original-owner (state/my-address 0)
-                             :offering/version 1
+                             :offering/version 2
                              :offering/price 100000000000000000,
                              :offering/label "abc"
                              :offering/buy-now? true
                              :offering/contains-number? false
-                             :offering/new-owner nil})
+                             :offering/new-owner nil
+                             :offering/unregistered? false
+                             :offering/supports-unregister? true})
                           (offering-status-keys (last (<! (offering/get-offering ss offering)))))))
                  (testing "Can't buy TLD if offering owns no deed"
                    (is (tx-failed?
