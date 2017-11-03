@@ -40,7 +40,7 @@ contract AuctionOfferingFactory is OfferingFactory {
         var forwarder = address(new Forwarder());
         var node = namehash(name);
         var labelHash = getLabelHash(name);
-        var version = 100000;                   // versioning for Auction offerings starts at number 100000
+        var version = 100001;                   // versioning for Auction offerings starts at number 100000
 
         AuctionOffering(forwarder).construct(
             node,

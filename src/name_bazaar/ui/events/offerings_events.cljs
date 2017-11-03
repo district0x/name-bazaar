@@ -12,7 +12,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering]]
+    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? try-resolving-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -242,6 +242,47 @@
                    :on-tx-receipt-n [[:district0x.snackbar/show-message
                                       (gstring/format "Ownership of %s was reclaimed" offering-name)]
                                      [:offerings/on-offering-changed {:offering (:offering/address form-data)}]]}]})))
+
+(reg-event-fx
+  :offering/unregister
+  [interceptors (validate-first-arg (s/keys :req [:offering/address]))]
+  (fn [{:keys [:db]} [form-data]]
+    (let [offering-address (:offering/address form-data)
+          {:keys [:offering/type :offering/name :offering/version :offering/price
+                  :auction-offering/end-time :auction-offering/extension-duration :auction-offering/min-bid-increase] :as offering}
+          (get-offering db offering-address)]
+      {:dispatch [:district0x/make-transaction
+                  (merge
+                   {:name (gstring/format "Delete %s offering" name)
+                    :tx-opts {:gas 200000 :gas-price default-gas-price}   
+                    :contract-key type
+                    :contract-address offering-address
+                    :form-id (select-keys form-data [:offering/address])
+                    :result-href (path-for :route.offerings/detail form-data)                   
+                    :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                       (gstring/format "Offering for %s was deleted" name)]
+                                      [:offerings/on-offering-changed {:offering offering-address}]]}
+                   (if (offering-supports-unregister? type version)
+                     {:contract-method :unregister
+                      :form-data form-data}                    
+                     (case type                       
+
+                       :buy-now-offering
+                       {:contract-method :set-settings
+                        :form-data (assoc form-data :offering/price unregistered-price-wei)
+                        :args-order [:offering/price]}
+                       
+                       :auction-offering
+                       {:contract-method :set-settings
+                        :form-data (-> form-data
+                                       (assoc :offering/price unregistered-price-wei)
+                                       (assoc :auction-offering/end-time (to-epoch (.valueOf end-time)))
+                                       (assoc :auction-offering/extension-duration extension-duration)
+                                       (assoc :auction-offering/min-bid-increase (d0x-shared-utils/eth->wei min-bid-increase)))
+                        :args-order [:offering/price
+                                     :auction-offering/end-time
+                                     :auction-offering/extension-duration
+                                     :auction-offering/min-bid-increase]})))]})))
 
 (reg-event-fx
   :offerings/search
@@ -505,7 +546,7 @@
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
-                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
+                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]                                
                                      :params search-params}]})))
 
 (reg-event-fx

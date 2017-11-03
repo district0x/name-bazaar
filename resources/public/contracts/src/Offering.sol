@@ -81,6 +81,14 @@ contract Offering {
     }
 
     /**
+     * @dev Modifier to make a function callable only when offering contract doesn't have name ownership
+     */
+    modifier onlyWhenContractIsNotNodeOwner() {
+        require(!isContractNodeOwner());
+        _;
+    }
+    
+    /**
      * @dev Constructor of offering
      * Should be callable just once, by factory
      */
@@ -105,6 +113,22 @@ contract Offering {
         offering.price = _price;
     }
 
+   /**
+    * @dev Unregisters offering for not displaying it in UI
+    * Cannot be run if contract has ownership or it was already transferred to new owner
+    */
+    function unregister()
+        public
+        onlyOriginalOwner
+        onlyWithoutNewOwner
+        onlyWhenContractIsNotNodeOwner
+    {
+        // New owner is not really this address, but it's the way to recogize if offering
+        // was unregistered without having separate var for it, which is costly
+        offering.newOwner = 0xdeaddead;
+        fireOnChanged("unregister");
+    }
+    
     /**
     * @dev Transfers ENS name ownership back to original owner
     * Can be run only by original owner or emergency multisig

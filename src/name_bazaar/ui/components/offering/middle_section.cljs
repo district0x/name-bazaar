@@ -93,9 +93,13 @@
    "This offering was cancelled by Name Bazaar emergency wallet, because of potential security risks. "
    "The contract won't be usable anymore."])
 
+(defn deleted-info []
+  [:div.description.warning
+   "This offering was deleted."])
+
 (defn offering-middle-section [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/contains-non-ascii? :offering/auction? :offering/top-level-name?
-                :offering/new-owner :offering/valid-name? :offering/normalized?]} offering
+                :offering/new-owner :offering/valid-name? :offering/normalized? :offering/unregistered?]} offering
         missing-ownership? @(subscribe [:offering/missing-ownership? address])
         active-address-owner? @(subscribe [:offering/active-address-original-owner? address])
         show-auction-bid-info? (and auction? (not active-address-owner?))
@@ -126,4 +130,7 @@
         {:offering offering}])
 
      (when emergency-cancel?
-       [emergency-cancel-info])]))
+       [emergency-cancel-info])
+
+     (when unregistered?
+       [deleted-info])]))

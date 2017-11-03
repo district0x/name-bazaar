@@ -94,7 +94,8 @@
 (defn offering-header-sold-tag [{:keys [:offering] :as props}]
   (let [{:keys [:offering/new-owner]} offering]
     (when (and (not (empty? new-owner))
-               (not= emergency-state-new-owner new-owner))
+               (not= emergency-state-new-owner new-owner)
+               (not (:offering/unregistered? offering)))
       [offering-sold-tag])))
 
 (defn offering-header-offering-type [{:keys [:offering]}]
@@ -112,6 +113,7 @@
      (if show-created-on?
        (format-local-datetime created-on)
        name)]))
+
 
 (defn offering-header-tags [{:keys [:show-sold? :show-active? :show-auction-winning?
                                     :show-auction-pending-returns? :show-missing-ownership? :offering] :as p}]

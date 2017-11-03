@@ -301,6 +301,12 @@
   identity)
 
 (reg-sub
+  :offering.unregister/tx-pending?
+  (fn [[_ offering-address offering-type]]
+    (subscribe [:district0x/tx-pending? offering-type :unregister {:offering/address offering-address}]))
+  identity)
+
+(reg-sub
   :auction-offering.finalize/tx-pending?
   (fn [[_ offering-address]]
     (subscribe [:district0x/tx-pending? :auction-offering :finalize {:offering/address offering-address}]))

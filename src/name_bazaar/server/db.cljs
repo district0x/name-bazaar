@@ -10,7 +10,7 @@
     [district0x.server.state :as state]
     [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
     [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join]]
-    [name-bazaar.shared.utils :refer [emergency-state-new-owner]])
+    [name-bazaar.shared.utils :refer [emergency-state-new-owner unregistered-new-owner unregistered-price-wei]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn create-tables! [db]
@@ -163,20 +163,26 @@
                                    :min-length :max-length :name-position :min-end-time-now? :version :node-owner?
                                    :top-level-names? :sub-level-names? :exclude-node :exclude-special-chars?
                                    :exclude-numbers? :limit :offset :order-by :select-fields :root-name :total-count?
-                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?]
+                                   :bidder :winning-bidder :exclude-winning-bidder :finalized? :sold?] :as search-parameters
                             :or {offset 0 limit -1 root-name "eth"}}]
   (let [select-fields (if (s/valid? ::offerings-select-fields select-fields) select-fields [:address])
         min-price (js/parseInt min-price)
         max-price (js/parseInt max-price)
         min-length (js/parseInt min-length)
         max-length (js/parseInt max-length)
-        name (when (seq name) name)]
+        name (when (seq name) name)
+        exclude-unregistered? true]
     (db-all db
             (cond-> {:select select-fields
                      :from [:offerings]
                      :offset offset
                      :limit limit}
               original-owner (merge-where [:= :original-owner (string/lower-case original-owner)])
+              exclude-unregistered? (merge-where [:and
+                                                  [:<> :price unregistered-price-wei]
+                                                  [:or
+                                                   [:= :new-owner nil]
+                                                   [:<> :new-owner unregistered-new-owner]]])
               new-owner (merge-where [:= :new-owner new-owner])
               (not (js/isNaN min-price)) (merge-where [:>= :price min-price])
               (not (js/isNaN max-price)) (merge-where [:<= :price max-price])
@@ -243,5 +249,3 @@
               (s/valid? ::offering-requests-order-by order-by) (merge-order-by order-by))
             {:total-count? total-count?
              :port (sql-results-chan select-fields)})))
-
-
