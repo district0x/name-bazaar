@@ -1,2 +1,10 @@
 language: clojure
-script: lein cljsbuild test
+script: lein doo node "server-tests" once
+before_install:
+ - sudo add-apt-repository --yes ppa:ethereum/ethereum
+ - sudo apt-get -qq update
+before_script:
+  - "echo 'Installing Solc'"
+  - sudo apt-get --yes install solc
+  - "echo 'Compiling contracts'"
+  - lein compile-solidity
