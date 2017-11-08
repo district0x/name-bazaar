@@ -1,0 +1,24 @@
+parity:
+  image: parity/parity:v1.7.0
+  ports:
+    - "8180"
+    - "8545"
+    - "8546"
+    - "30303"
+    - "30303/udp"
+
+namebazaar:
+  build: .
+  ports:
+    - "6200"
+  links:
+    - parity
+
+nginx:
+  build: builds/nginx
+  ports:
+    - "3001:80"
+  volumes:
+    - "./resources/public:/usr/share/nginx/html/ipns/QmaxtM46eQBdpQq6TKDSAHoarB1Qx9SDrZkag7RbpDbdJx"
+#  links:
+#    - namebazaar *

@@ -56,3 +56,11 @@ lein doo chrome browser-tests
 
 It will autobuild browser-test and re-run the tests as the watched files change.
 More info: [https://github.com/bensu/doo](doo).
+
+## Development env through nginx: 
+
+```
+docker-compose build nginx
+docker-compose up nginx
+```
+and start (start-ui!), (start-server!) as usual, but open the site on http://localhost:3001
