@@ -69,7 +69,7 @@ h4, h5, h6 {
         }
         position: absolute;
         top: 0;
-        right: 10%;
+        right: 12%;
         background-color: @white;
         text-align: center;
         border-bottom-right-radius: 13px;
@@ -78,7 +78,6 @@ h4, h5, h6 {
             text-transform: uppercase;
             font-size: 8.5px;
             padding: 5px 15px 3px;
-
             border-bottom: 1px solid @borderColor;
         }
         .count {
@@ -1474,6 +1473,7 @@ input[type="range"] {
           flex-grow: 1;
         }
         .right-section {
+          white-space: nowrap;
           width: 60px;
           text-align: center;
           align-self: center;
