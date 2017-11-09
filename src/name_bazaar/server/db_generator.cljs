@@ -24,34 +24,32 @@
 
 (def names-per-account 5)
 
-(defn generate! [server-state {:keys [:total-accounts]}]
+(defn generate! [{:keys [:total-accounts]}]
   (let [ch (chan)]
     (go
       (dotimes [address-index total-accounts]
         (dotimes [_ names-per-account]
-          (let [owner (state/my-address server-state address-index)
+          (let [owner (state/my-address address-index)
                 label (normalize (rand-str (+ (rand-int 7) 3)))
                 name (str label "." registrar/root-node)
                 node (namehash name)
                 ;offering-type :auction-offering
                 offering-type (rand-nth [:buy-now-offering :auction-offering])
                 price (web3/to-wei (/ (inc (rand-int 10)) 10) :ether)
-                buyer (rand-nth-except owner (state/my-addresses server-state))
+                buyer (rand-nth-except owner (state/my-addresses))
                 request-name (if (zero? (rand-int 2)) name (normalize (str (rand-str 1)
                                                                            "."
                                                                            registrar/root-node)))]
 
-            (<! (registrar/register! server-state {:ens.record/label label} {:from owner}))
+            (<! (registrar/register! {:ens.record/label label} {:from owner}))
 
-            (<! (offering-requests/add-request! server-state {:offering-request/name request-name} {:form owner}))
+            (<! (offering-requests/add-request! {:offering-request/name request-name} {:form owner}))
 
             (if (= offering-type :buy-now-offering)
-              (<! (buy-now-offering-factory/create-offering! server-state
-                                                             {:offering/name name
+              (<! (buy-now-offering-factory/create-offering! {:offering/name name
                                                               :offering/price price}
                                                              {:from owner}))
               (<! (auction-offering-factory/create-offering!
-                    server-state
                     {:offering/name name
                      :offering/price price
                      :auction-offering/end-time (to-epoch (t/plus (t/now) (t/weeks 2)))
@@ -60,24 +58,22 @@
                     {:from owner})))
 
 
-            (let [[[_ {{:keys [:offering]} :args}]] (alts! [(offering-registry/on-offering-added-once server-state
-                                                                                                      {:node node
+            (let [[[_ {{:keys [:offering]} :args}]] (alts! [(offering-registry/on-offering-added-once {:node node
                                                                                                        :owner owner})
                                                             (timeout 1000)])]
               (if offering
                 (do
-                  (<! (registrar/transfer! server-state
-                                           {:ens.record/label label :ens.record/owner offering}
+                  (<! (registrar/transfer! {:ens.record/label label :ens.record/owner offering}
                                            {:from owner}))
 
                   (when (and (= offering-type :auction-offering)
                              (zero? (rand-int 2)))
-                    (<! (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer})))
+                    (<! (auction-offering/bid! {:offering/address offering} {:value price :from buyer})))
 
                   #_(when (zero? (rand-int 2))
                       (if (= offering-type :buy-now-offering)
-                        (buy-now-offering/buy! server-state {:offering/address offering} {:value price :from buyer})
-                        (auction-offering/bid! server-state {:offering/address offering} {:value price :from buyer}))))
+                        (buy-now-offering/buy! {:offering/address offering} {:value price :from buyer})
+                        (auction-offering/bid! {:offering/address offering} {:value price :from buyer}))))
 
                 (.error js/console "Offering for" label "wasn't created"))))))
       (>! ch true))

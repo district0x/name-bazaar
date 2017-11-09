@@ -19,23 +19,21 @@
 
 (defn validate-email [base64-encrypted-email]
   (when-not (empty? base64-encrypted-email)
-    (let [email (encryption-utils/decode-decrypt (state/config :private-key)
-                                                 base64-encrypted-email)]
+    (let [email (encryption-utils/decode-decrypt (state/config :private-key) base64-encrypted-email)]
       (when (email-address/isValidAddress email)
         email))))
 
-(defn on-offering-added [server-state {:keys [:offering :node :owner :version] :as args}]
+(defn on-offering-added [{:keys [:offering :node :owner :version] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-offering-added)
   (gotry
-    (let [{:keys [:offering-request/name 
-                  :offering-request/latest-round] :as request} (second (<! (offering-requests-api/get-request @server-state {:offering-request/node node})))
-          requesters (second (<! (offering-requests-api/get-requesters @server-state {:offering-request/node node :offering-request/round (dec latest-round)})))]
+    (let [{:keys [:offering-request/name :offering-request/latest-round] :as request} (second (<! (offering-requests-api/get-request {:offering-request/node node})))
+          requesters (second (<! (offering-requests-api/get-requesters {:offering-request/node node :offering-request/round (dec latest-round)})))]
       (if (empty? requesters)
         (logging/info "No requesters found for offering" {:offering offering :name name :node node :round (dec latest-round)} ::on-offering-added)
         (doall
          (for [requester requesters]
            (gotry
-            (let [[_ base64-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address requester}))]
+            (let [[_ base64-encrypted-email] (<! (district0x-emails-api/get-email {:district0x-emails/address requester}))]
               (when-let [to-email (validate-email base64-encrypted-email)]
                 (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                                    :to-email to-email
@@ -47,12 +45,11 @@
                                                   #(logging/info "Success sending email to requesting address" {:address requester} ::on-offering-added)
                                                   #(logging/error "Error sending email to requesting address" {:error %} ::on-offering-added)))))))))))
 
-(defn- on-auction-finalized
-  [server-state offering original-owner winning-bidder name price]
+(defn- on-auction-finalized [offering original-owner winning-bidder name price]
   (logging/info "Auction has been finalized" {:offering offering} ::on-offering-bought)
   (gotry
-    (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))
-          [_ winner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address winning-bidder}))]      
+    (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email {:district0x-emails/address original-owner}))
+          [_ winner-encrypted-email] (<! (district0x-emails-api/get-email {:district0x-emails/address winning-bidder}))]
       (if-let [to-email (validate-email owner-encrypted-email)]
         (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                            :to-email to-email
@@ -77,10 +74,10 @@
                                           #(logging/error "Error sending email to winner" {:error %}))
         (logging/warn "Empty or malformed winner email" {:address winning-bidder} ::on-auction-finalized)))))
 
-(defn- on-offering-bought [server-state offering original-owner name price]
+(defn- on-offering-bought [offering original-owner name price]
   (logging/info "Offerings has been bought" {:offering offering} ::on-offering-bought)
   (gotry
-   (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]     
+   (let [[_ owner-encrypted-email] (<! (district0x-emails-api/get-email {:district0x-emails/address original-owner}))]
      (when-let [to-email (validate-email owner-encrypted-email)]
        (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                           :to-email to-email
@@ -92,20 +89,19 @@
                                          #(logging/info "Success sending email to owner" {:address original-owner} ::on-offering-bought)
                                          #(logging/error "Error sending email to owner" {:error %} ::on-offering-bought))))))
 
-(defn on-offering-changed [server-state {:keys [:offering :version :event-type :extra-data] :as args}]
+(defn on-offering-changed [{:keys [:offering :version :event-type :extra-data] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-offering-changed)
   (gotry
-    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))]
+    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering offering))]
       (if winning-bidder
-        (on-auction-finalized server-state offering original-owner winning-bidder name price)
-        (on-offering-bought server-state offering original-owner name price)))))
+        (on-auction-finalized offering original-owner winning-bidder name price)
+        (on-offering-bought offering original-owner name price)))))
 
-(defn on-new-bid
-  [server-state {:keys [:offering] :as args}]
+(defn on-new-bid [{:keys [:offering] :as args}]
   (logging/info "Handling blockchain event" {:args args} ::on-new-bid)
   (gotry
-    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering @server-state offering))
-          [_ owner-encrypted-email] (<! (district0x-emails-api/get-email @server-state {:district0x-emails/address original-owner}))]
+    (let [[_ {:keys [:offering/name :offering/original-owner :offering/price :offering/end-time :offering/winning-bidder] :as result}] (<! (offering-api/get-offering offering))
+          [_ owner-encrypted-email] (<! (district0x-emails-api/get-email {:district0x-emails/address original-owner}))]
       (when-let [to-email (validate-email owner-encrypted-email)]
         (sendgrid/send-notification-email {:from-email "district0x@district0x.io"
                                            :to-email to-email
@@ -123,10 +119,10 @@
       (web3-eth/stop-watching! listener (fn [])))))
 
 (defn setup-listener!
-  ([server-state contract-key event-key callback]
-   (setup-listener! server-state contract-key event-key false nil callback))
-  ([server-state contract-key event-key retrieve-events? event-type callback]
-   (web3-eth/contract-call (state/instance @server-state contract-key)
+  ([contract-key event-key callback]
+   (setup-listener! contract-key event-key false nil callback))
+  ([contract-key event-key retrieve-events? event-type callback]
+   (web3-eth/contract-call (state/instance contract-key)
                            event-key
                            (if event-type
                              {:event-type event-type}
@@ -137,11 +133,11 @@
                            (fn [error {:keys [:args] :as response}]
                              (if error
                                (logging/error "Error when setting up a listener for event" {:error error :event-key event-key} ::setup-listener!)
-                               (callback server-state args))))))
+                               (callback args))))))
 
-(defn setup-event-listeners! [server-state]
+(defn setup-event-listeners! []
   (stop-event-listeners!)
   (reset! event-listeners
-          [(setup-listener! server-state :offering-registry :on-offering-added on-offering-added)
-           (setup-listener! server-state :offering-registry :on-offering-changed false "finalize" on-offering-changed)
-           (setup-listener! server-state :offering-registry :on-offering-changed false "bid" on-new-bid)]))
+          [(setup-listener! :offering-registry :on-offering-added on-offering-added)
+           (setup-listener! :offering-registry :on-offering-changed false "finalize" on-offering-changed)
+           (setup-listener! :offering-registry :on-offering-changed false "bid" on-new-bid)]))

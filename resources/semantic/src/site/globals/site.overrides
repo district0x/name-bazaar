@@ -64,7 +64,6 @@ h4, h5, h6 {
     position: relative;
     margin-bottom: 60px;
     .offerings-total-count {
-        display: none; // temporarily disabled
         @media only screen and (max-width: @largestMobileScreen) {
             display: none;
         }
@@ -91,7 +90,6 @@ h4, h5, h6 {
     }
   }
   .offerings-total-count-mobile {
-    display: none; // temporarily disabled
     @media only screen and (min-width: @tabletBreakpoint) {
         display: none;
     }

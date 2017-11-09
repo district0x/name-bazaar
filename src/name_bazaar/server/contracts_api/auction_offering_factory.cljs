@@ -1,13 +1,10 @@
 (ns name-bazaar.server.contracts-api.auction-offering-factory
   (:require
-    [district0x.server.effects :as effects]
-    [district0x.server.state :as state]
-    [cljs-web3.async.eth :as web3-eth-async]))
+    [district0x.server.effects :refer [logged-contract-call! queue-contract-call!]]
+    [district0x.server.state :as state]))
 
-(defn create-offering! [server-state args opts]
-  (apply effects/logged-contract-call!
-         server-state
-         (state/instance server-state :auction-offering-factory)
+(defn create-offering! [args opts]
+  (apply logged-contract-call! (state/instance :auction-offering-factory)
          :create-offering
          (concat
            ((juxt :offering/name
@@ -17,18 +14,18 @@
                   :auction-offering/min-bid-increase)
              args)
            [(merge {:gas 1000000
-                    :from (state/active-address server-state)}
+                    :from (state/active-address)}
                    opts)])))
 
 
-(defn ens [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :ens))
+(defn ens []
+  (queue-contract-call! (state/instance :auction-offering-factory) :ens))
 
-(defn root-node [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :root-node))
+(defn root-node []
+  (queue-contract-call! (state/instance :auction-offering-factory) :root-node))
 
-(defn offering-registry [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-registry))
+(defn offering-registry []
+  (queue-contract-call! (state/instance :auction-offering-factory) :offering-registry))
 
-(defn offering-requests [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :auction-offering-factory) :offering-requests))
+(defn offering-requests []
+  (queue-contract-call! (state/instance :auction-offering-factory) :offering-requests))

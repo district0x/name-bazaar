@@ -53,43 +53,41 @@
 (def total-accounts 6)
 
 (defn on-jsload []
-  (d0x-effects/load-config! *server-state* state/default-config)
-  (d0x-logging/setup! (state/config @*server-state* :logging))
+  (d0x-effects/load-config! state/default-config)
+  (d0x-logging/setup! (state/config :logging))
   (logging/info "Final loaded config" (state/config) ::on-jsload)
   (api-server/start! (state/config :api-port))
-  (d0x-effects/create-web3! *server-state* {:port (state/config :testrpc-port)}))
+  (d0x-effects/create-web3! {:port (state/config :testrpc-port)}))
 
 (defn deploy-to-mainnet! [& [port deploy-opts]]
   (go
-    (d0x-effects/load-config! *server-state* state/default-config)
-    (d0x-effects/create-web3! *server-state* {:port (or port (state/config :mainnet-port))})
-    (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
-    (<! (d0x-effects/load-my-addresses! *server-state*))
-    (<! (deploy-smart-contracts! *server-state* (merge {:persist? true}
-                                                       deploy-opts)))))
+    (d0x-effects/load-config! state/default-config)
+    (d0x-effects/create-web3! {:port (or port (state/config :mainnet-port))})
+    (d0x-effects/load-smart-contracts! smart-contracts)
+    (<! (d0x-effects/load-my-addresses!))
+    (<! (deploy-smart-contracts! (merge {:persist? true} deploy-opts)))))
 
-(defn initialize! [server-state-atom]
+(defn initialize! []
   (let [ch (chan)]
     (go
-      (watchdog/stop-syncing! server-state-atom)
-      (d0x-effects/load-smart-contracts! server-state-atom smart-contracts)
-      (<! (deploy-smart-contracts! server-state-atom {:persist? true}))
-      (<! (db-generator/generate! @server-state-atom {:total-accounts total-accounts}))
-      (watchdog/start-syncing! server-state-atom)
+      (watchdog/stop-syncing!)
+      (d0x-effects/load-smart-contracts! smart-contracts)
+      (<! (deploy-smart-contracts! {:persist? true}))
+      (<! (db-generator/generate! {:total-accounts total-accounts}))
+      (watchdog/start-syncing!)
       (>! ch true))
     ch))
 
 (defn -main [& _]
   (go
-    (d0x-effects/load-config! *server-state* state/default-config)
-    (d0x-logging/setup! (state/config @*server-state* :logging))
-    (let [testrpc-port (state/config @*server-state* :testrpc-port)]
-      (<! (d0x-effects/start-testrpc! *server-state* {:total_accounts total-accounts
-                                                      :port testrpc-port}))
-      (d0x-effects/create-web3! *server-state* {:port testrpc-port})
-      (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
+    (d0x-effects/load-config! state/default-config)
+    (d0x-logging/setup! (state/config :logging))
+    (let [testrpc-port (state/config :testrpc-port)]
+      (<! (d0x-effects/start-testrpc! {:total_accounts total-accounts :port testrpc-port}))
+      (d0x-effects/create-web3! {:port testrpc-port})
+      (d0x-effects/load-smart-contracts! smart-contracts)
       (api-server/start! (state/config :api-port))
-      (<! (d0x-effects/load-my-addresses! *server-state*)))))
+      (<! (d0x-effects/load-my-addresses!)))))
 
 (set! *main-cli-fn* -main)
 
@@ -101,4 +99,4 @@
   (run-mainnet!)
   (name-bazaar.server.core/-main)
   (state/my-addresses)
-  (name-bazaar.server.watchdog/start-syncing! *server-state*))
+  (name-bazaar.server.watchdog/start-syncing!))

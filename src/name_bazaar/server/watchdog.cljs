@@ -12,21 +12,21 @@
     [taoensso.timbre :refer-macros [log trace debug info warn error]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
-(defn stop-node-watchdog! [server-state-atom]
-  (swap! server-state-atom update :node-watchdog merge {:enabled? false :online? false}))
+(defn stop-node-watchdog! []
+  (swap! *server-state* update :node-watchdog merge {:enabled? false :online? false}))
 
-(defn start-node-watchdog! [server-state-atom on-up-fn on-down-fn]
-  (swap! server-state-atom update :node-watchdog merge {:enabled? true :online? false})
+(defn start-node-watchdog! [on-up-fn on-down-fn]
+  (swap! *server-state* update :node-watchdog merge {:enabled? true :online? false})
   (info "Starting watcher")
   (go-loop []
-           (let [node-watchdog (:node-watchdog @server-state-atom)]
+           (let [node-watchdog (:node-watchdog @*server-state*)]
              (<! (timeout (:timeout node-watchdog)))
-             (let [web3 (state/web3 @server-state-atom)
+             (let [web3 (state/web3)
                    host (aget web3 "currentProvider" "host")
                    {:keys [:port]} (url/url host)
                    state (or
                            ;; For testrpc connected? doesn't work
-                           (= port (state/config @server-state-atom :testrpc-port))
+                           (= port (state/config :testrpc-port))
                            (web3/connected? web3))]
                (when (and
                        on-down-fn
@@ -41,22 +41,21 @@
                  (warn "Node is online" {:host host})
                  (on-up-fn))
                (when (:enabled? node-watchdog)
-                 (swap! server-state-atom assoc-in [:node-watchdog :online?] state)
+                 (swap! *server-state* assoc-in [:node-watchdog :online?] state)
                  (recur))))))
 
 
-(defn start-syncing! [server-state-atom]
-  (start-node-watchdog! server-state-atom
-                        (fn []
+(defn start-syncing! []
+  (start-node-watchdog! (fn []
                           (go
-                            (<! (d0x-effects/create-db! server-state-atom))
-                            (db-sync/start-syncing! @server-state-atom)
-                            (email-listeners/setup-event-listeners! server-state-atom)))
+                            (<! (d0x-effects/create-db!))
+                            (db-sync/start-syncing!)
+                            (email-listeners/setup-event-listeners!)))
                         (fn []
                           (db-sync/stop-syncing!)
                           (email-listeners/stop-event-listeners!))))
 
-(defn stop-syncing! [server-state]
-  (stop-node-watchdog! server-state)
+(defn stop-syncing! []
+  (stop-node-watchdog!)
   (db-sync/stop-syncing!)
   (email-listeners/stop-event-listeners!))

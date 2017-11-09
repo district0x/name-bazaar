@@ -22,13 +22,13 @@
 (set! js/ecc ecc)
 
 (defn -main [& _]
-  (d0x-effects/load-config! *server-state* state/default-config)
-  (d0x-logging/setup! (state/config @*server-state* :logging))
+  (d0x-effects/load-config! state/default-config)
+  (d0x-logging/setup! (state/config :logging))
   (go
-    (d0x-effects/create-web3! *server-state* {:port (state/config @*server-state* :mainnet-port)})
-    (d0x-effects/load-smart-contracts! *server-state* smart-contracts)
+    (d0x-effects/create-web3! {:port (state/config :mainnet-port)})
+    (d0x-effects/load-smart-contracts! smart-contracts)
     (api-server/start! (state/config :api-port))
-    (<! (d0x-effects/load-my-addresses! *server-state*))
-    (watchdog/start-syncing! *server-state*)))
+    (<! (d0x-effects/load-my-addresses!))
+    (watchdog/start-syncing!)))
 
 (set! *main-cli-fn* -main)

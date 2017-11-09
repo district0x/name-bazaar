@@ -1,28 +1,26 @@
 (ns name-bazaar.server.contracts-api.buy-now-offering-factory
   (:require
     [cljs-web3.async.eth :as web3-eth]
-    [district0x.server.effects :as effects]
-    [district0x.server.state :as state]
-    [cljs-web3.async.eth :as web3-eth-async]))
+    [district0x.server.effects :refer [logged-contract-call! queue-contract-call!]]
+    [district0x.server.state :as state]))
 
-(defn create-offering! [server-state {:keys [:offering/name :offering/price]} opts]
-  (effects/logged-contract-call! server-state
-                                 (state/instance server-state :buy-now-offering-factory)
-                                 :create-offering
-                                 name
-                                 price
-                                 (merge {:gas 1000000
-                                         :from (state/active-address server-state)}
-                                        opts)))
+(defn create-offering! [{:keys [:offering/name :offering/price]} opts]
+  (logged-contract-call! (state/instance :buy-now-offering-factory)
+                         :create-offering
+                         name
+                         price
+                         (merge {:gas 1000000
+                                 :from (state/active-address)}
+                                opts)))
 
-(defn ens [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :ens))
+(defn ens []
+  (queue-contract-call! (state/instance :buy-now-offering-factory) :ens))
 
-(defn root-node [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :root-node))
+(defn root-node []
+  (queue-contract-call! (state/instance :buy-now-offering-factory) :root-node))
 
-(defn offering-registry [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :offering-registry))
+(defn offering-registry []
+  (queue-contract-call! (state/instance :buy-now-offering-factory) :offering-registry))
 
-(defn offering-requests [server-state]
-  (web3-eth-async/contract-call (state/instance server-state :buy-now-offering-factory) :offering-requests))
+(defn offering-requests []
+  (queue-contract-call! (state/instance :buy-now-offering-factory) :offering-requests))
