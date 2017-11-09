@@ -17,7 +17,7 @@
     [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.debounce-fx]
-    [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
+    [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx all-contracts-loaded?]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [url-query-params->form-data]]
     [goog.string :as gstring]
@@ -142,7 +142,8 @@
   (fn [{:keys [:db]}]
     (merge
       {:forward-events {:unregister :active-address-changed}}
-      (route->initial-effects (:active-page db) db)
+      (when (all-contracts-loaded? db)                      ;; Pushstate URLs fire first event too early
+        (route->initial-effects (:active-page db) db))
       {:district0x/dispatch [:offerings/stop-watching-all]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 
