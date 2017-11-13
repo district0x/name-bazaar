@@ -9,25 +9,29 @@
     [reagent.core :as r]))
 
 (defn offering-original-owner-line [{:keys [:offering/original-owner :offering/address]}]
-  [:div.ellipsis
-   "Offered by"
-   (when @(subscribe [:offering/active-address-original-owner? address]) " (You)")
-   ": "
-   [:a
-    {:href (path-for :route.user/offerings {:user/address original-owner})}
-    original-owner]])
+  (dispatch [:public-resolver.record-hash/load original-owner])
+  (fn [{:keys [:offering/original-owner :offering/address]}]
+    [:div.ellipsis
+     "Offered by"
+     (when @(subscribe [:offering/active-address-original-owner? address]) " (You)")
+     ": "
+     [:a
+      {:href (path-for :route.user/offerings {:user/address original-owner})}
+      @(subscribe [:reverse-resolved-address original-owner])]]))
 
 (defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address]}]
-  (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])]
-    [:div.ellipsis
-     [:span
-      {:class (when active-address-new-owner? :purple)}
-      "Purchased by"
-      (when active-address-new-owner? " you")
-      ": "]
-     [:a
-      {:href (path-for :route.user/purchases {:user/address new-owner})}
-      new-owner]]))
+  (dispatch [:public-resolver.record-hash/load address])
+  (fn [{:keys [:offering/new-owner :offering/address]}]
+    (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])]
+      [:div.ellipsis
+       [:span
+        {:class (when active-address-new-owner? :purple)}
+        "Purchased by"
+        (when active-address-new-owner? " you")
+        ": "]
+       [:a
+        {:href (path-for :route.user/purchases {:user/address new-owner})}
+        @(subscribe [:reverse-resolved-address new-owner])]])))
 
 (defn offering-address-line [{:keys [:offering/address]}]
   [:div.ellipsis
@@ -42,11 +46,13 @@
                        (format-eth-with-code value)]]))
 
 (defn auction-offering-winning-bidder-line [{:keys [:auction-offering/winning-bidder]}]
-  [:div.ellipsis "Winning bidder: " (if winning-bidder
-                                      [:a
-                                       {:href (path-for :route.user/bids {:user/address winning-bidder})}
-                                       winning-bidder]
-                                      "none")])
+  (dispatch [:public-resolver.record-hash/load winning-bidder])
+  (fn [{:keys [:auction-offering/winning-bidder]}]
+    [:div.ellipsis "Winning bidder: " (if winning-bidder
+                                        [:a
+                                         {:href (path-for :route.user/bids {:user/address winning-bidder})}
+                                         @(subscribe [:reverse-resolved-address winning-bidder])]
+                                        "none")]))
 
 (defn offering-created-on-line [{:keys [:offering/created-on]}]
   [:div.ellipsis

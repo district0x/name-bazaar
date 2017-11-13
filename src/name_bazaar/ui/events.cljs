@@ -85,8 +85,10 @@
 
     :route.user/purchases
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.record.addr/loaded
+                                    :public-resolver.addr.record/loaded
+                                    :public-resolver/nodata]
                            :dispatch [:offerings.user-purchases/set-params-and-search
                                       {:new-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -99,8 +101,10 @@
 
     :route.user/bids
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.record.addr/loaded
+                                    :public-resolver.addr.record/loaded
+                                    :public-resolver/nodata]
                            :dispatch [:offerings.user-bids/set-params-and-search
                                       {:bidder (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -113,8 +117,10 @@
 
     :route.user/offerings
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.record.addr/loaded
+                                    :public-resolver.addr.record/loaded
+                                    :public-resolver/nodata]
                            :dispatch [:offerings.user-offerings/set-params-and-search
                                       {:original-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -146,6 +152,15 @@
         (route->initial-effects (:active-page db) db))
       {:district0x/dispatch [:offerings/stop-watching-all]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
+
+(reg-event-fx
+ :watch-my-addresses-loaded
+ interceptors
+ (fn []
+   {:forward-events
+    {:register :active-account-changed
+     :events #{:district0x/my-addresses-loaded}
+     :dispatch-to [:try-resolving-my-address]}}))
 
 (reg-event-fx
   :name/load-all-details
@@ -198,4 +213,16 @@
       (if-not (web3/address? addr)
         (let [addr-patched (tldize addr)]
           [:ens.records/load [(namehash addr-patched)] {:load-resolver? true}])
-        [:public-resolver.record.addr/loaded])})))
+        [:public-resolver.record-hash/load addr])})))
+
+(reg-event-fx
+ :try-resolving-my-address
+ interceptors
+ (fn [{:keys [db]}]
+   (let [addr (get-in db [:active-address])]
+     (info ["Trying my address" addr (web3/address? addr)])
+     {:db db
+      :dispatch
+      (if (web3/address? addr)
+        [:public-resolver.record-hash/load addr]
+        [:public-resolver/nodata])})))

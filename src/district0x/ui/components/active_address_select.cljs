@@ -8,12 +8,13 @@
 (defn active-address-select []
   (let [my-addresses (subscribe [:district0x/my-addresses])
         active-address (subscribe [:district0x/active-address])]
-    (fn [{:keys [:select-field-props :single-address-props]}]
+    (fn [{:keys [:select-field-props :single-address-props :address]}]
       (when (seq @my-addresses)
         (if (= 1 (count @my-addresses))
           [:div.active-address-select.single-address
            single-address-props
-           (truncate @active-address (or (:single-address-truncate single-address-props) 20))]
+           (truncate (or address
+                         @active-address) (or (:single-address-truncate single-address-props) 20))]
           [ui/Select
            (r/merge-props
              {:select-on-blur false

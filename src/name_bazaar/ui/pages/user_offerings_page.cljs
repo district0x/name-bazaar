@@ -2,6 +2,7 @@
   (:require
     [district0x.ui.components.misc :as misc :refer [page]]
     [district0x.ui.utils :refer [truncate namehash]]
+    [name-bazaar.ui.utils :refer [human-address]]
     [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
@@ -117,10 +118,8 @@
     :no-items-text "You haven't created any offerings yet"}])
 
 (defmethod page :route.user/offerings []
-  (let [route-params (subscribe [:district0x/route-params])]
+  (let [route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-offerings
-       {:title (str ((if-not (web3/address? (:user/address @route-params))
-                       identity
-                       #(truncate % 10)) (:user/address @route-params)) " Offerings")
+       {:title (str (human-address @route-params) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))

@@ -6,7 +6,7 @@
     [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils :refer [truncate]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
@@ -152,14 +152,41 @@
       (str name ".eth"))))
 
 (defn try-resolving-address [db addr]
-  (if-not (web3/address? addr)
+  (when-not (web3/address? addr)
     (let [addr-patched (tldize addr)]
-      (if-let [resolved (some (fn [r]
+      (when-let [resolved (some (fn [r]
                                 (get-in r [:public-resolver/records
                                            (namehash addr-patched)
                                            :public-resolver.record/addr]))
                               (vals (:public-resolvers db)))]
-        resolved
-        "0x"))
-    addr))
+        resolved))))
 
+(defn try-reverse-resolving-address [db addr]
+  (when (web3/address? addr)
+    (when-let [resolved (some (fn [r]
+                              (get-in r [:public-resolver/reverse-records
+                                         addr
+                                         :public-resolver.record/name]))
+                            (vals (:public-resolvers db)))]
+      resolved)))
+
+(defn resolve-params [db params]
+  (if (web3/address? (:user/address params))
+    (assoc params :user/ens-name (try-reverse-resolving-address db (:user/address params)))
+    (-> params
+        (assoc :user/ens-name (tldize (:user/address params)))
+        (assoc :user/address (try-resolving-address db (:user/address params))))))
+
+(defn human-address
+  ([params]
+   (human-address (:user/ens-name params)
+                  (:user/address params)))
+  ([ens-name addr]
+   (human-address ens-name
+                  addr 10))
+  ([ens-name addr trunc]
+   (if (web3/address? addr)
+     (if ens-name
+       ens-name
+       (truncate addr trunc))
+     (str (truncate ens-name trunc) " [resolving...]"))))
