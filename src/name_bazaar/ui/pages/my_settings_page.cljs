@@ -54,7 +54,7 @@
             "Save"]]]]))))
 
 (defmethod page :route.user/my-settings []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - My Settings" :description "Configure settings associated with your Ethereum address."}}
    [ui/Segment
     [:h1.ui.header.padded "My Settings"]
     [email-notifications-form]]])

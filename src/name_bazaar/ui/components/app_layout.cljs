@@ -6,6 +6,7 @@
     [district0x.ui.components.transaction-log :refer [transaction-log]]
     [district0x.ui.history :as history]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
+    [name-bazaar.ui.components.meta-tags :refer [name-bazaar-meta-tags]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for offerings-sold-url]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
@@ -113,37 +114,38 @@
         active-page (subscribe [:district0x/active-page])
         app-container-ref (r/atom nil)
         use-instant-registrar? (subscribe [:district0x/config :use-instant-registrar?])]
-    (fn [& children]
+    (fn [{:keys [:meta]} & children]
       [:div.app-container
        {:ref (fn [el]
                (when (and el (not @app-container-ref))
                  (reset! app-container-ref el)))}
+       [name-bazaar-meta-tags meta]
        [ui/Sidebar
-        {:as (aget js/semanticUIReact "Menu")
-         :visible (or @drawer-open? @min-computer-screen?)
-         :animation "overlay"
-         :vertical true
-         :inverted true
-         :fixed :left}
-        [:div.menu-content
-         {:style {:overflow-y :scroll}}
-         [side-nav-menu-logo]
-         (doall
-           (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
-                                                                       nav-menu-items-props
-                                                                       nav-menu-items-props-no-register)]
-             (let [href (or href (path-for route))]
-               [ui/MenuItem
-                {:key text
-                 :as "a"
-                 :href href
-                 :class class
-                 :on-click #(dispatch [:district0x.window/scroll-to-top])
-                 :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
-                [:i.icon
-                 {:class icon}]
-                text])))
-         [district0x-banner]]]
+           {:as (aget js/semanticUIReact "Menu")
+            :visible (or @drawer-open? @min-computer-screen?)
+            :animation "overlay"
+            :vertical true
+            :inverted true
+            :fixed :left}
+           [:div.menu-content
+            {:style {:overflow-y :scroll}}
+            [side-nav-menu-logo]
+            (doall
+             (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
+                                                                         nav-menu-items-props
+                                                                         nav-menu-items-props-no-register)]
+               (let [href (or href (path-for route))]
+                 [ui/MenuItem
+                  {:key text
+                   :as "a"
+                   :href href
+                   :class class
+                   :on-click #(dispatch [:district0x.window/scroll-to-top])
+                   :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
+                  [:i.icon
+                   {:class icon}]
+                  text])))
+            [district0x-banner]]]
        [:div.app-content
         {:on-click (fn []
                      (when-not @min-computer-screen?

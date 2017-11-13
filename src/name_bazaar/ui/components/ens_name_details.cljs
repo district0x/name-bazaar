@@ -31,7 +31,9 @@
     {:href (path-for :route.ens-record/detail {:ens.record/name name})}
     "Open Name Detail"]])
 
-(defn ens-name-details [{:keys [:ens.record/name :show-name-detail-link?] :as props}]
+(defn ens-name-details [{:keys [:ens.record/name
+                                :registrar.entry/state-text
+                                :show-name-detail-link?] :as props}]
   [ui/Grid
    {:class "layout-grid submit-footer ens-name-detail"
     :celled :internally}
@@ -44,7 +46,8 @@
       {:ens.record/name name}]
      (when (top-level-name? name)
        [registrar-entry-general-info
-        {:ens.record/name name}])]
+        {:ens.record/name name
+         :registrar.entry/state-text state-text}])]
     [ui/GridColumn
      {:computer 8
       :tablet 8

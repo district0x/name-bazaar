@@ -6,7 +6,7 @@
             [pushy.core :as pushy]
             [re-frame.core :as re-frame]))
 
-(goog-define pushroute-hosts "0.0.0.0")
+(goog-define pushroute-hosts "localhost")
 
 (def routes (atom nil))
 

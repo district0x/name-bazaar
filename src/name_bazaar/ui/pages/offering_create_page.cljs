@@ -305,7 +305,7 @@
               :offering (transaction-data->form-data offering)}])]]))))
 
 (defmethod page :route.offerings/create []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - Create Offering" :description "Create an offering to sell your ENS name"}}
    [ui/Segment
     [:h1.ui.header.padded "Create Offering"]
     [offering-form]]])

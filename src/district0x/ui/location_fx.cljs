@@ -29,7 +29,7 @@
                     (map? query-params) (when-let [query (url/map->query query-params)]
                                           (str "?" query))
                     (string? query-params) (when (seq query-params)
-                                             (str "?" query-params)))]    
+                                             (str "?" query-params)))]
     (if history/hashroutes?
       (set-location-hash! (str (d0x-ui-utils/current-location-hash) url-query))
       (let [{:keys [:path]} (url/url (history/get-state))]

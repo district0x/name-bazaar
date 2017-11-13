@@ -2,6 +2,7 @@
   (:require
     [district0x.ui.components.misc :refer [page]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
+    [name-bazaar.ui.components.meta-tags :refer [name-bazaar-meta-tags]]
     [soda-ash.core :as ui]))
 
 (defn- a [href text]
@@ -10,7 +11,7 @@
    text])
 
 (defmethod page :route/about []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - About"}}
    [ui/Segment
     [:h1.ui.header.padded "About"]
     [:div.padded

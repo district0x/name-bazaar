@@ -4,7 +4,7 @@
 
 A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service.
 
-Coming Soon to [https://namebazaar.io](https://namebazaar.io)
+See at [https://namebazaar.io](https://namebazaar.io)
 
 Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tree/master/resources/public/contracts/src).
 
@@ -48,7 +48,7 @@ lein cljsbuild once server-tests
 node server-tests/server-tests.js
 ```
 
-## Frontend (browser) tests: 
+## Frontend (browser) tests:
 
 ```
 lein doo chrome browser-tests
@@ -57,7 +57,7 @@ lein doo chrome browser-tests
 It will autobuild browser-test and re-run the tests as the watched files change.
 More info: [https://github.com/bensu/doo](doo).
 
-## Development env through nginx: 
+## Development env through nginx:
 
 ```
 docker-compose build nginx

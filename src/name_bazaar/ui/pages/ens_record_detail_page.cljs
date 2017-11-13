@@ -7,6 +7,8 @@
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
+    [name-bazaar.ui.utils :refer [name->label-hash registrar-entry-state->text]]
+    [name-bazaar.shared.utils :refer [name-label top-level-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -65,10 +67,20 @@
 (defmethod page :route.ens-record/detail []
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
-      (let [{:keys [:ens.record/name]} @route-params]
-        [app-layout
+      (let [{:keys [:ens.record/name]} @route-params
+            {:keys [:registrar.entry/state :registrar.entry.deed/address
+                    :registrar.entry/registration-date :registrar.entry.deed/value
+                    :registrar.entry.deed/address]}
+            @(subscribe [:registrar/entry (name->label-hash name)])
+            state-text (registrar-entry-state->text (if (and (top-level-name? name)
+                                                         (< (count (name-label name)) 7))
+                                                  :registrar.entry.state/not-yet-available
+                                                  state))]
+        [app-layout {:meta {:title (str name "name details")
+                            :description (str "See details about " name " status: " state-text)}}
          [ui/Segment
           [:h1.ui.header.padded name]
           [ens-name-details
-           {:ens.record/name name}]]
+           {:ens.record/name name
+            :registrar.entry/state-text state-text}]]
          [ens-record-offerings]]))))

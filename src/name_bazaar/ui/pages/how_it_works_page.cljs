@@ -11,7 +11,7 @@
    text])
 
 (defmethod page :route/how-it-works []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - How It Works" :description "Learn more about how to use NameBazaar!"}}
    [ui/Segment
     {:class "how-it-works-page"}
     [:h1.ui.header.padded "How it works"]

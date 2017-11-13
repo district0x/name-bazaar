@@ -57,10 +57,13 @@
             :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:min-end-time-now? (not (aget %2 "checked"))}])}]]]))))
 
 (defn user-bids []
-  (let [search-results (subscribe [:offerings/user-bids])]
+  (let [search-results (subscribe [:offerings/user-bids])
+        route-params (subscribe [:district0x/route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
-        [app-layout
+        [app-layout {:meta {:title (str "NameBazaar - " title)
+                            :description (if-let [address (:user/address @route-params)]
+                                           (str "See all bids for ENS name offerings of " address))}}
          [ui/Segment
           [ui/Grid
            {:padded true
@@ -91,12 +94,12 @@
                             (dispatch [:offerings.user-bids/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}
            (doall
-             (for [[i offering] (medley/indexed items)]
-               [offering-list-item
-                {:key i
-                 :offering offering
-                 :header-props {:show-auction-winning? true
-                                :show-auction-pending-returns? true}}]))]]]))))
+            (for [[i offering] (medley/indexed items)]
+              [offering-list-item
+               {:key i
+                :offering offering
+                :header-props {:show-auction-winning? true
+                               :show-auction-pending-returns? true}}]))]]]))))
 
 (defmethod page :route.user/my-bids []
   [user-bids

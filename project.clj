@@ -9,7 +9,6 @@
                  [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.5.10-0"]
-                 [cljsjs/react "15.6.1-2"]
                  [cljsjs/react-datepicker "0.55.0-0"]
                  [cljsjs/react-dom "15.6.1-2"]
                  [cljsjs/react-dom-server "15.6.1-2"]
@@ -85,11 +84,10 @@
   :min-lein-version "2.5.3"
 
   :source-paths ["src" "test"]
-  
+
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :figwheel {:server-port 4544
-             :ring-handler dev-server/web-handler
              :css-dirs ["resources/public/css"]}
 
   :repl-options {:timeout 120000}
@@ -107,9 +105,6 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [binaryage/devtools "0.9.7"]
                                   [com.cemerick/piggieback "0.2.2"]
-                                  [compojure "1.6.0"]                                  
-                                  [ring/ring-defaults "0.2.0"]
-                                  [ring/ring-core "1.6.0"]
                                   [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev" "src"]
@@ -129,7 +124,14 @@
                                                      name-bazaar.ui.db.environment "dev"
                                                      district0x.ui.history.pushroute-hosts "localhost"
                                                      name-bazaar.ui.db.log-level "debug"}
-                                   :external-config {:devtools/config {:features-to-install :all}}}}
+                                   :external-config {:devtools/config {:features-to-install :all}}
+                                   :install-deps true
+                                   :npm-deps {:deep-equal "1.0.1"
+                                              :object-assign "4.1.1"
+                                              :prop-types "15.5.4"
+                                              :react "16.0.0"
+                                              :react-helmet "5.2.0"
+                                              :react-side-effect "1.1.0"}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"]
@@ -160,7 +162,10 @@
                                                      name-bazaar.ui.db.environment "prod"
                                                      district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
                                    :pretty-print false
-                                   :pseudo-names false}}
+                                   :pseudo-names false
+                                   :install-deps true
+                                   :npm-deps {:react "16.0.0"
+                                              :react-helmet "5.2.0"}}}
                        {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"

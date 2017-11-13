@@ -81,7 +81,8 @@
                 :watched-name watched-item}])))]])))
 
 (defmethod page :route/watched-names []
-  [app-layout
+  [app-layout {:meta {:title "NameBazaar - Watched Names"
+                      :description "Watch status of your favourite ENS names"}}
    [ui/Segment
     {:class "watched-names"}
     [:h1.ui.header.padded "Watched Names"]
