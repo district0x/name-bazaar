@@ -6,7 +6,7 @@
     [district0x.ui.components.transaction-log :refer [transaction-log]]
     [district0x.ui.history :as history]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
-    [name-bazaar.ui.components.meta-tags :refer [name-bazaar-meta-tags]]
+    [name-bazaar.ui.components.meta-tags :refer [meta-tags]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for offerings-sold-url]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
@@ -119,7 +119,7 @@
        {:ref (fn [el]
                (when (and el (not @app-container-ref))
                  (reset! app-container-ref el)))}
-       [name-bazaar-meta-tags meta]
+       [meta-tags meta]
        [ui/Sidebar
            {:as (aget js/semanticUIReact "Menu")
             :visible (or @drawer-open? @min-computer-screen?)

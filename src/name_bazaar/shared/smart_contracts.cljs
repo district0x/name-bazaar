@@ -1,6 +1,6 @@
-(ns name-bazaar.shared.smart-contracts) 
+(ns name-bazaar.shared.smart-contracts)
 
-(def smart-contracts 
+(def smart-contracts
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
   :address "0x3a11344d66a72784dd440820ba6422a534a4206e"},
