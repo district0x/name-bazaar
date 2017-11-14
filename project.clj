@@ -9,6 +9,7 @@
                  [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.5.10-0"]
+                 [cljsjs/react "15.6.1-2"]
                  [cljsjs/react-datepicker "0.55.0-0"]
                  [cljsjs/react-dom "15.6.1-2"]
                  [cljsjs/react-dom-server "15.6.1-2"]
@@ -126,12 +127,8 @@
                                                      name-bazaar.ui.db.log-level "debug"}
                                    :external-config {:devtools/config {:features-to-install :all}}
                                    :install-deps true
-                                   :npm-deps {:deep-equal "1.0.1"
-                                              :object-assign "4.1.1"
-                                              :prop-types "15.5.4"
-                                              :react "16.0.0"
-                                              :react-helmet "5.2.0"
-                                              :react-side-effect "1.1.0"}}}
+                                   :npm-deps {:react "16.0.0"
+                                              :react-helmet "5.2.0" }}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"]
@@ -157,7 +154,7 @@
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
-                                   :optimizations :advanced
+                                   :optimizations :simple
                                    :closure-defines {goog.DEBUG false
                                                      name-bazaar.ui.db.environment "prod"
                                                      district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
