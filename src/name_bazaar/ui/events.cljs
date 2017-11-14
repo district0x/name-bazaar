@@ -146,6 +146,7 @@
   :active-page-changed
   interceptors
   (fn [{:keys [:db]}]
+    (info "PAGE CHANGED")
     (merge
       {:forward-events {:unregister :active-address-changed}}
       (when (all-contracts-loaded? db)                      ;; Pushstate URLs fire first event too early
@@ -207,7 +208,7 @@
  interceptors
  (fn [{:keys [db]}]
    (let [addr (get-in db [:active-page :route-params :user/address])]
-     (info ["Try address" addr (web3/address? addr)])
+     (info ["TRY ADDR RESOLUTION" addr (web3/address? addr)])
      {:db db
       :dispatch
       (if-not (web3/address? addr)

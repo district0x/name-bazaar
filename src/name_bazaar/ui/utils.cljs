@@ -190,3 +190,14 @@
        ens-name
        (truncate addr trunc))
      (str (truncate ens-name trunc) " [resolving...]"))))
+
+(defn full-address
+  ([params]
+   (full-address (:user/ens-name params)
+                 (:user/address params)))
+  ([ens-name addr]
+   (if (web3/address? addr)
+     (if ens-name
+       ens-name
+       addr)
+     ens-name)))
