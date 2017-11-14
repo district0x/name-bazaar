@@ -15,7 +15,7 @@
    ": "
    [:a
     {:href (path-for :route.user/offerings {:user/address original-owner})}
-    original-owner]])
+    @(subscribe [:reverse-resolved-address original-owner])]])
 
 (defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address]}]
   (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])]
@@ -27,7 +27,7 @@
       ": "]
      [:a
       {:href (path-for :route.user/purchases {:user/address new-owner})}
-      new-owner]]))
+      @(subscribe [:reverse-resolved-address new-owner])]]))
 
 (defn offering-address-line [{:keys [:offering/address]}]
   [:div.ellipsis
@@ -45,7 +45,7 @@
   [:div.ellipsis "Winning bidder: " (if winning-bidder
                                       [:a
                                        {:href (path-for :route.user/bids {:user/address winning-bidder})}
-                                       winning-bidder]
+                                       @(subscribe [:reverse-resolved-address winning-bidder])]
                                       "none")])
 
 (defn offering-created-on-line [{:keys [:offering/created-on]}]

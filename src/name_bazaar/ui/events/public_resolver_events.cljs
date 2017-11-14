@@ -33,7 +33,7 @@
  :public-resolver.record.addr/loaded
  interceptors
  (fn [{:keys [:db]} [resolver node addr]]
-   (.log js/console ["Resolved node" node addr])
+   (info [:RESOLVED-NODE resolver node addr])
    {:db (if (or
              (not resolver)
              (not node)
@@ -47,3 +47,56 @@
                         :public-resolver.record/addr] (if (= addr "0x")
                                                         d0x-shared-utils/zero-address
                                                         addr)))}))
+(reg-event-fx
+ :public-resolver.record-hash/load
+ interceptors
+ (fn [{:keys [:db]} [addr]]
+   (let [instance (get-instance db :reverse-registrar)]
+     (info [:RESOLVING-RH addr instance])
+     {:web3-fx.contract/constant-fns
+      {:fns
+       [{:instance instance
+         :method :node
+         :args [addr]
+         :on-success [:public-resolver.record-hash/loaded addr]
+         :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+ :public-resolver.record-hash/loaded
+ interceptors
+ (fn [{:keys [:db]} [addr rh]]
+   (info [:RESOLVED-RH addr rh])
+   (if-not (or (not rh)
+                 (not addr)
+                 (= addr "0x"))
+     {:dispatch [:public-resolver.addr.record/load addr rh]}
+     {:dispatch [:public-resolver/nodata]})))
+
+(reg-event-fx
+ :public-resolver.addr.record/load
+ interceptors
+ (fn [{:keys [:db]} [addr record-hash]]
+   (let [instance (get-instance db :public-resolver)]
+     (info [:RESOLVING-RH addr record-hash instance])
+     {:web3-fx.contract/constant-fns
+      {:fns
+       [{:instance instance
+         :method :name
+         :args [record-hash]
+         :on-success [:public-resolver.addr.record/loaded addr]
+         :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+ :public-resolver.addr.record/loaded
+ interceptors
+ (fn [{:keys [:db]} [addr name]]
+   (info [:RESOLVED-ADDR addr name])
+   (if-not (or (not name)
+               (not addr)
+               (= name ""))
+     {:db (assoc-in db [:public-resolvers
+                        (get-in db [:smart-contracts :public-resolver :address])
+                        :public-resolver/reverse-records
+                        addr
+                        :public-resolver.record/name] name)}
+     {:dispatch [:public-resolver/nodata]})))

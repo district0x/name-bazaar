@@ -87,11 +87,12 @@
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])]
+        my-addresses (subscribe [:district0x/my-addresses])
+        mra (subscribe [:my-resolved-address])]
     (fn []
       [:div.app-bar
        [:div.left-section
-        [active-address-select]
+        [active-address-select {:address @mra}]
         [:i.icon.hamburger
          {:on-click (fn [e]
                       (dispatch [:district0x.menu-drawer/set true])
