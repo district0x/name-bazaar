@@ -8,11 +8,11 @@
                  [cljs-http "0.1.43"]
                  [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
-                 [cljsjs/prop-types "15.6.0-SNAPSHOT"] ;; temporary until cljsjs releases
+                 [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react-datepicker "0.55.0-0"]
                  [cljsjs/react-dom-server "15.6.1-2"]
                  [cljsjs/react-infinite "0.12.1-0"]
-                 [cljsjs/react-meta-tags "0.3.0-SNAPSHOT"] ;; temporary until cljsjs releases
+                 [cljsjs/react-meta-tags "0.3.0-0"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.1"]
@@ -55,17 +55,10 @@
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.14"]
-            [lein-git-deps "0.0.1-SNAPSHOT"]
             [lein-shell "0.5.0"]
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
-
-  :repositories [["temp" {:url "http://github.com/fbielejec/cljsjs-temp.git"
-                           :snapshots false
-                           :sign-releases false
-                           :checksum :fail
-                           :update :never}]]
 
   :npm {:dependencies [[cors "2.8.4"]
                        [eccjs "0.3.1"]
