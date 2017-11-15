@@ -8,12 +8,11 @@
                  [cljs-http "0.1.43"]
                  [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
-                 [cljsjs/prop-types "15.5.10-0"]
-                 [cljsjs/react "15.6.1-2"]
+                 [cljsjs/prop-types "15.6.0-SNAPSHOT"] ;; temporary until cljsjs releases
                  [cljsjs/react-datepicker "0.55.0-0"]
-                 [cljsjs/react-dom "15.6.1-2"]
                  [cljsjs/react-dom-server "15.6.1-2"]
                  [cljsjs/react-infinite "0.12.1-0"]
+                 [cljsjs/react-meta-tags "0.3.0-SNAPSHOT"] ;; temporary until cljsjs releases
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.1"]
@@ -48,17 +47,25 @@
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas.re-frame/web3-fx "0.2.1"]]
 
-  :exclusions [[com.taoensso/encore]
+  :exclusions [[cljsjs/prop-types]
+               [com.taoensso/encore]
                [org.clojure/clojure]
                [org.clojure/clojurescript]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.14"]
+            [lein-git-deps "0.0.1-SNAPSHOT"]
             [lein-shell "0.5.0"]
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
+
+  :repositories [["temp" {:url "http://github.com/fbielejec/cljsjs-temp.git"
+                           :snapshots false
+                           :sign-releases false
+                           :checksum :fail
+                           :update :never}]]
 
   :npm {:dependencies [[cors "2.8.4"]
                        [eccjs "0.3.1"]
@@ -125,10 +132,7 @@
                                                      name-bazaar.ui.db.environment "dev"
                                                      district0x.ui.history.pushroute-hosts "localhost"
                                                      name-bazaar.ui.db.log-level "debug"}
-                                   :external-config {:devtools/config {:features-to-install :all}}
-                                   :install-deps true
-                                   :npm-deps {:react "16.0.0"
-                                              :react-helmet "5.2.0" }}}
+                                   :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"]
@@ -154,15 +158,12 @@
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
-                                   :optimizations :simple
+                                   :optimizations :advanced
                                    :closure-defines {goog.DEBUG false
                                                      name-bazaar.ui.db.environment "prod"
                                                      district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
-                                   :pretty-print false
-                                   :pseudo-names false
-                                   :install-deps true
-                                   :npm-deps {:react "16.0.0"
-                                              :react-helmet "5.2.0"}}}
+                                   :pretty-print true
+                                   :pseudo-names true}}
                        {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"
