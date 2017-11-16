@@ -49,8 +49,7 @@
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n [[:district0x/watch-my-eth-balances]
                                                        [:try-resolving-address]
-                                                       [:active-page-changed]
-                                                       [:offerings.total-count/load]]}]}
+                                                       [:active-page-changed]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
