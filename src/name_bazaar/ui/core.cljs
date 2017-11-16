@@ -49,12 +49,12 @@
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n [[:district0x/watch-my-eth-balances]
                                                        [:try-resolving-address]
-                                                       [:active-page-changed]]}]}
+                                                       [:active-page-changed]
+                                                       [:offerings.total-count/load]]}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}
                     :dispatch-n [[:setup-update-now-interval]
                                  [:district0x/load-conversion-rates [:USD]]
-                                 [:district0x.config/load]
-                                 [:offerings.total-count/load]]}}])
+                                 [:district0x.config/load]]}}])
   (mount-root))
