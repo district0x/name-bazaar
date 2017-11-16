@@ -49,9 +49,8 @@
                                           :events [:district0x/smart-contracts-loaded :district0x/my-addresses-loaded]
                                           :dispatch-n (remove nil?
                                                               [[:district0x/watch-my-eth-balances]
-                                                               (when history/hashroutes?
-                                                                 [:try-resolving-address])
-                                                               (when history/hashroutes?
+                                                               [:try-resolving-address]
+                                                               (when (or history/hashroutes? history/prerender?)
                                                                  [:active-page-changed])])}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
