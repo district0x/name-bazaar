@@ -4,7 +4,7 @@
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.utils :refer [format-eth-with-code]]
     [medley.core :as medley]
-    [name-bazaar.ui.components.meta-tags :refer [name-bazaar-meta-tags]]
+    [name-bazaar.ui.components.meta-tags :refer [meta-tags]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [ensure-registrar-root offerings-newest-url offerings-most-active-url offerings-ending-soon-url valid-ens-name? path-for normalize]]
@@ -178,7 +178,7 @@
   (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
     (fn []
       [:div.home-page
-       [name-bazaar-meta-tags]
+       [meta-tags]
        [:div.top-segment
         [offerings-total-count]
         [namebazaar-logo]]
