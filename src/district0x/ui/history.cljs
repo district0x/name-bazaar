@@ -21,7 +21,7 @@
 
 (def prerender?
   (let [agent (.-userAgent (.-navigator js/window))]
-    (not (= (.indexOf agent "prerenderer") -1))))
+    (not (= (.indexOf agent "prerendercloud") -1))))
 
 (defn path-for [{:keys [:route :route-params :routes]}]
   (let [path (medley/mapply bidi/path-for routes route route-params)]
