@@ -36,6 +36,7 @@
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results tldize]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 
@@ -227,3 +228,13 @@
       (if (web3/address? addr)
         [:public-resolver.record-hash/load addr]
         [:public-resolver/nodata])})))
+
+(reg-event-fx
+ :start-routing
+ interceptors
+ (fn []
+   (info "Starting routing")
+   (if history/hashroutes?
+     (set! (.-onhashchange js/window)
+           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
+     (history/start! constants/routes))))
