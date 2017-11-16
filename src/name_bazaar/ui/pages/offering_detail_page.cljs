@@ -165,7 +165,7 @@
                                                 :description (str name " is offered on NameBazaar! Minimum bid: " (format-eth-with-code price))}}
                       :buy-now-offering {:meta {:title (str name " Offering")
                                                 :description (str name " is offered on NameBazaar! Price: " (format-eth-with-code price))}}
-                      :else {:meta {:title (str name " Auction")
+                      {:meta {:title (str name " Auction")
                                     :description (str name " is offered on NameBazaar!")}})
          [ui/Segment
           [ui/Grid

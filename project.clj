@@ -9,10 +9,11 @@
                  [cljs-web3 "0.19.0-0-7"]
                  [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.6.0-0"]
+                 [cljsjs/react "15.6.1-2"]
                  [cljsjs/react-datepicker "0.55.0-0"]
-                 [cljsjs/react-dom-server "15.6.1-2"]
+                 [cljsjs/react-dom "15.6.1-2"]
                  [cljsjs/react-infinite "0.12.1-0"]
-                 [cljsjs/react-meta-tags "0.3.0-0"]
+                 [cljsjs/react-meta-tags "0.3.0-1"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.1"]
@@ -155,8 +156,8 @@
                                    :closure-defines {goog.DEBUG false
                                                      name-bazaar.ui.db.environment "prod"
                                                      district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
-                                   :pretty-print true
-                                   :pseudo-names true}}
+                                   :pretty-print false
+                                   :pseudo-names false}}
                        {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
                                        "src/district0x/server" "src/district0x/shared"
