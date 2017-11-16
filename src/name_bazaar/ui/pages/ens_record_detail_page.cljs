@@ -76,8 +76,8 @@
                                                          (< (count (name-label name)) 7))
                                                   :registrar.entry.state/not-yet-available
                                                   state))]
-        [app-layout {:meta {:title (str name "name details")
-                            :description (str "See details about " name " status: " state-text)}}
+        [app-layout {:meta {:title (str name " name details")
+                            :description (str "See details about " name ". Status: " state-text)}}
          [ui/Segment
           [:h1.ui.header.padded name]
           [ens-name-details
