@@ -1,6 +1,6 @@
 # Production deployment
 This document describes production deployment of NameBazaar.
- 
+
 ## Config
 
 Create configuration file in JSON format, for example namebazaar.json:
@@ -16,13 +16,18 @@ Create configuration file in JSON format, for example namebazaar.json:
   - public-key will be used to encode information on the UI.
   - matching private-key will be used to decode information on the backend server (**protect your production config private-key!**).
   - sendgrid-api-key is needed to interact with public API of the [Sendgrid](https://sendgrid.com/) email delivery service.
- 
+
 Configuration is picked up from the Node.js `CONFIG` ENV variable:
 ```sh
 CONFIG='/etc/config/namebazaar.json' node dev-server/name-bazaar.js 2> /tmp/namebazaar_error.log
 ```
 
+## Prerendering
+
+see namebazaar.io.conf
+
 ## Logging
+
 NameBazaar uses [AWS ElasticSearchService](https://aws.amazon.com/elasticsearch-service/) (EK) stack for logging:
   - Elasticsearch: Stores all of the logs.
   - Kibana: Web interface for searching and visualizing logs.
@@ -88,7 +93,7 @@ In the output section use https port (http port is 80) and forward the logs to t
   bulk_max_size: 1024
 ```
 
-#### Load Filebeat Index Template into Elasticsearch. 
+#### Load Filebeat Index Template into Elasticsearch.
 
 The index template will configure Elasticsearch to analyze incoming Filebeat log messages:
 
@@ -98,7 +103,7 @@ $ unzip beats-dashboards-*.zip
 $ ./scripts/import_dashboards -only-index -dir beats-dashboards/filebeat/ -es ES_SERVER_IP:443
 ```
 
-#### Start Filebeat: 
+#### Start Filebeat:
 
 ```sh
 $ ./filebeat -e -d "publish" -c filebeat.yml
@@ -136,10 +141,10 @@ location / {
     proxy_pass ES_SERVER_DOMAIN
     auth_basic "Restricted Content";
     auth_basic_user_file /etc/nginx/.htpasswd;
-    proxy_http_version 1.1; 
-    proxy_set_header Authorization ""; 
-    proxy_hide_header Authorization; 
-    proxy_set_header X-Forwarded-Proto $scheme; 
+    proxy_http_version 1.1;
+    proxy_set_header Authorization "";
+    proxy_hide_header Authorization;
+    proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
