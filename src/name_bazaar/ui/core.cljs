@@ -17,7 +17,8 @@
     [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
     [re-frisk.core :refer [enable-re-frisk!]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (def debug?
   ^boolean js/goog.DEBUG)
@@ -37,10 +38,6 @@
   (s/check-asserts goog.DEBUG)
   (dev-setup)
   (google-analytics-fx/set-enabled! (not debug?))
-  (if history/hashroutes?
-    (set! (.-onhashchange js/window)
-          #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
-     (history/start! constants/routes))
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects
@@ -49,9 +46,12 @@
                                           :events (remove nil? [:district0x/smart-contracts-loaded
                                                                 (when-not history/prerender?
                                                                   :district0x/my-addresses-loaded)])
-                                          :dispatch-n [[:district0x/watch-my-eth-balances]
-                                                       [:try-resolving-address]
-                                                       [:active-page-changed]]}]}
+                                          :dispatch-n (remove nil?
+                                                              [[:district0x/watch-my-eth-balances]
+                                                               [:watch-my-addresses-loaded]
+                                                               [:start-routing]
+                                                               (when history/hashroutes?
+                                                                 [:active-page-changed])])}]}
                     :forward-events {:register :active-page-changed
                                      :events #{:district0x/set-active-page}
                                      :dispatch-to [:active-page-changed]}

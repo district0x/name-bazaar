@@ -10,16 +10,18 @@
  :registrar
  {:name "Registrar",
   :address "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef"},
+ :reverse-registrar
+ {:name "ReverseRegistrar",
+  :address "0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069"},
  :buy-now-offering
  {:name "BuyNowOffering",
   :address "0x7f5dbcab54cb17cd494477d4f11a2b7ba470fb3a"},
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
- :public-resolver
- {:name "PublicResolver",
-  :address "0x0000000000000000000000000000000000000000"},
  :ens
  {:name "ENS", :address "0x314159265dD8dbb310642f98f50C066173C1259b"},
+ :public-resolver
+ {:name "PublicResolver", :address "0x5FfC014343cd971B7eb70732021E26C35B744cc4"},
  :offering-registry
  {:name "OfferingRegistry",
   :address "0x34e400a8b4da8a23b5eaf81b46d3a887669a45b9"},
