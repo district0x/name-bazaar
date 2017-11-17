@@ -215,7 +215,7 @@
       (if-not (web3/address? addr)
         (let [addr-patched (tldize addr)]
           [:ens.records/load [(namehash addr-patched)] {:load-resolver? true}])
-        [:public-resolver.record-hash/load addr])})))
+        [:public-resolver.addr.record/load addr])})))
 
 (reg-event-fx
  :try-resolving-my-address
@@ -226,7 +226,7 @@
      {:db db
       :dispatch
       (if (web3/address? addr)
-        [:public-resolver.record-hash/load addr]
+        [:public-resolver.addr.record/load addr]
         [:public-resolver/nodata])})))
 
 (reg-event-fx

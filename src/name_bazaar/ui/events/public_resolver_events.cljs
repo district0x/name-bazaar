@@ -15,6 +15,15 @@
     [medley.core :as medley]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
+(defn record-hash [addr]
+  "Node namehash. Client-side version of https://github.com/ethereum/ens/blob/a296395abca0774a3163caad190bed4283702206/contracts/ReverseRegistrar.sol#L135"
+  ;;TODO: find better way to discard 0x to tightpack
+  (str (.sha3 js/web3 (apply str (concat (drop 2 (namehash "addr.reverse"))
+                                         (drop 2 (sha3
+                                                  (apply str
+                                                         (drop 2 addr))))))
+              (clj->js {:encoding "hex"}))))
+
 (reg-event-fx
  :public-resolver.record.addr/load
  interceptors
@@ -40,49 +49,24 @@
              (not addr)
              (= addr "0x"))
           db
-          (assoc-in db [:public-resolvers
-                        resolver
-                        :public-resolver/records
+          (assoc-in db [:public-resolver/records
                         node
                         :public-resolver.record/addr] (if (= addr "0x")
                                                         d0x-shared-utils/zero-address
                                                         addr)))}))
-(reg-event-fx
- :public-resolver.record-hash/load
- interceptors
- (fn [{:keys [:db]} [addr]]
-   (let [instance (get-instance db :reverse-registrar)]
-     (info [:RESOLVING-RH addr instance])
-     {:web3-fx.contract/constant-fns
-      {:fns
-       [{:instance instance
-         :method :node
-         :args [addr]
-         :on-success [:public-resolver.record-hash/loaded addr]
-         :on-error [:district0x.log/error]}]}})))
-
-(reg-event-fx
- :public-resolver.record-hash/loaded
- interceptors
- (fn [{:keys [:db]} [addr rh]]
-   (info [:RESOLVED-RH addr rh])
-   (if-not (or (not rh)
-                 (not addr)
-                 (= addr "0x"))
-     {:dispatch [:public-resolver.addr.record/load addr rh]}
-     {:dispatch [:public-resolver/nodata]})))
 
 (reg-event-fx
  :public-resolver.addr.record/load
  interceptors
- (fn [{:keys [:db]} [addr record-hash]]
-   (let [instance (get-instance db :public-resolver)]
-     (info [:RESOLVING-RH addr record-hash instance])
+ (fn [{:keys [:db]} [addr ]]
+   (let [rh (record-hash addr)
+         instance (get-instance db :public-resolver)]
+     (info [:RESOLVING-RH addr rh instance])
      {:web3-fx.contract/constant-fns
       {:fns
        [{:instance instance
          :method :name
-         :args [record-hash]
+         :args [rh]
          :on-success [:public-resolver.addr.record/loaded addr]
          :on-error [:district0x.log/error]}]}})))
 
@@ -94,9 +78,7 @@
    (if-not (or (not name)
                (not addr)
                (= name ""))
-     {:db (assoc-in db [:public-resolvers
-                        (get-in db [:smart-contracts :public-resolver :address])
-                        :public-resolver/reverse-records
+     {:db (assoc-in db [:public-resolver/reverse-records
                         addr
                         :public-resolver.record/name] name)}
      {:dispatch [:public-resolver/nodata]})))

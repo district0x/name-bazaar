@@ -154,20 +154,16 @@
 (defn try-resolving-address [db addr]
   (when-not (web3/address? addr)
     (let [addr-patched (tldize addr)]
-      (when-let [resolved (some (fn [r]
-                                (get-in r [:public-resolver/records
-                                           (namehash addr-patched)
-                                           :public-resolver.record/addr]))
-                              (vals (:public-resolvers db)))]
+      (when-let [resolved (get-in db [:public-resolver/records
+                                      (namehash addr-patched)
+                                      :public-resolver.record/addr])]
         resolved))))
 
 (defn try-reverse-resolving-address [db addr]
   (when (web3/address? addr)
-    (when-let [resolved (some (fn [r]
-                              (get-in r [:public-resolver/reverse-records
-                                         addr
-                                         :public-resolver.record/name]))
-                            (vals (:public-resolvers db)))]
+    (when-let [resolved (get-in db [:public-resolver/reverse-records
+                                    addr
+                                    :public-resolver.record/name])]
       resolved)))
 
 (defn resolve-params [db params]
