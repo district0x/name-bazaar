@@ -278,6 +278,7 @@
             offering-loaded? @(subscribe [:offering/loaded? address])
             offering @(subscribe [:offering address])]
         [app-layout
+         {:meta {:title "NameBazaar - Edit Offering" :description "Edit an offering sell your ENS name"}}
          [ui/Segment
           [:h1.ui.header.padded "Edit Offering"]
 
