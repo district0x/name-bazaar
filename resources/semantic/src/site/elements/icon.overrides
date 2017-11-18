@@ -2,7 +2,51 @@
          Site Overrides
 *******************************/
 
-
+i.icon.arrow-up {
+  &:before {
+    content: @arrow-up;
+  }
+}
+i.icon.hammer-remove {
+  &:before {
+    content: @hammer-remove;
+  }
+}
+i.icon.hammer-arrow-left {
+  &:before {
+    content: @hammer-arrow-left;
+  }
+}
+i.icon.hammer-arrow-right-left {
+  &:before {
+    content: @hammer-arrow-right-left;
+  }
+}
+i.icon.flag2 {
+  &:before {
+    content: @flag2;
+  }
+}
+i.icon.dots {
+  &:before {
+    content: @dots;
+  }
+}
+i.icon.hammer2 {
+  &:before {
+    content: @hammer2;
+  }
+}
+i.icon.loading {
+  &:before {
+    content: @loading;
+  }
+}
+i.icon.user2 {
+  &:before {
+    content: @user2;
+  }
+}
 i.icon.hamburger {
   &:before {
     content: @hamburger;

@@ -72,6 +72,15 @@
 
 @floatingShadow: 2px 2px 20px 4px rgba(0,0,0,.05);
 
+@arrow-up: "\e905";
+@hammer-remove: "\e906";
+@hammer-arrow-left: "\e908";
+@hammer-arrow-right-left: "\e909";
+@flag2: "\e90a";
+@dots: "\e90b";
+@hammer2: "\e90c";
+@loading: "\e90d";
+@user2: "\e90e";
 @hamburger: "\e904";
 @leaf: "\e901";
 @flag: "\e903";
