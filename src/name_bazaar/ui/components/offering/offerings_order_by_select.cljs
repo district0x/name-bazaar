@@ -10,8 +10,8 @@
    :offering.order-by/most-expensive "Most Expensive"
    :offering.order-by/cheapest "Cheapest"
    :offering.order-by/ending-soon "Ending Soon"
-   :offering.order-by/finalized-newest "Newest"
-   :offering.order-by/finalized-oldest "Oldest"
+   :offering.order-by/finalized-newest "Newest finalization"
+   :offering.order-by/finalized-oldest "Oldest finalization"
    :offering.order-by/most-relevant "Most Relevant"})
 
 (def order-option->value

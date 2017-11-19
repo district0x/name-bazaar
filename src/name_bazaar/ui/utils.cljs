@@ -63,7 +63,9 @@
                                                      :order-by-dirs [(name :asc)]})))
 
 (def offerings-sold-url (str (path-for :route.offerings/search) "?"
-                             (url/map->query {:sold? true})))
+                             (url/map->query {:sold? true
+                                              :order-by-columns [(name :finalized-on)]
+                                              :order-by-dirs [(name :desc)]})))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))

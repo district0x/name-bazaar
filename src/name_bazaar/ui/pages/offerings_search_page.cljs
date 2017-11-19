@@ -191,18 +191,23 @@
           :on-change #(dispatch [:district0x.location/add-to-query {:max-length (aget %2 "value")}])}]))))
 
 (defn order-by-select-field []
-  (let [search-params (subscribe [:offerings.main-search/params])]
+  (let [search-params (subscribe [:offerings.main-search/params])
+        sold-page? (subscribe [:offerings.main-search/sold-page?])]
     (fn []
       [offerings-order-by-select
        {:fluid true
         :order-by-column (first (:order-by-columns @search-params))
         :order-by-dir (first (:order-by-dirs @search-params))
-        :options [:offering.order-by/newest
-                  :offering.order-by/most-active
-                  :offering.order-by/most-expensive
-                  :offering.order-by/cheapest
-                  :offering.order-by/ending-soon
-                  :offering.order-by/most-relevant]
+        :options (concat
+                   [:offering.order-by/newest
+                    :offering.order-by/most-active
+                    :offering.order-by/most-expensive
+                    :offering.order-by/cheapest
+                    :offering.order-by/ending-soon
+                    :offering.order-by/most-relevant]
+                   (when @sold-page?
+                     [:offering.order-by/finalized-newest
+                      :offering.order-by/finalized-oldest]))
         :on-change (fn [e data]
                      (let [[order-by-column order-by-dir] (aget data "value")]
                        (dispatch [:district0x.location/add-to-query
