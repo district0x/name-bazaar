@@ -131,7 +131,7 @@
   :district0x/set-current-location-as-active-page
   interceptors
   (fn [_ args]
-    {:dispatch [:district0x/set-active-page (apply d0x-ui-utils/match-current-location (print.foo/look args))]}))
+    {:dispatch [:district0x/set-active-page (apply d0x-ui-utils/match-current-location args)]}))
 
 (reg-event-fx
   :district0x/set-active-page
