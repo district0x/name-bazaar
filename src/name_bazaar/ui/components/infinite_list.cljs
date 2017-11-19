@@ -20,13 +20,16 @@
             children))))
 
 (defn expandable-list-item-header []
-  (fn [{:keys [:index :collapsed-height :on-collapse :on-expand :disable-expand? :on-click] :as props}
+  (fn [{:keys [:index :collapsed-height :on-collapse :on-expand :disable-expand? :on-click :href] :as props}
        & children]
     (let [expanded? @(subscribe [:infinite-list.item/expanded? index])]
       (into
-        [:div.header
+        [:a.header
          {:style {:height collapsed-height}
+          :href href                                        ;; Mostly for search engines
+          :data-pushy-ignore true
           :on-click (fn [e]
+                      (.preventDefault e)
                       (when (fn? on-click)
                         (on-click index))
                       (when-not disable-expand?
@@ -42,7 +45,7 @@
         children))))
 
 (defn expandable-list-item [{:keys [:index :on-collapse :on-expand :collapsed-height :disable-expand?
-                                    :on-click]}
+                                    :on-click :href]}
                             header body]
   [:div.expandable-list-item
    [expandable-list-item-header
@@ -51,7 +54,8 @@
      :on-expand on-expand
      :disable-expand? disable-expand?
      :collapsed-height collapsed-height
-     :on-click on-click}
+     :on-click on-click
+     :href href}
     header]
    (when (and (not disable-expand?) @(subscribe [:infinite-list.item/expanded? index]))
      [expandable-list-item-body

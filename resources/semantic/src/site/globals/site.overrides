@@ -285,6 +285,11 @@ h4, h5, h6 {
     width: 100%;
     cursor: pointer;
     display: flex;
+    text-decoration: none;
+    color: iherit;
+    &:hover {
+        text-decoration: none;
+    }
   }
   .body {
     overflow: hidden;

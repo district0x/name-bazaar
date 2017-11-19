@@ -251,7 +251,9 @@
           :on-expand #(dispatch [:offerings.list-item/expanded offering])
           :collapsed-height (constants/infinite-list-collapsed-item-height mobile?)
           :disable-expand? (or disable-expand? (not address))
-          :on-click on-click}
+          :on-click on-click
+          :href (when address
+                  (path-for :route.offerings/detail {:offering/address address}))}
          (if mobile?
            [offering-list-item-header-mobile
             (merge {:offering offering}

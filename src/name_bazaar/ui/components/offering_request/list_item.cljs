@@ -6,6 +6,7 @@
     [name-bazaar.ui.components.infinite-list :refer [expandable-list-item]]
     [name-bazaar.ui.components.loading-placeholders :refer [list-item-placeholder]]
     [name-bazaar.ui.constants :as constants]
+    [name-bazaar.ui.utils :refer [path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -42,7 +43,9 @@
          {:index key
           :on-expand #(dispatch [:offering-requests.list-item/expanded offering-request])
           :collapsed-height (constants/infinite-list-collapsed-item-height @mobile?)
-          :disable-expand? (not node)}
+          :disable-expand? (not node)
+          :href (when name
+                  (path-for :route.ens-record/detail {:ens.record/name name}))}
          [offering-request-list-item-header
           {:offering-request offering-request}]
          [ens-name-details
