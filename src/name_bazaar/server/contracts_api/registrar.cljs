@@ -1,5 +1,6 @@
 (ns name-bazaar.server.contracts-api.registrar
   (:require
+    [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [cljs.core.async :refer [<! >! chan]]
     [district0x.server.effects :refer [logged-contract-call! queue-contract-call!]]
@@ -17,7 +18,8 @@
                          :register
                          (d0x-server-utils/sha3 label hash)
                          (merge {:gas 2000000
-                                 :from (state/active-address)}
+                                 :from (state/active-address)
+                                 :value (web3/to-wei 0.01 :ether)}
                                 opts)))
 
 (defn transfer! [{:keys [:ens.record/hash :ens.record/label :ens.record/owner]} & [opts]]

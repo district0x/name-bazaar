@@ -1,5 +1,7 @@
 (ns name-bazaar.server.effects
   (:require
+    [cljs-time.coerce :refer [to-epoch]]
+    [cljs-time.core :as t]
     [cljs.core.async :refer [<! >! chan]]
     [cljs.nodejs :as nodejs]
     [district0x.server.effects :as d0x-effects]
@@ -30,9 +32,10 @@
 (defn deploy-registrar! [default-opts]
   (d0x-effects/deploy-smart-contract! (merge default-opts
                                              {:contract-key :registrar
-                                              :gas 2700000
+                                              :gas 3200000
                                               :args [(state/contract-address :ens)
-                                                     (namehash "eth")]})))
+                                                     (namehash "eth")
+                                                     (to-epoch (t/minus (t/now) (t/years 1)))]})))
 
 (defn deploy-offering-registry! [default-opts {:keys [:emergency-multisig]}]
   (d0x-effects/deploy-smart-contract! (merge default-opts
