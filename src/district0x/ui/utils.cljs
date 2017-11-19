@@ -74,6 +74,9 @@
       (or (empty? s) valid?)
       valid?)))
 
+(defn path-with-query [path query-params-map]
+  (str path "?" (url/map->query query-params-map)))
+
 (defn pluralize [text count]
   (str text (when (not= count 1) "s")))
 

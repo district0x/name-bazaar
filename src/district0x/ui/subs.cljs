@@ -56,12 +56,6 @@
     (:query-params active-page)))
 
 (reg-sub
-  :district0x/parsed-query-params
-  :<- [:district0x/query-params]
-  (fn [query-params [_ parsers]]
-    ))
-
-(reg-sub
   :district0x/query-string
   :<- [:district0x/query-params]
   (fn [query-params]

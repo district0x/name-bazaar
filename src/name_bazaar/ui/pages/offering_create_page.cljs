@@ -19,70 +19,52 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-(defn- label->full-name+node [label]
-  (let [full-name (str label constants/registrar-root)]
-    [full-name (namehash full-name)]))
-
-(defn- get-ownership-status [value]
-  (let [[full-name node] (label->full-name+node value)
-        label-hash (sha3 value)
-        loaded? (and @(subscribe [:ens.record/loaded? node])
-                     (if (top-level-name? full-name)
-                       @(subscribe [:registrar.entry.deed/loaded? label-hash])
-                       true))]
-    (cond
-      (empty? value)
-      :empty
-
-      (not loaded?)
-      :loading
-
-      (not @(subscribe [:ens.record/active-address-owner? node]))
-      :not-ens-record-owner
-
-      (and (top-level-name? full-name)
-           (not @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])))
-      :not-deed-owner
-
-      :else :owner)))
-
 (def ownership-status->text
-  {:empty ""
-   :loading "Checking ownership..."
-   :not-ens-record-owner "You are not owner of this name"
-   :not-deed-owner "You don't own this name's locked value"
-   :owner "You are owner of this name"})
+  {:ens.ownership-status/empty-name ""
+   :ens.ownership-status/loading "Checking ownership..."
+   :ens.ownership-status/not-ens-record-owner "You are not owner of this name"
+   :ens.ownership-status/not-deed-owner "You don't own this name's locked value"
+   :ens.ownership-status/owner "You are owner of this name"})
 
-(defn offering-name-text-field [{:keys [:on-change :value :ownership-status] :as props}]
-  (let [error? (contains? #{:not-ens-record-owner :not-deed-owner} ownership-status)]
-    [:div.input-state-label
-     {:class (cond
-               error? :error
-               (contains? #{:owner} ownership-status) :success)}
-     [ens-name-input
-      (r/merge-props
-        {:label "Name"
-         :fluid true
-         :value value
-         :error error?
-         :on-change (fn [e data]
-                      (let [value (aget data "value")]
-                        (when (valid-ens-name? value)
-                          (let [value (normalize value)
-                                [full-name node] (label->full-name+node value)]
-                            (aset data "value" value)
-                            (on-change e data)
-                            (dispatch [:ens.records/load [node]])
-                            (when (top-level-name? full-name)
-                              (dispatch [:registrar.entries/load [(sha3 value)]]))))))}
-        (dissoc props :ownership-status :on-change))]
-     [:div.ui.label (ownership-status->text ownership-status)]]))
+(defn load-name-ownership [value]
+  (let [full-name (str value constants/registrar-root)
+        node (namehash full-name)]
+    (dispatch [:ens.records/load [node]])
+    (when (top-level-name? full-name)
+      (dispatch [:registrar.entries/load [(sha3 value)]]))))
 
-(defn offering-default-form-data []
+(defn offering-name-text-field [{:keys [:value]}]
+  (fn [{:keys [:on-change :value] :as props}]
+    (let [ownership-status @(subscribe [:ens.record/ownership-status (when (seq value)
+                                                                       (str value constants/registrar-root))])
+          error? (contains? #{:ens.ownership-status/not-ens-record-owner
+                              :ens.ownership-status/not-deed-owner}
+                            ownership-status)]
+      [:div.input-state-label
+       {:class (cond
+                 error? :error
+                 (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
+       [ens-name-input
+        (r/merge-props
+          {:label "Name"
+           :fluid true
+           :value value
+           :error error?
+           :on-change (fn [e data]
+                        (let [value (aget data "value")]
+                          (when (valid-ens-name? value)
+                            (let [value (normalize value)]
+                              (aset data "value" value)
+                              (on-change e data)
+                              (load-name-ownership value)))))}
+          (dissoc props :ownership-status :on-change))]
+       [:div.ui.label (ownership-status->text ownership-status)]])))
+
+(defn offering-default-form-data [name]
   (let [end-time (doto (to-date (t/plus (t/now) (t/days 3) (t/hours 1)))
                    (.setSeconds 0)
                    (.setMinutes 0))]
-    {:offering/name ""
+    {:offering/name (or name "")
      :offering/type :auction-offering
      :offering/price 1
      :auction-offering/min-bid-increase 0.1
@@ -141,18 +123,20 @@
     auction? (update :auction-offering/end-time to-date)
     auction? (update :auction-offering/extension-duration seconds->hours)))
 
-(defn offering-form [{:keys [:offering]}]
+(defn offering-form [{:keys [:offering :default-name]}]
   (let [now (subscribe [:now])
-        form-data (r/atom (or offering (offering-default-form-data)))]
+        form-data (r/atom (or offering (offering-default-form-data default-name)))]
     (fn [{:keys [:editing?]}]
       (let [{:keys [:offering/address :offering/name :offering/type :offering/price :auction-offering/min-bid-increase
                     :auction-offering/extension-duration :auction-offering/end-time]} @form-data
             auction? (= type :auction-offering)
-            ownership-status (when-not editing? (get-ownership-status name))
+            ownership-status (when-not editing?
+                               @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                                           (str name constants/registrar-root))]))
             valid-price? (pos-ether-value? price)
             valid-min-bid-increase? (pos-ether-value? min-bid-increase)
             submit-disabled? (or (and (not editing?)
-                                      (not= ownership-status :owner))
+                                      (not= ownership-status :ens.ownership-status/owner))
                                  (not valid-price?)
                                  (not (or (not auction?)
                                           valid-min-bid-increase?))
@@ -171,7 +155,6 @@
               :mobile 16}
              [offering-name-text-field
               {:value name
-               :ownership-status ownership-status
                :disabled editing?
                :on-change #(swap! form-data assoc :offering/name (aget %2 "value"))}]]
             [ui/GridColumn
@@ -306,7 +289,12 @@
               :offering (transaction-data->form-data offering)}])]]))))
 
 (defmethod page :route.offerings/create []
-  [app-layout {:meta {:title "NameBazaar - Create Offering" :description "Create an offering to sell your ENS name"}}
-   [ui/Segment
-    [:h1.ui.header.padded "Create Offering"]
-    [offering-form]]])
+  (let [query-params (subscribe [:district0x/query-params])]
+    (fn []
+      (let [{:keys [:name]} @query-params]
+        [app-layout {:meta {:title "NameBazaar - Create Offering" :description "Create an offering to sell your ENS name"}}
+         [ui/Segment
+          [:h1.ui.header.padded "Create Offering"]
+          [offering-form
+           {:default-name (when (and name (valid-ens-name? name))
+                            (strip-eth-suffix (normalize name)))}]]]))))

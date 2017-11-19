@@ -74,8 +74,11 @@
                                            {:offering/address address}
                                            {:reset-params? true}]]}]}})
 
+    :route.offerings/create
+    {:dispatch [:name.ownership/load (:name query-params)]}
+
     :route.ens-record/detail
-    {:dispatch-n [[:name/load-all-details (:ens.record/name route-params)]
+    {:dispatch-n [[:name.all-details/load (:ens.record/name route-params)]
                   [:offerings.ens-record-offerings/set-params-and-search
                    {:node (namehash (:ens.record/name route-params))}
                    {:reset-params? true}]]}
@@ -148,7 +151,17 @@
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 
 (reg-event-fx
-  :name/load-all-details
+  :name.ownership/load
+  interceptors
+  (fn [{:keys [:db]} [name]]
+    (when (seq name)
+      (let [node (namehash name)]
+        (merge {:dispatch-n [[:ens.records/load [node]]]}
+               (when (top-level-name? name)
+                 {:dispatch [:registrar.entries/load [(name->label-hash name)]]}))))))
+
+(reg-event-fx
+  :name.all-details/load
   interceptors
   (fn [{:keys [:db]} [name]]
     (let [node (namehash name)]

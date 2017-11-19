@@ -6,7 +6,7 @@
     [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
@@ -50,22 +50,22 @@
                      :route-params route-params
                      :routes constants/routes}))
 
-(def offerings-newest-url (str (path-for :route.offerings/search) "?"
-                               (url/map->query {:order-by-columns [(name :created-on)]
-                                                :order-by-dirs [(name :desc)]})))
+(def offerings-newest-url (path-with-query (path-for :route.offerings/search)
+                                           (url/map->query {:order-by-columns [(name :created-on)]
+                                                            :order-by-dirs [(name :desc)]})))
 
-(def offerings-most-active-url (str (path-for :route.offerings/search) "?"
-                                    (url/map->query {:order-by-columns [(name :bid-count)]
-                                                     :order-by-dirs [(name :desc)]})))
+(def offerings-most-active-url (path-with-query (path-for :route.offerings/search)
+                                                (url/map->query {:order-by-columns [(name :bid-count)]
+                                                                 :order-by-dirs [(name :desc)]})))
 
-(def offerings-ending-soon-url (str (path-for :route.offerings/search) "?"
-                                    (url/map->query {:order-by-columns [(name :end-time)]
-                                                     :order-by-dirs [(name :asc)]})))
+(def offerings-ending-soon-url (path-with-query (path-for :route.offerings/search)
+                                                (url/map->query {:order-by-columns [(name :end-time)]
+                                                                 :order-by-dirs [(name :asc)]})))
 
-(def offerings-sold-url (str (path-for :route.offerings/search) "?"
-                             (url/map->query {:sold? true
-                                              :order-by-columns [(name :finalized-on)]
-                                              :order-by-dirs [(name :desc)]})))
+(def offerings-sold-url (path-with-query (path-for :route.offerings/search)
+                                         (url/map->query {:sold? true
+                                                          :order-by-columns [(name :finalized-on)]
+                                                          :order-by-dirs [(name :desc)]})))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))

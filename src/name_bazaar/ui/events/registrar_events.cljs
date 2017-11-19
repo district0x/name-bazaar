@@ -11,7 +11,8 @@
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
+    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
   :registrar/transfer

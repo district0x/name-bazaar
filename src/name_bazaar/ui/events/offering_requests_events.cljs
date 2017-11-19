@@ -111,4 +111,4 @@
   :offering-requests.list-item/expanded
   interceptors
   (fn [{:keys [:db]} [{:keys [:offering-request/name]}]]
-    {:dispatch [:name/load-all-details name]}))
+    {:dispatch [:name.all-details/load name]}))

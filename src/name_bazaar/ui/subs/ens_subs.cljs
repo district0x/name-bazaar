@@ -1,7 +1,8 @@
 (ns name-bazaar.ui.subs.ens-subs
   (:require
     [medley.core :as medley]
-    [name-bazaar.ui.utils :refer [ens-record-loaded?]]
+    [name-bazaar.shared.utils :refer [top-level-name? name-label]]
+    [name-bazaar.ui.utils :refer [namehash sha3 registrar-entry-deed-loaded? ens-record-loaded?]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
@@ -42,3 +43,33 @@
   (fn [[_ ens-record-node]]
     [(subscribe [:district0x/tx-pending? :ens :set-owner {:ens.record/node ens-record-node}])])
   first)
+
+
+(reg-sub
+  :ens.record/ownership-status
+  (fn [[_ name]]
+    (let [node (namehash name)
+          label-hash (sha3 (name-label name))]
+      [(subscribe [:ens.record/loaded? node])
+       (subscribe [:registrar.entry.deed/loaded? label-hash])
+       (subscribe [:ens.record/active-address-owner? node])
+       (subscribe [:registrar.entry.deed/active-address-owner? label-hash])]))
+  (fn [[ens-record-loaded? deed-loaded? active-address-ens-owner? active-address-deed-owner?] [_ name]]
+    (cond
+      (empty? name)
+      :ens.ownership-status/empty-name
+
+      (not (and ens-record-loaded?
+                (if (top-level-name? name)
+                  deed-loaded?
+                  true)))
+      :ens.ownership-status/loading
+
+      (not active-address-ens-owner?)
+      :ens.ownership-status/not-ens-record-owner
+
+      (and (top-level-name? name)
+           (not active-address-deed-owner?))
+      :ens.ownership-status/not-deed-owner
+
+      :else :ens.ownership-status/owner)))
