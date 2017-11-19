@@ -51,21 +51,21 @@
                      :routes constants/routes}))
 
 (def offerings-newest-url (path-with-query (path-for :route.offerings/search)
-                                           (url/map->query {:order-by-columns [(name :created-on)]
-                                                            :order-by-dirs [(name :desc)]})))
+                                           {:order-by-columns [(name :created-on)]
+                                            :order-by-dirs [(name :desc)]}))
 
 (def offerings-most-active-url (path-with-query (path-for :route.offerings/search)
-                                                (url/map->query {:order-by-columns [(name :bid-count)]
-                                                                 :order-by-dirs [(name :desc)]})))
+                                                {:order-by-columns [(name :bid-count)]
+                                                 :order-by-dirs [(name :desc)]}))
 
 (def offerings-ending-soon-url (path-with-query (path-for :route.offerings/search)
-                                                (url/map->query {:order-by-columns [(name :end-time)]
-                                                                 :order-by-dirs [(name :asc)]})))
+                                                {:order-by-columns [(name :end-time)]
+                                                 :order-by-dirs [(name :asc)]}))
 
 (def offerings-sold-url (path-with-query (path-for :route.offerings/search)
-                                         (url/map->query {:sold? true
-                                                          :order-by-columns [(name :finalized-on)]
-                                                          :order-by-dirs [(name :desc)]})))
+                                         {:sold? true
+                                          :order-by-columns [(name :finalized-on)]
+                                          :order-by-dirs [(name :desc)]}))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))
