@@ -31,6 +31,11 @@
     (events/listen js/window events/EventType.BLUR #(re-frame/dispatch dispatch))))
 
 (reg-fx
+  :window/on-hashchange
+  (fn [{:keys [:dispatch]}]
+    (events/listen js/window events/EventType.HASHCHANGE #(re-frame/dispatch dispatch))))
+
+(reg-fx
   :window/scroll-to-top
   (fn [_]
     (.scrollTo js/window 0 0)))

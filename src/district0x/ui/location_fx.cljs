@@ -4,7 +4,7 @@
     [cemerick.url :as url]
     [cljs.spec.alpha :as s]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :refer [current-location-hash current-url]]
     [goog.events :as events]
     [medley.core :as medley]
     [re-frame.core :as re-frame :refer [reg-fx]]))
@@ -14,7 +14,7 @@
 
 (defn set-history! [s]
   (history/set-state! s)
-  (re-frame/dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location @history/routes (history/get-state))]))
+  (re-frame/dispatch [:district0x/set-current-location-as-active-page @history/routes (history/get-state)]))
 
 (defn nav-to! [route route-params routes]
   (let [path (history/path-for {:route route
@@ -31,12 +31,12 @@
                     (string? query-params) (when (seq query-params)
                                              (str "?" query-params)))]
     (if history/hashroutes?
-      (set-location-hash! (str (d0x-ui-utils/current-location-hash) url-query))
+      (set-location-hash! (str (current-location-hash) url-query))
       (let [{:keys [:path]} (url/url (history/get-state))]
         (set-history! (str path url-query))))))
 
 (defn add-to-location-query! [query-params]
-  (let [current-query (:query (d0x-ui-utils/current-url))
+  (let [current-query (:query (current-url))
         new-query (merge current-query (->> query-params
                                          (medley/remove-keys nil?)
                                          (medley/map-keys name)))]

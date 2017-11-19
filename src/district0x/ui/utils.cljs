@@ -248,6 +248,10 @@
 (defn namehash [name]
   (js/EthEnsNamehash.hash name))
 
+(def prerender-user-agent?
+  (let [agent (.-userAgent (.-navigator js/window))]
+    (not (= (.indexOf agent "prerendercloud") -1))))
+
 
 
 

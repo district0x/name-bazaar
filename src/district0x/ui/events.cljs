@@ -21,6 +21,7 @@
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
     [district0x.ui.history :as history]
+    [district0x.ui.history-fx]
     [district0x.ui.interval-fx]
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
@@ -125,6 +126,12 @@
                                :db-path [:district0x/load-conversion-rates-interval]}})
 
         effects))))
+
+(reg-event-fx
+  :district0x/set-current-location-as-active-page
+  interceptors
+  (fn [_ args]
+    {:dispatch [:district0x/set-active-page (apply d0x-ui-utils/match-current-location (print.foo/look args))]}))
 
 (reg-event-fx
   :district0x/set-active-page
@@ -831,3 +838,9 @@
     {:dispatch-interval {:dispatch [:district0x/reload-my-addresses]
                          :ms 4000
                          :db-path [:district0x-reload-address-interval]}}))
+
+(reg-event-fx
+  :district0x.history/start
+  interceptors
+  (fn [_ [routes]]
+    {:history/start {:routes routes}}))

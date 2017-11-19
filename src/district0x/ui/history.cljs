@@ -1,7 +1,7 @@
 (ns district0x.ui.history
   (:require [bidi.bidi :as bidi]
             [clojure.string :as string]
-            [district0x.ui.utils :as d0x-ui-utils]
+            [district0x.ui.utils :refer [match-current-location]]
             [medley.core :as medley]
             [pushy.core :as pushy]
             [re-frame.core :as re-frame]))
@@ -19,10 +19,6 @@
                            .-hostname))
     true))
 
-(def prerender?
-  (let [agent (.-userAgent (.-navigator js/window))]
-    (not (= (.indexOf agent "prerendercloud") -1))))
-
 (defn path-for [{:keys [:route :route-params :routes]}]
   (let [path (medley/mapply bidi/path-for routes route route-params)]
     (if hashroutes?
@@ -32,7 +28,7 @@
 (defn- browser []
   (letfn [(dispatch-route [matched-route]
             (re-frame/dispatch [:district0x/set-active-page matched-route]))]
-    (pushy/pushy dispatch-route #(d0x-ui-utils/match-current-location @routes %))))
+    (pushy/pushy dispatch-route #(match-current-location @routes %))))
 
 (defn start! [ui-routes]
   (reset! routes ui-routes)

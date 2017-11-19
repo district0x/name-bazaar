@@ -7,11 +7,10 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
     [district0x.ui.db]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils]
+    [district0x.ui.utils :refer [get-window-size namehash match-current-location]]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [name-bazaar.ui.constants :as constants]
-    [re-frame.core :refer [dispatch]]
-    [district0x.ui.utils :refer [get-window-size namehash]]))
+    [re-frame.core :refer [dispatch]]))
 
 (goog-define environment "prod")
 (goog-define log-level "error")
@@ -29,7 +28,7 @@
    :server-url "https://api.namebazaar.io"})
 
 (defn get-config [env-name]
-  (get {"dev" development-config
+  (get {;"dev" development-config
         "prod" production-config} env-name production-config))
 
 (def default-db
@@ -37,8 +36,8 @@
     district0x.ui.db/default-db
     (get-config environment)
     {:active-page (if history/hashroutes?
-                    (d0x-ui-utils/match-current-location constants/routes)
-                    (d0x-ui-utils/match-current-location constants/routes (history/get-state)))
+                    (match-current-location constants/routes)
+                    (match-current-location constants/routes (history/get-state)))
      :smart-contracts smart-contracts
      :now (t/now)
 
