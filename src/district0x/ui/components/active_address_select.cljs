@@ -11,9 +11,10 @@
     (fn [{:keys [:select-field-props :single-address-props]}]
       (when (seq @my-addresses)
         (if (= 1 (count @my-addresses))
-          [:div.active-address-select.single-address
-           single-address-props
-           (truncate @active-address (or (:single-address-truncate single-address-props) 20))]
+          [:div.active-address-select.single-address.ellipsis
+           (dissoc single-address-props :address)
+           (truncate (get single-address-props :address @active-address)
+                     (or (:single-address-truncate single-address-props) 20))]
           [ui/Select
            (r/merge-props
              {:select-on-blur false

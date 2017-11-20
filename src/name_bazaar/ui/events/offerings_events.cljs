@@ -308,17 +308,22 @@
   :offerings/loaded
   interceptors
   (fn [{:keys [:db]} [offering-address {:keys [:load-ownership?]} offering]]
-    (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
+    (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?
+                  :offering/original-owner :auction-offering/winning-bidder :offering/new-owner] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
                     (update-in [:offerings offering-address] merge offering)
                     (update-in [:ens/records node] merge {:ens.record/node node
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
-             (when auction?
-               {:dispatch-n [[:offerings.auction/load [offering-address]]]})
-             (when load-ownership?
-               {:dispatch [:offerings.ownership/load [offering-address]]})))))
+             {:dispatch-n (concat
+                           [[:public-resolver.name/load original-owner]
+                            [:public-resolver.name/load new-owner]]
+                           (when auction?
+                             [[:offerings.auction/load [offering-address]]
+                              [:public-resolver.name/load winning-bidder]])
+                           (when load-ownership?
+                             [[:offerings.ownership/load [offering-address]]]))}))))
 
 (reg-event-fx
   :offerings.auction/load

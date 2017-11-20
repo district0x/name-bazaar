@@ -2,6 +2,7 @@
   (:require
     [district0x.ui.components.misc :as misc :refer [page]]
     [district0x.ui.utils :refer [truncate namehash]]
+    [name-bazaar.ui.utils :refer [truncated-address ]]
     [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
@@ -53,7 +54,8 @@
 
 (defn user-offerings []
   (let [search-results (subscribe [:offerings/user-offerings])
-        route-params (subscribe [:district0x/route-params])]
+        active-address (subscribe [:resolved-active-address])
+        route-params (subscribe [:resolved-route-params])]
     (fn [{:keys [:title :no-items-text]}]
       (let [{:keys [:items :loading? :params :total-count]} @search-results]
         [app-layout {:meta {:title (str "NameBazaar - " title)
@@ -75,12 +77,14 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             (when (:user/address @route-params)
-               [share-buttons
-                {:url
-                 @(subscribe [:page-share-url :route.user/offerings (select-keys @route-params [:user/address])])
-                 :title
-                 (str title " on NameBazaar")}])]]
+             [:div "Share"
+              [share-buttons
+               {:url
+                (if (:user/address @route-params)
+                  @(subscribe [:page-share-url :route.user/offerings @route-params])
+                  @(subscribe [:page-share-url :route.user/offerings {:user/address @active-address}]))
+                :title
+                (str title " on NameBazaar")}]]]]
            [ui/GridRow
             {:vertical-align :bottom}
             [ui/GridColumn
@@ -117,10 +121,9 @@
     :no-items-text "You haven't created any offerings yet"}])
 
 (defmethod page :route.user/offerings []
-  (let [route-params (subscribe [:district0x/route-params])]
+  (let [route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-offerings
-       {:title (str ((if-not (web3/address? (:user/address @route-params))
-                       identity
-                       #(truncate % 10)) (:user/address @route-params)) " Offerings")
+       {:title (str (truncated-address (:user/ens-name @route-params)
+                                       (:user/address @route-params)) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))
