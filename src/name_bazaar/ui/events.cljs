@@ -232,11 +232,10 @@
        addrs)})))
 
 (reg-event-fx
- :start-routing
+ :watch-my-addresses-loaded
  interceptors
  (fn []
-   (info "Starting routing")
-   (if history/hashroutes?
-     (set! (.-onhashchange js/window)
-           #(dispatch [:district0x/set-active-page (d0x-ui-utils/match-current-location constants/routes)]))
-     (history/start! constants/routes))))
+   {:forward-events
+    {:register :my-addreses-account-changed-fwd
+     :events #{:district0x/my-addresses-loaded}
+     :dispatch-to [:try-resolving-my-addresses]}}))

@@ -47,6 +47,7 @@
                                                                  (when-not prerender-user-agent?
                                                                    :district0x/my-addresses-loaded)])
                                            :dispatch-n [[:district0x/watch-my-eth-balances]
+                                                        [:watch-my-addresses-loaded]
                                                         [:try-resolving-address]
                                                         (if history/hashroutes?
                                                           [:active-page-changed]
