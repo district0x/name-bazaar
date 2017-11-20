@@ -154,10 +154,9 @@
 (defn try-resolving-address [db addr]
   (when-not (web3/address? addr)
     (let [addr-patched (tldize addr)]
-      (when-let [resolved (get-in db [:public-resolver/records
-                                      (namehash addr-patched)
-                                      :public-resolver.record/addr])]
-        resolved))))
+      (get-in db [:public-resolver/records
+                  (namehash addr-patched)
+                  :public-resolver.record/addr]))))
 
 (defn try-reverse-resolving-address [db addr]
   (when (web3/address? addr)
@@ -173,24 +172,18 @@
         (assoc :user/ens-name (tldize (:user/address params)))
         (assoc :user/address (try-resolving-address db (:user/address params))))))
 
-(defn human-address
-  ([params]
-   (human-address (:user/ens-name params)
-                  (:user/address params)))
+(defn truncated-address
   ([ens-name addr]
-   (human-address ens-name
+   (truncated-address ens-name
                   addr 10))
   ([ens-name addr trunc]
    (if (web3/address? addr)
      (if ens-name
        ens-name
        (truncate addr trunc))
-     (str (truncate ens-name trunc) " [resolving...]"))))
+     ens-name)))
 
-(defn full-address
-  ([params]
-   (full-address (:user/ens-name params)
-                 (:user/address params)))
+(defn display-address
   ([ens-name addr]
    (if (web3/address? addr)
      (if ens-name

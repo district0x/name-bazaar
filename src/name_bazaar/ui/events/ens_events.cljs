@@ -84,7 +84,7 @@
       {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
                                                                    d0x-shared-utils/zero-address
                                                                    resolver))
-       :dispatch [:public-resolver.record.addr/load resolver node]})))
+       :dispatch [:public-resolver.addr/load resolver node]})))
 
 (reg-event-fx
   :ens.records.active-offerings/loaded

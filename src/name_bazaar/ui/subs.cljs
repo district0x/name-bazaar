@@ -19,7 +19,7 @@
     [name-bazaar.ui.subs.registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
     [name-bazaar.ui.utils :refer [parse-query-params path-for resolve-params try-reverse-resolving-address
-                                  human-address full-address]]
+                                  display-address]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
     [reagent.ratom :refer-macros [reaction]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
@@ -76,20 +76,12 @@
       (resolve-params @db route-params)))))
 
 (reg-sub-raw
- :my-resolved-address
+ :resolved-active-address
  (fn [db p]
    (reaction
-    (let [my-address @(subscribe [:district0x/active-address])
-          rr (try-reverse-resolving-address @db my-address)]
-      (human-address rr my-address 20)))))
-
-(reg-sub-raw
- :my-full-resolved-address
- (fn [db p]
-   (reaction
-    (let [my-address @(subscribe [:district0x/active-address])
-          rr (try-reverse-resolving-address @db my-address)]
-      (full-address rr my-address)))))
+    (let [active-address @(subscribe [:district0x/active-address])
+          resolved-address (try-reverse-resolving-address @db active-address)]
+      (display-address resolved-address active-address)))))
 
 (reg-sub-raw
  :reverse-resolved-address

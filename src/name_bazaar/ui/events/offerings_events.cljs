@@ -318,11 +318,11 @@
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
              {:dispatch-n (concat
-                           [[:public-resolver.record-hash/load original-owner]
-                            [:public-resolver.record-hash/load new-owner]]
+                           [[:public-resolver.name/load original-owner]
+                            [:public-resolver.name/load new-owner]]
                            (when auction?
                              [[:offerings.auction/load [offering-address]]
-                              [:public-resolver.record-hash/load winning-bidder]])
+                              [:public-resolver.name/load winning-bidder]])
                            (when load-ownership?
                              [[:offerings.ownership/load [offering-address]]]))}))))
 
