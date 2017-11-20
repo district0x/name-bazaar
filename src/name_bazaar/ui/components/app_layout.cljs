@@ -75,6 +75,10 @@
                             :route :route.user/my-settings
                             :class :my-settings
                             :icon "settings"}
+                           {:text "Instant Registration"
+                            :route :route.registrar/instant-registration
+                            :class :register-name
+                            :icon "pencil"}
                            {:text "Register Name"
                             :route :route.registrar/register
                             :class :register-name
@@ -88,7 +92,7 @@
                             :class :about
                             :icon "question"}])
 
-(def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
+(def nav-menu-items-props-no-instant-registration (remove #(= (:route %) :route.registrar/instant-registration) nav-menu-items-props))
 
 (defn- format-user-address [address resolved-address]
   (if (= resolved-address address)
@@ -155,9 +159,9 @@
             {:style {:overflow-y :scroll}}
             [side-nav-menu-logo]
             (doall
-              (for [{:keys [:text :route :href :class :icon]} (if @use-instant-registrar?
-                                                                nav-menu-items-props
-                                                                nav-menu-items-props-no-register)]
+              (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
+                                                                          nav-menu-items-props
+                                                                          nav-menu-items-props-no-instant-registration)]
                 (let [href (or href (path-for route))]
                   [ui/MenuItem
                    {:key text

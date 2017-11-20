@@ -117,3 +117,5 @@
 @price-tag: "\e92c";
 @message-box: "\e92d";
 @hand: "\e92e";
+@google: "\e91b";
+@apple: "\e91c";

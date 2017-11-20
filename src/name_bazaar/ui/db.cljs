@@ -47,6 +47,7 @@
      :offering-requests {}
      :ens/records {}
      :registrar/entries {}
+     :registration-bids {}
      :public-resolver/reverse-records {}
      :public-resolver/records {}
      :district0x-emails {}
