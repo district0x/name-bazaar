@@ -36,6 +36,7 @@
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results tldize]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 
@@ -88,8 +89,9 @@
 
     :route.user/purchases
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.addr/loaded
+                                    :public-resolver.name/loaded]
                            :dispatch [:offerings.user-purchases/set-params-and-search
                                       {:new-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -102,8 +104,9 @@
 
     :route.user/bids
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.addr/loaded
+                                    :public-resolver.name/loaded]
                            :dispatch [:offerings.user-bids/set-params-and-search
                                       {:bidder (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -116,8 +119,9 @@
 
     :route.user/offerings
     {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen?
-                           :events [:public-resolver.record.addr/loaded]
+                  :rules [{:when :seen-any-of?
+                           :events [:public-resolver.addr/loaded
+                                    :public-resolver.name/loaded]
                            :dispatch [:offerings.user-offerings/set-params-and-search
                                       {:original-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -143,6 +147,7 @@
   :active-page-changed
   interceptors
   (fn [{:keys [:db]}]
+    (info "PAGE CHANGED")
     (merge
       {:forward-events {:unregister :active-address-changed}}
       (when (all-contracts-loaded? db)                      ;; Pushstate URLs fire first event too early
@@ -205,10 +210,32 @@
  interceptors
  (fn [{:keys [db]}]
    (let [addr (get-in db [:active-page :route-params :user/address])]
-     (info ["Try address" addr (web3/address? addr)])
+     (info ["TRY ADDR RESOLUTION" addr (web3/address? addr)])
      {:db db
       :dispatch
       (if-not (web3/address? addr)
         (let [addr-patched (tldize addr)]
           [:ens.records/load [(namehash addr-patched)] {:load-resolver? true}])
-        [:public-resolver.record.addr/loaded])})))
+        [:public-resolver.name/load addr])})))
+
+(reg-event-fx
+ :try-resolving-my-addresses
+ interceptors
+ (fn [{:keys [db]}]
+   (let [addrs (get-in db [:my-addresses])]
+     (info ["Trying my address" addrs ])
+     {:db db
+      :dispatch-n
+      (mapv
+       (fn [addr]
+         [:public-resolver.name/load addr])
+       addrs)})))
+
+(reg-event-fx
+ :watch-my-addresses-loaded
+ interceptors
+ (fn []
+   {:forward-events
+    {:register :my-addreses-account-changed-fwd
+     :events #{:district0x/my-addresses-loaded}
+     :dispatch-to [:try-resolving-my-addresses]}}))

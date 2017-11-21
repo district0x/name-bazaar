@@ -15,8 +15,12 @@
     [medley.core :as medley]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
+(defn reverse-record-node [addr]
+  (namehash (str (apply str (drop 2 addr))
+                 ".addr.reverse")))
+
 (reg-event-fx
- :public-resolver.record.addr/load
+ :public-resolver.addr/load
  interceptors
  (fn [{:keys [:db]} [resolver node]]
    (let [instance (get-instance db :public-resolver resolver)]
@@ -26,24 +30,41 @@
        [{:instance instance
          :method :addr
          :args [node]
-         :on-success [:public-resolver.record.addr/loaded resolver node]
+         :on-success [:public-resolver.addr/loaded resolver node]
          :on-error [:district0x.log/error]}]}})))
 
 (reg-event-fx
- :public-resolver.record.addr/loaded
+ :public-resolver.addr/loaded
  interceptors
  (fn [{:keys [:db]} [resolver node addr]]
-   (.log js/console ["Resolved node" node addr])
-   {:db (if (or
-             (not resolver)
-             (not node)
-             (not addr)
-             (= addr "0x"))
-          db
-          (assoc-in db [:public-resolvers
-                        resolver
-                        :public-resolver/records
+   (info [:RESOLVED-NODE resolver node addr])
+   (when-not (empty-address? addr)
+     {:db (assoc-in db [:public-resolver/records
                         node
-                        :public-resolver.record/addr] (if (= addr "0x")
-                                                        d0x-shared-utils/zero-address
-                                                        addr)))}))
+                        :public-resolver.record/addr] addr)})))
+
+(reg-event-fx
+ :public-resolver.name/load
+ interceptors
+ (fn [{:keys [:db]} [addr ]]
+   (let [node (reverse-record-node addr)
+         instance (get-instance db :public-resolver)]
+     (info [:REVERSE-RESOLVING-ADDR addr node instance])
+     {:web3-fx.contract/constant-fns
+      {:fns
+       [{:instance instance
+         :method :name
+         :args [node]
+         :on-success [:public-resolver.name/loaded addr]
+         :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+ :public-resolver.name/loaded
+ interceptors
+ (fn [{:keys [:db]} [addr name]]
+   (info [:REVERSE-RESOLVED-ADDR addr name])
+   (when (and name
+              (not= name ""))
+     {:db (assoc-in db [:public-resolver/reverse-records
+                        addr
+                        :public-resolver.record/name] name)})))

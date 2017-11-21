@@ -5,6 +5,7 @@
     [district0x.ui.components.snackbar :refer [snackbar]]
     [district0x.ui.components.transaction-log :refer [transaction-log]]
     [district0x.ui.history :as history]
+    [district0x.ui.utils :refer [truncate]]
     [name-bazaar.ui.components.app-bar-search :refer [app-bar-search]]
     [name-bazaar.ui.components.meta-tags :refer [meta-tags]]
     [name-bazaar.ui.utils :refer [offerings-newest-url offerings-most-active-url offerings-ending-soon-url path-for offerings-sold-url]]
@@ -87,11 +88,18 @@
 
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])]
+        my-addresses (subscribe [:district0x/my-addresses])
+        active-resolved-address (subscribe [:resolved-active-address])]
     (fn []
       [:div.app-bar
        [:div.left-section
-        [active-address-select]
+        [active-address-select {:single-address-props {:address @active-resolved-address}
+                                :select-field-props (doall
+                                                     (for [address @my-addresses]
+                                                       {:value address
+                                                        :text (truncate
+                                                               @(subscribe [:reverse-resolved-address address])
+                                                               20)}))}]
         [:i.icon.hamburger
          {:on-click (fn [e]
                       (dispatch [:district0x.menu-drawer/set true])
