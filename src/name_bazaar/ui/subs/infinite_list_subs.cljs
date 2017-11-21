@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.subs.infinite-list-subs
   (:require
+    [district0x.ui.utils :refer [path-with-query]]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub subscribe]]))
 
@@ -25,5 +26,11 @@
   :<- [:infinite-list/expanded-items]
   (fn [expanded-items [_ index]]
     (boolean (get expanded-items index))))
+
+(reg-sub
+  :infinite-list/next-page-url
+  :<- [:district0x/active-page]
+  (fn [{:keys [:path :query-params]} [_ offset]]
+    (path-with-query path (merge query-params {:offset offset}))))
 
 

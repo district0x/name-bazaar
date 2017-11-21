@@ -1031,6 +1031,9 @@ h4, h5, h6 {
     .infinite-list {
       padding-top: 0 !important;
     }
+    .infinite-list-next-page-link {
+        display: none;
+    }
   }
 
   .infinite-list {

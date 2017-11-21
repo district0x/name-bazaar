@@ -129,4 +129,9 @@
                                            loading-spinner-delegate)}
               (dissoc props :initial-load-limit :next-load-limit :offset :loading? :loading-spinner-delegate
                       :collapsed-item-height :on-infinite-load))
-            list-items]])))))
+            list-items]
+           ;; For bots only
+           (let [next-offset (+ offset next-load-limit)]
+             (when (< next-offset total-count)
+               [:a.infinite-list-next-page-link
+                {:href @(subscribe [:infinite-list/next-page-url next-offset])}]))])))))

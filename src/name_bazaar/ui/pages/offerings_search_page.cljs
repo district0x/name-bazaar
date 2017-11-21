@@ -12,6 +12,7 @@
     [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
+    [name-bazaar.ui.utils :refer [offerings-sold-query-params]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -224,7 +225,7 @@
                       (when (fn? on-click)
                         (on-click))
                       (dispatch [:district0x.location/set-query (if @sold-page?
-                                                                  (url/map->query {:sold? true})
+                                                                  offerings-sold-query-params
                                                                   "")]))})])))
 
 (defn search-params-panel []

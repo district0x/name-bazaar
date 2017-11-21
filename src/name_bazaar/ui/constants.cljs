@@ -29,8 +29,10 @@
                             :sub-level-names? parse-boolean-string
                             :order-by-dirs parse-kw-coll-query-params
                             :order-by-columns parse-kw-coll-query-params
-                            :sold? parse-boolean-string}
-   :route.offering-requests/search {:name-position keyword}})
+                            :sold? parse-boolean-string
+                            :offset parse-int-or-nil}
+   :route.offering-requests/search {:name-position keyword
+                                    :offset parse-int-or-nil}})
 
 (def routes shared-constants/routes)
 

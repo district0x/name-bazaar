@@ -62,10 +62,12 @@
                                                 {:order-by-columns [(name :end-time)]
                                                  :order-by-dirs [(name :asc)]}))
 
+(def offerings-sold-query-params {:sold? true
+                                  :order-by-columns [(name :finalized-on)]
+                                  :order-by-dirs [(name :desc)]})
+
 (def offerings-sold-url (path-with-query (path-for :route.offerings/search)
-                                         {:sold? true
-                                          :order-by-columns [(name :finalized-on)]
-                                          :order-by-dirs [(name :desc)]}))
+                                         offerings-sold-query-params))
 
 (defn etherscan-ens-url [name]
   (gstring/format "https://etherscan.io/enslookup?q=%s" name))
