@@ -19,6 +19,7 @@
     [name-bazaar.ui.pages.user-offerings-page]
     [name-bazaar.ui.pages.user-purchases-page]
     [name-bazaar.ui.pages.watched-names-page]
+    [name-bazaar.ui.pages.manage-names-page]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
