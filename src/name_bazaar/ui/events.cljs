@@ -176,8 +176,12 @@
   interceptors
   (fn [{:keys [:db]} [name]]
     (let [node (namehash name)]
-      (merge {:dispatch-n [[:ens.records/load [node] {:load-resolver? true}]
-                           [:offering-requests.has-requested/load node (:my-addresses db)]]}
+      (merge {:dispatch-n [[:offering-requests.has-requested/load node (:my-addresses db)]]
+              :async-flow {:first-dispatch [:ens.records/load [node] {:load-resolver? true}]
+                           :rules [{:when :seen?
+                                    :events [:ens.records.owner/loaded]
+                                    :halt? true
+                                    :dispatch [:ens.records.owner/resolve node]}]}}
              (when (top-level-name? name)
                {:dispatch [:registrar.entries/load [(name->label-hash name)]]})))))
 

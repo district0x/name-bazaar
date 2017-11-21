@@ -9,7 +9,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley]
@@ -96,3 +96,10 @@
                                    emptied-active-offerings
                                    active-offerings)]
       {:db (update db :ens/records merge-in active-offerings)})))
+
+(reg-event-fx
+  :ens.records.owner/resolve
+  interceptors
+  (fn [{:keys [:db]} [node]]
+    (let [{:keys [:ens.record/owner]} (get-ens-record db node)]
+      {:dispatch [:public-resolver.name/load owner]})))

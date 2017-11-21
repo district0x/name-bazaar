@@ -85,6 +85,9 @@
    :offering.status/missing-ownership "Missing Ownership"
    :offering.status/auction-ended "Auction Ended"})
 
+(defn get-ens-record [db node]
+  (get-in db [:ens/records node]))
+
 (defn get-ens-record-name [db node]
   (get-in db [:ens/records node :ens.record/name]))
 

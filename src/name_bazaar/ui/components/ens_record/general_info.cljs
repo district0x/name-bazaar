@@ -2,12 +2,13 @@
   (:require
     [district0x.shared.utils :refer [empty-address? zero-address?]]
     [district0x.ui.components.misc :refer [etherscan-link]]
-    [name-bazaar.ui.utils :refer [namehash path-for]]
+    [name-bazaar.ui.utils :refer [namehash path-for strip-root-registrar-suffix]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
 (defn ens-record-general-info [{:keys [:ens.record/name] :as props}]
-  (let [{:keys [:ens.record/owner :ens.record/resolver]} @(subscribe [:ens/record (namehash name)])]
+  (let [{:keys [:ens.record/owner :ens.record/resolver]} @(subscribe [:ens/record (namehash name)])
+        resolved-owner @(subscribe [:reverse-resolved-address owner])]
     [:div.ens-record-general-info.description
      (dissoc props :ens.record/name)
      [:div [:b "ENS Information"]]
@@ -15,8 +16,8 @@
       "Owner: " (cond
                   (not (empty-address? owner))
                   [:a
-                   {:href (path-for :route.user/offerings {:user/address owner})}
-                   owner]
+                   {:href (path-for :route.user/offerings {:user/address (strip-root-registrar-suffix resolved-owner)})}
+                   resolved-owner]
 
                   (zero-address? owner)
                   "none"
