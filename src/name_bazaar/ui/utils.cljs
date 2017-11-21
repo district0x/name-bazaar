@@ -37,8 +37,8 @@
     (str name constants/registrar-root)
     name))
 
-(defn strip-eth-suffix [s]
-  (if (and (string? s) (string/ends-with? s ".eth"))
+(defn strip-root-registrar-suffix [s]
+  (if (and (string? s) (string/ends-with? s constants/registrar-root))
     (subs s 0 (- (count s) 4))
     s))
 
@@ -147,48 +147,23 @@
     (and (= (count changed-keys) 1)
          (contains? (set ks) (first changed-keys)))))
 
-(defn tldize [name]
+(defn ensure-registrar-root-suffix [name]
   (when name
-    (if (re-matches #"(?i).*\.etH$" name)
+    (if (string/ends-with? name constants/registrar-root)
       name
-      (str name ".eth"))))
+      (str name constants/registrar-root))))
 
-(defn try-resolving-address [db addr]
-  (when-not (web3/address? addr)
-    (let [addr-patched (tldize addr)]
-      (get-in db [:public-resolver/records
-                  (namehash addr-patched)
-                  :public-resolver.record/addr]))))
+(defn resolve-address [db name]
+  (if-not (web3/address? name)
+    (let [addr-patched (ensure-registrar-root-suffix name)]
+      (get-in db [:public-resolver/records (namehash addr-patched) :public-resolver.record/addr]))
+    name))
 
-(defn try-reverse-resolving-address [db addr]
+(defn reverse-resolve-address [reverse-records addr]
   (when (web3/address? addr)
-    (when-let [resolved (get-in db [:public-resolver/reverse-records
-                                    addr
-                                    :public-resolver.record/name])]
-      resolved)))
+    (get-in reverse-records [addr :public-resolver.record/name])))
 
-(defn resolve-params [db params]
-  (if (web3/address? (:user/address params))
-    (assoc params :user/ens-name (try-reverse-resolving-address db (:user/address params)))
-    (-> params
-        (assoc :user/ens-name (tldize (:user/address params)))
-        (assoc :user/address (try-resolving-address db (:user/address params))))))
-
-(defn truncated-address
-  ([ens-name addr]
-   (truncated-address ens-name
-                  addr 10))
-  ([ens-name addr trunc]
-   (if (web3/address? addr)
-     (if ens-name
-       ens-name
-       (truncate addr trunc))
-     ens-name)))
-
-(defn display-address
-  ([ens-name addr]
-   (if (web3/address? addr)
-     (if ens-name
-       ens-name
-       addr)
-     ens-name)))
+(defn user-name [name-or-addr & [trunc]]
+  (if (web3/address? name-or-addr)
+    (truncate name-or-addr (or trunc 10))
+    (strip-root-registrar-suffix name-or-addr)))

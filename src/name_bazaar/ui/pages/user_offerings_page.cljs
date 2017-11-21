@@ -2,15 +2,14 @@
   (:require
     [district0x.ui.components.misc :as misc :refer [page]]
     [district0x.ui.utils :refer [truncate namehash]]
-    [name-bazaar.ui.utils :refer [truncated-address ]]
     [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.share-buttons :refer [share-buttons]]
+    [name-bazaar.ui.utils :refer [user-name]]
     [re-frame.core :refer [subscribe dispatch]]
-    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-offerings-order-by-select []
@@ -77,7 +76,7 @@
               :tablet 8
               :mobile 16
               :floated "right"}
-             [:div "Share"
+             [:div
               [share-buttons
                {:url
                 (if (:user/address @route-params)
@@ -124,6 +123,5 @@
   (let [route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-offerings
-       {:title (str (truncated-address (:user/ens-name @route-params)
-                                       (:user/address @route-params)) " Offerings")
+       {:title (str (user-name (:user/address @route-params)) " Offerings")
         :no-items-text "This user hasn't created any offerings yet"}])))

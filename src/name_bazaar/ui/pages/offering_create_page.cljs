@@ -14,7 +14,7 @@
     [name-bazaar.ui.components.loading-placeholders :refer [content-placeholder]]
     [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize strip-eth-suffix valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -119,7 +119,7 @@
 
 (defn- transaction-data->form-data [{:keys [:offering/auction?] :as offering}]
   (cond-> offering
-    true (update :offering/name strip-eth-suffix)
+    true (update :offering/name strip-root-registrar-suffix)
     auction? (update :auction-offering/end-time to-date)
     auction? (update :auction-offering/extension-duration seconds->hours)))
 
@@ -297,4 +297,4 @@
           [:h1.ui.header.padded "Create Offering"]
           [offering-form
            {:default-name (when (and name (valid-ens-name? name))
-                            (strip-eth-suffix (normalize name)))}]]]))))
+                            (strip-root-registrar-suffix (normalize name)))}]]]))))

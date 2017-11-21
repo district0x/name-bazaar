@@ -7,8 +7,8 @@
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
+    [name-bazaar.ui.utils :refer [user-name]]
     [re-frame.core :refer [subscribe dispatch]]
-    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-purchases-order-by-select []
@@ -75,10 +75,8 @@
     :no-items-text "You have not purchased any names yet"}])
 
 (defmethod page :route.user/purchases []
-  (let [route-params (subscribe [:district0x/route-params])]
+  (let [route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-purchases
-       {:title (str ((if-not (web3/address? (:user/address @route-params))
-                       identity
-                       #(truncate % 10)) (:user/address @route-params)) " Purchases")
+       {:title (str (user-name (:user/address @route-params)) " Purchases")
         :no-items-text "This user hasn't purchased any names yet"}])))

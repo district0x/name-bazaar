@@ -34,7 +34,7 @@
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results tldize]]
+    [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
@@ -43,6 +43,12 @@
 (def active-address-changed-forwarding {:register :active-address-changed
                                         :events #{:district0x/set-active-address}
                                         :dispatch-to [:active-page-changed]})
+
+(defn- reverse-resolved-route-address? [address event]
+  (if (web3/address? address)
+    true
+    (and (= (first event) :public-resolver.addr/loaded)
+         (= (second event) (namehash (ensure-registrar-root-suffix address))))))
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
   (info [:HANDLER handler])
@@ -71,6 +77,7 @@
                              :dispatch-n [[:offerings.ownership/load [address]]
                                           [:offerings.auction.my-addresses-pending-returns/load address]
                                           [:offerings/watch [address]]
+                                          [:offerings/resolve-addresses address]
                                           [:offerings.similar-offerings/set-params-and-search
                                            {:offering/address address}
                                            {:reset-params? true}]]}]}})
@@ -88,10 +95,10 @@
     {:dispatch [:watched-names/load-all]}
 
     :route.user/purchases
-    {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen-any-of?
-                           :events [:public-resolver.addr/loaded
-                                    :public-resolver.name/loaded]
+    {:async-flow {:first-dispatch [:resolve-route-user-address]
+                  :rules [{:when :seen?
+                           :events [(partial reverse-resolved-route-address? (:user/address route-params))]
+                           :halt? true
                            :dispatch [:offerings.user-purchases/set-params-and-search
                                       {:new-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -103,10 +110,10 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/bids
-    {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen-any-of?
-                           :events [:public-resolver.addr/loaded
-                                    :public-resolver.name/loaded]
+    {:async-flow {:first-dispatch [:resolve-route-user-address]
+                  :rules [{:when :seen?
+                           :events [(partial reverse-resolved-route-address? (:user/address route-params))]
+                           :halt? true
                            :dispatch [:offerings.user-bids/set-params-and-search
                                       {:bidder (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -118,10 +125,10 @@
      :forward-events active-address-changed-forwarding}
 
     :route.user/offerings
-    {:async-flow {:first-dispatch [:try-resolving-address]
-                  :rules [{:when :seen-any-of?
-                           :events [:public-resolver.addr/loaded
-                                    :public-resolver.name/loaded]
+    {:async-flow {:first-dispatch [:resolve-route-user-address]
+                  :rules [{:when :seen?
+                           :events [(partial reverse-resolved-route-address? (:user/address route-params))]
+                           :halt? true
                            :dispatch [:offerings.user-offerings/set-params-and-search
                                       {:original-owner (:user/address route-params)}
                                       {:reset-params? true}]}]}}
@@ -150,8 +157,7 @@
     (info "PAGE CHANGED")
     (merge
       {:forward-events {:unregister :active-address-changed}}
-      (when (all-contracts-loaded? db)                      ;; Pushstate URLs fire first event too early
-        (route->initial-effects (:active-page db) db))
+      (route->initial-effects (:active-page db) db)
       {:district0x/dispatch [:offerings/stop-watching-all]
        :db (assoc-in db [:infinite-list :expanded-items] {})})))
 
@@ -206,36 +212,30 @@
                          :db-path [:update-now-interval]}}))
 
 (reg-event-fx
- :try-resolving-address
- interceptors
- (fn [{:keys [db]}]
-   (let [addr (get-in db [:active-page :route-params :user/address])]
-     (info ["TRY ADDR RESOLUTION" addr (web3/address? addr)])
-     {:db db
-      :dispatch
-      (if-not (web3/address? addr)
-        (let [addr-patched (tldize addr)]
-          [:ens.records/load [(namehash addr-patched)] {:load-resolver? true}])
-        [:public-resolver.name/load addr])})))
+  :resolve-route-user-address
+  interceptors
+  (fn [{:keys [db]}]
+    (let [name-or-addr (get-in db [:active-page :route-params :user/address])]
+      (info ["TRY ADDR RESOLUTION" name-or-addr])
+      (if (web3/address? name-or-addr)
+        {:dispatch [:public-resolver.name/load name-or-addr]}
+        {:dispatch [:public-resolver.addr/load (namehash (ensure-registrar-root-suffix name-or-addr))]}))))
 
 (reg-event-fx
- :try-resolving-my-addresses
- interceptors
- (fn [{:keys [db]}]
-   (let [addrs (get-in db [:my-addresses])]
-     (info ["Trying my address" addrs ])
-     {:db db
-      :dispatch-n
-      (mapv
-       (fn [addr]
-         [:public-resolver.name/load addr])
-       addrs)})))
+  :resolve-my-addresses
+  interceptors
+  (fn [{:keys [db]}]
+    (let [addrs (get-in db [:my-addresses])]
+      (info ["Trying my address" addrs])
+      {:db db
+       :dispatch-n (map #(vec [:public-resolver.name/load %]) addrs)})))
 
 (reg-event-fx
- :watch-my-addresses-loaded
- interceptors
- (fn []
-   {:forward-events
-    {:register :my-addreses-account-changed-fwd
-     :events #{:district0x/my-addresses-loaded}
-     :dispatch-to [:try-resolving-my-addresses]}}))
+  :watch-my-addresses-changed
+  interceptors
+  (fn []
+    {:dispatch [:resolve-my-addresses]
+     :forward-events
+     {:register :my-addresess-changed-fwd
+      :events #{:district0x/my-addresses-changed}
+      :dispatch-to [:resolve-my-addresses]}}))

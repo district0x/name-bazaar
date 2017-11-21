@@ -137,7 +137,9 @@
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
-                                             :registrar/entries]
+                                             :registrar/entries
+                                             :public-resolver/records
+                                             :public-resolver/reverse-records]
                                        :req-un [::offerings
                                                 ::offering-requests
                                                 ::infinite-list
@@ -146,6 +148,4 @@
                                                 ::search-results
                                                 ::saved-searches
                                                 ::offerings-main-search-drawer]
-                                       :opts [:offerings/total-count
-                                              :public-resolver/records
-                                              :public-resolver/reverse-records])))
+                                       :opts [:offerings/total-count])))

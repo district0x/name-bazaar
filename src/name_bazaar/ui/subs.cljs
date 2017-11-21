@@ -16,10 +16,10 @@
     [name-bazaar.ui.subs.infinite-list-subs]
     [name-bazaar.ui.subs.offering-requests-subs]
     [name-bazaar.ui.subs.offerings-subs]
+    [name-bazaar.ui.subs.public-resolver-subs]
     [name-bazaar.ui.subs.registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
-    [name-bazaar.ui.utils :refer [parse-query-params path-for resolve-params try-reverse-resolving-address
-                                  display-address]]
+    [name-bazaar.ui.utils :refer [parse-query-params path-for reverse-resolve-address strip-root-registrar-suffix]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
     [reagent.ratom :refer-macros [reaction]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
@@ -53,40 +53,34 @@
     (get-in db (concat [:search-results] db-path))))
 
 (reg-sub
- :page-share-url
- :<- [:root-url]
- :<- [:district0x/active-address]
- (fn [[root-url my-address] [_ route params]]
-   (string/replace
-    (str
-     root-url
-     (path-for route (merge
-                      (when my-address
-                        {:user/address (str my-address)})
-                      (if (:user/ens-name params)
-                        (set/rename-keys params {:user/ens-name :user/address})
-                        params))))
-    "#" "")))
+  :page-share-url
+  :<- [:root-url]
+  (fn [root-url [_ route params]]
+    (string/replace
+      (str
+        root-url
+        (path-for route (update params :user/address strip-root-registrar-suffix)))
+      "#" "")))
 
-(reg-sub-raw
- :resolved-route-params
- (fn [db p]
-   (reaction
-    (let [route-params @(subscribe [:district0x/route-params])]
-      (resolve-params @db route-params)))))
-
-(reg-sub-raw
- :resolved-active-address
- (fn [db p]
-   (reaction
-    (let [active-address @(subscribe [:district0x/active-address])
-          resolved-address (try-reverse-resolving-address @db active-address)]
-      (display-address resolved-address active-address)))))
-
-(reg-sub-raw
+(reg-sub
  :reverse-resolved-address
- (fn [db [_ addr]]
-   (reaction
-    (if-let [ra (try-reverse-resolving-address @db addr)]
-      ra
-      addr))))
+ :<- [:public-resolver/reverse-records]
+ (fn [reverse-records [_ address]]
+   (or (reverse-resolve-address reverse-records address) address)))
+
+(reg-sub
+  :resolved-active-address
+  :<- [:district0x/active-address]
+  :<- [:public-resolver/reverse-records]
+  (fn [[active-address reverse-records]]
+    (or (reverse-resolve-address reverse-records active-address) active-address)))
+
+(reg-sub
+  :resolved-route-params
+  :<- [:district0x/route-params]
+  :<- [:public-resolver/reverse-records]
+  (fn [[route-params reverse-records]]
+    (cond-> route-params
+      (:user/address route-params)
+      (update :user/address #(or (reverse-resolve-address reverse-records (:user/address route-params))
+                                 (:user/address route-params))))))

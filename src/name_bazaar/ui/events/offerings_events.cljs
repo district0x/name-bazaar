@@ -14,7 +14,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? try-resolving-address]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
@@ -317,11 +317,8 @@
                                                           :ens.record/name name
                                                           :ens.record/label-hash label-hash}))}
              {:dispatch-n (concat
-                           [[:public-resolver.name/load original-owner]
-                            [:public-resolver.name/load new-owner]]
                            (when auction?
-                             [[:offerings.auction/load [offering-address]]
-                              [:public-resolver.name/load winning-bidder]])
+                             [[:offerings.auction/load [offering-address]]])
                            (when load-ownership?
                              [[:offerings.ownership/load [offering-address]]]))}))))
 
@@ -335,6 +332,18 @@
               :method :auction-offering
               :on-success [:offerings.auction/loaded offering-address]
               :on-error [:district0x.log/error]})}}))
+
+(reg-event-fx
+  :offerings/resolve-addresses
+  interceptors
+  (fn [{:keys [:db]} [offering-address]]
+    (let [{:keys [:offering/original-owner :offering/new-owner :offering/auction? :offering/winning-bidder]}
+          (get-offering db offering-address)]
+      {:dispatch-n (concat
+                     [[:public-resolver.name/load original-owner]
+                      [:public-resolver.name/load new-owner]]
+                     (when auction?
+                       [[:public-resolver.name/load winning-bidder]]))})))
 
 (reg-event-fx
   :offerings.auction/loaded
@@ -440,7 +449,8 @@
     {:dispatch-n [[:offerings.ownership/load [address]]
                   [:offerings.auction.my-addresses-pending-returns/load address]
                   [:offerings/watch [address]]
-                  [:offerings/load [address]]]}))
+                  [:offerings/load [address]]
+                  [:offerings/resolve-addresses address]]}))
 
 (reg-event-fx
   :offerings.list-item/collapsed
@@ -520,7 +530,7 @@
   (fn [{:keys [:db]} [search-params opts]]
     (let [search-params (if (and (:new-owner search-params)
                                  (not (web3/address? (:new-owner search-params))))
-                          (update search-params :new-owner (partial try-resolving-address db))
+                          (update search-params :new-owner (partial resolve-address db))
                           search-params)
           search-results-path [:search-results :offerings :user-purchases]
           search-params-path (conj search-results-path :params)
@@ -536,7 +546,7 @@
   (fn [{:keys [:db]} [search-params opts]]
     (let [search-params (if (and (:original-owner search-params)
                                  (not (web3/address? (:original-owner search-params))))
-                          (update search-params :original-owner (partial try-resolving-address db))
+                          (update search-params :original-owner (partial resolve-address db))
                           search-params)
           search-results-path [:search-results :offerings :user-offerings]
           search-params-path (conj search-results-path :params)
@@ -559,7 +569,7 @@
   (fn [{:keys [:db]} [search-params opts]]
     (let [search-params (if (and (:bidder search-params)
                                  (not (web3/address? (:bidder search-params))))
-                          (update search-params :bidder (partial try-resolving-address db))
+                          (update search-params :bidder (partial resolve-address db))
                           search-params)
           search-results-path [:search-results :offerings :user-bids]
           search-params-path (conj search-results-path :params)

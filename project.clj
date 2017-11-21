@@ -155,7 +155,8 @@
                                    :optimizations :advanced
                                    :closure-defines {goog.DEBUG false
                                                      name-bazaar.ui.db.environment "prod"
-                                                     district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"}
+                                                     district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"
+                                                     name-bazaar.ui.db.log-level "error"}
                                    :pretty-print false
                                    :pseudo-names false}}
                        {:id "server-tests"

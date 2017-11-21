@@ -94,12 +94,10 @@
       [:div.app-bar
        [:div.left-section
         [active-address-select {:single-address-props {:address @active-resolved-address}
-                                :select-field-props (doall
-                                                     (for [address @my-addresses]
-                                                       {:value address
-                                                        :text (truncate
-                                                               @(subscribe [:reverse-resolved-address address])
-                                                               20)}))}]
+                                :select-field-props {:options (doall
+                                                                (for [address @my-addresses]
+                                                                  {:value address
+                                                                   :text @(subscribe [:reverse-resolved-address address])}))}}]
         [:i.icon.hamburger
          {:on-click (fn [e]
                       (dispatch [:district0x.menu-drawer/set true])

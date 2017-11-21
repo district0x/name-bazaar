@@ -239,7 +239,11 @@
       (merge
         {:db (assoc db :my-addresses addresses)}
         (when-not (= (:active-address db) active-address)
-          {:dispatch [:district0x/set-active-address active-address]})))))
+          {:dispatch [:district0x/set-active-address active-address]})
+        (when-not (= addresses (:my-addresses db))
+          {:dispatch [:district0x/my-addresses-changed]})))))
+
+(reg-empty-event-fx :district0x/my-addresses-changed)
 
 (reg-event-fx
   :district0x/deploy-contract

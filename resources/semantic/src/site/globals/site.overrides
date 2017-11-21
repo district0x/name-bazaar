@@ -720,6 +720,13 @@ h4, h5, h6 {
         align-items: left;
         width: 250px;
         padding: 0 10px;
+        .active-address-select {
+            .item {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
         @media only screen and (max-width: @largestTabletScreen) {
           width: @appBarHeight;
           .active-address-select {

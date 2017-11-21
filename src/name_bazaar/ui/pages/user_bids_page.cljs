@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.pages.user-bids-page
   (:require
+    [cljs-web3.core :as web3]
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.utils :refer [truncate]]
     [medley.core :as medley]
@@ -7,8 +8,8 @@
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
+    [name-bazaar.ui.utils :refer [user-name]]
     [re-frame.core :refer [subscribe dispatch]]
-    [cljs-web3.core :as web3]
     [soda-ash.core :as ui]))
 
 (defn user-bids-order-by-select []
@@ -107,10 +108,8 @@
     :no-items-text "You don't have bid in any active auction currently"}])
 
 (defmethod page :route.user/bids []
-  (let [route-params (subscribe [:district0x/route-params])]
+  (let [route-params (subscribe [:resolved-route-params])]
     (fn []
       [user-bids
-       {:title (str ((if-not (web3/address? (:user/address @route-params))
-                       identity
-                       #(truncate % 10)) (:user/address @route-params)) " Bids")
+       {:title (str (user-name (:user/address @route-params)) " Bids")
         :no-items-text "This user currently doesn't have bids in any active auction"}])))

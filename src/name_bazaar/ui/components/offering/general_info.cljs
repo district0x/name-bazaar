@@ -4,21 +4,23 @@
     [district0x.shared.utils :refer [epoch->long empty-address?]]
     [district0x.ui.components.misc :refer [etherscan-link]]
     [district0x.ui.utils :refer [format-time-duration-units format-eth-with-code format-time-duration-units format-local-datetime time-ago]]
-    [name-bazaar.ui.utils :refer [path-for]]
+    [name-bazaar.ui.utils :refer [path-for strip-root-registrar-suffix]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]))
 
 (defn offering-original-owner-line [{:keys [:offering/original-owner :offering/address]}]
-  [:div.ellipsis
-   "Offered by"
-   (when @(subscribe [:offering/active-address-original-owner? address]) " (You)")
-   ": "
-   [:a
-    {:href (path-for :route.user/offerings {:user/address original-owner})}
-    @(subscribe [:reverse-resolved-address original-owner])]])
+  (let [resolved-address @(subscribe [:reverse-resolved-address original-owner])]
+    [:div.ellipsis
+     "Offered by"
+     (when @(subscribe [:offering/active-address-original-owner? address]) " (You)")
+     ": "
+     [:a
+      {:href (path-for :route.user/offerings {:user/address (strip-root-registrar-suffix resolved-address)})}
+      resolved-address]]))
 
 (defn offering-new-owner-line [{:keys [:offering/new-owner :offering/address]}]
-  (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])]
+  (let [active-address-new-owner? @(subscribe [:offering/active-address-new-owner? address])
+        resolved-address @(subscribe [:reverse-resolved-address new-owner])]
     [:div.ellipsis
      [:span
       {:class (when active-address-new-owner? :purple)}
@@ -26,8 +28,8 @@
       (when active-address-new-owner? " you")
       ": "]
      [:a
-      {:href (path-for :route.user/purchases {:user/address new-owner})}
-      @(subscribe [:reverse-resolved-address new-owner])]]))
+      {:href (path-for :route.user/purchases {:user/address (strip-root-registrar-suffix resolved-address)})}
+      resolved-address]]))
 
 (defn offering-address-line [{:keys [:offering/address]}]
   [:div.ellipsis
@@ -42,11 +44,13 @@
                        (format-eth-with-code value)]]))
 
 (defn auction-offering-winning-bidder-line [{:keys [:auction-offering/winning-bidder]}]
-  [:div.ellipsis "Winning bidder: " (if winning-bidder
-                                      [:a
-                                       {:href (path-for :route.user/bids {:user/address winning-bidder})}
-                                       @(subscribe [:reverse-resolved-address winning-bidder])]
-                                      "none")])
+  (let [resolved-address @(subscribe [:reverse-resolved-address winning-bidder])]
+    [:div.ellipsis "Winning bidder: "
+     (if winning-bidder
+       [:a
+        {:href (path-for :route.user/bids {:user/address (strip-root-registrar-suffix resolved-address)})}
+        resolved-address]
+       "none")]))
 
 (defn offering-created-on-line [{:keys [:offering/created-on]}]
   [:div.ellipsis
