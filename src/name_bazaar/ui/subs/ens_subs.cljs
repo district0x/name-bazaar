@@ -1,7 +1,7 @@
 (ns name-bazaar.ui.subs.ens-subs
   (:require
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [top-level-name? name-label]]
+    [name-bazaar.shared.utils :refer [top-level-name? name-label normalize]]
     [name-bazaar.ui.utils :refer [namehash sha3 registrar-entry-deed-loaded? ens-record-loaded?]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
@@ -73,3 +73,15 @@
       :ens.ownership-status/not-deed-owner
 
       :else :ens.ownership-status/owner)))
+
+(reg-sub
+ :ens.record/resolver
+ :<- [:ens/records]
+ (fn [records [_ node]]
+   (get-in records [node :ens.record/resolver])))
+
+(reg-sub
+ :ens.record/standard-resolver?
+ (fn [db [_ node]]
+   (= (normalize (get-in db [:smart-contracts :public-resolver :address]))
+      (normalize @(subscribe [:ens.record/resolver node])))))
