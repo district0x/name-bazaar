@@ -135,7 +135,7 @@
             :class "join-upper"}
            [:p.input-info
             (str
-             " Pointing  your name to address will allow other to send funds to " name ", instead of hexadecimal number ")]
+             " Pointing  your name to address will allow other to send funds to " full-name ", instead of hexadecimal number ")]
            (when-not standard-resolver? 
              [:p.input-info
               " Before you can point your name to an address, you must setup resolver for your name"])]]
@@ -149,7 +149,7 @@
                ;; :pending? @(subscribe [:name-manager/tx-pending? address])
                :pending-text "Saving Changes..."
                :on-click (fn []
-                           (dispatch [(dispatch [:name-manager/setup-resolver @form-data])]))}
+                           (dispatch [(dispatch [:ens.records/setup-public-resolver full-name])]))}
               "Setup resolver"]
              [transaction-button
               {:primary true

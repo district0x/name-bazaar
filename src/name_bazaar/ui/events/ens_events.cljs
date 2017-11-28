@@ -103,3 +103,23 @@
   (fn [{:keys [:db]} [node]]
     (let [{:keys [:ens.record/owner]} (get-ens-record db node)]
       {:dispatch [:public-resolver.name/load owner]})))
+
+(reg-event-fx
+  :ens.records/setup-public-resolver
+  interceptors
+  (fn [{:keys [:db]} [name]]
+    (let [instance (get-instance db :ens)
+          public-resolver (get-in db [:smart-contracts :public-resolver :address])]
+      (info [:SET-RESOLVER-NODES name public-resolver])
+      {:web3-fx.contract/constant-fns
+       {:fns [{:instance instance
+               :method :setResolver
+               :args [(namehash name) public-resolver]
+               :on-success [:ens.records/setup-public-resolver-completed name]
+               :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+  :ens.records/setup-public-resolver-completed
+  interceptors
+  (fn [{:keys [:db]} [name]]
+    nil))
