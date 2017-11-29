@@ -52,7 +52,7 @@
        {:class (cond
                  error? :error
                  (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
-       [:div (str "resolver>" standard-resolver? "<")]
+       ;;[:div (str "resolver>" standard-resolver? "<")]
        [ens-name-input
         (r/merge-props
           {:label "Name"
@@ -127,7 +127,8 @@
               :mobile 16}
              [address-text-field
               {:value address
-               :disabled editing?
+               :disabled (or (not standard-resolver?)
+                             editing?)
                :on-change #(swap! form-data assoc :name-manager/address (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
@@ -136,7 +137,7 @@
            [:p.input-info
             (str
              " Pointing  your name to address will allow other to send funds to " full-name ", instead of hexadecimal number ")]
-           (when-not standard-resolver? 
+           (when-not standard-resolver?
              [:p.input-info
               " Before you can point your name to an address, you must setup resolver for your name"])]]
          [ui/GridRow
@@ -149,7 +150,7 @@
                ;; :pending? @(subscribe [:name-manager/tx-pending? address])
                :pending-text "Saving Changes..."
                :on-click (fn []
-                           (dispatch [(dispatch [:ens.records/setup-public-resolver full-name])]))}
+                           (dispatch [:ens.records/setup-public-resolver full-name]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
@@ -157,7 +158,9 @@
                ;; :pending? @(subscribe [:name-manager/tx-pending? address])
                :pending-text "Saving Changes..."
                :on-click (fn []
-                           (dispatch [(dispatch [:name-manager/point-name @form-data])]))}
+                           (dispatch [:public-resolver.name/point
+                                      full-name
+                                      address]))}
               "Point name"])]]]))))
 
 (defmethod page :route.user/manage-names []

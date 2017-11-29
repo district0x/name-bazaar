@@ -119,7 +119,8 @@
                :on-error [:district0x.log/error]}]}})))
 
 (reg-event-fx
-  :ens.records/setup-public-resolver-completed
+ :ens.records/setup-public-resolver-completed
   interceptors
   (fn [{:keys [:db]} [name]]
+    (info [:RESOLVER-SET name ])
     nil))

@@ -69,3 +69,25 @@
      {:db (assoc-in db [:public-resolver/reverse-records
                         addr
                         :public-resolver.record/name] name)})))
+
+(reg-event-fx
+ :public-resolver.name/point
+ interceptors
+ (fn [{:keys [:db]} [name addr]]
+   (let [node (namehash name)
+         instance (get-instance db :public-resolver)]
+     (info [:NAME-POINT addr node instance])
+     {:web3-fx.contract/constant-fns
+      {:fns
+       [{:instance instance
+         :method :setAddr
+         :args [node addr]
+         :on-success [:public-resolver.name/point-completed name addr]
+         :on-error [:district0x.log/error]}]}})))
+
+(reg-event-fx
+ :public-resolver.name/point-completed
+ interceptors
+ (fn [{:keys [:db]} [name addr]]
+   (info [:NAME-POINTED name addr])
+   nil))
