@@ -28,8 +28,8 @@
    :ens.ownership-status/owner "You are owner of this name"})
 
 (defn default-point-name-form-data [addr]
-  {:name-manager/address (or addr "0x")
-   :name-manager/name ""}
+  {:ens.record/address (or addr "0x")
+   :ens.record/name ""}
   )
 
 (defn load-name-ownership [value]
@@ -98,13 +98,13 @@
   (let [addr (subscribe [:district0x/active-address])
         form-data (r/atom (default-point-name-form-data @addr))]
     (fn [{:keys [:editing?]}]
-      (let [{:keys [:name-manager/address :name-manager/name]} @form-data
+      (let [{:keys [:ens.record/address :ens.record/name]} @form-data
             ownership-status (when-not editing?
                                @(subscribe [:ens.record/ownership-status (when (seq name)
                                                                            (str name constants/registrar-root))]))
             full-name (when (seq name)
                         (str name constants/registrar-root))
-            standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
+            standard-resolver? false;; @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -121,7 +121,7 @@
              [ens-name-text-field
               {:value name
                :disabled editing?
-               :on-change #(swap! form-data assoc :name-manager/name (aget %2 "value"))}]]
+               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
@@ -129,7 +129,7 @@
               {:value address
                :disabled (or (not standard-resolver?)
                              editing?)
-               :on-change #(swap! form-data assoc :name-manager/address (aget %2 "value"))}]]]]]
+               :on-change #(swap! form-data assoc :ens.record/address (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
            {:mobile 16
@@ -147,20 +147,18 @@
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               ;; :pending? @(subscribe [:name-manager/tx-pending? address])
+               ;; :pending? @(subscribe [:ens.record/tx-pending? address])
                :pending-text "Saving Changes..."
                :on-click (fn []
-                           (dispatch [:ens.records/setup-public-resolver full-name]))}
+                           (dispatch [:ens.records/setup-public-resolver @form-data]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               ;; :pending? @(subscribe [:name-manager/tx-pending? address])
+               ;; :pending? @(subscribe [:ens.record/tx-pending? address])
                :pending-text "Saving Changes..."
                :on-click (fn []
-                           (dispatch [:public-resolver.name/point
-                                      full-name
-                                      address]))}
+                           (dispatch [:public-resolver.name/point @form-data]))}
               "Point name"])]]]))))
 
 (defmethod page :route.user/manage-names []

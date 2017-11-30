@@ -106,17 +106,26 @@
 
 (reg-event-fx
   :ens.records/setup-public-resolver
-  interceptors
-  (fn [{:keys [:db]} [name]]
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
+  (fn [{:keys [:db]} [form-data]]
     (let [instance (get-instance db :ens)
-          public-resolver (get-in db [:smart-contracts :public-resolver :address])]
+          public-resolver (get-in db [:smart-contracts :public-resolver :address])
+          form-data (assoc form-data
+                           :ens.record/node (namehash (:ens.record/name form-data))
+                           :public-resolver public-resolver)
+          ]
       (info [:SET-RESOLVER-NODES name public-resolver])
-      {:web3-fx.contract/constant-fns
-       {:fns [{:instance instance
-               :method :setResolver
-               :args [(namehash name) public-resolver]
-               :on-success [:ens.records/setup-public-resolver-completed name]
-               :on-error [:district0x.log/error]}]}})))
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Setting resolver for %s" (:ens.record/name form-data))
+                   :contract-key :ens
+                   :contract-method :set-resolver
+                   :form-data form-data
+                   :args-order [:ens.record/node :public-resolver]
+                   ;;:result-href (path-for :route.ens-record/detail form-data)
+                   :form-id (select-keys form-data [:ens.record/node])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Resolver for %s is set to standard." (:ens.record/name form-data))]}]})))
 
 (reg-event-fx
  :ens.records/setup-public-resolver-completed
