@@ -72,22 +72,26 @@
 
 (reg-event-fx
  :public-resolver.name/point
- interceptors
- (fn [{:keys [:db]} [name addr]]
-   (let [node (namehash name)
-         instance (get-instance db :public-resolver)]
-     (info [:NAME-POINT addr node instance])
-     {:web3-fx.contract/constant-fns
-      {:fns
-       [{:instance instance
-         :method :setAddr
-         :args [node addr]
-         :on-success [:public-resolver.name/point-completed name addr]
-         :on-error [:district0x.log/error]}]}})))
-
-(reg-event-fx
- :public-resolver.name/point-completed
- interceptors
- (fn [{:keys [:db]} [name addr]]
-   (info [:NAME-POINTED name addr])
-   nil))
+ [interceptors (validate-first-arg (s/keys :req [:ens.record/name
+                                                 :ens.record/address]))]
+ (fn [{:keys [:db]} [form-data]]
+   (let [instance (get-instance db :ens)
+         form-data (assoc form-data
+                          :ens.record/node (namehash (str (:ens.record/name form-data)
+                                                          constants/registrar-root)))]
+     (info [:POINT-NAME name])
+     {:dispatch [:district0x/make-transaction
+                 {:name (gstring/format "Pointing %s to %s"
+                                        (:ens.record/name form-data)
+                                        (:ens.record/address form-data))
+                  :contract-key :public-resolver
+                  :contract-method :set-addr
+                  :form-data (select-keys form-data [:ens.record/node :ens.record/address])
+                  :args-order [:ens.record/node :public-resolver]
+                  ;;:result-href (path-for :route.ens-record/detail form-data)
+                  :form-id (select-keys form-data [:ens.record/node :ens.record/address])
+                  :tx-opts {:gas 100000 :gas-price default-gas-price}
+                  :on-tx-receipt [:district0x.snackbar/show-message
+                                  (gstring/format "%s pointed to %s."
+                                                  (:ens.record/name form-data)
+                                                  (:ens.record/address form-data))]}]})))

@@ -85,3 +85,9 @@
  (fn [db [_ node]]
    (= (normalize (get-in db [:smart-contracts :public-resolver :address]))
       (normalize @(subscribe [:ens.record/resolver node])))))
+
+(reg-sub
+ :ens.set-resolver/tx-pending?
+ (fn [[_ ens-record-node]]
+   [(subscribe [:district0x/tx-pending? :ens :set-resolver {:ens.record/node ens-record-node}])])
+ first)

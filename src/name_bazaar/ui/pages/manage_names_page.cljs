@@ -104,7 +104,8 @@
                                                                            (str name constants/registrar-root))]))
             full-name (when (seq name)
                         (str name constants/registrar-root))
-            standard-resolver? false;; @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
+
+            standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -147,16 +148,16 @@
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               ;; :pending? @(subscribe [:ens.record/tx-pending? address])
-               :pending-text "Saving Changes..."
+               :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
+               :pending-text "Setting resolver..."
                :on-click (fn []
                            (dispatch [:ens.records/setup-public-resolver @form-data]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               ;; :pending? @(subscribe [:ens.record/tx-pending? address])
-               :pending-text "Saving Changes..."
+               :pending? @(subscribe [:public-resolver.point-name/tx-pending? (namehash full-name) address])
+               :pending-text "Pointing name..."
                :on-click (fn []
                            (dispatch [:public-resolver.name/point @form-data]))}
               "Point name"])]]]))))

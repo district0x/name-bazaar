@@ -392,6 +392,9 @@
                              :contract-key :contract-method :contract-address :on-success] :as props}]]
     (let [{:keys [:web3 :active-address]} db
           props (update props :tx-opts (partial merge {:from active-address}))]
+      (info [:MAKE-TRANSACTION props
+             :ARGs (-> (d0x-shared-utils/update-multi form-data wei-keys d0x-shared-utils/eth->wei)
+                       (d0x-shared-utils/map->vec args-order))])
       {:web3-fx.contract/state-fns
        {:web3 web3
         :db-path [:contract/state-fns]
