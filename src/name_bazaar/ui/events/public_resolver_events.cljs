@@ -93,3 +93,26 @@
                                   (gstring/format "%s pointed to %s."
                                                   (:ens.record/name form-data)
                                                   (:ens.record/address form-data))]}]})))
+
+(reg-event-fx
+ :public-resolver.address/point
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/address]))]
+  (fn [{:keys [:db]} [form-data]]
+    (let [form-data (-> form-data
+                        (update :ens.record/name #(str % constants/registrar-root))
+                        (assoc :ens.record/node (reverse-record-node (:ens.record/address form-data))))]
+      (info [:SET-REVERSE-RESOLVER-NODES (:ens.record/name form-data)])
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Pointing %s to %s"
+                                         (:ens.record/address form-data)
+                                         (:ens.record/name form-data))
+                   :contract-key :public-resolver
+                   :contract-method :set-name
+                   :form-data (select-keys form-data [:ens.record/node :ens.record/name])
+                   :args-order [:ens.record/node :ens.record/name]
+                   :form-id (select-keys form-data [:ens.record/node :ens.record/name])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "%s is pointed to %s."
+                                                   (:ens.record/address form-data)
+                                                   (:ens.record/name form-data))]}]})))

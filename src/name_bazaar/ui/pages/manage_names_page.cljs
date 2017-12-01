@@ -231,10 +231,12 @@
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               :pending? @(subscribe [:public-resolver.point-name/tx-pending? (namehash full-name) address])
+               :pending? @(subscribe [:public-resolver.point-address/tx-pending? (reverse-record-node
+                                                                                  address)
+                                      full-name])
                :pending-text "Pointing name..."
                :on-click (fn []
-                           (dispatch [:public-resolver.name/point @form-data]))}
+                           (dispatch [:public-resolver.address/point @form-data]))}
               "Point name"])]]]))))
 
 (defmethod page :route.user/manage-names []

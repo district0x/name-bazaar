@@ -122,8 +122,7 @@
   :ens.records/setup-public-resolver
   [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [instance (get-instance db :ens)
-          public-resolver (get-in db [:smart-contracts :public-resolver :address])
+    (let [public-resolver (get-in db [:smart-contracts :public-resolver :address])
           form-data (assoc form-data
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))
@@ -135,7 +134,6 @@
                    :contract-method :set-resolver
                    :form-data (select-keys form-data [:ens.record/node :public-resolver])
                    :args-order [:ens.record/node :public-resolver]
-                   ;;:result-href (path-for :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt [:district0x.snackbar/show-message
@@ -145,24 +143,13 @@
   :ens.records/setup-public-reverse-resolver
   [interceptors (validate-first-arg (s/keys :req [:ens.record/address]))]
   (fn [{:keys [:db]} [form-data]]
-    (let [instance (get-instance db :ens)
-          public-resolver (get-in db [:smart-contracts :public-resolver :address])
-          form-data (assoc form-data
-                           :ens.record/node
-                           (reverse-record-node (:ens.record/address form-data))
-                           :public-resolver public-resolver)]
-      (info [:SET-REVERSE-RESOLVER-NODES name public-resolver])
-      {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Setting reverse resolver for %s" (:ens.record/address form-data))
-                   :contract-key :reverse-registrar
-                   :contract-method :claim-with-resolver
-                   ;; :contract-key :ens
-                   ;; :contract-method :set-resolver
-                   ;; :form-data (select-keys form-data [:ens.record/node :public-resolver])
-                   :form-data (select-keys form-data [:ens.record/address :public-resolver])
-                   :args-order [:ens.record/address :public-resolver]
-                   ;;:result-href (path-for :route.ens-record/detail form-data)
-                   :form-id (select-keys form-data [:ens.record/address])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Resolver for %s is set to standard." (:ens.record/address form-data))]}]})))
+    {:dispatch [:district0x/make-transaction
+                {:name (gstring/format "Setting reverse resolver for %s" (:ens.record/address form-data))
+                 :contract-key :reverse-registrar
+                 :contract-method :claim-with-resolver
+                 :form-data (select-keys form-data [:ens.record/address :public-resolver])
+                 :args-order [:ens.record/address :public-resolver]
+                 :form-id (select-keys form-data [:ens.record/address])
+                 :tx-opts {:gas 100000 :gas-price default-gas-price}
+                 :on-tx-receipt [:district0x.snackbar/show-message
+                                 (gstring/format "Resolver for %s is set to standard." (:ens.record/address form-data))]}]}))
