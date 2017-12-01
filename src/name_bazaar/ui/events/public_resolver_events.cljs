@@ -12,13 +12,11 @@
     [goog.string.format]
     [medley.core :as medley]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
-(defn reverse-record-node [addr]
-  (namehash (str (apply str (drop 2 addr))
-                 ".addr.reverse")))
+
 
 (reg-event-fx
  :public-resolver.addr/load

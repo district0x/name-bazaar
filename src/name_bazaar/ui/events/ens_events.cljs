@@ -9,7 +9,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.shared.utils :as d0x-shared-utils]
     [medley.core :as medley]
@@ -76,6 +76,20 @@
                                                               owner))}))
 
 (reg-event-fx
+ :ens.records.resolver/load
+ interceptors
+ (fn [{:keys [:db]} [nodes]]
+   (let [instance (get-instance db :ens)]
+     (info [:LOADING-RESOLVER nodes instance])
+     {:web3-fx.contract/constant-fns
+      {:fns (for [node nodes]
+              {:instance instance
+               :method :resolver
+               :args [node]
+               :on-success [:ens.records.resolver/loaded node]
+               :on-error [:district0x.log/error]})}})))
+
+(reg-event-fx
   :ens.records.resolver/loaded
   interceptors
   (fn [{:keys [:db]} [node resolver]]
@@ -126,3 +140,29 @@
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "Resolver for %s is set to standard." (:ens.record/name form-data))]}]})))
+
+(reg-event-fx
+  :ens.records/setup-public-reverse-resolver
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/address]))]
+  (fn [{:keys [:db]} [form-data]]
+    (let [instance (get-instance db :ens)
+          public-resolver (get-in db [:smart-contracts :public-resolver :address])
+          form-data (assoc form-data
+                           :ens.record/node
+                           (reverse-record-node (:ens.record/address form-data))
+                           :public-resolver public-resolver)]
+      (info [:SET-REVERSE-RESOLVER-NODES name public-resolver])
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Setting reverse resolver for %s" (:ens.record/address form-data))
+                   :contract-key :reverse-registrar
+                   :contract-method :claim-with-resolver
+                   ;; :contract-key :ens
+                   ;; :contract-method :set-resolver
+                   ;; :form-data (select-keys form-data [:ens.record/node :public-resolver])
+                   :form-data (select-keys form-data [:ens.record/address :public-resolver])
+                   :args-order [:ens.record/address :public-resolver]
+                   ;;:result-href (path-for :route.ens-record/detail form-data)
+                   :form-id (select-keys form-data [:ens.record/address])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Resolver for %s is set to standard." (:ens.record/address form-data))]}]})))

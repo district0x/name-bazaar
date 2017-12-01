@@ -34,7 +34,7 @@
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
@@ -232,7 +232,9 @@
     (let [addrs (get-in db [:my-addresses])]
       (info ["Trying my address" addrs])
       {:db db
-       :dispatch-n (map #(vec [:public-resolver.name/load %]) addrs)})))
+       :dispatch-n (conj
+                    (map #(vec [:public-resolver.name/load %]) addrs)
+                    [:ens.records.resolver/load (map reverse-record-node addrs)])})))
 
 (reg-event-fx
   :watch-my-addresses-changed

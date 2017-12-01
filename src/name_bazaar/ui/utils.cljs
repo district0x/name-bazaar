@@ -172,3 +172,7 @@
   (if (web3/address? name-or-addr)
     (truncate name-or-addr (or trunc 10))
     (strip-root-registrar-suffix name-or-addr)))
+
+(defn reverse-record-node [addr]
+  (namehash (str (apply str (drop 2 addr))
+                 ".addr.reverse")))
