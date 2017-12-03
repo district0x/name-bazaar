@@ -6,6 +6,7 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
@@ -119,25 +120,30 @@
       {:dispatch [:public-resolver.name/load owner]})))
 
 (reg-event-fx
-  :ens.records/setup-public-resolver
-  [interceptors (validate-first-arg (s/keys :req [:ens.record/name]))]
+  :ens.records/set-resolver
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/name]
+                                            :opt [:ens.record/resolver]))]
   (fn [{:keys [:db]} [form-data]]
     (let [public-resolver (get-in db [:smart-contracts :public-resolver :address])
           form-data (assoc form-data
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))
-                           :public-resolver public-resolver)]
-      (info [:SET-RESOLVER-NODES name public-resolver])
+                           :ens.record/resolver (get form-data :ens.record/resolver public-resolver))]
+      (info [:SET-RESOLVER-NODES name (:ens.record/resolver form-data)
+             (path-for :route.user/manage-names {:ens.record/name
+                                                 (:ens.record/name form-data)})])
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Setting resolver for %s" (:ens.record/name form-data))
+                  {:name (gstring/format "Setup resolver for %s" (:ens.record/name form-data))
                    :contract-key :ens
                    :contract-method :set-resolver
-                   :form-data (select-keys form-data [:ens.record/node :public-resolver])
-                   :args-order [:ens.record/node :public-resolver]
+                   :form-data (select-keys form-data [:ens.record/node :ens.record/resolver])
+                   :args-order [:ens.record/node :ens.record/resolver]
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :result-href (path-with-query (path-for :route.user/manage-names)
+                                                 {:name (:ens.record/name form-data)})
                    :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Resolver for %s is set to standard." (:ens.record/name form-data))]}]})))
+                                   (gstring/format "Resolver for %s has been set up" (:ens.record/name form-data))]}]})))
 
 (reg-event-fx
   :ens.records/setup-public-reverse-resolver

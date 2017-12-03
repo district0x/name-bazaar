@@ -18,7 +18,8 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [cljs-web3.core :as web3]
-    [soda-ash.core :as ui]))
+    [soda-ash.core :as ui]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (def ownership-status->text
   {:ens.ownership-status/empty-name ""
@@ -27,10 +28,9 @@
    :ens.ownership-status/not-deed-owner "You don't own this name's locked value"
    :ens.ownership-status/owner "You are owner of this name"})
 
-(defn default-point-name-form-data [addr]
-  {:ens.record/address (or addr "0x")
-   :ens.record/name ""}
-  )
+(defn default-point-name-form-data [{:keys [:address :name]}]
+  {:ens.record/address (or address "0x")
+   :ens.record/name (or name "")})
 
 (defn load-name-ownership [value]
   (let [full-name (str value constants/registrar-root)
@@ -101,7 +101,9 @@
 
 (defn point-name-form []
   (let [addr (subscribe [:district0x/active-address])
-        form-data (r/atom (default-point-name-form-data @addr))]
+        query-params (subscribe [:district0x/query-params])
+        form-data (r/atom (default-point-name-form-data {:address @addr
+                                                         :name (:name @query-params)}))]
     (fn [{:keys [:editing?]}]
       (let [{:keys [:ens.record/address :ens.record/name]} @form-data
             ownership-status (when-not editing?
@@ -110,7 +112,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
+            standard-resolver? false;; @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -157,7 +159,7 @@
                :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
                :pending-text "Setting resolver..."
                :on-click (fn []
-                           (dispatch [:ens.records/setup-public-resolver @form-data]))}
+                           (dispatch [:ens.records/set-resolver @form-data]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
@@ -170,7 +172,9 @@
 
 (defn point-address-form []
   (let [addr (subscribe [:district0x/active-address])
-        form-data (r/atom (default-point-name-form-data @addr))]
+        query-params (subscribe [:district0x/query-params])
+        form-data (r/atom (default-point-name-form-data {:address @addr
+                                                         :name (:name @query-params)}))]
     (fn [{:keys [:editing?]}]
       (let [{:keys [:ens.record/address :ens.record/name]} @form-data
             ownership-status (when-not editing?
