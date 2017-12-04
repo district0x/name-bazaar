@@ -120,7 +120,7 @@
       {:dispatch [:public-resolver.name/load owner]})))
 
 (reg-event-fx
-  :ens.records/set-resolver
+  :ens/set-resolver
   [interceptors (validate-first-arg (s/keys :req [:ens.record/name]
                                             :opt [:ens.record/resolver]))]
   (fn [{:keys [:db]} [form-data]]
@@ -144,18 +144,3 @@
                                                  {:name (:ens.record/name form-data)})
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "Resolver for %s has been set up" (:ens.record/name form-data))]}]})))
-
-(reg-event-fx
-  :ens.records/setup-public-reverse-resolver
-  [interceptors (validate-first-arg (s/keys :req [:ens.record/address]))]
-  (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Setting reverse resolver for %s" (:ens.record/address form-data))
-                 :contract-key :reverse-registrar
-                 :contract-method :claim-with-resolver
-                 :form-data (select-keys form-data [:ens.record/address :public-resolver])
-                 :args-order [:ens.record/address :public-resolver]
-                 :form-id (select-keys form-data [:ens.record/address])
-                 :tx-opts {:gas 100000 :gas-price default-gas-price}
-                 :on-tx-receipt [:district0x.snackbar/show-message
-                                 (gstring/format "Resolver for %s is set to standard." (:ens.record/address form-data))]}]}))

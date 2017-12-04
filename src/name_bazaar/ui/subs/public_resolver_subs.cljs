@@ -14,15 +14,13 @@
     (:public-resolver/reverse-records db)))
 
 (reg-sub
- :public-resolver.point-name/tx-pending?
- (fn [[_ ens-record-node ens-record-addr]]
-   [(subscribe [:district0x/tx-pending? :public-resolver :set-addr {:ens.record/node ens-record-node
-                                                        :ens.record/address ens-record-addr}])])
+ :public-resolver.set-addr/tx-pending?
+ (fn [[_ ens-record-node]]
+   [(subscribe [:district0x/tx-pending? :public-resolver :set-addr {:ens.record/node ens-record-node}])])
  first)
 
 (reg-sub
- :public-resolver.point-address/tx-pending?
- (fn [[_ ens-record-node ens-record-name]]
-   [(subscribe [:district0x/tx-pending? :public-resolver :set-name {:ens.record/node ens-record-node
-                                                                    :ens.record/name ens-record-name}])])
+ :public-resolver.set-name/tx-pending?
+ (fn [[_ ens-record-node]]
+   [(subscribe [:district0x/tx-pending? :public-resolver :set-name {:ens.record/node ens-record-node}])])
  first)

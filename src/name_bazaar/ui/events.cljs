@@ -33,6 +33,7 @@
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
+    [name-bazaar.ui.events.reverse-registrar-events]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]

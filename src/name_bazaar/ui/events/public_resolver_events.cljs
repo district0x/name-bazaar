@@ -8,6 +8,7 @@
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
@@ -69,9 +70,9 @@
                         :public-resolver.record/name] name)})))
 
 (reg-event-fx
- :public-resolver.name/point
+ :public-resolver/set-addr
  [interceptors (validate-first-arg (s/keys :req [:ens.record/name
-                                                 :ens.record/address]))]
+                                                 :ens.record/addr]))]
  (fn [{:keys [:db]} [form-data]]
    (let [instance (get-instance db :ens)
          form-data (assoc form-data
@@ -81,38 +82,40 @@
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Pointing %s to %s"
                                         (:ens.record/name form-data)
-                                        (:ens.record/address form-data))
+                                        (:ens.record/addr form-data))
                   :contract-key :public-resolver
                   :contract-method :set-addr
-                  :form-data (select-keys form-data [:ens.record/node :ens.record/address])
+                  :form-data (select-keys form-data [:ens.record/node :ens.record/addr])
                   :args-order [:ens.record/node :public-resolver]
                   ;;:result-href (path-for :route.ens-record/detail form-data)
-                  :form-id (select-keys form-data [:ens.record/node :ens.record/address])
+                  :form-id (select-keys form-data [:ens.record/node])
                   :tx-opts {:gas 100000 :gas-price default-gas-price}
                   :on-tx-receipt [:district0x.snackbar/show-message
-                                  (gstring/format "%s pointed to %s."
+                                  (gstring/format "%s is now pointing to %s"
                                                   (:ens.record/name form-data)
-                                                  (:ens.record/address form-data))]}]})))
+                                                  (truncate (:ens.record/addr form-data)
+                                                            10))]}]})))
 
 (reg-event-fx
- :public-resolver.address/point
-  [interceptors (validate-first-arg (s/keys :req [:ens.record/address]))]
+ :public-resolver/set-name
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/addr]))]
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (-> form-data
                         (update :ens.record/name #(str % constants/registrar-root))
-                        (assoc :ens.record/node (reverse-record-node (:ens.record/address form-data))))]
+                        (assoc :ens.record/node (reverse-record-node (:ens.record/addr form-data))))]
       (info [:SET-REVERSE-RESOLVER-NODES (:ens.record/name form-data)])
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Pointing %s to %s"
-                                         (:ens.record/address form-data)
+                  {:name (gstring/format "Point %s to %s"
+                                         (:ens.record/addr form-data)
                                          (:ens.record/name form-data))
                    :contract-key :public-resolver
                    :contract-method :set-name
                    :form-data (select-keys form-data [:ens.record/node :ens.record/name])
                    :args-order [:ens.record/node :ens.record/name]
-                   :form-id (select-keys form-data [:ens.record/node :ens.record/name])
+                   :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "%s is pointed to %s."
-                                                   (:ens.record/address form-data)
+                                                   (truncate (:ens.record/addr form-data)
+                                                             10)
                                                    (:ens.record/name form-data))]}]})))

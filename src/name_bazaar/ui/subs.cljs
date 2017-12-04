@@ -18,6 +18,7 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.public-resolver-subs]
     [name-bazaar.ui.subs.registrar-subs]
+    [name-bazaar.ui.subs.reverse-registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
     [name-bazaar.ui.utils :refer [parse-query-params path-for reverse-resolve-address strip-root-registrar-suffix]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]

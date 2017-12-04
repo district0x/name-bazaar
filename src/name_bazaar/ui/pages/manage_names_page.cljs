@@ -29,7 +29,7 @@
    :ens.ownership-status/owner "You are owner of this name"})
 
 (defn default-point-name-form-data [{:keys [:address :name]}]
-  {:ens.record/address (or address "0x")
+  {:ens.record/addr (or address "0x")
    :ens.record/name (or name "")})
 
 (defn load-name-ownership [value]
@@ -56,7 +56,6 @@
        {:class (cond
                  error? :error
                  (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
-       ;;[:div (str "resolver>" standard-resolver? "<")]
        [ens-name-input
         (r/merge-props
           {:label "Name"
@@ -99,20 +98,17 @@
        [:div.ui.label (if error? "Isn't valid address"
                           (when-not is-empty? "Valid address"))]])))
 
-(defn point-name-form []
-  (let [addr (subscribe [:district0x/active-address])
-        query-params (subscribe [:district0x/query-params])
-        form-data (r/atom (default-point-name-form-data {:address @addr
-                                                         :name (:name @query-params)}))]
-    (fn [{:keys [:editing?]}]
-      (let [{:keys [:ens.record/address :ens.record/name]} @form-data
+(defn point-name-form [defaults]
+  (let [form-data (r/atom (default-point-name-form-data defaults))]
+    (fn [{:keys [:editing? :default-name]}]
+      (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
             ownership-status (when-not editing?
                                @(subscribe [:ens.record/ownership-status (when (seq name)
                                                                            (str name constants/registrar-root))]))
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            standard-resolver? false;; @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
+            standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -135,10 +131,10 @@
              {:computer 8
               :mobile 16}
              [address-text-field
-              {:value address
+              {:value addr
                :disabled (or (not standard-resolver?)
                              editing?)
-               :on-change #(swap! form-data assoc :ens.record/address (aget %2 "value"))}]]]]]
+               :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
            {:mobile 16
@@ -159,31 +155,28 @@
                :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
                :pending-text "Setting resolver..."
                :on-click (fn []
-                           (dispatch [:ens.records/set-resolver @form-data]))}
+                           (dispatch [:ens/set-resolver @form-data]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               :pending? @(subscribe [:public-resolver.point-name/tx-pending? (namehash full-name) address])
+               :pending? @(subscribe [:public-resolver.set-addr/tx-pending? (namehash full-name)])
                :pending-text "Pointing name..."
                :on-click (fn []
-                           (dispatch [:public-resolver.name/point @form-data]))}
+                           (dispatch [:public-resolver/set-addr @form-data]))}
               "Point name"])]]]))))
 
-(defn point-address-form []
-  (let [addr (subscribe [:district0x/active-address])
-        query-params (subscribe [:district0x/query-params])
-        form-data (r/atom (default-point-name-form-data {:address @addr
-                                                         :name (:name @query-params)}))]
+(defn point-address-form [defaults]
+  (let [form-data (r/atom (default-point-name-form-data defaults))]
     (fn [{:keys [:editing?]}]
-      (let [{:keys [:ens.record/address :ens.record/name]} @form-data
+      (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
             ownership-status (when-not editing?
                                @(subscribe [:ens.record/ownership-status (when (seq name)
                                                                            (str name constants/registrar-root))]))
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            standard-resolver? @(subscribe [:ens.record/standard-resolver? (reverse-record-node address)])
+            standard-resolver? @(subscribe [:ens.record/standard-resolver? (reverse-record-node addr)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -207,16 +200,16 @@
              {:computer 8
               :mobile 16}
              [address-text-field
-              {:value address
+              {:value addr
                :disabled true;;editing?
-               :on-change #(swap! form-data assoc :ens.record/address (aget %2 "value"))}]]]]]
+               :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
             (str
-             "Your address " address " will be pointing to name " full-name ". This will help Ethereum applications to figure out your username just from your address.")]
+             "Your address " addr " will be pointing to name " full-name ". This will help Ethereum applications to figure out your username just from your address.")]
            (when-not standard-resolver?
              [:p.input-info
               " Before you can point your address to a name, you must setup resolver for your address."])]]
@@ -227,34 +220,35 @@
              [transaction-button
               {:primary true
                ;;:disabled submit-disabled?
-               :pending? @(subscribe [:ens.set-reverse-resolver/tx-pending? address])
+               :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? addr])
                :pending-text "Setting resolver..."
                :on-click (fn []
-                           (dispatch [:ens.records/setup-public-reverse-resolver @form-data]))}
+                           (dispatch [:reverse-registrar/claim-with-resolver @form-data]))}
               "Setup resolver"]
              [transaction-button
               {:primary true
                :disabled submit-disabled?
-               :pending? @(subscribe [:public-resolver.point-address/tx-pending? (reverse-record-node
-                                                                                  address)
-                                      full-name])
-               :pending-text "Pointing name..."
+               :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
+               :pending-text "Pointing address..."
                :on-click (fn []
-                           (dispatch [:public-resolver.address/point @form-data]))}
-              "Point name"])]]]))))
+                           (dispatch [:public-resolver/set-name @form-data]))}
+              "Point address"])]]]))))
 
 (defmethod page :route.user/manage-names []
   (let [query-params (subscribe [:district0x/query-params])]
     (fn []
-      (let [{:keys [:name]} @query-params]
+      (let [{:keys [:name]} @(subscribe [:district0x/query-params])
+            address @(subscribe [:district0x/active-address])]
         [app-layout {:meta {:title "NameBazaar - Manage Names" :description "Manage your ENS names"}}
          [ui/Segment
           [:h1.ui.header.padded "Point Name to an Address"]
           [point-name-form
-           {:default-name (when (and name (valid-ens-name? name))
-                            (strip-root-registrar-suffix (normalize name)))}]]
+           {:name (when (and name (valid-ens-name? name))
+                            (strip-root-registrar-suffix (normalize name)))
+            :address address}]]
          [ui/Segment
           [:h1.ui.header.padded "Point Address to a Name"]
           [point-address-form
-           {:default-name (when (and name (valid-ens-name? name))
-                            (strip-root-registrar-suffix (normalize name)))}]]]))))
+           {:name (when (and name (valid-ens-name? name))
+                            (strip-root-registrar-suffix (normalize name)))
+            :address address}]]]))))
