@@ -81,7 +81,7 @@
    (get-in records [node :ens.record/resolver])))
 
 (reg-sub
- :ens.record/standard-resolver?
+ :ens.record/default-resolver?
  (fn [db [_ node]]
    (= (normalize (get-in db [:smart-contracts :public-resolver :address]))
       (normalize @(subscribe [:ens.record/resolver node])))))

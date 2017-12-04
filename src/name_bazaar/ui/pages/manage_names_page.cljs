@@ -33,40 +33,9 @@
   (let [node (reverse-record-node address)]
     (dispatch [:ens.records.resolver/load [node]])))
 
-#_(defn ens-name-text-field [{:keys [:value]}]
-  (fn [{:keys [:on-change :value] :as props}]
-    (let [full-name (when (seq value)
-                      (str value constants/registrar-root))
-          ownership-status @(subscribe [:ens.record/ownership-status full-name])
-          standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
-          error? (contains? #{:ens.ownership-status/not-ens-record-owner
-                              :ens.ownership-status/not-deed-owner}
-                            ownership-status)]
-      [:div.input-state-label
-       {:class (cond
-                 error? :error
-                 (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
-       [ens-name-input
-        (r/merge-props
-          {:label "Name"
-           :fluid true
-           :value value
-           :error error?
-           :on-change (fn [e data]
-                        (let [value (aget data "value")]
-                          (when (valid-ens-name? value)
-                            (let [value (normalize value)]
-                              (aset data "value" value)
-                              (on-change e data)
-                              (load-name-ownership value)))))}
-          (dissoc props :ownership-status :on-change))]
-       [:div.ui.label (ownership-status->text ownership-status)]])))
-
 (defn address-text-field [{:keys [:value :load-resolver?]}]
   (fn [{:keys [:on-change :value] :as props}]
-    (let [is-empty? (or
-                     (empty? value)
-                     (empty-address? value))
+    (let [is-empty? (empty-address? value)
           error? (and (not is-empty?)
                       (not (web3/address? value)))]
       [:div.input-state-label
@@ -85,8 +54,7 @@
                            (on-change e data)
                            (load-resolver value))))}
          (dissoc props :on-change))]
-       [:div.ui.label (if error? "Isn't valid address"
-                          (when-not is-empty? "Valid address"))]])))
+       [:div.ui.label (when error? "Isn't valid address")]])))
 
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
@@ -98,7 +66,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            standard-resolver? @(subscribe [:ens.record/standard-resolver? (namehash full-name)])
+            default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -113,7 +81,7 @@
             [ui/GridColumn
              {:computer 8
               :mobile 16}
-             [ens-name-text-field-ownership-validated
+             [ens-name-input-ownership-validated
               {:value name
                :disabled editing?
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
@@ -122,7 +90,7 @@
               :mobile 16}
              [address-text-field
               {:value addr
-               :disabled (or (not standard-resolver?)
+               :disabled (or (not default-resolver?)
                              editing?)
                :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
          [ui/GridRow
@@ -132,18 +100,18 @@
            [:p.input-info
             (str
              " Pointing  your name to address will allow other to send funds to " full-name ", instead of hexadecimal number.")]
-           (when-not standard-resolver?
+           (when-not default-resolver?
              [:p.input-info
               " Before you can point your name to an address, you must setup resolver for your address."])]]
          [ui/GridRow
           {:centered true}
           [:div
-           (if-not standard-resolver?
+           (if-not default-resolver?
              [transaction-button
               {:primary true
                :disabled submit-disabled?
                :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
-               :pending-text "Setting resolver..."
+               :pending-text "Setting up resolver..."
                :on-click (fn []
                            (dispatch [:ens/set-resolver @form-data]))}
               "Setup resolver"]
@@ -166,7 +134,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            standard-resolver? @(subscribe [:ens.record/standard-resolver? (reverse-record-node addr)])
+            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])
             submit-disabled? (or (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
@@ -181,9 +149,9 @@
             [ui/GridColumn
              {:computer 8
               :mobile 16}
-             [ens-name-text-field-ownership-validated
+             [ens-name-input-ownership-validated
               {:value name
-               :disabled (or (not standard-resolver?)
+               :disabled (or (not default-resolver?)
                              editing?)
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
@@ -200,18 +168,18 @@
            [:p.input-info
             (str
              "Your address " addr " will be pointing to name " full-name ". This will help Ethereum applications to figure out your username just from your address.")]
-           (when-not standard-resolver?
+           (when-not default-resolver?
              [:p.input-info
               " Before you can point your address to a name, you must setup resolver for your address."])]]
          [ui/GridRow
           {:centered true}
           [:div
-           (if-not standard-resolver?
+           (if-not default-resolver?
              [transaction-button
               {:primary true
                ;;:disabled submit-disabled?
                :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? addr])
-               :pending-text "Setting resolver..."
+               :pending-text "Setting up resolver..."
                :on-click (fn []
                            (dispatch [:reverse-registrar/claim-with-resolver @form-data]))}
               "Setup resolver"]
