@@ -10,7 +10,7 @@
     [name-bazaar.shared.utils :refer [top-level-name?]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.date-picker :refer [date-picker]]
-    [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
+    [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
     [name-bazaar.ui.components.loading-placeholders :refer [content-placeholder]]
     [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
     [name-bazaar.ui.constants :as constants]
@@ -21,29 +21,19 @@
     [soda-ash.core :as ui]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
-(def ownership-status->text
-  {:ens.ownership-status/empty-name ""
-   :ens.ownership-status/loading "Checking ownership..."
-   :ens.ownership-status/not-ens-record-owner "You are not owner of this name"
-   :ens.ownership-status/not-deed-owner "You don't own this name's locked value"
-   :ens.ownership-status/owner "You are owner of this name"})
+
 
 (defn default-point-name-form-data [{:keys [:address :name]}]
   {:ens.record/addr (or address "0x")
    :ens.record/name (or name "")})
 
-(defn load-name-ownership [value]
-  (let [full-name (str value constants/registrar-root)
-        node (namehash full-name)]
-    (dispatch [:ens.records/load [node] {:load-resolver? true}])
-    (when (top-level-name? full-name)
-      (dispatch [:registrar.entries/load [(sha3 value)]]))))
+
 
 (defn load-resolver [address]
   (let [node (reverse-record-node address)]
     (dispatch [:ens.records.resolver/load [node]])))
 
-(defn ens-name-text-field [{:keys [:value]}]
+#_(defn ens-name-text-field [{:keys [:value]}]
   (fn [{:keys [:on-change :value] :as props}]
     (let [full-name (when (seq value)
                       (str value constants/registrar-root))
@@ -123,7 +113,7 @@
             [ui/GridColumn
              {:computer 8
               :mobile 16}
-             [ens-name-text-field
+             [ens-name-text-field-ownership-validated
               {:value name
                :disabled editing?
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
@@ -191,7 +181,7 @@
             [ui/GridColumn
              {:computer 8
               :mobile 16}
-             [ens-name-text-field
+             [ens-name-text-field-ownership-validated
               {:value name
                :disabled (or (not standard-resolver?)
                              editing?)
