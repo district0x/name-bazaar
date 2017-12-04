@@ -1,4 +1,17 @@
-(ns name-bazaar.ui.events.reverse-registrar-events)
+(ns name-bazaar.ui.events.reverse-registrar-events
+  (:require
+   [cljs.spec.alpha :as s]
+   [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
+   [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+   [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
+   [goog.string :as gstring]
+   [goog.string.format]
+   [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
+   [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
+   [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+   [district0x.shared.utils :as d0x-shared-utils]
+   [medley.core :as medley]
+   [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
  :reverse-registrar/claim-with-resolver
