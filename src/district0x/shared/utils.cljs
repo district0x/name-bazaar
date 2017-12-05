@@ -52,7 +52,7 @@
 
 (defn empty-address? [x]
   (or
-   (empty? value)
+   (empty? x)
    (zero-address? x)
    (not x)))
 
