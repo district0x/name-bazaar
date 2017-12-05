@@ -56,6 +56,29 @@
          (dissoc props :on-change))]
        [:div.ui.label (when error? "Isn't valid address")]])))
 
+(defn subname-text-field [{:keys [:value]}]
+  (fn [{:keys [:on-change :value] :as props}]
+    (let [is-empty? (empty? value)
+          error? (and (not is-empty?)
+                      (valid-ens-name? value))]
+      [:div.input-state-label
+       {:class (if error? :error
+                   :success)}
+       [input
+        (r/merge-props
+         {:label "Enter Subdomain"
+          :fluid true
+          :value value
+          :error error?
+          :on-change (fn [e data]
+                       (let [value (aget data "value")]
+                         (when (valid-ens-name? value)
+                           (aset data "value" value)
+                           (on-change e data)
+                           (load-resolver value))))}
+         (dissoc props :on-change))]
+       [:div.ui.label (when error? "Isn't valid subdomain name")]])))
+
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
     (fn [{:keys [:editing? :default-name]}]
@@ -192,6 +215,58 @@
                            (dispatch [:public-resolver/set-name @form-data]))}
               "Point address"])]]]))))
 
+(defn create-subname-form [defaults]
+  (let [form-data (r/atom (default-point-name-form-data defaults))]
+    (fn [{:keys [:editing?]}]
+      (let [{:keys [:ens.record/subname :ens.record/name]} @form-data
+            ownership-status (when-not editing?
+                               @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                                           (str name constants/registrar-root))]))
+            full-name (when (seq name)
+                        (str name constants/registrar-root))
+
+            submit-disabled? (or (and (not editing?)
+                                      (not= ownership-status :ens.ownership-status/owner)))]
+        [ui/Grid
+         {:class "layout-grid submit-footer offering-form"
+          ;;:celled "internally"
+          }
+         [ui/GridRow
+          [ui/GridColumn
+           {:width 16}
+           [ui/Grid
+            {:relaxed "very"}
+            [ui/GridColumn
+             {:computer 8
+              :mobile 16}
+             [ens-name-input-ownership-validated
+              {:value name
+               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+            [ui/GridColumn
+             {:computer 8
+              :mobile 16}
+             [subname-text-field
+              {:value subname
+               :on-change #(swap! form-data assoc :ens.record/subname (aget %2 "value"))}]]]]]
+         [ui/GridRow
+          [ui/GridColumn
+           {:mobile 16
+            :class "join-upper"}
+           [:p.input-info
+            (str
+              subname "." full-name " will be created")]]]
+         [ui/GridRow
+          {:centered true}
+          [:div
+           [transaction-button
+            {:primary true
+             :disabled submit-disabled?
+             ;; :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
+             :pending-text "Creating subdomain..."
+             :on-click (fn []
+                         (dispatch [:public-resolver/set-name @form-data]))}
+            "Create Name"]]]]))))
+
 (defmethod page :route.user/manage-names []
   (let [query-params (subscribe [:district0x/query-params])]
     (fn []
@@ -209,4 +284,10 @@
           [point-address-form
            {:name (when (and name (valid-ens-name? name))
                             (strip-root-registrar-suffix (normalize name)))
+            :address address}]]
+         [ui/Segment
+          [:h1.ui.header.padded "Create Subname"]
+          [create-subname-form
+           {:name (when (and name (valid-ens-name? name))
+                    (strip-root-registrar-suffix (normalize name)))
             :address address}]]]))))

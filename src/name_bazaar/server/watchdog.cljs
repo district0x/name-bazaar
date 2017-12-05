@@ -17,10 +17,12 @@
 
 (defn start-node-watchdog! [on-up-fn on-down-fn]
   (swap! *server-state* update :node-watchdog merge {:enabled? true :online? false})
-  (info "Starting watcher")
   (go-loop []
            (let [node-watchdog (:node-watchdog @*server-state*)]
              (<! (timeout (:timeout node-watchdog)))
+             (info "Starting watchdog in " (if (= port (state/config :testrpc-port))
+                                          "test mode"
+                                          "prod mode"))
              (let [web3 (state/web3)
                    host (aget web3 "currentProvider" "host")
                    {:keys [:port]} (url/url host)
@@ -28,6 +30,7 @@
                            ;; For testrpc connected? doesn't work
                            (= port (state/config :testrpc-port))
                            (web3/connected? web3))]
+               (info ["State:" node-watchdog])
                (when (and
                        on-down-fn
                        (:online? node-watchdog)
