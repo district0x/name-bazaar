@@ -80,7 +80,7 @@
                                                           constants/registrar-root)))]
      (info [:POINT-NAME name])
      {:dispatch [:district0x/make-transaction
-                 {:name (gstring/format "Pointing %s to %s"
+                 {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
                                         (:ens.record/addr form-data))
                   :contract-key :public-resolver
