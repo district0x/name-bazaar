@@ -28,7 +28,7 @@
    :server-url "https://api.namebazaar.io"})
 
 (defn get-config [env-name]
-  (get {;"dev" development-config
+  (get {"dev" development-config
         "prod" production-config} env-name production-config))
 
 (def default-db

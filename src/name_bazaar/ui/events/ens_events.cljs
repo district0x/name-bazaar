@@ -129,9 +129,7 @@
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))
                            :ens.record/resolver (get form-data :ens.record/resolver public-resolver))]
-      (info [:SET-RESOLVER-NODES name (:ens.record/resolver form-data)
-             (path-for :route.user/manage-names {:ens.record/name
-                                                 (:ens.record/name form-data)})])
+      (info [:SET-RESOLVER-NODES name (:ens.record/resolver form-data)])
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Setup resolver for %s" (:ens.record/name form-data))
                    :contract-key :ens
@@ -144,3 +142,39 @@
                                                  {:name (:ens.record/name form-data)})
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "Resolver for %s has been set up" (:ens.record/name form-data))]}]})))
+
+(reg-event-fx
+  :ens/set-subnode-owner
+  [interceptors (validate-first-arg (s/keys :req [:ens.record/name
+                                                  :ens.record/subname]
+                                            :opt [:ens.record/owner]))]
+  (fn [{:keys [:db]} [form-data]]
+    (info :SSUBNODE form-data)
+    (let [form-data (assoc form-data
+                           :ens.record/node (namehash (str (:ens.record/name form-data)
+                                                           constants/registrar-root))
+                           :ens.record/label (sha3 (:ens.record/subname form-data)))]
+      (info [:SET-SUBNODE-OWNER
+             name
+             (:ens.record/subname form-data)
+             (:ens.record/addr form-data)])
+      {:dispatch [:district0x/make-transaction
+                  {:name (gstring/format "Create subname %s.%s"
+                                         (:ens.record/subname form-data)
+                                         (:ens.record/name form-data))
+                   :contract-key :ens
+                   :contract-method :set-subnode-owner
+                   :form-data (select-keys form-data [:ens.record/node
+                                                      :ens.record/label
+                                                      :ens.record/addr])
+                   :args-order [:ens.record/node
+                                :ens.record/label
+                                :ens.record/addr]
+                   :form-id (select-keys form-data [:ens.record/node :ens.record/label])
+                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :result-href (path-with-query (path-for :route.user/manage-names)
+                                                 {:name (:ens.record/name form-data)})
+                   :on-tx-receipt [:district0x.snackbar/show-message
+                                   (gstring/format "Subname %s.%s has been created"
+                                                   (:ens.record/subname form-data)
+                                                   (:ens.record/name form-data))]}]})))

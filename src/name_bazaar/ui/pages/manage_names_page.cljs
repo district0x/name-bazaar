@@ -59,17 +59,15 @@
 (defn subname-text-field [{:keys [:value]}]
   (fn [{:keys [:on-change :value] :as props}]
     (let [is-empty? (empty? value)
-          error? (and (not is-empty?)
-                      (valid-ens-name? value))]
+          ]
       [:div.input-state-label
-       {:class (if error? :error
-                   :success)}
+       ;;{:class (if error? :error :success)}
        [input
         (r/merge-props
          {:label "Enter Subdomain"
           :fluid true
           :value value
-          :error error?
+          ;; :error error?
           :on-change (fn [e data]
                        (let [value (aget data "value")]
                          (when (valid-ens-name? value)
@@ -77,7 +75,8 @@
                            (on-change e data)
                            (load-resolver value))))}
          (dissoc props :on-change))]
-       [:div.ui.label (when error? "Isn't valid subdomain name")]])))
+      ;; [:div.ui.label (when error? "Isn't valid subdomain name")]
+       ])))
 
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
@@ -225,7 +224,12 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            submit-disabled? (or (and (not editing?)
+            full-subname (str subname "." full-name)
+            correct-subname? (and (not (empty? subname))
+                                  (valid-ens-name? full-name))
+            submit-disabled? (or
+                              (not correct-subname?)
+                              (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
@@ -253,19 +257,22 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
-            (str
-              subname "." full-name " will be created")]]]
+            (when correct-subname?
+              (str
+               full-subname " will be created"))]]]
          [ui/GridRow
           {:centered true}
           [:div
            [transaction-button
             {:primary true
              :disabled submit-disabled?
-             ;; :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
+             :pending? @(subscribe [:ens.set-subnode-owner/tx-pending?
+                                    (namehash full-name)
+                                    (when subname (sha3 subname))])
              :pending-text "Creating subdomain..."
              :on-click (fn []
-                         (dispatch [:public-resolver/set-name @form-data]))}
-            "Create Name"]]]]))))
+                         (dispatch [:ens/set-subnode-owner @form-data]))}
+            "Create Subname"]]]]))))
 
 (defmethod page :route.user/manage-names []
   (let [query-params (subscribe [:district0x/query-params])]
