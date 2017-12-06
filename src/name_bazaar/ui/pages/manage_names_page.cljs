@@ -274,6 +274,71 @@
                          (dispatch [:ens/set-subnode-owner @form-data]))}
             "Create Subname"]]]]))))
 
+(defn transfer-ownership-form [defaults]
+  (let [form-data (r/atom (default-point-name-form-data defaults))]
+    (fn [{:keys [:editing?]}]
+      (let [{:keys [:ens.record/label :ens.record/owner]} @form-data
+            ownership-status (when-not editing?
+                               @(subscribe [:ens.record/ownership-status (when (seq label)
+                                                                           (str label constants/registrar-root))]))
+            full-name (when (seq label)
+                        (str label constants/registrar-root))
+
+            submit-disabled? (or
+                              (and (not editing?)
+                                   (not= ownership-status :ens.ownership-status/owner)))
+            top-level-name? (top-level-name? label)
+            [transfer-event pending-sub] (if top-level-name?
+                                           [[:registrar/transfer {:ens.record/label label
+                                                                  :ens.record/owner owner}]
+                                            [:registrar.transfer/tx-pending? label]]
+                                           [[:ens/set-owner {:ens.record/name name
+                                                             :ens.record/owner label}]
+                                            [:ens.set-owner/tx-pending? (namehash label)]])
+            ]
+        [ui/Grid
+         {:class "layout-grid submit-footer offering-form"
+          ;;:celled "internally"
+          }
+         [ui/GridRow
+          [ui/GridColumn
+           {:width 16}
+           [ui/Grid
+            {:relaxed "very"}
+            [ui/GridColumn
+             {:computer 8
+              :mobile 16}
+             [ens-name-input-ownership-validated
+              {:value label
+               :on-change #(swap! form-data assoc :ens.record/label (aget %2 "value"))}]]
+            [ui/GridColumn
+             {:computer 8
+              :mobile 16}
+             [address-text-field
+              {:value owner
+               :on-change #(swap! form-data assoc :ens.record/owner (aget %2 "value"))}]]]]]
+         [ui/GridRow
+          [ui/GridColumn
+           {:mobile 16
+            :class "join-upper"}
+           [:p.input-info
+            "New owner will become onwner of the " full-name " as well as owner of the locked value 000 ETH"]]]
+         (comment
+           (namehash "uog.uog.eth")
+           (sha3 "uog.uog.eth")
+
+           0xfb267ee0cf412f93773bb788d0d22918795e515c536ac6d73dba6fe5e95897ad)
+         [ui/GridRow
+          {:centered true}
+          [:div
+           [transaction-button
+            {:primary true
+             :disabled submit-disabled?
+             :pending? @(subscribe pending-sub)
+             :pending-text "Transferring ownership..."
+             :on-click (fn [] (dispatch transfer-event))}
+            "Transfer ownership"]]]]))))
+
 (defmethod page :route.user/manage-names []
   (let [query-params (subscribe [:district0x/query-params])]
     (fn []
@@ -297,4 +362,10 @@
           [create-subname-form
            {:name (when (and name (valid-ens-name? name))
                     (strip-root-registrar-suffix (normalize name)))
-            :address address}]]]))))
+            :address address}]]
+         [ui/Segment
+          [:h1.ui.header.padded "Transfer ownership"]
+          [transfer-ownership-form
+           {}#_{:label (when (and name (valid-ens-name? name))
+                    (strip-root-registrar-suffix (normalize name)))
+            :owner address}]]]))))
