@@ -6,8 +6,8 @@
     [district0x.ui.components.input :refer [input token-input]]
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
-    [district0x.ui.utils :refer [date+time->local-date-time format-time-duration-units]]
-    [name-bazaar.shared.utils :refer [top-level-name?]]
+    [district0x.ui.utils :refer [date+time->local-date-time format-time-duration-units format-eth-with-code]]
+    [name-bazaar.shared.utils :refer [top-level-name? name-label parent-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.date-picker :refer [date-picker]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
@@ -28,6 +28,9 @@
    :ens.record/name (or name "")})
 
 
+(defn default-transfer-name-form-data [{:keys [:address :name]}]
+  {:ens.record/owner (or address "0x")
+   :ens.record/name (or name "")})
 
 (defn load-resolver [address]
   (let [node (reverse-record-node address)]
@@ -275,31 +278,39 @@
             "Create Subname"]]]]))))
 
 (defn transfer-ownership-form [defaults]
-  (let [form-data (r/atom (default-point-name-form-data defaults))]
+  (let [form-data (r/atom (default-transfer-name-form-data defaults))]
     (fn [{:keys [:editing?]}]
-      (let [{:keys [:ens.record/label :ens.record/owner]} @form-data
+      (let [{:keys [:ens.record/name :ens.record/owner]} @form-data
             ownership-status (when-not editing?
-                               @(subscribe [:ens.record/ownership-status (when (seq label)
-                                                                           (str label constants/registrar-root))]))
-            full-name (when (seq label)
-                        (str label constants/registrar-root))
+                               @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                                           (str name constants/registrar-root))]))
+            full-name (when (seq name)
+                        (str name constants/registrar-root))
 
+            label (name-label name)
             submit-disabled? (or
                               (and (not editing?)
                                    (not= ownership-status :ens.ownership-status/owner)))
-            top-level-name? (top-level-name? label)
-            [transfer-event pending-sub] (if top-level-name?
-                                           [[:registrar/transfer {:ens.record/label label
+            top-level? (top-level-name? full-name)
+            [transfer-event pending-sub] (if top-level?
+                                           [[:registrar/transfer {:ens.record/label name
                                                                   :ens.record/owner owner}]
-                                            [:registrar.transfer/tx-pending? label]]
-                                           [[:ens/set-owner {:ens.record/name name
-                                                             :ens.record/owner label}]
-                                            [:ens.set-owner/tx-pending? (namehash label)]])
-            ]
+                                            [:registrar.transfer/tx-pending? name]]
+                                           [[:ens/set-owner {:ens.record/name full-name
+                                                             :ens.record/owner owner}]
+                                            [:ens.set-owner/tx-pending? (namehash full-name)]])
+            node-hash (sha3 name)
+            registrar-entry @(subscribe [:registrar/entry node-hash])]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
           ;;:celled "internally"
+
           }
+         #_[:div (str "TOPLEVEL?:" top-level?
+                    " Label:" label
+                    " Name: " name
+                    " LH: " nh
+                    " DEED: " re)]
          [ui/GridRow
           [ui/GridColumn
            {:width 16}
@@ -309,8 +320,8 @@
              {:computer 8
               :mobile 16}
              [ens-name-input-ownership-validated
-              {:value label
-               :on-change #(swap! form-data assoc :ens.record/label (aget %2 "value"))}]]
+              {:value name
+               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
@@ -321,13 +332,14 @@
           [ui/GridColumn
            {:mobile 16
             :class "join-upper"}
-           [:p.input-info
-            "New owner will become onwner of the " full-name " as well as owner of the locked value 000 ETH"]]]
-         (comment
-           (namehash "uog.uog.eth")
-           (sha3 "uog.uog.eth")
-
-           0xfb267ee0cf412f93773bb788d0d22918795e515c536ac6d73dba6fe5e95897ad)
+           (when-not submit-disabled?
+             [:p.input-info
+              (str
+               "New owner will become onwner of the " full-name
+               (when top-level?
+                 (str " as well as owner of the locked value "
+                      (format-eth-with-code
+                       (:registrar.entry.deed/value registrar-entry)))))])]]
          [ui/GridRow
           {:centered true}
           [:div
@@ -366,6 +378,6 @@
          [ui/Segment
           [:h1.ui.header.padded "Transfer ownership"]
           [transfer-ownership-form
-           {}#_{:label (when (and name (valid-ens-name? name))
+           {:name (when (and name (valid-ens-name? name))
                     (strip-root-registrar-suffix (normalize name)))
-            :owner address}]]]))))
+            :address address}]]]))))

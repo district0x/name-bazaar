@@ -24,6 +24,11 @@
 (defn name-label [s]
   (first (string/split s ".")))
 
+(defn parent-label [s]
+  (let [labels (string/split s ".")]
+    (when (< 1 (count labels))
+      (second labels))))
+
 (defn contains-number? [s]
   (boolean (re-matches #".*[0-9].*" (name-label s))))
 

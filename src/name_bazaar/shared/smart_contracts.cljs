@@ -3,16 +3,16 @@
 (def smart-contracts 
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
-  :address "0x7a172fadb8e5a8c22c3040e3bf21e97a0068bfef"},
+  :address "0xc7276737e39235ecd98b080ff0ad766408804e7e"},
  :buy-now-offering-factory
  {:name "BuyNowOfferingFactory",
-  :address "0x380d7daea516b50985eb93c61667ae942a2b7388"},
+  :address "0x7f4475a4c6899588cee51925da7531538e22fc3c"},
  :registrar
  {:name "Registrar",
-  :address "0xc0c7d4335fe8c91a894ce21ef607678e3af6a41e"},
+  :address "0x0c0747e333497fe9711301761be4b5d64000da87"},
  :buy-now-offering
  {:name "BuyNowOffering",
-  :address "0x6bc6a07515152ea24a7078e0175f7ba12a3e3e38"},
+  :address "0xd7f25c4bdcbf5ed3b7a9f28581fd426671bb0474"},
  :reverse-registrar
  {:name "ReverseRegistrar",
   :address "0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069"},
@@ -22,16 +22,16 @@
  {:name "PublicResolver",
   :address "0x5FfC014343cd971B7eb70732021E26C35B744cc4"},
  :ens
- {:name "ENS", :address "0x051d55f06dd7789deddc4895feae981412e13752"},
+ {:name "ENS", :address "0x62c88b9c754eef25705ba2afbdb175ab37a746b5"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0xa161e1ffe0b98e123da4d68ebcf30640d3a126a4"},
+  :address "0x5a6136ce61837400067880fd5724eeafba36af21"},
  :district0x-emails
  {:name "District0xEmails",
-  :address "0x8b870c68afb056c11f0344da347bcb52f693aada"},
+  :address "0xd0e47e4fea69ed90a578146633be0e16483beab5"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0x8c60c02eba4b979801813d2ef615866884beeb22"},
+  :address "0x89238e5f0a660dea8a08b0aacaad952e4dcaf941"},
  :auction-offering
  {:name "AuctionOffering",
-  :address "0x6761e1245249169924d8e6b9c45d1574a71d9ef0"}})
+  :address "0x72640d2939d01f96df80911fd1277698ac4f1241"}})
