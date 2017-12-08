@@ -235,9 +235,7 @@
                               (and (not editing?)
                                       (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
-         {:class "layout-grid submit-footer offering-form"
-          ;;:celled "internally"
-          }
+         {:class "layout-grid submit-footer offering-form"}
          [ui/GridRow
           [ui/GridColumn
            {:width 16}
@@ -302,15 +300,7 @@
             node-hash (sha3 name)
             registrar-entry @(subscribe [:registrar/entry node-hash])]
         [ui/Grid
-         {:class "layout-grid submit-footer offering-form"
-          ;;:celled "internally"
-
-          }
-         #_[:div (str "TOPLEVEL?:" top-level?
-                    " Label:" label
-                    " Name: " name
-                    " LH: " nh
-                    " DEED: " re)]
+         {:class "layout-grid submit-footer offering-form"}
          [ui/GridRow
           [ui/GridColumn
            {:width 16}
