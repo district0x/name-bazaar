@@ -1,8 +1,7 @@
 (ns name-bazaar.ui.events.reverse-registrar-events
   (:require
    [cljs.spec.alpha :as s]
-   [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
-   [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+   [district0x.ui.spec-interceptors :refer [validate-first-arg]]
    [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
    [goog.string :as gstring]
    [goog.string.format]

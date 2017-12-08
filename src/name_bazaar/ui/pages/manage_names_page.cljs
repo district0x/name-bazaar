@@ -7,7 +7,7 @@
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [district0x.ui.utils :refer [date+time->local-date-time format-time-duration-units format-eth-with-code]]
-    [name-bazaar.shared.utils :refer [top-level-name? name-label parent-label]]
+    [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.date-picker :refer [date-picker]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
