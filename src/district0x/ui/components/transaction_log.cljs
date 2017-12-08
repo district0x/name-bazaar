@@ -8,9 +8,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]
-    [soda-ash.core :as ui]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [reagent.core :as r]))
 
 (defn main-title [props]
   [:div.title
@@ -91,7 +89,6 @@
       :on-click (fn [e]
                   (when (and (not (instance? js/HTMLAnchorElement (aget e "target")))
                              result-href)
-                    (info "TX-REDIRECT" result-href)
                     (if history/hashroutes?
                       (location-fx/set-location-hash! result-href)
                       (location-fx/set-history! result-href))
