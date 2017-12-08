@@ -159,7 +159,7 @@
              (:ens.record/subname form-data)
              (:ens.record/addr form-data)])
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Create subname %s.%s"
+                  {:name (gstring/format "Create %s.%s"
                                          (:ens.record/subname form-data)
                                          (:ens.record/name form-data))
                    :contract-key :ens
@@ -175,6 +175,6 @@
                    :result-href (path-with-query (path-for :route.user/manage-names)
                                                  {:name (:ens.record/name form-data)})
                    :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Subname %s.%s has been created"
+                                   (gstring/format "%s.%s has been created"
                                                    (:ens.record/subname form-data)
                                                    (:ens.record/name form-data))]}]})))
