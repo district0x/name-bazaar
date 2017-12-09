@@ -148,8 +148,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
-            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])
-            submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
+            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
           ;;:celled "internally"
@@ -164,6 +163,7 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
+               :warn-only? true
                :disabled (not default-resolver?)
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
@@ -197,7 +197,6 @@
               "Setup resolver"]
              [transaction-button
               {:primary true
-               :disabled submit-disabled?
                :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
                :pending-text "Pointing address..."
                :on-click (fn []
