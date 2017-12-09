@@ -140,6 +140,9 @@
                 {:reset-params? true}]
      :forward-events active-address-changed-forwarding}
 
+    :route.user/manage-names
+    {:dispatch [:name.ownership/load (:name query-params)]}
+
     :route.user/my-settings
     {:dispatch [:district0x-emails/load (:active-address db)]
      :forward-events active-address-changed-forwarding}

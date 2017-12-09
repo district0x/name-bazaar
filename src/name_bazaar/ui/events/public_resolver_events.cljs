@@ -87,7 +87,7 @@
                   :contract-method :set-addr
                   :form-data (select-keys form-data [:ens.record/node :ens.record/addr])
                   :args-order [:ens.record/node :public-resolver]
-                  ;;:result-href (path-for :route.ens-record/detail form-data)
+                  :result-href (path-for :route.ens-record/detail form-data)
                   :form-id (select-keys form-data [:ens.record/node])
                   :tx-opts {:gas 100000 :gas-price default-gas-price}
                   :on-tx-receipt [:district0x.snackbar/show-message

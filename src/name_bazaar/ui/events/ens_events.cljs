@@ -149,7 +149,6 @@
                                                   :ens.record/subname]
                                             :opt [:ens.record/owner]))]
   (fn [{:keys [:db]} [form-data]]
-    (info :SSUBNODE form-data)
     (let [form-data (assoc form-data
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))

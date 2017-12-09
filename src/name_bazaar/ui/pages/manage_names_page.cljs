@@ -29,21 +29,20 @@
 
 
 (defn default-transfer-name-form-data [{:keys [:address :name]}]
-  {:ens.record/owner (or address "0x")
+  {:ens.record/owner "0x"
    :ens.record/name (or name "")})
 
 (defn load-resolver [address]
   (let [node (reverse-record-node address)]
     (dispatch [:ens.records.resolver/load [node]])))
 
-(defn address-text-field [{:keys [:value :load-resolver?]}]
+(defn address-text-field []
   (fn [{:keys [:on-change :value] :as props}]
     (let [is-empty? (empty-address? value)
           error? (and (not is-empty?)
                       (not (web3/address? value)))]
       [:div.input-state-label
-       {:class (if error? :error
-                   :success)}
+       {:class (if error? :error :success)}
        [input
         (r/merge-props
          {:label "Address"
@@ -57,43 +56,36 @@
                            (on-change e data)
                            (load-resolver value))))}
          (dissoc props :on-change))]
-       [:div.ui.label (when error? "Isn't valid address")]])))
+       [:div.ui.label (when error? "Invalid address")]])))
 
-(defn subname-text-field [{:keys [:value]}]
+(defn subname-text-field []
   (fn [{:keys [:on-change :value] :as props}]
-    (let [is-empty? (empty? value)
-          ]
+    (let [is-empty? (empty? value)]
       [:div.input-state-label
-       ;;{:class (if error? :error :success)}
        [input
         (r/merge-props
-         {:label "Enter Subdomain"
+         {:label "Enter Subname"
           :fluid true
           :value value
-          ;; :error error?
           :on-change (fn [e data]
                        (let [value (aget data "value")]
                          (when (valid-ens-name? value)
                            (aset data "value" value)
                            (on-change e data)
                            (load-resolver value))))}
-         (dissoc props :on-change))]
-      ;; [:div.ui.label (when error? "Isn't valid subdomain name")]
-       ])))
+         (dissoc props :on-change))]])))
 
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
-    (fn [{:keys [:editing? :default-name]}]
+    (fn [{:keys [:default-name]}]
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
-            ownership-status (when-not editing?
-                               @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                                           (str name constants/registrar-root))]))
+            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                        (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
-            submit-disabled? (or (and (not editing?)
-                                      (not= ownership-status :ens.ownership-status/owner)))]
+            submit-disabled? (or (and (not= ownership-status :ens.ownership-status/owner)))]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
           ;;:celled "internally"
@@ -108,15 +100,13 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
-               :disabled editing?
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
              [address-text-field
               {:value addr
-               :disabled (or (not default-resolver?)
-                             editing?)
+               :disabled (not default-resolver?)
                :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
@@ -151,17 +141,15 @@
 
 (defn point-address-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
-    (fn [{:keys [:editing?]}]
+    (fn []
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
-            ownership-status (when-not editing?
-                               @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                                           (str name constants/registrar-root))]))
+            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                        (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
             default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])
-            submit-disabled? (or (and (not editing?)
-                                      (not= ownership-status :ens.ownership-status/owner)))]
+            submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"
           ;;:celled "internally"
@@ -176,15 +164,14 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
-               :disabled (or (not default-resolver?)
-                             editing?)
+               :disabled (not default-resolver?)
                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
              [address-text-field
               {:value addr
-               :disabled true;;editing?
+               :disabled true
                :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
          [ui/GridRow
           [ui/GridColumn
@@ -219,11 +206,10 @@
 
 (defn create-subname-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
-    (fn [{:keys [:editing?]}]
+    (fn []
       (let [{:keys [:ens.record/subname :ens.record/name]} @form-data
-            ownership-status (when-not editing?
-                               @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                                           (str name constants/registrar-root))]))
+            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                        (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
@@ -232,8 +218,7 @@
                                   (valid-ens-name? full-name))
             submit-disabled? (or
                               (not correct-subname?)
-                              (and (not editing?)
-                                      (not= ownership-status :ens.ownership-status/owner)))]
+                              (not= ownership-status :ens.ownership-status/owner))]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"}
          [ui/GridRow
@@ -258,6 +243,8 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
+            "You can freely create any number of unique subnames from your currently owned name. Each subname can be traded, transferred or pointed same way as any other ENS name"]
+           [:p.input-info
             (when correct-subname?
               (str
                full-subname " will be created"))]]]
@@ -277,18 +264,15 @@
 
 (defn transfer-ownership-form [defaults]
   (let [form-data (r/atom (default-transfer-name-form-data defaults))]
-    (fn [{:keys [:editing?]}]
+    (fn []
       (let [{:keys [:ens.record/name :ens.record/owner]} @form-data
-            ownership-status (when-not editing?
-                               @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                                           (str name constants/registrar-root))]))
+            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
+                                                        (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
             label (name-label name)
-            submit-disabled? (or
-                              (and (not editing?)
-                                   (not= ownership-status :ens.ownership-status/owner)))
+            submit-disabled? (not= ownership-status :ens.ownership-status/owner)
             top-level? (top-level-name? full-name)
             [transfer-event pending-sub] (if top-level?
                                            [[:registrar/transfer {:ens.record/label name
@@ -322,6 +306,8 @@
           [ui/GridColumn
            {:mobile 16
             :class "join-upper"}
+           [:p.input-info
+            "By transferring ownership you're giving a new owner full control over ENS name as well as its locked funds"]
            (when-not submit-disabled?
              [:p.input-info
               (str
