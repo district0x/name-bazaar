@@ -231,7 +231,9 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
-            "You can freely create any number of unique subnames from your currently owned name. Each subname can be traded, transferred or pointed same way as any other ENS name"]
+            (str
+             "You can freely create any number of unique subnames from your currently owned name. "
+             "Each subname can be traded, transferred or pointed same way as any other ENS name")]
            [:p.input-info
             (when correct-subname?
               (str
