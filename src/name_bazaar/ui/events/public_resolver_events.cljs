@@ -24,7 +24,6 @@
  interceptors
  (fn [{:keys [:db]} [node]]
    (let [instance (get-instance db :public-resolver)]
-     (info [:RESOLVING-NODE node instance])
      {:web3-fx.contract/constant-fns
       {:fns
        [{:instance instance
@@ -37,7 +36,6 @@
  :public-resolver.addr/loaded
  interceptors
  (fn [{:keys [:db]} [node addr]]
-   (info [:RESOLVED-NODE node addr])
    (when-not (empty-address? addr)
      {:db (assoc-in db [:public-resolver/records node :public-resolver.record/addr] addr)})))
 
@@ -49,7 +47,6 @@
               (web3/address? addr))
      (let [node (reverse-record-node addr)
            instance (get-instance db :public-resolver)]
-       (info [:REVERSE-RESOLVING-ADDR addr node instance])
        {:web3-fx.contract/constant-fns
         {:fns
          [{:instance instance
@@ -62,7 +59,6 @@
  :public-resolver.name/loaded
  interceptors
  (fn [{:keys [:db]} [addr name]]
-   (info [:REVERSE-RESOLVED-ADDR addr name])
    (when (and name
               (not= name ""))
      {:db (assoc-in db [:public-resolver/reverse-records
@@ -78,7 +74,6 @@
          form-data (assoc form-data
                           :ens.record/node (namehash (str (:ens.record/name form-data)
                                                           constants/registrar-root)))]
-     (info [:POINT-NAME name])
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
@@ -103,7 +98,6 @@
     (let [form-data (-> form-data
                         (update :ens.record/name #(str % constants/registrar-root))
                         (assoc :ens.record/node (reverse-record-node (:ens.record/addr form-data))))]
-      (info [:SET-REVERSE-RESOLVER-NODES (:ens.record/name form-data)])
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Point %s to %s"
                                          (:ens.record/addr form-data)

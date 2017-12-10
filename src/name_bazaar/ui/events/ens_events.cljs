@@ -38,7 +38,6 @@
   interceptors
   (fn [{:keys [:db]} [nodes {:keys [:load-resolver?]}]]
     (let [instance (get-instance db :ens)]
-      (info [:LOADING-NODES nodes instance])
       {:web3-fx.contract/constant-fns
        {:fns (concat
                (for [node nodes]
@@ -71,7 +70,6 @@
   :ens.records.owner/loaded
   interceptors
   (fn [{:keys [:db]} [node owner]]
-    (info ["Loaded owner" node owner])
     {:db (assoc-in db [:ens/records node :ens.record/owner] (if (= owner "0x")
                                                               d0x-shared-utils/zero-address
                                                               owner))}))
@@ -81,7 +79,6 @@
  interceptors
  (fn [{:keys [:db]} [nodes]]
    (let [instance (get-instance db :ens)]
-     (info [:LOADING-RESOLVER nodes instance])
      {:web3-fx.contract/constant-fns
       {:fns (for [node nodes]
               {:instance instance
@@ -94,7 +91,6 @@
   :ens.records.resolver/loaded
   interceptors
   (fn [{:keys [:db]} [node resolver]]
-    (info ["Loaded resolver" node resolver])
     (when (and node resolver)
       {:db (assoc-in db [:ens/records node :ens.record/resolver] (if (= resolver "0x")
                                                                    d0x-shared-utils/zero-address
@@ -130,7 +126,6 @@
                                                            constants/registrar-root))
                            :ens.record/resolver (get form-data :ens.record/resolver public-resolver))
           full-name (str (:ens.record/name form-data) constants/registrar-root)]
-      (info [:SET-RESOLVER-NODES name (:ens.record/resolver form-data)])
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Setup resolver for %s" full-name)
                    :contract-key :ens
@@ -155,10 +150,6 @@
                                                            constants/registrar-root))
                            :ens.record/label (sha3 (:ens.record/subname form-data)))
           full-name (str (:ens.record/name form-data) constants/registrar-root)]
-      (info [:SET-SUBNODE-OWNER
-             name
-             (:ens.record/subname form-data)
-             (:ens.record/addr form-data)])
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Create %s.%s"
                                          (:ens.record/subname form-data)
