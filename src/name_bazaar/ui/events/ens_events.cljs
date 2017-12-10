@@ -128,10 +128,11 @@
           form-data (assoc form-data
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))
-                           :ens.record/resolver (get form-data :ens.record/resolver public-resolver))]
+                           :ens.record/resolver (get form-data :ens.record/resolver public-resolver))
+          full-name (str (:ens.record/name form-data) constants/registrar-root)]
       (info [:SET-RESOLVER-NODES name (:ens.record/resolver form-data)])
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Setup resolver for %s" (:ens.record/name form-data))
+                  {:name (gstring/format "Setup resolver for %s" full-name)
                    :contract-key :ens
                    :contract-method :set-resolver
                    :form-data (select-keys form-data [:ens.record/node :ens.record/resolver])
@@ -141,7 +142,7 @@
                    :result-href (path-with-query (path-for :route.user/manage-names)
                                                  {:name (:ens.record/name form-data)})
                    :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Resolver for %s has been set up" (:ens.record/name form-data))]}]})))
+                                   (gstring/format "Resolver for %s has been set up" full-name)]}]})))
 
 (reg-event-fx
   :ens/set-subnode-owner
@@ -152,7 +153,8 @@
     (let [form-data (assoc form-data
                            :ens.record/node (namehash (str (:ens.record/name form-data)
                                                            constants/registrar-root))
-                           :ens.record/label (sha3 (:ens.record/subname form-data)))]
+                           :ens.record/label (sha3 (:ens.record/subname form-data)))
+          full-name (str (:ens.record/name form-data) constants/registrar-root)]
       (info [:SET-SUBNODE-OWNER
              name
              (:ens.record/subname form-data)
@@ -160,7 +162,7 @@
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Create %s.%s"
                                          (:ens.record/subname form-data)
-                                         (:ens.record/name form-data))
+                                         full-name)
                    :contract-key :ens
                    :contract-method :set-subnode-owner
                    :form-data (select-keys form-data [:ens.record/node
@@ -176,4 +178,4 @@
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "%s.%s has been created"
                                                    (:ens.record/subname form-data)
-                                                   (:ens.record/name form-data))]}]})))
+                                                   full-name)]}]})))
