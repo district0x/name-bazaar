@@ -56,7 +56,20 @@
   &.error > .ui.label {
     color: @errorBorder;
   }
+  &.warning > .ui.label {
+    color: @gold;
+  }
+  &.warning > .ui > input {
+    border-color: @gold;
+  }
+  &.warning > .ui.input.focus {
+    border-color: @gold;
+    .ui.label:first-child {
+      color: @gold;
+    }
+  }
   &.success > .ui.label {
     color: @positiveColor;
   }
 }
+

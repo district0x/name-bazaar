@@ -10,6 +10,9 @@
  :registrar
  {:name "Registrar",
   :address "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef"},
+ :reverse-registrar
+ {:name "ReverseRegistrar",
+  :address "0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069"},
  :buy-now-offering
  {:name "BuyNowOffering",
   :address "0x7f5dbcab54cb17cd494477d4f11a2b7ba470fb3a"},

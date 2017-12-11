@@ -17,7 +17,7 @@
 
 (defn start-node-watchdog! [on-up-fn on-down-fn]
   (swap! *server-state* update :node-watchdog merge {:enabled? true :online? false})
-  (info "Starting watcher")
+  (info "Starting watchdog" )
   (go-loop []
            (let [node-watchdog (:node-watchdog @*server-state*)]
              (<! (timeout (:timeout node-watchdog)))

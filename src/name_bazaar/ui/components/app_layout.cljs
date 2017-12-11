@@ -67,6 +67,10 @@
                             :route :route.user/my-bids
                             :class :my-bids
                             :icon "hammer"}
+                           {:text "Manage Names"
+                            :route :route.user/manage-names
+                            :class :manage-names
+                            :icon "manager"}
                            {:text "My Settings"
                             :route :route.user/my-settings
                             :class :my-settings
