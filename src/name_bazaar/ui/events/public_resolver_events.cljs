@@ -77,7 +77,9 @@
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
-                                        (:ens.record/addr form-data))
+                                        (truncate
+                                         (:ens.record/addr form-data)
+                                         7))
                   :contract-key :public-resolver
                   :contract-method :set-addr
                   :form-data (select-keys form-data [:ens.record/node :ens.record/addr])
@@ -100,7 +102,7 @@
                         (assoc :ens.record/node (reverse-record-node (:ens.record/addr form-data))))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Point %s to %s"
-                                         (:ens.record/addr form-data)
+                                         (truncate (:ens.record/addr form-data) 10)
                                          (:ens.record/name form-data))
                    :contract-key :public-resolver
                    :contract-method :set-name
@@ -108,8 +110,9 @@
                    :args-order [:ens.record/node :ens.record/name]
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "%s is pointed to %s."
-                                                   (truncate (:ens.record/addr form-data)
-                                                             10)
-                                                   (:ens.record/name form-data))]}]})))
+                   :on-tx-receipt-n [[:public-resolver.name/load (:ens.record/addr form-data)]
+                                     [:district0x.snackbar/show-message
+                                      (gstring/format "%s is pointed to %s."
+                                                      (truncate (:ens.record/addr form-data)
+                                                                10)
+                                                      (:ens.record/name form-data))]]}]})))

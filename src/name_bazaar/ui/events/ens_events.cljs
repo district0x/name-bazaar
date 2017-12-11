@@ -135,7 +135,7 @@
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :result-href (path-with-query (path-for :route.user/manage-names)
-                                                 {:name (:ens.record/name form-data)})
+                                                 {:name full-name})
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "Resolver for %s has been set up" full-name)]}]})))
 
@@ -165,7 +165,7 @@
                    :form-id (select-keys form-data [:ens.record/node :ens.record/label])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :result-href (path-with-query (path-for :route.user/manage-names)
-                                                 {:name (:ens.record/name form-data)})
+                                                 {:name full-name})
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "%s.%s has been created"
                                                    (:ens.record/subname form-data)

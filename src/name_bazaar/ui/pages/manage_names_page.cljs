@@ -141,7 +141,8 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
             submit-disabled? (empty? name)
-            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
+            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])
+            ]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"}
          [ui/GridRow
@@ -169,7 +170,7 @@
             :class "join-upper"}
            [:p.input-info
             (str
-             "Your address " addr " will be pointing to " (or full-name
+             "Your address " (truncate addr 10) " will be pointing to " (or full-name
                                                               "chosen name")
              ". This will help Ethereum applications to figure out your username just from your address.")]
            (when-not default-resolver?
