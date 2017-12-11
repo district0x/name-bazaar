@@ -17,7 +17,6 @@
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 
-
 (defn default-point-name-form-data [{:keys [:address :name]}]
   {:ens.record/addr (or address "0x")
    :ens.record/name (or name "")})
@@ -141,8 +140,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
             submit-disabled? (empty? name)
-            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])
-            ]
+            default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"}
          [ui/GridRow
@@ -182,7 +180,7 @@
            (if-not default-resolver?
              [transaction-button
               {:primary true
-               :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? (truncate addr 10)])
+               :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? addr])
                :pending-text "Setting up resolver..."
                :on-click #(dispatch [:reverse-registrar/claim-with-resolver @form-data])}
               "Setup resolver"]
@@ -263,8 +261,7 @@
 
             label (name-label name)
             submit-disabled? (or (not= ownership-status :ens.ownership-status/owner)
-                                 (not (web3/address? owner))
-                                 )
+                                 (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
             [transfer-event pending-sub] (if top-level?
                                            [[:registrar/transfer {:ens.record/label name
