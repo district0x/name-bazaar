@@ -85,11 +85,12 @@
                   :result-href (path-for :route.ens-record/detail form-data)
                   :form-id (select-keys form-data [:ens.record/node])
                   :tx-opts {:gas 100000 :gas-price default-gas-price}
-                  :on-tx-receipt [:district0x.snackbar/show-message
-                                  (gstring/format "%s is now pointing to %s"
-                                                  (:ens.record/name form-data)
-                                                  (truncate (:ens.record/addr form-data)
-                                                            10))]}]})))
+                  :on-tx-receipt-n [[:ens.records.resolver/load [(:ens.record/node form-data)]]
+                                    [:district0x.snackbar/show-message
+                                      (gstring/format "%s is now pointing to %s"
+                                                      (:ens.record/name form-data)
+                                                      (truncate (:ens.record/addr form-data)
+                                                                10))]]}]})))
 
 (reg-event-fx
  :public-resolver/set-name
@@ -109,6 +110,7 @@
                    :form-id (select-keys form-data [:ens.record/node])
                    :tx-opts {:gas 100000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:public-resolver.name/load (:ens.record/addr form-data)]
+                                     [:ens.records.resolver/load [(:ens.record/node form-data)]]
                                      [:district0x.snackbar/show-message
                                       (gstring/format "%s is pointed to %s."
                                                       (truncate (:ens.record/addr form-data)

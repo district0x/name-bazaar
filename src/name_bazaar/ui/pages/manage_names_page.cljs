@@ -30,6 +30,10 @@
   (let [node (reverse-record-node address)]
     (dispatch [:ens.records.resolver/load [node]])))
 
+(defn load-addr [n]
+  (let [node (namehash n)]
+    (dispatch [:public-resolver.addr/load node])))
+
 (defn address-text-field []
   (fn [{:keys [:on-change :value] :as props}]
     (let [is-empty? (empty-address? value)
@@ -77,7 +81,7 @@
                                                         (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
-
+            name-record @(subscribe [:public-resolver/record (namehash full-name)])
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
             submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
         [ui/Grid
@@ -91,7 +95,9 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
-               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+               :on-change #(do
+                             (swap! form-data assoc :ens.record/name (aget %2 "value"))
+                             (load-addr (namehash full-name)))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
@@ -109,6 +115,9 @@
              (or full-name
                  "chosen name")
              ", instead of hexadecimal number.")]
+           (when name-record
+             [:p.input-info
+              (str full-name " is currently pointed to " (:public-resolver.record/addr name-record) ".")])
            (when-not default-resolver?
              [:p.input-info
               "Before you can point your name to an address, you must setup resolver for your address."])]]
@@ -140,6 +149,7 @@
             full-name (when (seq name)
                         (str name constants/registrar-root))
             submit-disabled? (empty? name)
+            addr-record @(subscribe [:public-resolver/reverse-record addr])
             default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"}
@@ -173,7 +183,10 @@
              ". This will help Ethereum applications to figure out your username just from your address.")]
            (when-not default-resolver?
              [:p.input-info
-              " Before you can point your address to a name, you must setup resolver for your address."])]]
+              " Before you can point your address to a name, you must setup resolver for your address."])
+           (when addr-record
+             [:p.input-info
+              (str addr " is currently pointed to " (:public-resolver.record/name addr-record) ".")])]]
          [ui/GridRow
           {:centered true}
           [:div
