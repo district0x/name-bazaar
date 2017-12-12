@@ -10,7 +10,7 @@
     [name-bazaar.shared.utils :refer [top-level-name?]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.date-picker :refer [date-picker]]
-    [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
+    [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
     [name-bazaar.ui.components.loading-placeholders :refer [content-placeholder]]
     [name-bazaar.ui.components.offering.offering-type-select :refer [offering-type-select]]
     [name-bazaar.ui.constants :as constants]
@@ -18,47 +18,6 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
-
-(def ownership-status->text
-  {:ens.ownership-status/empty-name ""
-   :ens.ownership-status/loading "Checking ownership..."
-   :ens.ownership-status/not-ens-record-owner "You are not owner of this name"
-   :ens.ownership-status/not-deed-owner "You don't own this name's locked value"
-   :ens.ownership-status/owner "You are owner of this name"})
-
-(defn load-name-ownership [value]
-  (let [full-name (str value constants/registrar-root)
-        node (namehash full-name)]
-    (dispatch [:ens.records/load [node]])
-    (when (top-level-name? full-name)
-      (dispatch [:registrar.entries/load [(sha3 value)]]))))
-
-(defn offering-name-text-field [{:keys [:value]}]
-  (fn [{:keys [:on-change :value] :as props}]
-    (let [ownership-status @(subscribe [:ens.record/ownership-status (when (seq value)
-                                                                       (str value constants/registrar-root))])
-          error? (contains? #{:ens.ownership-status/not-ens-record-owner
-                              :ens.ownership-status/not-deed-owner}
-                            ownership-status)]
-      [:div.input-state-label
-       {:class (cond
-                 error? :error
-                 (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
-       [ens-name-input
-        (r/merge-props
-          {:label "Name"
-           :fluid true
-           :value value
-           :error error?
-           :on-change (fn [e data]
-                        (let [value (aget data "value")]
-                          (when (valid-ens-name? value)
-                            (let [value (normalize value)]
-                              (aset data "value" value)
-                              (on-change e data)
-                              (load-name-ownership value)))))}
-          (dissoc props :ownership-status :on-change))]
-       [:div.ui.label (ownership-status->text ownership-status)]])))
 
 (defn offering-default-form-data [name]
   (let [end-time (doto (to-date (t/plus (t/now) (t/days 3) (t/hours 1)))
@@ -153,7 +112,7 @@
             [ui/GridColumn
              {:computer 8
               :mobile 16}
-             [offering-name-text-field
+             [ens-name-input-ownership-validated
               {:value name
                :disabled editing?
                :on-change #(swap! form-data assoc :offering/name (aget %2 "value"))}]]

@@ -11,6 +11,7 @@
         ["my-offerings" :route.user/my-offerings]
         ["my-purchases" :route.user/my-purchases]
         ["my-bids" :route.user/my-bids]
+        ["manage-names" :route.user/manage-names]
         ["offerings/create" :route.offerings/create]
         [["offerings/" :offering/address] :route.offerings/detail]
         [["offerings/" :offering/address "/edit"] :route.offerings/edit]

@@ -154,7 +154,7 @@
                   (<! (buy-now-offering/buy! {:offering/address offering} {:value (eth->wei 0.1)
                                                                            :from (state/my-address 1)})))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (tx-sent? (<! (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                                    {:from (state/my-address 0)})))))
 
