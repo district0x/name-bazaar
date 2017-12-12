@@ -56,7 +56,7 @@
                                        :dispatch-to [:active-page-changed]}
                       :dispatch-n [[:setup-update-now-interval]
                                    [:district0x/load-conversion-rates [:USD]]
-                                   [:district0x.config/load]]}
+                                   [:district.server.config/load]]}
                      (when history/hashroutes?
                        {:window/on-hashchange {:dispatch [:district0x/set-current-location-as-active-page constants/routes]}}))}])
   (mount-root))

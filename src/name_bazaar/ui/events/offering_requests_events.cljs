@@ -40,6 +40,7 @@
     {:dispatch [:district0x.search-results/load
                 (merge
                   {:search-results-path [:search-results :offering-requests :main-search]
+                   :id-key :offering-request/node
                    :endpoint "/offering-requests"
                    :on-success [:offering-requests/load]}
                   opts)]}))

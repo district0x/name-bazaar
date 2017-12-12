@@ -18,16 +18,16 @@
     (fn []
       (let [{:keys [:params]} @search-results]
         [offerings-order-by-select
-         {:order-by-column (first (:order-by-columns params))
-          :order-by-dir (first (:order-by-dirs params))
+         {:order-by (:order-by params)
+          :order-by-dir (:order-by-dir params)
           :fluid true
           :options [:offering.order-by/newest
                     :offering.order-by/most-expensive
                     :offering.order-by/cheapest]
-          :on-change (fn [order-by-column order-by-dir]
+          :on-change (fn [order-by order-by-dir]
                        (dispatch [:offerings.ens-record-offerings/set-params-and-search
-                                  {:order-by-columns [order-by-column]
-                                   :order-by-dirs [order-by-dir]}]))}]))))
+                                  {:order-by order-by
+                                   :order-by-dir order-by-dir}]))}]))))
 
 (defn ens-record-offerings []
   (let [route-params (subscribe [:district0x/route-params])

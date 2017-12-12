@@ -15,27 +15,27 @@
    :offering.order-by/most-relevant "Most Relevant"})
 
 (def order-option->value
-  {:offering.order-by/newest [:created-on :desc]
-   :offering.order-by/most-active [:bid-count :desc]
-   :offering.order-by/most-expensive [:price :desc]
-   :offering.order-by/cheapest [:price :asc]
-   :offering.order-by/ending-soon [:end-time :asc]
-   :offering.order-by/finalized-newest [:finalized-on :desc]
-   :offering.order-by/finalized-oldest [:finalized-on :asc]
+  {:offering.order-by/newest [:offering/created-on :desc]
+   :offering.order-by/most-active [:auction-offering/bid-count :desc]
+   :offering.order-by/most-expensive [:offering/price :desc]
+   :offering.order-by/cheapest [:offering/price :asc]
+   :offering.order-by/ending-soon [:auction-offering/end-time :asc]
+   :offering.order-by/finalized-newest [:offering/finalized-on :desc]
+   :offering.order-by/finalized-oldest [:offering/finalized-on :asc]
    :offering.order-by/most-relevant [:name-relevance :desc]})
 
 (def value->order-option (set/map-invert order-option->value))
 
-(defn offerings-order-by-select [{:keys [:on-change :options :order-by-column :order-by-dir] :as props}]
+(defn offerings-order-by-select [{:keys [:on-change :options :order-by :order-by-dir] :as props}]
   [ui/Select
    (r/merge-props
      {:select-on-blur false
       :placeholder "Order By"
-      :value (value->order-option [(keyword order-by-column) (keyword order-by-dir)])
+      :value (value->order-option [(keyword order-by) (keyword order-by-dir)])
       :options (for [[value text] (select-keys offerings-order-options options)]
                  {:value value :text text})
       :on-change (fn [e data]
                    (aset data "value" (order-option->value (keyword :offering.order-by (aget data "value"))))
                    (when (fn? on-change)
                      (on-change e data)))}
-     (dissoc props :options :order-by-column :order-by-dir :value :on-change))])
+     (dissoc props :options :order-by :order-by-dir :value :on-change))])

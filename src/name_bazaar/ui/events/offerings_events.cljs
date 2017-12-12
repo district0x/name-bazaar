@@ -290,6 +290,7 @@
     {:dispatch [:district0x.search-results/load
                 (merge
                   {:endpoint "/offerings"
+                   :id-key :offering/address
                    :on-success [:offerings/load]}
                   opts)]}))
 
@@ -560,7 +561,7 @@
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
-                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]                                
+                                     :on-success [:offerings/load {:load-ownership? (not (:finalized? search-params))}]
                                      :params search-params}]})))
 
 (reg-event-fx
@@ -616,16 +617,16 @@
                          :top-level-names? true}]
       {:dispatch-n [[:offerings/search {:search-results-path [:search-results :offerings :home-page-newest]
                                         :params (merge common-params
-                                                       {:order-by-columns [:created-on]
-                                                        :order-by-dirs [:desc]})}]
+                                                       {:order-by :offering/created-on
+                                                        :order-by-dir :desc})}]
                     [:offerings/search {:search-results-path [:search-results :offerings :home-page-most-active]
                                         :params (merge common-params
-                                                       {:order-by-columns [:bid-count]
-                                                        :order-by-dirs [:desc]})}]
+                                                       {:order-by :auction-offering/bid-count
+                                                        :order-by-dir :desc})}]
                     [:offerings/search {:search-results-path [:search-results :offerings :home-page-ending-soon]
                                         :params (merge common-params
-                                                       {:order-by-columns [:end-time]
-                                                        :order-by-dirs [:asc]})}]]})))
+                                                       {:order-by :offering/end-time
+                                                        :order-by-dir :asc})}]]})))
 
 (reg-event-fx
   :offerings.total-count/load

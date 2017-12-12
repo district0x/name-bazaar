@@ -61,7 +61,7 @@
     (when (seq nodes)
       {:dispatch [:district0x.server/http-get {:endpoint "/offerings"
                                                :params {:nodes nodes
-                                                        :select-fields [:node :address]
+                                                        :fields [:offering/node :offering/address]
                                                         :node-owner? true}
                                                :on-success [:ens.records.active-offerings/loaded nodes]
                                                :on-failure [:district0x.log/error]}]})))
@@ -92,7 +92,7 @@
     ;; active-offerings contains only nodes that have active offerings, all other nodes need to
     ;; reset active-offering, so we don't display outdated info
     (let [emptied-active-offerings (reduce #(assoc %1 %2 {:ens.record/active-offering nil}) {} all-nodes)
-          active-offerings (reduce #(assoc %1 (:node %2) {:ens.record/active-offering (:address %2)})
+          active-offerings (reduce #(assoc %1 (:offering/node %2) {:ens.record/active-offering (:offering/address %2)})
                                    emptied-active-offerings
                                    active-offerings)]
       {:db (update db :ens/records merge-in active-offerings)})))

@@ -36,3 +36,4 @@ start_tests.sh
 /resources/semantic/dist/
 /config.json
 /config-beta.json
+/.node-xmlhttprequest-sync-*

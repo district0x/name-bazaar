@@ -197,8 +197,8 @@
     (fn []
       [offerings-order-by-select
        {:fluid true
-        :order-by-column (first (:order-by-columns @search-params))
-        :order-by-dir (first (:order-by-dirs @search-params))
+        :order-by (:order-by @search-params)
+        :order-by-dir (:order-by-dir @search-params)
         :options (concat
                    [:offering.order-by/newest
                     :offering.order-by/most-active
@@ -212,8 +212,8 @@
         :on-change (fn [e data]
                      (let [[order-by-column order-by-dir] (aget data "value")]
                        (dispatch [:district0x.location/add-to-query
-                                  {:order-by-columns [(name order-by-column)]
-                                   :order-by-dirs [(name order-by-dir)]}])))}])))
+                                  {:order-by order-by-column
+                                   :order-by-dir order-by-dir}])))}])))
 
 (defn reset-filter-button []
   (let [sold-page? (subscribe [:offerings.main-search/sold-page?])]

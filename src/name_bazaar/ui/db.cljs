@@ -16,7 +16,7 @@
 (goog-define log-level "error")
 
 (def development-config
-  {:node-url "http://localhost:8549"
+  {:node-url #_ "http://localhost:8549" "http://localhost:8545"
    :load-node-addresses? true
    :root-url "https://beta.namebazaar.io"
    :server-url "http://localhost:6200"})
@@ -28,7 +28,7 @@
    :server-url "https://api.namebazaar.io"})
 
 (defn get-config [env-name]
-  (get {;"dev" development-config
+  (get {"dev" development-config
         "prod" production-config} env-name production-config))
 
 (def default-db
@@ -66,28 +66,28 @@
                                          :exclude-special-chars? true
                                          :node-owner? true
                                          :min-end-time-now? true
-                                         :order-by-columns [:created-on]
-                                         :order-by-dirs [:desc]
+                                         :order-by :offering/created-on
+                                         :order-by-dir :desc
                                          :total-count? true
                                          :offset 0
                                          :limit constants/infinite-lists-init-load-limit}}
                   :ens-record-offerings {:ids []
-                                         :params {:order-by-columns [:created-on]
-                                                  :order-by-dirs [:desc]
+                                         :params {:order-by :offering/created-on
+                                                  :order-by-dir :desc
                                                   :total-count? true
                                                   :offset 0
                                                   :limit constants/infinite-lists-init-load-limit}}
                   :user-offerings {:ids []
                                    :params {:open? true
                                             :finalized? true
-                                            :order-by-columns [:created-on]
-                                            :order-by-dirs [:desc]
+                                            :order-by :offering/created-on
+                                            :order-by-dir :desc
                                             :total-count? true
                                             :offset 0
                                             :limit constants/infinite-lists-init-load-limit}}
                   :similar-offerings {:ids []
-                                      :params {:order-by-columns [:name-relevance]
-                                               :order-by-dirs [:desc]
+                                      :params {:order-by :name-relevance
+                                               :order-by-dir :desc
                                                :name-position :end
                                                :node-owner? true
                                                :min-end-time-now? true
@@ -95,8 +95,8 @@
                                                :offset 0
                                                :limit constants/infinite-lists-init-load-limit}}
                   :user-bids {:ids []
-                              :params {:order-by-columns [:end-time]
-                                       :order-by-dirs [:asc]
+                              :params {:order-by :auction-offering/end-time
+                                       :order-by-dir :asc
                                        :min-end-time-now? false
                                        :winning? true
                                        :outbid? true
@@ -105,15 +105,15 @@
                                        :offset 0
                                        :limit constants/infinite-lists-init-load-limit}}
                   :user-purchases {:ids []
-                                   :params {:order-by-columns [:finalized-on]
-                                            :order-by-dirs [:desc]
+                                   :params {:order-by :offering/finalized-on
+                                            :order-by-dir :desc
                                             :total-count? true
                                             :offset 0
                                             :limit constants/infinite-lists-init-load-limit}}}
       :offering-requests {:main-search {:ids []
                                         :params {:name-position :any
-                                                 :order-by-columns [:requesters-count]
-                                                 :order-by-dirs [:desc]
+                                                 :order-by :offering-request/requesters-count
+                                                 :order-by-dir :desc
                                                  :total-count? true
                                                  :offset 0
                                                  :limit constants/infinite-lists-init-load-limit}}}}

@@ -4,7 +4,7 @@
     [cljs-time.core :as t]
     [district0x.shared.utils :refer [collify]]
     [district0x.ui.spec-interceptors :refer [validate-db]]
-    [district0x.ui.utils :refer [parse-boolean-string parse-kw-coll-query-params parse-int-or-nil parse-float-or-nil]]
+    [district0x.ui.utils :refer [parse-boolean-string parse-kw-coll-query-params parse-int-or-nil parse-float-or-nil str-keyword->keyword]]
     [medley.core :as medley]
     [name-bazaar.shared.constants :as shared-constants]
     [re-frame.core :as re-frame :refer [trim-v]]))
@@ -27,8 +27,8 @@
                             :exclude-special-chars? parse-boolean-string
                             :top-level-names? parse-boolean-string
                             :sub-level-names? parse-boolean-string
-                            :order-by-dirs parse-kw-coll-query-params
-                            :order-by-columns parse-kw-coll-query-params
+                            :order-by-dir str-keyword->keyword
+                            :order-by str-keyword->keyword
                             :sold? parse-boolean-string
                             :offset parse-int-or-nil}
    :route.offering-requests/search {:name-position keyword

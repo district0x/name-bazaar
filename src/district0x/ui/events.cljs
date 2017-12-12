@@ -168,7 +168,7 @@
           {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
-  :district0x.config/load
+  :district.server.config/load
   interceptors
   (fn [{:keys [db]} _]
     {:db db
@@ -176,11 +176,11 @@
                   :uri (str (url/url (:server-url db) "/config"))
                   :timeout 3000
                   :response-format (ajax/transit-response-format)
-                  :on-success [:district0x.config/loaded]
-                  :on-failure [:district0x.log/error :district0x.config/load]}}))
+                  :on-success [:district.server.config/loaded]
+                  :on-failure [:district0x.log/error :district.server.config/load]}}))
 
 (reg-event-db
-  :district0x.config/loaded
+  :district.server.config/loaded
   interceptors
   (fn [db [config]]
     (assoc-in db [:config] config)))
@@ -635,15 +635,20 @@
   interceptors
   (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :on-failure :endpoint]
                       :or {on-failure [:district0x.log/error]}} :as opts]]
-    {:http-xhrio (merge
-                   {:method :get
-                    :timeout 20000
-                    :uri (str (url/url (:server-url db) endpoint))
-                    :response-format (ajax/json-response-format {:keywords? true})
-                    :on-success on-success
-                    :on-failure [:district0x.log/error]
-                    :params params}
-                   http-xhrio)}))
+    {:http-xhrio (-> (merge
+                       {:method :get
+                        :timeout 20000
+                        :uri (str (url/url (:server-url db) endpoint))
+                        :response-format (ajax/transit-response-format)
+                        :on-success on-success
+                        :on-failure [:district0x.log/error]
+                        :params params}
+                       http-xhrio)
+                   (update :params (partial medley/map-vals (fn [v]
+                                                              (cond
+                                                                (keyword? v) (str v)
+                                                                (sequential? v) (map str v)
+                                                                :else v)))))}))
 
 (reg-event-fx
   :district0x.search-results/load
@@ -664,7 +669,7 @@
   interceptors
   (fn [{:keys [db]} [{:keys [:search-results-path :params :id-key :on-success :append?]}
                      {:keys [:items :total-count] :as response}]]
-    (let [ids (if id-key (map #(get % id-key)) items)
+    (let [ids (if id-key (map #(get % id-key) items) items)
           existing-ids (if append?
                          (get-in db (concat search-results-path [:ids]))
                          [])]

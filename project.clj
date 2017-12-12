@@ -6,7 +6,7 @@
   :dependencies [
                  ;[district0x "0.1.10"]
                  [cljs-http "0.1.43"]
-                 [cljs-web3 "0.19.0-0-7"]
+                 [cljs-web3 "0.19.0-0-8"]
                  [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "15.6.1-2"]
@@ -29,6 +29,7 @@
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
                  [bidi "2.1.2"]
+                 [mount "0.1.11"]
                  [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.7.2"]
                  [cljs-node-io "0.5.0"]
@@ -41,12 +42,12 @@
                  [com.cognitect/transit-cljs "0.8.243"]
                  [com.taoensso/encore "2.92.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 ;[com.cemerick/url "0.1.1"]
                  [day8.re-frame/http-fx "0.1.4"]
                  [kibu/pushy "0.3.8"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
-                 [madvas.re-frame/web3-fx "0.2.1"]]
+                 [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
+                 [madvas.re-frame/web3-fx "0.2.1"]
+                 [nilenso/honeysql-postgres "0.2.3"]]
 
   :exclusions [[cljsjs/prop-types]
                [com.taoensso/encore]
@@ -62,19 +63,22 @@
             [lein-pdo "0.1.1"]]
 
   :npm {:dependencies [[cors "2.8.4"]
+                       [better-sqlite3 "4.0.3"]
+                       [chalk "2.3.0"] ;;ANSI colors for logging
                        [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
                        [ethereumjs-testrpc "4.1.3"]
                        [express "4.15.3"]
+                       [semantic-ui "2.2.13"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]
-                       [sqlite3 "3.1.8"]
+                       [type-is "1.6.15"]
                        [web3 "0.19.0"]
                        [ws "2.0.1"]
                        [xhr2 "0.1.4"]
-                       [semantic-ui "2.2.13"]
-                       [chalk "2.3.0"] ;;ANSI colors for logging
-                       ]
+                       [ganache-core "2.0.2"]
+                       [deasync "0.1.11"]
+                       [dargs "5.1.0"]]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -90,7 +94,9 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :figwheel {:server-port 4544
-             :css-dirs ["resources/public/css"]}
+             :css-dirs ["resources/public/css"]
+             ;:repl-eval-timeout 120000
+             }
 
   :repl-options {:timeout 120000}
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
@@ -129,7 +135,7 @@
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/server" "src/district0x/shared"]
+                                       "src/district0x/shared" "src/district"]
                         :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
                         :compiler {:main "name-bazaar.server.dev"
                                    :output-to "dev-server/name-bazaar.js",
@@ -161,8 +167,7 @@
                                    :pseudo-names false}}
                        {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/server" "src/district0x/shared"
-                                       "test/server"]
+                                       "src/district0x/shared" "test/server" "src/district"]
                         :figwheel true
                         :compiler {:main "server.run-tests"
                                    :output-to "server-tests/server-tests.js",

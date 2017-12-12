@@ -16,8 +16,8 @@
     (fn []
       (let [{:keys [:params]} @search-results]
         [offerings-order-by-select
-         {:order-by-column (first (:order-by-columns params))
-          :order-by-dir (first (:order-by-dirs params))
+         {:order-by (:order-by params)
+          :order-by-dir (:order-by-dir params)
           :fluid true
           :options [:offering.order-by/finalized-newest
                     :offering.order-by/finalized-oldest
@@ -26,8 +26,8 @@
           :on-change (fn [e data]
                        (let [[order-by-column order-by-dir] (aget data "value")]
                          (dispatch [:offerings.user-purchases/set-params-and-search
-                                    {:order-by-columns [order-by-column]
-                                     :order-by-dirs [order-by-dir]}])))}]))))
+                                    {:order-by order-by-column
+                                     :order-by-dir order-by-dir}])))}]))))
 
 (defn user-purchases []
   (let [search-results (subscribe [:offerings/user-purchases])
@@ -63,11 +63,11 @@
                             (dispatch [:offerings.user-purchases/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}
            (doall
-            (for [[i offering] (medley/indexed items)]
-              [offering-list-item
-               {:key i
-                :offering offering
-                :header-props {:show-finalized-on? true}}]))]]]))))
+             (for [[i offering] (medley/indexed items)]
+               [offering-list-item
+                {:key i
+                 :offering offering
+                 :header-props {:show-finalized-on? true}}]))]]]))))
 
 (defmethod page :route.user/my-purchases []
   [user-purchases

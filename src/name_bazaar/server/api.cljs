@@ -1,78 +1,78 @@
 (ns name-bazaar.server.api
   (:require
-    [cljs.core.async :refer [<! >! chan]]
-    [cljs.nodejs :as nodejs]
-    [district0x.server.api-server :as api-server :refer [send-json!]]   
-    [district0x.server.state :as state]
-    [medley.core :as medley]
+    [cljs.spec.alpha :as s]
+    [clojure.string :as string]
+    [district.server.api-server.core :as api-server :refer [send reg-get! query-params route-params]]
+    [district.server.config.core :refer [config]]
+    [district0x.shared.utils :refer [combination-of? collify]]
     [name-bazaar.server.db :as db]
-    [taoensso.timbre :as logging])
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [district0x.server.macros :refer [gotry]]))
+    [taoensso.timbre :as logging]))
 
-(defn trim-request [req]
-  (-> req
-      (js->clj :keywordize-keys true)      
-      (select-keys [:path :ip :protocol :method :params :hostname :httpVersion :headers :url])))
+(defn db-unavailable [res kw]
+  (logging/warn "Database is not initialized" kw)
+  (send res 503 "Service unavailiable"))
 
-(api-server/reg-get!
-  "/offerings"
-  (fn [req res]
-    (let [parsed-req (trim-request (aget req "parsed"))]
-      (logging/info "Received request" {:request parsed-req} ::get-offerings)
-      (gotry
-       (if-let [database (state/db)]
-         (send-json! res (<! (db/search-offerings database (api-server/sanitized-query-params req))))
-         (do
-           (logging/warn "Database is not initialized" ::get-offering-requests)
-           (-> res
-               (api-server/status 503)
-               (api-server/send "Service unavailiable"))))))))
+(declare parse-offerings-params)
+(declare parse-offering-requests-params)
 
-(api-server/reg-get!
-   "/offering-requests"
-   (fn [req res]
-     (let [parsed-req (trim-request (aget req "parsed"))]
-       (logging/info "Received request" {:request parsed-req} ::get-offering-requests)
-       (gotry
-        (if-let [database (state/db)]
-          (send-json! res (<! (db/search-offering-requests (state/db) (api-server/sanitized-query-params req))))
-          (do
-            (logging/warn "Database is not initialized" ::get-offering-requests)
-            (-> res
-                (api-server/status 503)
-                (api-server/send "Service unavailiable"))))))))
+(reg-get! "/offerings"
+          (fn [req res]
+            (if-let [database true]
+              (send res (db/get-offerings (parse-offerings-params (query-params req))))
+              (db-unavailable res ::get-offerings))))
 
-(api-server/reg-route! :get
-                       "/config/:key"
-                       (fn [req res]
-                         (let [parsed-req (trim-request (aget req "parsed"))
-                               config-key (-> (aget req "params")
-                                                  (js->clj :keywordize-keys true)
-                                                  vals
-                                                  first
-                                                  keyword)]
-                           (try
-                             (logging/info "Received request" {:request parsed-req} ::get-config-key)
-                             (if (contains? state/whitelisted-config-keys config-key)
-                               (-> res
-                                   (api-server/status 200)
-                                   (api-server/send (state/config config-key)))
-                               (-> res
-                                   (api-server/status 400)
-                                   (api-server/send "Bad request")))
-                             (catch :default e
-                               (logging/error "Error handling request" {:error e :request parsed-req} ::get-config-key))))))
+(reg-get! "/offering-requests"
+          (fn [req res]
+            (if-let [database true]
+              (send res (db/get-offering-requests (parse-offering-requests-params (query-params req))))
+              (db-unavailable res ::get-offering-requests))))
 
-(api-server/reg-route! :get
-                       "/config"
-                       (fn [req res]
-                         (let [parsed-req (trim-request (aget req "parsed"))]
-                           (try
-                             (logging/info "Received request" {:request parsed-req} ::get-config)
-                             (-> res
-                                 (api-server/status 200)
-                                 (api-server/send (->> (select-keys (state/config) state/whitelisted-config-keys)
-                                                       (api-server/write-transit))))
-                             (catch :default e
-                               (logging/error "Error handling request" {:error e :request parsed-req} ::get-config))))))
+(reg-get! "/config"
+          (fn [req res]
+            (api-server/send res (:ui @config))))
+
+(s/def ::offering-order-by (partial contains? #{:offering/price
+                                                :offering/created-on
+                                                :offering/finalized-on
+                                                :auction-offering/end-time
+                                                :auction-offering/bid-count
+                                                :name-relevance}))
+
+(s/def ::offering-fields (partial combination-of? #{:offering/address
+                                                    :offering/node
+                                                    :offering/version
+                                                    :offering/name}))
+
+(s/def ::order-by-dir (partial contains? #{:asc :desc}))
+
+(defn parse-address [address]
+  (when (string? address)
+    (string/lower-case address)))
+
+(defn parse-offerings-params [params]
+  (-> params
+    (update :name #(when (seq (str %)) (str %)))
+    (update :min-price #(when (number? %) %))
+    (update :max-price #(when (number? %) %))
+    (update :min-length #(when (number? %) %))
+    (update :max-length #(when (number? %) %))
+    (update :name-position #(when (keyword? %) %))
+    (update :order-by #(when (s/valid? ::offering-order-by %) %))
+    (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))
+    (update :fields #(if (s/valid? ::offering-fields %) % [:offering/address]))
+    (update :original-owner parse-address)
+    (update :bidder parse-address)
+    (update :winning-bidder parse-address)
+    (update :exclude-winning-bidder parse-address)
+    (update :limit #(if % (min 100 %) 100))
+    (update :nodes #(when % (collify %)))))
+
+(s/def ::offering-requests-order-by (partial contains? #{:offering-request/requesters-count}))
+
+(defn parse-offering-requests-params [params]
+  (-> params
+    (update :name #(when (seq (str %)) (str %)))
+    (update :name-position #(when (keyword? %) %))
+    (update :limit #(if % (min 100 %) 100))
+    (update :order-by #(when (s/valid? ::offering-requests-order-by %) %))
+    (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))))

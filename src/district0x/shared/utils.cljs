@@ -94,13 +94,15 @@
 
 (defn jsobj->clj
   [obj]
-  (reduce
-   (fn [coll k]
-     (assoc coll
-            (keyword k)
-            (aget obj k)))
-   {}
-   (js-keys obj)))
+  (if (object? obj)
+    (reduce
+      (fn [coll k]
+        (assoc coll
+          (keyword k)
+          (aget obj k)))
+      {}
+      (js-keys obj))
+    obj))
 
 (defn eth-props->wei-props [args wei-keys]
   (medley/map-kv (fn [key value]
@@ -170,13 +172,6 @@
     "Merge multiple nested maps."
     [& args]
     (reduce merge-in* nil args)))
-
-(defn parse-order-by-search-params [order-by-columns order-by-dirs]
-  (map vec (partition-all 2 (interleave (or order-by-columns []) (or order-by-dirs [])))))
-
-(defn split-order-by-search-params [order-by]
-  (let [order-by (or order-by [[]])]
-    (map vec (split-at (count order-by) (map name (apply interleave order-by))))))
 
 (defn apply-parsers [m parsers]
   (medley/map-kv (fn [k v]
