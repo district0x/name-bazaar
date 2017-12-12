@@ -70,7 +70,7 @@
                            {:text "Manage Names"
                             :route :route.user/manage-names
                             :class :manage-names
-                            :icon "manager"}
+                            :icon "user-network"}
                            {:text "My Settings"
                             :route :route.user/my-settings
                             :class :my-settings

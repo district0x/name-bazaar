@@ -2,8 +2,8 @@
   (:require
    [cljs.spec.alpha :as s]
    [district0x.ui.spec-interceptors :refer [validate-first-arg]]
-   [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
-   [name-bazaar.ui.utils :refer [path-for ]]
+   [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query truncate]]
+   [name-bazaar.ui.utils :refer [path-for]]
    [goog.string :as gstring]
    [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
    [re-frame.core :as re-frame :refer [reg-event-fx]]
@@ -22,10 +22,8 @@
                   :contract-method :claim-with-resolver
                   :form-data (select-keys form-data [:ens.record/addr :public-resolver])
                   :args-order [:ens.record/addr :public-resolver]
-                  :result-href (path-with-query (path-for :route.user/manage-names)
-                                                {:name full-name})
                   :form-id (select-keys form-data [:ens.record/addr])
                   :tx-opts {:gas 100000 :gas-price default-gas-price}
                   :on-tx-receipt [:district0x.snackbar/show-message
                                   (gstring/format
-                                   "Resolver for %s has been set up" (:ens.record/addr form-data))]}]})))
+                                    "Resolver for %s has been set up" (truncate (:ens.record/addr form-data) 10))]}]})))

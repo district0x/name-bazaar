@@ -5,5 +5,5 @@
 (reg-sub
  :reverse-registrar.claim-with-resolver/tx-pending?
  (fn [[_ addr]]
-   [(subscribe [:district0x/tx-pending? :reverse-registrar :claim-with-resolver {:ens.record/address addr}])])
+   [(subscribe [:district0x/tx-pending? :reverse-registrar :claim-with-resolver {:ens.record/addr addr}])])
  first)

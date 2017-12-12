@@ -77,9 +77,7 @@
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
-                                        (truncate
-                                         (:ens.record/addr form-data)
-                                         7))
+                                        (:ens.record/addr form-data))
                   :contract-key :public-resolver
                   :contract-method :set-addr
                   :form-data (select-keys form-data [:ens.record/node :ens.record/addr])

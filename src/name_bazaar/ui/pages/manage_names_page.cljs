@@ -246,7 +246,7 @@
              :pending? @(subscribe [:ens.set-subnode-owner/tx-pending?
                                     (namehash full-name)
                                     (when subname (sha3 subname))])
-             :pending-text "Creating subdomain..."
+             :pending-text "Creating subname..."
              :on-click #(dispatch [:ens/set-subnode-owner @form-data])}
             "Create Subname"]]]]))))
 
@@ -298,12 +298,11 @@
             "By transferring ownership you're giving full control over ENS name as well as its locked funds to a new owner."]
            (when-not submit-disabled?
              [:p.input-info
-              (str
-               "New owner will become onwner of the " full-name "."
-               (when top-level?
-                 (str " as well as owner of the locked value "
-                      (format-eth-with-code
-                       (:registrar.entry.deed/value registrar-entry)))))])]]
+              (str owner " will become owner of the " full-name "."
+                   (when top-level?
+                     (str " as well as owner of the locked value "
+                          (format-eth-with-code
+                            (:registrar.entry.deed/value registrar-entry)))))])]]
          [ui/GridRow
           {:centered true}
           [:div

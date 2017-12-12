@@ -93,8 +93,8 @@
  first)
 
 (reg-sub
- :ens.set-subnode-owner/tx-pending?
- (fn [[_ ens-record-node ens-record-label]]
-   [(subscribe [:district0x/tx-pending? :ens :set-resolver {:ens.record/node ens-record-node
-                                                            :ens.record/label ens-record-label}])])
- first)
+  :ens.set-subnode-owner/tx-pending?
+  (fn [[_ ens-record-node ens-record-label]]
+    [(subscribe [:district0x/tx-pending? :ens :set-subnode-owner {:ens.record/node ens-record-node
+                                                                  :ens.record/label ens-record-label}])])
+  first)
