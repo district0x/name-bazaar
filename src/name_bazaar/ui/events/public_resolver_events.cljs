@@ -71,9 +71,11 @@
                                                  :ens.record/addr]))]
  (fn [{:keys [:db]} [form-data]]
    (let [instance (get-instance db :ens)
+         public-resolver (get-in db [:smart-contracts :public-resolver :address])
          form-data (assoc form-data
                           :ens.record/node (namehash (str (:ens.record/name form-data)
-                                                          constants/registrar-root)))]
+                                                          constants/registrar-root))
+                          :public-resolver (get form-data :ens.record/resolver public-resolver))]
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
