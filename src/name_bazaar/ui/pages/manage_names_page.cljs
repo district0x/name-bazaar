@@ -79,8 +79,9 @@
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
             ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
                                                         (str name constants/registrar-root))])
-            full-name (when (seq name)
-                        (str name constants/registrar-root))
+            full-name-fn #(when (seq %)
+                           (str % constants/registrar-root))
+            full-name (full-name-fn name)
             name-record @(subscribe [:public-resolver/record (namehash full-name)])
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
             submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
@@ -97,7 +98,7 @@
               {:value name
                :on-change #(do
                              (swap! form-data assoc :ens.record/name (aget %2 "value"))
-                             (load-addr (namehash full-name)))}]]
+                             (load-addr (full-name-fn (aget %2 "value"))))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
