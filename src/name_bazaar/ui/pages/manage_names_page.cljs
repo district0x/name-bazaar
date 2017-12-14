@@ -5,11 +5,13 @@
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [district0x.ui.utils :refer [format-eth-with-code truncate]]
+    [goog.string.format]
+    [goog.string :as gstring]
     [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name?]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [cljs-web3.core :as web3]
@@ -272,13 +274,22 @@
             submit-disabled? (or (not= ownership-status :ens.ownership-status/owner)
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
-            [transfer-event pending-sub] (if top-level?
-                                           [[:registrar/transfer {:ens.record/label name
-                                                                  :ens.record/owner owner}]
-                                            [:registrar.transfer/tx-pending? name]]
-                                           [[:ens/set-owner {:ens.record/name full-name
-                                                             :ens.record/owner owner}]
-                                            [:ens.set-owner/tx-pending? (namehash full-name)]])
+            [transfer-event pending-sub]
+            (if top-level?
+              [[:registrar/transfer
+                {:ens.record/label name
+                 :ens.record/owner owner}
+                {:result-href (path-for :route.ens-record/detail @form-data)
+                 :on-tx-receipt-n [[:ens.records/load [(sha3 name)]
+                                    {:load-resolver? true}]
+                                   [:district0x.snackbar/show-message
+                                    (gstring/format "Ownership of %s was transferred to %s"
+                                                    (:ens.record/name form-data)
+                                                    (truncate owner 10))]]}]
+               [:registrar.transfer/tx-pending? name]]
+              [[:ens/set-owner {:ens.record/name full-name
+                                :ens.record/owner owner}]
+               [:ens.set-owner/tx-pending? (namehash full-name)]])
             node-hash (sha3 name)
             registrar-entry @(subscribe [:registrar/entry node-hash])]
         [ui/Grid

@@ -17,21 +17,23 @@
 (reg-event-fx
   :registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
-  (fn [{:keys [:db]} [form-data]]
+  (fn [{:keys [:db]} [form-data opts]]
     (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))
           name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Transfer %s ownership" name)
-                   :contract-key :registrar
-                   :contract-method :transfer
-                   :form-data form-data
-                   :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
-                   :args-order [:ens.record/label-hash :ens.record/owner]
-                   :form-id (select-keys form-data [:ens.record/label])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
-                   :on-tx-receipt-n [[:offerings.ownership/load [(:ens.record/owner form-data)]]
-                                     [:district0x.snackbar/show-message
-                                      (gstring/format "Ownership of %s was transferred" name)]]}]})))
+                  (merge
+                   {:name (gstring/format "Transfer %s ownership" name)
+                    :contract-key :registrar
+                    :contract-method :transfer
+                    :form-data form-data
+                    :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
+                    :args-order [:ens.record/label-hash :ens.record/owner]
+                    :form-id (select-keys form-data [:ens.record/label])
+                    :tx-opts {:gas 100000 :gas-price default-gas-price}
+                    :on-tx-receipt-n [[:offerings.ownership/load [(:ens.record/owner form-data)]]
+                                      [:district0x.snackbar/show-message
+                                       (gstring/format "Ownership of %s was transferred" name)]]}
+                   opts)]})))
 
 (reg-event-fx
   :registrar/register
