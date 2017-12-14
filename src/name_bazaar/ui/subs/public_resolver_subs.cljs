@@ -9,9 +9,21 @@
     (:public-resolver/records db)))
 
 (reg-sub
+ :public-resolver/record
+ :<- [:public-resolver/records]
+ (fn [nodes [_ node]]
+   (get nodes node)))
+
+(reg-sub
   :public-resolver/reverse-records
   (fn [db]
     (:public-resolver/reverse-records db)))
+
+(reg-sub
+ :public-resolver/reverse-record
+ :<- [:public-resolver/reverse-records]
+ (fn [nodes [_ addr]]
+   (get nodes addr)))
 
 (reg-sub
  :public-resolver.set-addr/tx-pending?

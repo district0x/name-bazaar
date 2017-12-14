@@ -5,11 +5,13 @@
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [district0x.ui.utils :refer [format-eth-with-code truncate]]
+    [goog.string.format]
+    [goog.string :as gstring]
     [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name?]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [cljs-web3.core :as web3]
@@ -22,13 +24,17 @@
    :ens.record/name (or name "")})
 
 
-(defn default-transfer-name-form-data [{:keys [:address :name]}]
+(defn default-transfer-name-form-data [{:keys [:name]}]
   {:ens.record/owner ""
    :ens.record/name (or name "")})
 
 (defn load-resolver [address]
   (let [node (reverse-record-node address)]
     (dispatch [:ens.records.resolver/load [node]])))
+
+(defn load-addr [n]
+  (let [node (namehash n)]
+    (dispatch [:public-resolver.addr/load node])))
 
 (defn address-text-field []
   (fn [{:keys [:on-change :value] :as props}]
@@ -54,30 +60,30 @@
 
 (defn subname-text-field []
   (fn [{:keys [:on-change :value] :as props}]
-    (let [is-empty? (empty? value)]
-      [:div.input-state-label
-       [input
-        (r/merge-props
-         {:label "Subname"
-          :fluid true
-          :value value
-          :on-change (fn [e data]
-                       (let [value (aget data "value")]
-                         (when (valid-ens-name? value)
-                           (aset data "value" value)
-                           (on-change e data)
-                           (load-resolver value))))}
-         (dissoc props :on-change))]])))
+    [:div.input-state-label
+     [input
+      (r/merge-props
+       {:label "Subname"
+        :fluid true
+        :value value
+        :on-change (fn [e data]
+                     (let [value (aget data "value")]
+                       (when (valid-ens-name? value)
+                         (aset data "value" value)
+                         (on-change e data)
+                         (load-resolver value))))}
+       (dissoc props :on-change))]]))
 
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
-    (fn [{:keys [:default-name]}]
+    (fn []
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
             ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
                                                         (str name constants/registrar-root))])
-            full-name (when (seq name)
-                        (str name constants/registrar-root))
-
+            full-name-fn #(when (seq %)
+                           (str % constants/registrar-root))
+            full-name (full-name-fn name)
+            name-record @(subscribe [:public-resolver/record (namehash full-name)])
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
             submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
         [ui/Grid
@@ -91,7 +97,9 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
-               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+               :on-change #(do
+                             (swap! form-data assoc :ens.record/name (aget %2 "value"))
+                             (load-addr (full-name-fn (aget %2 "value"))))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
@@ -109,6 +117,9 @@
              (or full-name
                  "chosen name")
              ", instead of hexadecimal number.")]
+           (when name-record
+             [:p.input-info
+              (str full-name " is currently pointed to " (:public-resolver.record/addr name-record) ".")])
            (when-not default-resolver?
              [:p.input-info
               "Before you can point your name to an address, you must setup resolver for your address."])]]
@@ -135,11 +146,10 @@
   (let [form-data (r/atom (default-point-name-form-data defaults))]
     (fn []
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
-            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                        (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
             submit-disabled? (empty? name)
+            addr-record @(subscribe [:public-resolver/reverse-record addr])
             default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
         [ui/Grid
          {:class "layout-grid submit-footer offering-form"}
@@ -173,7 +183,10 @@
              ". This will help Ethereum applications to figure out your username just from your address.")]
            (when-not default-resolver?
              [:p.input-info
-              " Before you can point your address to a name, you must setup resolver for your address."])]]
+              " Before you can point your address to a name, you must setup resolver for your address."])
+           (when addr-record
+             [:p.input-info
+              (str addr " is currently pointed to " (:public-resolver.record/name addr-record) ".")])]]
          [ui/GridRow
           {:centered true}
           [:div
@@ -258,18 +271,25 @@
                                                         (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
-
-            label (name-label name)
             submit-disabled? (or (not= ownership-status :ens.ownership-status/owner)
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
-            [transfer-event pending-sub] (if top-level?
-                                           [[:registrar/transfer {:ens.record/label name
-                                                                  :ens.record/owner owner}]
-                                            [:registrar.transfer/tx-pending? name]]
-                                           [[:ens/set-owner {:ens.record/name full-name
-                                                             :ens.record/owner owner}]
-                                            [:ens.set-owner/tx-pending? (namehash full-name)]])
+            [transfer-event pending-sub]
+            (if top-level?
+              [[:registrar/transfer
+                {:ens.record/label name
+                 :ens.record/owner owner}
+                {:result-href (path-for :route.ens-record/detail @form-data)
+                 :on-tx-receipt-n [[:ens.records/load [(sha3 name)]
+                                    {:load-resolver? true}]
+                                   [:district0x.snackbar/show-message
+                                    (gstring/format "Ownership of %s was transferred to %s"
+                                                    (:ens.record/name form-data)
+                                                    (truncate owner 10))]]}]
+               [:registrar.transfer/tx-pending? name]]
+              [[:ens/set-owner {:ens.record/name full-name
+                                :ens.record/owner owner}]
+               [:ens.set-owner/tx-pending? (namehash full-name)]])
             node-hash (sha3 name)
             registrar-entry @(subscribe [:registrar/entry node-hash])]
         [ui/Grid
@@ -315,32 +335,31 @@
             "Transfer ownership"]]]]))))
 
 (defmethod page :route.user/manage-names []
-  (let [query-params (subscribe [:district0x/query-params])]
-    (fn []
-      (let [{:keys [:name]} @(subscribe [:district0x/query-params])
-            address @(subscribe [:district0x/active-address])]
-        [app-layout {:meta {:title "NameBazaar - Manage Names" :description "Manage your ENS names"}}
-         [ui/Segment
-          [:h1.ui.header.padded "Point Name to an Address"]
-          [point-name-form
-           {:name (when (and name (valid-ens-name? name))
-                    (strip-root-registrar-suffix (normalize name)))
-            :address address}]]
-         [ui/Segment
-          [:h1.ui.header.padded "Point Address to a Name"]
-          [point-address-form
-           {:name (when (and name (valid-ens-name? name))
-                            (strip-root-registrar-suffix (normalize name)))
-            :address address}]]
-         [ui/Segment
-          [:h1.ui.header.padded "Create Subname"]
-          [create-subname-form
-           {:name (when (and name (valid-ens-name? name))
-                    (strip-root-registrar-suffix (normalize name)))
-            :address address}]]
-         [ui/Segment
-          [:h1.ui.header.padded "Transfer ownership"]
-          [transfer-ownership-form
-           {:name (when (and name (valid-ens-name? name))
-                    (strip-root-registrar-suffix (normalize name)))
-            :address address}]]]))))
+  (fn []
+    (let [{:keys [:name]} @(subscribe [:district0x/query-params])
+          address @(subscribe [:district0x/active-address])]
+      [app-layout {:meta {:title "NameBazaar - Manage Names" :description "Manage your ENS names"}}
+       [ui/Segment
+        [:h1.ui.header.padded "Point Name to an Address"]
+        [point-name-form
+         {:name (when (and name (valid-ens-name? name))
+                  (strip-root-registrar-suffix (normalize name)))
+          :address address}]]
+       [ui/Segment
+        [:h1.ui.header.padded "Point Address to a Name"]
+        [point-address-form
+         {:name (when (and name (valid-ens-name? name))
+                  (strip-root-registrar-suffix (normalize name)))
+          :address address}]]
+       [ui/Segment
+        [:h1.ui.header.padded "Create Subname"]
+        [create-subname-form
+         {:name (when (and name (valid-ens-name? name))
+                  (strip-root-registrar-suffix (normalize name)))
+          :address address}]]
+       [ui/Segment
+        [:h1.ui.header.padded "Transfer ownership"]
+        [transfer-ownership-form
+         {:name (when (and name (valid-ens-name? name))
+                  (strip-root-registrar-suffix (normalize name)))
+          :address address}]]])))
