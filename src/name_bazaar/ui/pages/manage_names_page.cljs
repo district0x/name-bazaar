@@ -274,22 +274,6 @@
             submit-disabled? (or (not= ownership-status :ens.ownership-status/owner)
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
-            [transfer-event pending-sub]
-            (if top-level?
-              [[:registrar/transfer
-                {:ens.record/label name
-                 :ens.record/owner owner}
-                {:result-href (path-for :route.ens-record/detail @form-data)
-                 :on-tx-receipt-n [[:ens.records/load [(sha3 name)]
-                                    {:load-resolver? true}]
-                                   [:district0x.snackbar/show-message
-                                    (gstring/format "Ownership of %s was transferred to %s"
-                                                    (:ens.record/name form-data)
-                                                    (truncate owner 10))]]}]
-               [:registrar.transfer/tx-pending? name]]
-              [[:ens/set-owner {:ens.record/name full-name
-                                :ens.record/owner owner}]
-               [:ens.set-owner/tx-pending? (namehash full-name)]])
             node-hash (sha3 name)
             registrar-entry @(subscribe [:registrar/entry node-hash])]
         [ui/Grid
@@ -329,9 +313,9 @@
            [transaction-button
             {:primary true
              :disabled submit-disabled?
-             :pending? @(subscribe pending-sub)
+             :pending? @(subscribe [:transfer-ownership/tx-pending? (namehash full-name) name top-level?])
              :pending-text "Transferring ownership..."
-             :on-click #(dispatch transfer-event)}
+             :on-click #(dispatch [:name/transfer-ownership full-name owner])}
             "Transfer ownership"]]]]))))
 
 (defmethod page :route.user/manage-names []

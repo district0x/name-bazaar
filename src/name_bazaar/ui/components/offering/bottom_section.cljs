@@ -13,23 +13,18 @@
   (let [{:keys [:offering/address :offering/name :offering/top-level-name? :offering/label
                 :offering/label-hash :offering/node]} offering
         active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
-        active-address-deed-owner? @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])
-        [transfer-event pending-sub] (if top-level-name?
-                                       [[:registrar/transfer {:ens.record/label label :ens.record/owner address}]
-                                        [:registrar.transfer/tx-pending? label]]
-                                       [[:ens/set-owner {:ens.record/name name :ens.record/owner address}]
-                                        [:ens.set-owner/tx-pending? node]])]
+        active-address-deed-owner? @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])]
     [transaction-button
      (r/merge-props
        {:secondary true
         :pending-text "Transferring..."
-        :pending? @(subscribe pending-sub)
+        :pending? @(subscribe [:transfer-ownership/tx-pending? node label top-level-name?])
         :disabled (or (and top-level-name?
                            (or (not active-address-ens-owner?)
                                (not active-address-deed-owner?)))
                       (and (not top-level-name?)
                            (not active-address-ens-owner?)))
-        :on-click #(dispatch transfer-event)}
+        :on-click #(dispatch [:offerings/transfer-ownership name address])}
        (dissoc props :offering))
      "Transfer Ownership"]))
 

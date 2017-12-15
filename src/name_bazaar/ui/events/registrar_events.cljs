@@ -26,13 +26,9 @@
                     :contract-key :registrar
                     :contract-method :transfer
                     :form-data form-data
-                    :result-href (path-for :route.offerings/detail {:offering/address (:ens.record/owner form-data)})
                     :args-order [:ens.record/label-hash :ens.record/owner]
                     :form-id (select-keys form-data [:ens.record/label])
-                    :tx-opts {:gas 100000 :gas-price default-gas-price}
-                    :on-tx-receipt-n [[:offerings.ownership/load [(:ens.record/owner form-data)]]
-                                      [:district0x.snackbar/show-message
-                                       (gstring/format "Ownership of %s was transferred" name)]]}
+                    :tx-opts {:gas 100000 :gas-price default-gas-price}}
                    opts)]})))
 
 (reg-event-fx
