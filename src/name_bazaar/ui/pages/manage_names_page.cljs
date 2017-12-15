@@ -280,11 +280,12 @@
                 {:ens.record/label name
                  :ens.record/owner owner}
                 {:result-href (path-for :route.ens-record/detail @form-data)
-                 :on-tx-receipt-n [[:ens.records/load [(sha3 name)]
+                 :on-tx-receipt-n [[:registrar.entries/load [(sha3 name)]]
+                                   [:ens.records/load [(namehash full-name)]
                                     {:load-resolver? true}]
                                    [:district0x.snackbar/show-message
                                     (gstring/format "Ownership of %s was transferred to %s"
-                                                    (:ens.record/name form-data)
+                                                    full-name
                                                     (truncate owner 10))]]}]
                [:registrar.transfer/tx-pending? name]]
               [[:ens/set-owner {:ens.record/name full-name
