@@ -28,7 +28,7 @@
                     :form-data form-data
                     :args-order [:ens.record/label-hash :ens.record/owner]
                     :form-id (select-keys form-data [:ens.record/label])
-                    :tx-opts {:gas 100000 :gas-price default-gas-price}}
+                    :tx-opts {:gas 75000 :gas-price default-gas-price}}
                    opts)]})))
 
 (reg-event-fx

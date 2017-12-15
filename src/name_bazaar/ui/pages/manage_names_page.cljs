@@ -5,8 +5,6 @@
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [district0x.ui.utils :refer [format-eth-with-code truncate]]
-    [goog.string.format]
-    [goog.string :as gstring]
     [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
@@ -15,8 +13,7 @@
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [cljs-web3.core :as web3]
-    [soda-ash.core :as ui]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [soda-ash.core :as ui]))
 
 
 (defn default-point-name-form-data [{:keys [:address :name]}]
@@ -97,9 +94,9 @@
               :mobile 16}
              [ens-name-input-ownership-validated
               {:value name
-               :on-change #(do
-                             (swap! form-data assoc :ens.record/name (aget %2 "value"))
-                             (load-addr (full-name-fn (aget %2 "value"))))}]]
+               :on-change (fn [_ data]
+                            (swap! form-data assoc :ens.record/name (aget data "value"))
+                            (load-addr (full-name-fn (aget data "value"))))}]]
             [ui/GridColumn
              {:computer 8
               :mobile 16}
@@ -112,17 +109,15 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
-            (str
-             "Pointing  your name to address will allow others to send funds to "
-             (or full-name
-                 "chosen name")
-             ", instead of hexadecimal number.")]
+            "Pointing  your name to an address enables others to send funds to "
+            (or full-name "human-readable address")
+            ", instead of hexadecimal number."]
            (when name-record
              [:p.input-info
-              (str full-name " is currently pointed to " (:public-resolver.record/addr name-record) ".")])
+              full-name " is currently pointed to " (:public-resolver.record/addr name-record) "."])
            (when-not default-resolver?
              [:p.input-info
-              "Before you can point your name to an address, you must setup resolver for your address."])]]
+              "Before you can point name to an address, you must setup resolver for your name."])]]
          [ui/GridRow
           {:centered true}
           [:div
@@ -177,16 +172,15 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
-            (str
-             "Your address " (truncate addr 10) " will be pointing to " (or full-name
-                                                              "chosen name")
-             ". This will help Ethereum applications to figure out your username just from your address.")]
+            "Your address " (truncate addr 10) " will be pointing to "
+            (or full-name "chosen name")
+            ". This will help Ethereum applications to find human-readable name from your address."]
            (when-not default-resolver?
              [:p.input-info
-              " Before you can point your address to a name, you must setup resolver for your address."])
+              "Before you can point address to a name, you must setup resolver for your address."])
            (when addr-record
              [:p.input-info
-              (str addr " is currently pointed to " (:public-resolver.record/name addr-record) ".")])]]
+              addr " is currently pointed to " (:public-resolver.record/name addr-record) "."])]]
          [ui/GridRow
           {:centered true}
           [:div
@@ -209,8 +203,9 @@
   (let [form-data (r/atom (default-point-name-form-data defaults))]
     (fn []
       (let [{:keys [:ens.record/subname :ens.record/name]} @form-data
-            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                        (str name constants/registrar-root))])
+            ownership-status @(subscribe [:ens.record/ownership-status
+                                          (when (seq name)
+                                            (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
 
@@ -243,9 +238,8 @@
            {:mobile 16
             :class "join-upper"}
            [:p.input-info
-            (str
-             "You can freely create any number of unique subnames from your currently owned name. "
-             "Each subname can be traded, transferred or pointed same way as any other ENS name")]
+            "You can freely create any number of unique subnames from owned name. "
+            "Each subname can be traded, transferred or pointed to an address, same way as any other ENS name."]
            [:p.input-info
             (when correct-subname?
               (str
@@ -267,8 +261,9 @@
   (let [form-data (r/atom (default-transfer-name-form-data defaults))]
     (fn []
       (let [{:keys [:ens.record/name :ens.record/owner]} @form-data
-            ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                        (str name constants/registrar-root))])
+            ownership-status @(subscribe [:ens.record/ownership-status
+                                          (when (seq name)
+                                            (str name constants/registrar-root))])
             full-name (when (seq name)
                         (str name constants/registrar-root))
             submit-disabled? (or (not= ownership-status :ens.ownership-status/owner)
@@ -302,11 +297,11 @@
             "By transferring ownership you're giving full control over ENS name as well as its locked funds to a new owner."]
            (when-not submit-disabled?
              [:p.input-info
-              (str owner " will become owner of the " full-name "."
-                   (when top-level?
-                     (str " as well as owner of the locked value "
-                          (format-eth-with-code
-                            (:registrar.entry.deed/value registrar-entry)))))])]]
+              owner " will become owner of the " full-name ","
+              (when top-level?
+                (str " as well as owner of the locked value "
+                     (format-eth-with-code
+                       (:registrar.entry.deed/value registrar-entry))))])]]
          [ui/GridRow
           {:centered true}
           [:div

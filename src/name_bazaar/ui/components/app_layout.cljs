@@ -90,18 +90,32 @@
 
 (def nav-menu-items-props-no-register (remove #(= (:route %) :route.registrar/register) nav-menu-items-props))
 
+(defn- format-user-address [address resolved-address]
+  (if (= resolved-address address)
+    address
+    (str resolved-address " (" address ")")))
+
+(defn address-select []
+  (let [active-resolved-address (subscribe [:resolved-active-address])
+        my-addresses (subscribe [:district0x/my-addresses])
+        active-address (subscribe [:district0x/active-address])]
+    (fn []
+      [active-address-select
+       {:single-address-props
+        {:address (format-user-address @active-address @active-resolved-address)}
+        :select-field-props
+        {:options (doall
+                    (for [address @my-addresses]
+                      {:value address
+                       :text (format-user-address address @(subscribe [:reverse-resolved-address address]))}))}}])))
+
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])
-        active-resolved-address (subscribe [:resolved-active-address])]
+        my-addresses (subscribe [:district0x/my-addresses])]
     (fn []
       [:div.app-bar
        [:div.left-section
-        [active-address-select {:single-address-props {:address @active-resolved-address}
-                                :select-field-props {:options (doall
-                                                                (for [address @my-addresses]
-                                                                  {:value address
-                                                                   :text @(subscribe [:reverse-resolved-address address])}))}}]
+        [address-select]
         [:i.icon.hamburger
          {:on-click (fn [e]
                       (dispatch [:district0x.menu-drawer/set true])
@@ -141,20 +155,20 @@
             {:style {:overflow-y :scroll}}
             [side-nav-menu-logo]
             (doall
-             (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
-                                                                         nav-menu-items-props
-                                                                         nav-menu-items-props-no-register)]
-               (let [href (or href (path-for route))]
-                 [ui/MenuItem
-                  {:key text
-                   :as "a"
-                   :href href
-                   :class class
-                   :on-click #(dispatch [:district0x.window/scroll-to-top])
-                   :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
-                  [:i.icon
-                   {:class icon}]
-                  text])))
+              (for [{:keys [:text :route :href :class :icon]} (if @use-instant-registrar?
+                                                                nav-menu-items-props
+                                                                nav-menu-items-props-no-register)]
+                (let [href (or href (path-for route))]
+                  [ui/MenuItem
+                   {:key text
+                    :as "a"
+                    :href href
+                    :class class
+                    :on-click #(dispatch [:district0x.window/scroll-to-top])
+                    :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
+                   [:i.icon
+                    {:class icon}]
+                   text])))
             [district0x-banner]]]
        [:div.app-content
         {:on-click (fn []

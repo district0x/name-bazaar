@@ -29,7 +29,7 @@
                    :args-order [:ens.record/node :ens.record/owner]
                    :result-href (path-for :route.ens-record/detail form-data)
                    :form-id (select-keys form-data [:ens.record/node])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :tx-opts {:gas 75000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:ens.records/load [(:ens.record/node form-data)] {:load-resolver? true}]
                                      [:district0x.snackbar/show-message
                                       (gstring/format "Ownership of %s was transferred" (:ens.record/name form-data))]]}]})))
@@ -134,11 +134,12 @@
                    :form-data (select-keys form-data [:ens.record/node :ens.record/resolver])
                    :args-order [:ens.record/node :ens.record/resolver]
                    :form-id (select-keys form-data [:ens.record/node])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :tx-opts {:gas 75000 :gas-price default-gas-price}
                    :result-href (path-with-query (path-for :route.user/manage-names)
                                                  {:name full-name})
-                   :on-tx-receipt [:district0x.snackbar/show-message
-                                   (gstring/format "Resolver for %s has been set up" full-name)]}]})))
+                   :on-tx-receipt-n [[:ens.records.resolver/load [(:ens.record/node form-data)]]
+                                     [:district0x.snackbar/show-message
+                                      (gstring/format "Resolver for %s has been set up" full-name)]]}]})))
 
 (reg-event-fx
   :ens/set-subnode-owner
@@ -164,7 +165,7 @@
                                 :ens.record/label
                                 :ens.record/addr]
                    :form-id (select-keys form-data [:ens.record/node :ens.record/label])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :tx-opts {:gas 75000 :gas-price default-gas-price}
                    :result-href (path-with-query (path-for :route.user/manage-names)
                                                  {:name full-name})
                    :on-tx-receipt [:district0x.snackbar/show-message

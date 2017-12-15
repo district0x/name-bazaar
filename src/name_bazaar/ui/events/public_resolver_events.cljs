@@ -70,12 +70,9 @@
  [interceptors (validate-first-arg (s/keys :req [:ens.record/name
                                                  :ens.record/addr]))]
  (fn [{:keys [:db]} [form-data]]
-   (let [instance (get-instance db :ens)
-         public-resolver (get-in db [:smart-contracts :public-resolver :address])
-         form-data (assoc form-data
+   (let [form-data (assoc form-data
                           :ens.record/node (namehash (str (:ens.record/name form-data)
-                                                          constants/registrar-root))
-                          :public-resolver (get form-data :ens.record/resolver public-resolver))]
+                                                          constants/registrar-root)))]
      {:dispatch [:district0x/make-transaction
                  {:name (gstring/format "Point %s to %s"
                                         (:ens.record/name form-data)
@@ -83,16 +80,16 @@
                   :contract-key :public-resolver
                   :contract-method :set-addr
                   :form-data (select-keys form-data [:ens.record/node :ens.record/addr])
-                  :args-order [:ens.record/node :public-resolver]
+                  :args-order [:ens.record/node :ens.record/addr]
                   :result-href (path-for :route.ens-record/detail form-data)
                   :form-id (select-keys form-data [:ens.record/node])
-                  :tx-opts {:gas 100000 :gas-price default-gas-price}
-                  :on-tx-receipt-n [[:ens.records.resolver/load [(:ens.record/node form-data)]]
+                  :tx-opts {:gas 75000 :gas-price default-gas-price}
+                  :on-tx-receipt-n [[:public-resolver.addr/load (:ens.record/node form-data)]
                                     [:district0x.snackbar/show-message
-                                      (gstring/format "%s is now pointing to %s"
-                                                      (:ens.record/name form-data)
-                                                      (truncate (:ens.record/addr form-data)
-                                                                10))]]}]})))
+                                     (gstring/format "%s is now pointing to %s"
+                                                     (:ens.record/name form-data)
+                                                     (truncate (:ens.record/addr form-data)
+                                                               10))]]}]})))
 
 (reg-event-fx
  :public-resolver/set-name
@@ -110,7 +107,7 @@
                    :form-data (select-keys form-data [:ens.record/node :ens.record/name])
                    :args-order [:ens.record/node :ens.record/name]
                    :form-id (select-keys form-data [:ens.record/node])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :tx-opts {:gas 75000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:public-resolver.name/load (:ens.record/addr form-data)]
                                      [:ens.records.resolver/load [(:ens.record/node form-data)]]
                                      [:district0x.snackbar/show-message
