@@ -35,7 +35,7 @@
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.server.db]
     [name-bazaar.server.deployer]
-    [name-bazaar.server.emailer.core]
+    [name-bazaar.server.emailer]
     [name-bazaar.server.generator]
     [name-bazaar.server.syncer]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]

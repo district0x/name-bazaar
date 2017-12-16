@@ -1,4 +1,4 @@
-(ns name-bazaar.server.emailer.core
+(ns name-bazaar.server.emailer
   (:require
     [cljs-web3.eth :as web3-eth]
     [district.encryption :as encryption]

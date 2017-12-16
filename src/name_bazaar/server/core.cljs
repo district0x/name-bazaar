@@ -10,7 +10,7 @@
     [name-bazaar.server.api]
     [name-bazaar.server.db]
     [name-bazaar.server.deployer]
-    [name-bazaar.server.emailer.core]
+    [name-bazaar.server.emailer]
     [name-bazaar.server.generator]
     [name-bazaar.server.syncer]
     [name-bazaar.shared.smart-contracts]
@@ -28,11 +28,11 @@
                                      (mount/stop #'name-bazaar.server.db/name-bazaar-db)
                                      (mount/start #'name-bazaar.server.db/name-bazaar-db
                                                   #'name-bazaar.server.syncer/syncer
-                                                  #'name-bazaar.server.emailer.core/emailer))
+                                                  #'name-bazaar.server.emailer/emailer))
                         :on-offline (fn []
                                       (warn "Ethereum node went offline")
                                       (mount/stop #'name-bazaar.server.syncer/syncer
-                                                  #'name-bazaar.server.emailer.core/emailer))}})
+                                                  #'name-bazaar.server.emailer/emailer))}})
     (mount/except [#'name-bazaar.server.deployer/deployer
                    #'name-bazaar.server.generator/generator])
     (mount/start))
