@@ -1,5 +1,6 @@
 (ns server.name-bazaar.smart-contract-tests
   (:require
+    [cljs-bignumber :as bn]
     [cljs-time.coerce :refer [to-epoch from-long]]
     [cljs-time.core :as time]
     [cljs-web3.core :as web3]
@@ -7,8 +8,8 @@
     [cljs-web3.evm :as web3-evm]
     [cljs.nodejs :as nodejs]
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
-    [district.server.smart-contracts.core :refer [contract-address]]
-    [district.server.web3.core :refer [web3 first-address my-addresses balance]]
+    [district.server.smart-contracts :refer [contract-address]]
+    [district.server.web3 :refer [web3]]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei wei->eth]]
     [mount.core :as mount]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
@@ -43,8 +44,8 @@
            {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
-       (mount/only [#'district.server.web3.core
-                    #'district.server.smart-contracts.core/smart-contracts
+       (mount/only [#'district.server.web3
+                    #'district.server.smart-contracts/smart-contracts
                     #'name-bazaar.server.deployer/deployer])
        (mount/start)))
    :after
@@ -65,11 +66,11 @@
   (is (= (contract-address :offering-registry) (buy-now-offering-factory/offering-registry)))
   (is (= (contract-address :offering-requests) (buy-now-offering-factory/offering-requests)))
 
-  (is (= (first-address) (offering/emergency-multisig (contract-address :buy-now-offering))))
+  (is (= (first (web3-eth/accounts @web3)) (offering/emergency-multisig (contract-address :buy-now-offering))))
   (is (= (contract-address :ens) (offering/ens (contract-address :buy-now-offering))))
   (is (= (contract-address :offering-registry) (offering/offering-registry (contract-address :buy-now-offering))))
 
-  (is (= (first-address) (offering/emergency-multisig (contract-address :auction-offering))))
+  (is (= (first (web3-eth/accounts @web3)) (offering/emergency-multisig (contract-address :auction-offering))))
   (is (= (contract-address :ens) (offering/ens (contract-address :auction-offering))))
   (is (= (contract-address :offering-registry) (offering/offering-registry (contract-address :auction-offering)))))
 
@@ -98,7 +99,7 @@
 
 
 (deftest create-buy-now-offering
-  (let [[addr0 addr1] (my-addresses)]
+  (let [[addr0 addr1] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr0})))
@@ -170,7 +171,7 @@
 
 
 (deftest create-auction-offering
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr0})))
@@ -227,7 +228,7 @@
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.2 :ether)
                                         :from addr2})))
-          (let [balance-of-2 (balance addr2)]
+          (let [balance-of-2 (web3-eth/get-balance @web3 addr2)]
             (testing "Arbitrary increase of the bid is ok"
               (is (auction-offering/bid! {:offering/address offering}
                                          {:value (web3/to-wei 0.33 :ether)
@@ -259,13 +260,13 @@
               (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
 
             (testing "User who was overbid, getting his funds back from auction offering."
-              (is (< (- (.plus balance-of-2 (web3/to-wei 0.2 :ether))
-                        (balance addr2))
+              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.2 :ether))
+                        (web3-eth/get-balance @web3 addr2))
                      spent-gas-threshold)))))))))
 
 
 (deftest offering-tld-ownership
-  (let [[addr0 addr1] (my-addresses)]
+  (let [[addr0 addr1] (web3-eth/accounts @web3)]
     (testing "Registering name to transfer onwnership"
       (is (registrar/register! {:ens.record/label "notowned"}
                                {:from addr0}))
@@ -308,7 +309,7 @@
                               {:from addr0}))))))
 
 (deftest offering-subdomain-ownership
-  (let [[addr0 addr1 addr2] (my-addresses)]
+  (let [[addr0 addr1 addr2] (web3-eth/accounts @web3)]
     (testing "Registering name to add subdomain"
       (is (registrar/register! {:ens.record/label "tld"}
                                {:from addr0}))
@@ -369,7 +370,7 @@
                                                        {:from addr0}))))))
 
 (deftest auction-offering-self-overbid
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))
@@ -392,9 +393,9 @@
         (testing "on-offering event should fire"
           (is (not (nil? offering))))
 
-        (let [balance-of-1 (balance addr1)
-              balance-of-2 (balance addr2)
-              balance-of-3 (balance addr3)]
+        (let [balance-of-1 (web3-eth/get-balance @web3 addr1)
+              balance-of-2 (web3-eth/get-balance @web3 addr2)
+              balance-of-3 (web3-eth/get-balance @web3 addr3)]
           (testing "Transferrnig ownership to the offer"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
@@ -410,12 +411,12 @@
                                         :from addr3})))
 
           (testing "User 2, who was overbid, should have his funds back from auction offering."
-            (is (< (- balance-of-2 (balance addr2))
+            (is (< (- balance-of-2 (web3-eth/get-balance @web3 addr2))
                    spent-gas-threshold)))
 
           (testing "User 3 funds are spent on the bid"
             (is (< (- balance-of-3
-                      (.plus (balance addr3) (web3/to-wei 0.2 :ether)))
+                      (bn/+ (web3-eth/get-balance @web3 addr3) (web3/to-wei 0.2 :ether)))
                    spent-gas-threshold)))
 
           (testing "User 3 can overbid in order to afk himself"
@@ -425,7 +426,7 @@
 
           (testing "User 3 who overbid himself, gets back only his own previous bids."
             (is (< (- balance-of-3
-                      (.plus (balance addr3) (web3/to-wei 0.3 :ether)))
+                      (bn/+ (web3-eth/get-balance @web3 addr3) (web3/to-wei 0.3 :ether)))
                    spent-gas-threshold)))
 
           (web3-evm/increase-time! @web3 [(time/in-seconds (time/days 15))])
@@ -447,12 +448,12 @@
             (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
 
           (testing "Ensuring the previous owner gets the funds"
-            (is (< (- (balance addr1)
-                      (.plus balance-of-1 (web3/to-wei 0.3 :ether)))
+            (is (< (- (web3-eth/get-balance @web3 addr1)
+                      (bn/+ balance-of-1 (web3/to-wei 0.3 :ether)))
                    spent-gas-threshold))))))))
 
 (deftest create-auction-offering-sanity-checks
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr0})))

@@ -3,6 +3,7 @@
     [ajax.core :as ajax]
     [akiroz.re-frame.storage :as re-frame-storage]
     [cemerick.url :as url]
+    [cljs-bignumber :as bn]
     [cljs-time.coerce :as time-coerce]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
@@ -15,8 +16,7 @@
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
     [day8.re-frame.http-fx]
-    [district0x.shared.big-number :as bn]
-    [district0x.shared.encryption-utils :as encryption-utils]
+    [district.encryption :as encryption]
     [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
     [district0x.ui.db]
     [district0x.ui.dispatch-fx]
@@ -505,7 +505,7 @@
 
 (defn- assoc-gas-used-costs [{:keys [:gas-used :gas-price] :as transaction} usd-rate]
   (if (and gas-used gas-price)
-    (let [gas-used-cost (bn/->number (wei->eth (* (bn/->number gas-price) gas-used)))]
+    (let [gas-used-cost (bn/number (wei->eth (* (bn/number gas-price) gas-used)))]
       (merge transaction
              {:gas-used-cost gas-used-cost}
              (when usd-rate
@@ -521,8 +521,8 @@
           transaction (-> transaction
                         (select-keys [:block-hash :gas :gas-used :value :status :gas-price])
                         (->> (merge existing-tx))
-                        (update :value bn/->number)
-                        (update :gas-price bn/->number)
+                        (update :value bn/number)
+                        (update :gas-price bn/number)
                         (assoc-gas-used-costs usd-rate))
 
           new-db (assoc-in db [:transaction-log :transactions transaction-hash] transaction)]
@@ -582,7 +582,7 @@
                   (merge {:name (gstring/format "Set email %s" (:district0x-emails/email form-data))
                           :contract-key :district0x-emails
                           :contract-method :set-email
-                          :form-data (update form-data :district0x-emails/email (partial encryption-utils/encrypt-encode public-key))
+                          :form-data (update form-data :district0x-emails/email (partial encryption/encrypt-encode public-key))
                           :args-order [:district0x-emails/email]
                           :form-id (select-keys form-data [:district0x-emails/address])
                           :tx-opts {:gas 500000 :gas-price 4000000000 :from (:district0x-emails/address form-data)}}
@@ -712,9 +712,10 @@
   :district0x.log/info
   interceptors
   (fn [db result]
-    (apply console :log (bn/->numbers (if (and (not (string? result)) (some sequential? result))
-                                        (map bn/->numbers result)
-                                        result)))))
+    (apply console :log (map (if (and (not (string? result)) (some sequential? result))
+                                        (map (partial map bn/number) result)
+                                        result)
+                             bn/number))))
 
 (reg-event-db
   :district0x.snackbar/close

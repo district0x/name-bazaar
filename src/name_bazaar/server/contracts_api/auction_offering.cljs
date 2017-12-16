@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.auction-offering
   (:require
-    [district.server.smart-contracts.core :refer [contract-call]]
+    [district.server.smart-contracts :refer [contract-call]]
     [name-bazaar.shared.utils :refer [parse-auction-offering]]))
 
 (defn bid! [{:keys [:offering/address]} opts]

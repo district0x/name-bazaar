@@ -7,8 +7,9 @@
     [cljs-web3.evm :as web3-evm]
     [cljs.nodejs :as nodejs]
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
-    [district.server.smart-contracts.core :refer [contract-address]]
-    [district.server.web3.core :refer [web3 first-address my-addresses balance]]
+    [district.server.smart-contracts :refer [contract-address]]
+    [district.server.web3 :refer [web3]]
+    [cljs-bignumber :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei wei->eth]]
     [mount.core :as mount]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
@@ -40,8 +41,8 @@
            {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
-       (mount/only [#'district.server.web3.core
-                    #'district.server.smart-contracts.core/smart-contracts
+       (mount/only [#'district.server.web3
+                    #'district.server.smart-contracts/smart-contracts
                     #'name-bazaar.server.deployer/deployer])
        (mount/start)))
    :after
@@ -50,7 +51,7 @@
      (async done (js/setTimeout #(done) 3000)))})
 
 (deftest create-auction-offering
-  (let [[addr0 addr1 addr2] (my-addresses)]
+  (let [[addr0 addr1 addr2] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr0})))
@@ -103,7 +104,7 @@
 
 
 (deftest create-subdomain-auction-offering
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)
         t0 (to-epoch (t/plus (now) (t/weeks 2)))]
 
     (is (registrar/register! {:ens.record/label "tld"}
@@ -148,7 +149,7 @@
 
           (web3-evm/increase-time! @web3 [(t/in-seconds (t/days 13))])
 
-          (let [balance-of-2 (balance addr2)]
+          (let [balance-of-2 (web3-eth/get-balance @web3 addr2)]
             (testing "Can place a bid"
               (is (auction-offering/bid! {:offering/address offering}
                                          {:value (web3/to-wei 0.3 :ether)
@@ -156,16 +157,16 @@
 
             (testing "User who was overbid, should have his funds back from auction offering."
 
-              (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
-                        (balance addr2))
+              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
+                        (web3-eth/get-balance @web3 addr2))
                      100000)))
 
             (testing "Nothing to withdraw if return transfer succeeded on overbid."
               (is (auction-offering/withdraw! {:offering offering
                                                :address addr2}
                                               {:from addr2}))
-              (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
-                        (balance addr2))
+              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
+                        (web3-eth/get-balance @web3 addr2))
                      100000)))
 
             (testing "State of the auction offering is correct"
@@ -177,7 +178,7 @@
 
 
 (deftest subdomain-auction-withdraw
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)
         t0 (to-epoch (t/plus (now) (t/weeks 2)))]
 
     (is (registrar/register! {:ens.record/label "tld"}
@@ -219,7 +220,7 @@
 
           (web3-evm/increase-time! @web3 [(t/in-seconds (t/days 13))])
 
-          (let [balance-of-2 (balance addr2)]
+          (let [balance-of-2 (web3-eth/get-balance @web3 addr2)]
             (testing "Can place a bid"
               (is (auction-offering/bid! {:offering/address offering}
                                          {:value (web3/to-wei 0.3 :ether)
@@ -230,8 +231,8 @@
                                                :address addr2}
                                               {:from addr0}))
 
-              (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
-                        (balance addr2))
+              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
+                        (web3-eth/get-balance @web3 addr2))
                      100000)))
 
             (testing "user can't withdraw twice."
@@ -239,8 +240,8 @@
                                                :address addr2}
                                               {:from addr2}))
 
-              (is (< (- (.plus balance-of-2 (web3/to-wei 0.1 :ether))
-                        (balance addr2))
+              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
+                        (web3-eth/get-balance @web3 addr2))
                      100000)))
 
             (testing "State of the auction offering is correct"
@@ -251,7 +252,7 @@
             ))))))
 
 (deftest freezed-auction-offering-behaviour
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))
@@ -300,7 +301,7 @@
             (is (auction-offering/finalize! offering {:from addr1}))))))))
 
 (deftest freezed-buy-now-offering-behaviour
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))

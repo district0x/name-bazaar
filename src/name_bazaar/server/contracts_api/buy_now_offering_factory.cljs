@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.buy-now-offering-factory
   (:require
-    [district.server.smart-contracts.core :refer [contract-call]]))
+    [district.server.smart-contracts :refer [contract-call]]))
 
 (defn create-offering! [{:keys [:offering/name :offering/price]} opts]
   (contract-call :buy-now-offering-factory

@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.offering-requests
   (:require
-    [district.server.smart-contracts.core :refer [contract-call]]
+    [district.server.smart-contracts :refer [contract-call]]
     [name-bazaar.shared.utils :refer [parse-offering-request]]))
 
 (defn on-request-added [& args]

@@ -2,7 +2,7 @@
   (:require
     [cljs-web3.core :as web3]
     [cljs.nodejs :as nodejs]
-    [district.server.smart-contracts.core :refer [contract-call]]
+    [district.server.smart-contracts :refer [contract-call]]
     [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.shared.utils :refer [parse-registrar-entry]]))
 

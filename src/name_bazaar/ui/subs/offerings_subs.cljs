@@ -1,15 +1,15 @@
 (ns name-bazaar.ui.subs.offerings-subs
   (:require
+    [cljs-bignumber :as bn]
     [cljs-time.core :as t]
+    [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]
     [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining time-biggest-unit format-time-duration-unit]]
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [emergency-state-new-owner]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [registrar-entry-deed-loaded? ens-record-loaded?]]
-    [re-frame.core :refer [reg-sub subscribe]]
-    [cljs-web3.core :as web3]
-    [district0x.shared.big-number :as bn]))
+    [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
   :offerings
@@ -105,7 +105,7 @@
   (fn [[offering]]
     (let [{:keys [:offering/price :auction-offering/min-bid-increase :auction-offering/bid-count]} offering
           min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
-      (bn/->number (bn/+ (web3/to-big-number price) min-bid-increase)))))
+      (bn/number (bn/+ (web3/to-big-number price) min-bid-increase)))))
 
 (reg-sub
   :offering/active-address-original-owner?

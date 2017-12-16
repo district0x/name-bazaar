@@ -1,5 +1,6 @@
 (ns server.name-bazaar.smart-contract-altering-tests
   (:require
+    [cljs-bignumber :as bn]
     [cljs-time.coerce :refer [to-epoch from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
@@ -7,8 +8,8 @@
     [cljs-web3.evm :as web3-evm]
     [cljs.nodejs :as nodejs]
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
-    [district.server.smart-contracts.core :refer [contract-address]]
-    [district.server.web3.core :refer [web3 first-address my-addresses balance]]
+    [district.server.smart-contracts :refer [contract-address]]
+    [district.server.web3 :refer [web3]]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei wei->eth]]
     [mount.core :as mount]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
@@ -40,8 +41,8 @@
            {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
-       (mount/only [#'district.server.web3.core
-                    #'district.server.smart-contracts.core/smart-contracts
+       (mount/only [#'district.server.web3
+                    #'district.server.smart-contracts/smart-contracts
                     #'name-bazaar.server.deployer/deployer])
        (mount/start)))
    :after
@@ -50,7 +51,7 @@
      (async done (js/setTimeout #(done) 3000)))})
 
 (deftest offering-reclaiming-buy-now-tld
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))
@@ -88,7 +89,7 @@
 
 
 (deftest offering-reclaiming-buy-now-subdomain
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
 
     (is (registrar/register! {:ens.record/label "tld"}
                              {:from addr1}))
@@ -131,7 +132,7 @@
 
 
 (deftest offering-reclaiming-auction-tld
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
 
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
@@ -174,7 +175,7 @@
 
 
 (deftest offering-reclaiming-auction-subdomain
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
 
     (is (registrar/register! {:ens.record/label "tld"}
                              {:from addr1}))
@@ -223,7 +224,7 @@
 
 
 (deftest offering-reclaiming-auction-tld-emergency
-  (let [[addr0 addr1 addr2 addr3 addr4] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3 addr4] (web3-eth/accounts @web3)]
 
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
@@ -261,7 +262,7 @@
                                        {:value (web3/to-wei 0.1 :ether)
                                         :from addr4})))
 
-          (let [balance-of-4 (balance addr4)]
+          (let [balance-of-4 (web3-eth/get-balance @web3 addr4)]
             (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
               (is (buy-now-offering/reclaim-ownership! offering {:from addr0})))
 
@@ -274,13 +275,13 @@
               (is (auction-offering/withdraw! {:offering offering
                                                :address addr4}
                                               {:from addr4}))
-              (is (< (- (.plus balance-of-4 (web3/to-wei 0.1 :ether))
-                        (balance addr4))
+              (is (< (- (bn/+ balance-of-4 (web3/to-wei 0.1 :ether))
+                        (web3-eth/get-balance @web3 addr4))
                      100000)))))))))
 
 
 (deftest offering-editing-buy-now
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))
@@ -314,7 +315,7 @@
             (is (= (eth->wei 0.2) (str (:offering/price (offering/get-offering offering)))))))))))
 
 (deftest offering-editing-auction
-  (let [[addr0 addr1 addr2 addr3 addr4] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3 addr4] (web3-eth/accounts @web3)]
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}
                                {:from addr1})))
@@ -380,7 +381,7 @@
                                     {:from addr1})))))))))
 
 (deftest offering-changing-register-and-requests
-  (let [[addr0 addr1 addr2 addr3] (my-addresses)]
+  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
 
     (testing "Registering name"
       (is (registrar/register! {:ens.record/label "abc"}

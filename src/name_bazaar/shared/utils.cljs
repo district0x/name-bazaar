@@ -1,10 +1,10 @@
 (ns name-bazaar.shared.utils
   (:require
+    [cljs-bignumber :as bn]
+    [cljs-web3.core :as web3]
     [cljs.core.match :refer-macros [match]]
     [clojure.string :as string]
-    [district0x.shared.big-number :as bn]
-    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address]]
-    [cljs-web3.core :as web3]))
+    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address evm-time->local-date-time]]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
 (def unregistered-new-owner "0x00000000000000000000000000000000deaddead")
@@ -17,7 +17,7 @@
                      :offering/finalized-on])
 
 (defn offering-version->type [version]
-  (if (>= (bn/->number version) 100000)
+  (if (>= (bn/number version) 100000)
     :auction-offering
     :buy-now-offering))
 
@@ -65,7 +65,7 @@
 
 (defn unregistered? [supports-unregister? offering]
   (let [new-owner (:offering/new-owner offering)
-        price (-> offering :offering/price bn/->number)]
+        price (-> offering :offering/price bn/number)]
     (match [supports-unregister? (= unregistered-new-owner new-owner) (= unregistered-price-wei price)]
            [true true _] true
            [false _ true] true
@@ -76,16 +76,16 @@
     (let [offering (zipmap offering-props offering)
           offering-type (offering-version->type (:offering/version offering))
           label (name-label (:offering/name offering))
-          supports-unregister? (offering-supports-unregister? offering-type (-> offering :offering/version bn/->number))]
+          supports-unregister? (offering-supports-unregister? offering-type (-> offering :offering/version bn/number))]
       (-> offering
         (assoc :offering/address offering-address)
-        (update :offering/version bn/->number)
+        (update :offering/version bn/number)
         (assoc :offering/type offering-type)
         (assoc :offering/auction? (= offering-type :auction-offering))
         (assoc :offering/buy-now? (= offering-type :buy-now-offering))
-        (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
-        (update :offering/created-on (if parse-dates? bn/->date-time bn/->number))
-        (update :offering/finalized-on (if parse-dates? bn/->date-time bn/->number))
+        (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
+        (update :offering/created-on (if parse-dates? evm-time->local-date-time bn/number))
+        (update :offering/finalized-on (if parse-dates? evm-time->local-date-time bn/number))
         (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
         (assoc :offering/name-level (name-level (:offering/name offering)))
         (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
@@ -106,19 +106,19 @@
 (defn parse-auction-offering [auction-offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when auction-offering
     (-> (zipmap auction-offering-props auction-offering)
-      (update :auction-offering/end-time (if parse-dates? bn/->date-time bn/->number))
+      (update :auction-offering/end-time (if parse-dates? evm-time->local-date-time bn/number))
       (update :auction-offering/winning-bidder #(when-not (zero-address? %) %))
-      (update :auction-offering/extension-duration bn/->number)
-      (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number))
-      (update :auction-offering/bid-count bn/->number))))
+      (update :auction-offering/extension-duration bn/number)
+      (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
+      (update :auction-offering/bid-count bn/number))))
 
 (def offering-request-props [:offering-request/name :offering-request/requesters-count :offering-request/latest-round])
 
 (defn parse-offering-request [node offering-request]
   (when offering-request
     (-> (zipmap offering-request-props offering-request)
-      (update :offering-request/requesters-count bn/->number)
-      (update :offering-request/latest-round bn/->number)
+      (update :offering-request/requesters-count bn/number)
+      (update :offering-request/latest-round bn/number)
       (assoc :offering-request/node node))))
 
 (def registrar-entry-states
@@ -136,14 +136,14 @@
   (when entry
     (-> (zipmap registrar-entry-props entry)
       (update :registrar.entry.deed/address #(if (= % "0x") zero-address %))
-      (update :registrar.entry/state (comp registrar-entry-states bn/->number))
-      (update :registrar.entry/registration-date (if parse-dates? bn/->date-time bn/->number))
-      (update :registrar.entry/value bn/->number)
-      (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/->number)))))
+      (update :registrar.entry/state (comp registrar-entry-states bn/number))
+      (update :registrar.entry/registration-date (if parse-dates? evm-time->local-date-time bn/number))
+      (update :registrar.entry/value bn/number)
+      (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
 
 (defn calculate-min-bid
   ([price min-bid-increase bid-count]
    (calculate-min-bid price min-bid-increase bid-count 0))
   ([price min-bid-increase bid-count pending-returns]
    (let [min-bid-increase (if (pos? bid-count) min-bid-increase 0)]
-     (bn/->number (bn/- (bn/+ (web3/to-big-number price) min-bid-increase) pending-returns)))))
+     (bn/number (bn/- (bn/+ (web3/to-big-number price) min-bid-increase) pending-returns)))))

@@ -1,11 +1,13 @@
 (ns district0x.shared.utils
   (:require
     [cemerick.url :as url]
+    [cljs-bignumber :as bn]
+    [cljs-time.coerce :refer [from-long to-local-date-time]]
+    [cljs-time.core :refer [date-time to-default-time-zone]]
     [cljs-web3.core :as web3]
     [cljs.core.async :refer [<! >! chan]]
     [clojure.set :as set]
     [clojure.string :as string]
-    [district0x.shared.big-number :as bn]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]))
@@ -19,7 +21,7 @@
 (defn wei->eth [x]
   (web3/from-wei x :ether))
 
-(def wei->eth->num (comp js/parseFloat bn/->number wei->eth))
+(def wei->eth->num (comp js/parseFloat bn/number wei->eth))
 
 (defn replace-comma [x]
   (and (string? x) (string/replace x \, \.)))
@@ -36,7 +38,7 @@
       (catch :default e
         nil))))
 
-(def big-num->ether (comp bn/->number wei->eth))
+(def big-num->ether (comp bn/number wei->eth))
 
 (defn long->epoch [x]
   (/ x 1000))
@@ -76,8 +78,8 @@
       (and
         (or (and (string? value)
                  (not (= "-" (first value))))
-            (and (bn/big-number? value)
-                 (not (bn/big-number? value))))))
+            (and (bn/bignumber? value)
+                 (not (bn/bignumber? value))))))
     (catch :default e
       false)))
 
@@ -85,10 +87,7 @@
   (and (non-neg-ether-value? x opts)
        (or (and (string? x)
                 (pos? (parse-float x)))
-           (and (number? x)
-                (pos? x))
-           (and (bn/big-number? x)
-                (bn/pos? x)))))
+           (and (pos? x)))))
 
 (def non-neg-or-empty-ether-value? #(non-neg-ether-value? % {:allow-empty? true}))
 
@@ -204,4 +203,13 @@
         (str (string/join (take n (repeat "0"))))
         (str "0x"))
       address)))
+
+(defn evm-time->date-time [x]
+  (when (pos? x)
+    (from-long (bn/number (* x 1000)))))
+
+(defn evm-time->local-date-time [x]
+  (when-let [dt (evm-time->date-time x)]
+    (to-default-time-zone dt)))
+
 

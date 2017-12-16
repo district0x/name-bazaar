@@ -1,11 +1,11 @@
 (ns name-bazaar.ui.events.offerings-events
   (:require
+    [cljs-bignumber :as bn]
     [cljs-time.coerce :refer [to-epoch]]
-    [cljs.spec.alpha :as s]
     [cljs-web3.core :as web3]
+    [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [clojure.string :as string]
-    [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]

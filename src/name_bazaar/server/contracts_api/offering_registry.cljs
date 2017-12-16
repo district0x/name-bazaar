@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.offering-registry
   (:require
-    [district.server.smart-contracts.core :refer [contract-call contract-event-in-tx]]))
+    [district.server.smart-contracts :refer [contract-call contract-event-in-tx]]))
 
 (defn on-offering-added-in-tx [tx-hash & args]
   (apply contract-event-in-tx tx-hash :offering-registry :on-offering-added args))

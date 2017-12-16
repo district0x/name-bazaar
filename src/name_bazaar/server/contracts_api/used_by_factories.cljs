@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.used-by-factories
   (:require
-    [district.server.smart-contracts.core :refer [contract-call contract-address]]))
+    [district.server.smart-contracts :refer [contract-call contract-address]]))
 
 (defn set-factories! [{:keys [:contract-key] :as opts}]
   (contract-call contract-key

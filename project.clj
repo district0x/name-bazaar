@@ -1,13 +1,10 @@
-(defproject name-bazaar "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject name-bazaar "1.0.0"
+  :description "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."
+  :url "https://github.com/district0x/name-bazaar"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [
-                 ;[district0x "0.1.10"]
-                 [cljs-http "0.1.43"]
+  :dependencies [[cljs-http "0.1.43"]
                  [cljs-web3 "0.19.0-0-8"]
-                 [cljsjs/eccjs "0.3.1-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "15.6.1-2"]
                  [cljsjs/react-datepicker "0.55.0-0"]
@@ -26,13 +23,23 @@
                  [re-frisk "0.4.4"]
                  [soda-ash "0.4.0"]
 
+                 [district0x/cljs-bignumber "1.0.0"]
+                 [district0x/district-encryption "1.0.0"]
+                 [district0x/district-sendgrid "1.0.0"]
+                 [district0x/district-server-config "1.0.0"]
+                 [district0x/district-server-db "1.0.0"]
+                 [district0x/district-server-endpoints "1.0.0"]
+                 [district0x/district-server-logging "1.0.0"]
+                 [district0x/district-server-smart-contracts "1.0.0"]
+                 [district0x/district-server-web3 "1.0.0"]
+                 [district0x/district-server-web3-watcher "1.0.0"]
+
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
                  [bidi "2.1.2"]
                  [mount "0.1.11"]
                  [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.7.2"]
-                 [cljs-node-io "0.5.0"]
                  [cljsjs/bignumber "2.1.4-1"]
                  [cljsjs/react-flexbox-grid "1.0.0-0"]
                  [cljsjs/react-highlight "1.0.5-0"]
@@ -40,14 +47,13 @@
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.5.1"]
                  [com.cognitect/transit-cljs "0.8.243"]
-                 [com.taoensso/encore "2.92.0"]
                  [com.taoensso/timbre "4.10.0"]
+                 [com.taoensso/encore "2.92.0"]
                  [day8.re-frame/http-fx "0.1.4"]
                  [kibu/pushy "0.3.8"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 [madvas.re-frame/web3-fx "0.2.1"]
-                 [nilenso/honeysql-postgres "0.2.3"]]
+                 [madvas.re-frame/web3-fx "0.2.1"]]
 
   :exclusions [[cljsjs/prop-types]
                [com.taoensso/encore]
@@ -62,23 +68,13 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [[cors "2.8.4"]
-                       [better-sqlite3 "4.0.3"]
-                       [chalk "2.3.0"] ;;ANSI colors for logging
-                       [eccjs "0.3.1"]
-                       [eth-ens-namehash "2.0.0"]
+  :npm {:dependencies [[eth-ens-namehash "2.0.0"]
                        [ethereumjs-testrpc "4.1.3"]
-                       [express "4.15.3"]
                        [semantic-ui "2.2.13"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]
-                       [type-is "1.6.15"]
-                       [web3 "0.19.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]
-                       [ganache-core "2.0.2"]
-                       [deasync "0.1.11"]
-                       [dargs "5.1.0"]]
+                       [xhr2 "0.1.4"]]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -135,7 +131,7 @@
                                    :external-config {:devtools/config {:features-to-install :all}}}}
                        {:id "dev-server"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/shared" "src/district"]
+                                       "src/district0x/shared"]
                         :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
                         :compiler {:main "name-bazaar.server.dev"
                                    :output-to "dev-server/name-bazaar.js",
@@ -167,7 +163,7 @@
                                    :pseudo-names false}}
                        {:id "server-tests"
                         :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/shared" "test/server" "src/district"]
+                                       "src/district0x/shared" "test/server"]
                         :figwheel true
                         :compiler {:main "server.run-tests"
                                    :output-to "server-tests/server-tests.js",

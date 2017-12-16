@@ -1,18 +1,18 @@
 (ns name-bazaar.ui.events.ens-events
   (:require
+    [cljs-bignumber :as bn]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
-    [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
+    [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [goog.string :as gstring]
     [goog.string.format]
+    [medley.core :as medley]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.shared.utils :as d0x-shared-utils]
-    [medley.core :as medley]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx

@@ -41,28 +41,6 @@
   ([routes]
    (match-current-location routes (current-location-hash))))
 
-(defn assoc-order-by-search-param [{:keys [:search-params/order-by-columns :search-params/order-by-dirs]
-                                    :as search-params}]
-  (if (and order-by-columns order-by-dirs)
-    (-> search-params
-      (assoc :search-params/order-by (d0x-shared-utils/parse-order-by-search-params order-by-columns order-by-dirs))
-      (dissoc :search-params/order-by-columns :search-params/order-by-dirs))
-    search-params))
-
-(defn url-query-params->form-data
-  ([form-field->query-param]
-   (url-query-params->form-data (current-url) form-field->query-param))
-  ([query-params form-field->query-param]
-   (->> query-params
-     (medley/map-keys (set/map-invert (medley/map-vals :name form-field->query-param)))
-     (medley/remove-keys nil?)
-     (map (fn [[k v]]
-            (if-let [parser (get-in form-field->query-param [k :parser])]
-              {k (parser v)}
-              {k v})))
-     (into {})
-     assoc-order-by-search-param)))
-
 (defn valid-length?
   ([s max-length] (valid-length? s max-length 0))
   ([s max-length min-length]

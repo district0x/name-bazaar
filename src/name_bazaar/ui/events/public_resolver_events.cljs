@@ -1,9 +1,9 @@
 (ns name-bazaar.ui.events.public-resolver-events
   (:require
+    [cljs-bignumber :as bn]
     [cljs-web3.core :as web3]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
-    [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]

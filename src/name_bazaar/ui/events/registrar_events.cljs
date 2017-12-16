@@ -1,8 +1,8 @@
 (ns name-bazaar.ui.events.registrar-events
   (:require
+    [cljs-bignumber :as bn]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
-    [district0x.shared.big-number :as bn]
     [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address?]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]

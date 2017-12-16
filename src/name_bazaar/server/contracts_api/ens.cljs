@@ -1,6 +1,6 @@
 (ns name-bazaar.server.contracts-api.ens
   (:require
-    [district.server.smart-contracts.core :refer [contract-call contract-event-in-tx]]))
+    [district.server.smart-contracts :refer [contract-call contract-event-in-tx]]))
 
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))

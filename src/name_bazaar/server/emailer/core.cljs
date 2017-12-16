@@ -3,10 +3,10 @@
     [cljs-web3.eth :as web3-eth]
     [district.encryption :as encryption]
     [district.sendgrid :refer [send-email]]
-    [district.server.config.core :refer [config]]
+    [district.server.config :refer [config]]
     [goog.format.EmailAddress :as email-address]
     [mount.core :as mount :refer [defstate]]
-    [name-bazaar.server.contracts-api.district0x-emails :as district0x-emails :refer [get-email]]
+    [name-bazaar.server.contracts-api.district0x-emails :refer [get-email]]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :refer [get-request get-requesters]]
@@ -18,8 +18,10 @@
 
 (declare start)
 (declare stop)
-(defstate emailer :start (start (merge (:emailer @config)
-                                       (:emailer (mount/args)))))
+(defstate emailer
+  :start (start (merge (:emailer @config)
+                       (:emailer (mount/args))))
+  :stop (stop emailer))
 
 (def template-id "93c0f083-1fcc-4a47-ae7c-2c8aef50c3ea")
 (def from "district0x@district0x.io")
@@ -38,7 +40,7 @@
 (defn on-offering-added [{:keys [:offering :node :owner :version] :as args}]
   (info info-text {:args args} ::on-offering-added)
   (try
-    (let [{:keys [:offering-request/name :offering-request/latest-round] :as request} (get-request {:offering-request/node node})
+    (let [{:keys [:offering-request/name :offering-request/latest-round]} (get-request {:offering-request/node node})
           round (dec latest-round)
           requesters (get-requesters {:offering-request/node node
                                       :offering-request/round round})]
@@ -122,8 +124,7 @@
     (let [{:keys [:offering/name
                   :offering/original-owner
                   :offering/price
-                  :offering/end-time
-                  :offering/winning-bidder] :as result} (offering/get-offering offering)]
+                  :offering/winning-bidder]} (offering/get-offering offering)]
       (if winning-bidder
         (on-auction-finalized offering original-owner winning-bidder name price)
         (on-offering-bought offering original-owner name price)))))
@@ -134,9 +135,7 @@
   (try
     (let [{:keys [:offering/name
                   :offering/original-owner
-                  :offering/price
-                  :offering/end-time
-                  :offering/winning-bidder] :as result} (offering/get-offering offering)
+                  :offering/price]} (offering/get-offering offering)
 
           owner-encrypted-email (get-email {:district0x-emails/address original-owner})]
       (when-let [to (validate-email owner-encrypted-email)]
@@ -163,7 +162,6 @@
 
 (defn start [{:keys [:api-key :private-key :print-mode?] :as opts}]
   (when-not private-key
-
     (throw (js/Error. ":private-key is required to start emailer")))
   (merge opts
          {:listeners
@@ -172,6 +170,6 @@
            (offering-registry/on-offering-changed {:event-type "bid"} "latest" (event-callback on-new-bid))]}))
 
 
-(defn stop []
+(defn stop [emailer]
   (doseq [listener (remove nil? (:listeners @emailer))]
-    (web3-eth/stop-watching! listener)))
+    (web3-eth/stop-watching! listener (fn [err]))))

@@ -8,15 +8,15 @@
     [cljs.nodejs :as nodejs]
     [cljs.pprint :as pprint]
     [cljs.spec.alpha :as s]
-    [district.server.api-server.core :as api-server]
-    [district.server.api-server.middleware.logging :refer [logging-middlewares]]
-    [district.server.db.core]
-    [district.server.logging.core :refer [logging]]
-    [district.server.smart-contracts.core]
-    [district.server.web3.core :refer [web3]]
+    [district.server.config :refer [config]]
+    [district.server.db :refer [db]]
+    [district.server.endpoints :as endpoints]
+    [district.server.endpoints.middleware.logging :refer [logging-middlewares]]
+    [district.server.logging :refer [logging]]
+    [district.server.smart-contracts]
+    [district.server.web3 :refer [web3]]
+    [district.server.web3-watcher]
     [goog.date.Date]
-    [honeysql-postgres.format :as postgres-format]
-    [honeysql-postgres.helpers :as postgres-helpers]
     [honeysql.core :as sql]
     [honeysql.format :as sql-format]
     [honeysql.helpers :as sql-helpers]
@@ -33,7 +33,7 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
-    [name-bazaar.server.db :as db]
+    [name-bazaar.server.db]
     [name-bazaar.server.deployer]
     [name-bazaar.server.emailer.core]
     [name-bazaar.server.generator]
@@ -48,12 +48,13 @@
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
 
 (defn on-jsload []
-  #_ (mount/stop #'district.server.api-server.core/api-server)
-  #_ (mount/start #'district.server.api-server.core/api-server))
+  (mount/stop #'district.server.endpoints/endpoints)
+  (mount/start #'district.server.endpoints/endpoints))
 
 
 (defn deploy-to-mainnet []
-  (mount/stop #'district.server.web3.core/web3 #'district.server.smart-contracts.core/smart-contracts)
+  (mount/stop #'district.server.web3/web3
+              #'district.server.smart-contracts/smart-contracts)
   (mount/start-with-args (merge
                            (mount/args)
                            {:web3 {:port 8545}
@@ -62,30 +63,30 @@
                                        :emergency-multisig "0x52f3f521c5f573686a78912995e9dedc5aae9928"
                                        :skip-ens-registrar? true
                                        :gas-price (web3/to-wei 4 :gwei)}})
-                         #'district.server.web3.core/web3
-                         #'district.server.smart-contracts.core/smart-contracts))
+                         #'district.server.web3/web3
+                         #'district.server.smart-contracts/smart-contracts))
 
 
-(defn restart []
+(defn redeploy []
   (mount/stop)
   (-> (mount/with-args
         (merge
           (mount/args)
           {:deployer {:write? true}
-           :generator {:total-accounts 5
+           :generator {:total-accounts 1
                        :offerings-per-account 2}}))
     (mount/start)
     pprint/pprint))
 
 
 (defn -main [& _]
-  #_ (-> (mount/with-args
-        {:config {:logging {:level "info"
-                            :console true}
-                  :api-server {:port 6200
-                               :middlewares [logging-middlewares]}
-                  :web3 {:port #_8549 8545}
-                  :emailer {:print-mode? true}}
+  (-> (mount/with-args
+        {:config {:default {:logging {:level "info"
+                                      :console? true}
+                            :endpoints {:port 6200
+                                        :middlewares [logging-middlewares]}
+                            :web3 {:port 8549 #_ 8545}
+                            :emailer {:print-mode? true}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
                            :auto-mining? true}

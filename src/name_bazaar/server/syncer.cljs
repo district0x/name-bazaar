@@ -1,11 +1,11 @@
 (ns name-bazaar.server.syncer
   (:require
+    [cljs-bignumber :as bn]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [clojure.string :as string]
-    [district.server.config.core :refer [config]]
-    [district.server.smart-contracts.core :refer [replay-past-events]]
-    [district0x.shared.big-number :as bn]
+    [district.server.config :refer [config]]
+    [district.server.web3 :refer [web3]]
     [district0x.shared.utils :refer [prepend-address-zeros]]
     [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
@@ -17,20 +17,20 @@
     [name-bazaar.server.db :as db]
     [name-bazaar.server.deployer]
     [name-bazaar.server.generator]
-    [taoensso.timbre :as logging :refer-macros [info warn error]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+    [district.server.smart-contracts :refer [replay-past-events]]
+    [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (declare start)
 (declare stop)
 (defstate ^{:on-reload :noop} syncer
   :start (start (merge (:syncer @config)
-                       (:syncer (mount/args)))))
+                       (:syncer (mount/args))))
+  :stop  (stop syncer))
 
 (def info-text "Handling blockchain event")
 (def error-text "Error handling blockchain event")
 
-(defn node-owner? [offering-address {:keys [:offering/name :offering/node :offering/top-level-name? :offering/label]
-                                     :as offering}]
+(defn node-owner? [offering-address {:keys [:offering/node :offering/top-level-name? :offering/label]}]
   (let [ens-owner (ens/owner {:ens.record/node node})]
     (and (= ens-owner offering-address)
          (if top-level-name?
@@ -70,8 +70,8 @@
 
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
       (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
-      (update :bid/value bn/->number)
-      (update :bid/datetime bn/->number)
+      (update :bid/value bn/number)
+      (update :bid/datetime bn/number)
       (assoc :bid/offering offering)
       (->> (db/insert-bid!)))
     (catch :default e
@@ -83,8 +83,8 @@
   (try
     (db/upsert-offering-requests-rounds!
       {:offering-request/node node
-       :offering-request/round (bn/->number round)
-       :offering-request/requesters-count (bn/->number requesters-count)})
+       :offering-request/round (bn/number round)
+       :offering-request/requesters-count (bn/number requesters-count)})
     (catch :default e
       (error error-text {:args args :error (ex-message e)} ::on-request-added))))
 
@@ -92,7 +92,7 @@
 (defn on-round-changed [err {{:keys [:node :latest-round] :as args} :args}]
   (info info-text {:args args} ::on-round-changed)
   (try
-    (let [latest-round (bn/->number latest-round)
+    (let [latest-round (bn/number latest-round)
           request (offering-requests/get-request {:offering-request/node node})]
       (db/upsert-offering-requests! (assoc request :offering-request/latest-round latest-round))
       (when (= latest-round (:offering-request/latest-round request))
@@ -116,7 +116,11 @@
       (error error-text {:args args :error (ex-message e)} ::on-ens-transfer))))
 
 
-(defn start [opts]
+(defn start [{:keys [:delay]
+              :or {delay 0}
+              :as args}]
+  (when-not (web3/connected? @web3)
+    (throw (js/Error. "Can't connect to Ethereum node")))
   [(offering-registry/on-offering-added {} "latest" on-offering-changed)
    (offering-registry/on-offering-changed {} "latest" on-offering-changed)
    (offering-requests/on-request-added {} "latest" on-request-added)
@@ -126,15 +130,15 @@
    (ens/on-transfer {} "latest" on-ens-transfer)
 
    (-> (offering-registry/on-offering-added {} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-offering-changed))
+     (replay-past-events on-offering-changed {:delay delay}))
 
    (-> (offering-requests/on-round-changed {} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-round-changed))
+     (replay-past-events on-round-changed {:delay delay}))
 
    (-> (offering-registry/on-offering-changed {:event-type "bid"} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-offering-bid))])
+     (replay-past-events on-offering-bid {:delay delay}))])
 
 
 (defn stop [syncer]
   (doseq [filter (remove nil? @syncer)]
-    (web3-eth/stop-watching! filter)))
+    (web3-eth/stop-watching! filter (fn [err]))))

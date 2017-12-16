@@ -2,34 +2,25 @@
   (:require
     [cljs.spec.alpha :as s]
     [clojure.string :as string]
-    [district.server.api-server.core :as api-server :refer [send reg-get! query-params route-params]]
-    [district.server.config.core :refer [config]]
+    [district.server.endpoints :refer [send reg-get! query-params route-params]]
+    [district.server.config :refer [config]]
     [district0x.shared.utils :refer [combination-of? collify]]
-    [name-bazaar.server.db :as db]
-    [taoensso.timbre :as logging]))
-
-(defn db-unavailable [res kw]
-  (logging/warn "Database is not initialized" kw)
-  (send res 503 "Service unavailiable"))
+    [name-bazaar.server.db :as db]))
 
 (declare parse-offerings-params)
 (declare parse-offering-requests-params)
 
 (reg-get! "/offerings"
           (fn [req res]
-            (if-let [database true]
-              (send res (db/get-offerings (parse-offerings-params (query-params req))))
-              (db-unavailable res ::get-offerings))))
+            (send res (db/get-offerings (parse-offerings-params (query-params req))))))
 
 (reg-get! "/offering-requests"
           (fn [req res]
-            (if-let [database true]
-              (send res (db/get-offering-requests (parse-offering-requests-params (query-params req))))
-              (db-unavailable res ::get-offering-requests))))
+            (send res (db/get-offering-requests (parse-offering-requests-params (query-params req))))))
 
 (reg-get! "/config"
           (fn [req res]
-            (api-server/send res (:ui @config))))
+            (send res (:ui @config))))
 
 (s/def ::offering-order-by (partial contains? #{:offering/price
                                                 :offering/created-on

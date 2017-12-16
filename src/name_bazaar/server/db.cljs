@@ -2,16 +2,15 @@
   (:require
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-time.core :as t]
-    [cljs.spec.alpha :as s]
-    [clojure.string :as string]
-    [district.server.config.core :refer [config]]
-    [district.server.db.core :as db :refer [run! order-by-closest-like]]
-    [district0x.shared.utils :as d0x-shared-utils :refer [combination-of? collify]]
+    [district.server.config :refer [config]]
+    [district.server.db :as db]
+    [district0x.shared.utils :refer [combination-of? collify]]
     [district.server.db.column-types :refer [address not-nil default-nil default-zero default-false sha3-hash primary-key]]
     [honeysql-postgres.helpers :refer [create-table with-columns]]
+    [honeysql-postgres.format]
     [honeysql.core :as sql]
-    [honeysql.format :as sql-format]
-    [honeysql.helpers :as sql-helpers :refer [merge-where merge-order-by merge-left-join defhelper]]
+    [honeysql.format]
+    [honeysql.helpers :refer [merge-where merge-order-by merge-left-join defhelper]]
     [name-bazaar.shared.utils :refer [emergency-state-new-owner unregistered-new-owner unregistered-price-wei]]
     [mount.core :as mount :refer [defstate]]))
 
@@ -71,47 +70,47 @@
 
 
 (defn start [opts]
-  (run! (-> (create-table {} :offerings)
-          (with-columns offering-columns)))
+  (db/run! {:create-table [:offerings]
+            :with-columns [offering-columns]})
 
-  (run! (-> (create-table {} :offering/bids)
-          (with-columns offering-bids-columns)))
+  (db/run! {:create-table [:offering/bids]
+            :with-columns [offering-bids-columns]})
 
-  (run! (-> (create-table {} :offering-requests)
-          (with-columns offering-requests-columns)))
+  (db/run! {:create-table [:offering-requests]
+            :with-columns [offering-requests-columns]})
 
-  (run! (-> (create-table {} :offering-request/rounds)
-          (with-columns offering-requests-rounds-columns)))
+  (db/run! {:create-table [:offering-request/rounds]
+            :with-columns [offering-requests-rounds-columns]})
 
   (doseq [column (rest offering-column-names)]
-    (run! {:create-index (index-name column) :on [:offerings column]}))
+    (db/run! {:create-index (index-name column) :on [:offerings column]}))
 
   (doseq [column [:bid/bidder :bid/value]]
-    (run! {:create-index (index-name column) :on [:offering/bids column]}))
+    (db/run! {:create-index (index-name column) :on [:offering/bids column]}))
 
-  (run! {:create-index (index-name :offering-request/name) :on [:offering-requests :offering-request/name]})
+  (db/run! {:create-index (index-name :offering-request/name) :on [:offering-requests :offering-request/name]})
 
   (doseq [column [:offering-request/requesters-count :offering-request/round]]
-    (run! {:create-index (index-name column) :on [:offering-request/rounds column]})))
+    (db/run! {:create-index (index-name column) :on [:offering-request/rounds column]})))
 
 
 (defn stop []
-  (run! {:drop-table [:offering-request/rounds]})
-  (run! {:drop-table [:offering-requests]})
-  (run! {:drop-table [:offering/bids]})
-  (run! {:drop-table [:offerings]}))
+  (db/run! {:drop-table [:offering-request/rounds]})
+  (db/run! {:drop-table [:offering-requests]})
+  (db/run! {:drop-table [:offering/bids]})
+  (db/run! {:drop-table [:offerings]}))
 
 
 (defn upsert-offering! [values]
-  (run! {:insert-or-replace-into :offerings
-         :columns offering-column-names
-         :values [((apply juxt offering-column-names) values)]}))
+  (db/run! {:insert-or-replace-into :offerings
+            :columns offering-column-names
+            :values [((apply juxt offering-column-names) values)]}))
 
 
 (defn set-offering-node-owner?! [{:keys [:offering/node-owner? :offering/address]}]
-  (run! {:update :offerings
-         :set {:offering/node-owner? node-owner?}
-         :where [:= :offering/address address]}))
+  (db/run! {:update :offerings
+            :set {:offering/node-owner? node-owner?}
+            :where [:= :offering/address address]}))
 
 
 (defn offering-exists? [offering-address]
@@ -121,21 +120,21 @@
 
 
 (defn insert-bid! [values]
-  (run! {:insert-into :offering/bids
-         :columns offering-bids-column-names
-         :values [((apply juxt offering-bids-column-names) values)]}))
+  (db/run! {:insert-into :offering/bids
+            :columns offering-bids-column-names
+            :values [((apply juxt offering-bids-column-names) values)]}))
 
 
 (defn upsert-offering-requests! [values]
-  (run! {:insert-or-replace-into :offering-requests
-         :columns offering-requests-column-names
-         :values [((apply juxt offering-requests-column-names) values)]}))
+  (db/run! {:insert-or-replace-into :offering-requests
+            :columns offering-requests-column-names
+            :values [((apply juxt offering-requests-column-names) values)]}))
 
 
 (defn upsert-offering-requests-rounds! [values]
-  (run! {:insert-or-replace-into :offering-request/rounds
-         :columns offering-requests-rounds-column-names
-         :values [((apply juxt offering-requests-rounds-column-names) values)]}))
+  (db/run! {:insert-or-replace-into :offering-request/rounds
+            :columns offering-requests-rounds-column-names
+            :values [((apply juxt offering-requests-rounds-column-names) values)]}))
 
 
 (defn- name-pattern [name name-position]
@@ -149,7 +148,7 @@
 (defn prepare-order-by [order-by order-by-dir {:keys [:name :root-name]}]
   (condp = [order-by order-by-dir]
     [:auction-offering/end-time :asc] [(sql/call :ifnull :auction-offering/end-time js/Number.MAX_VALUE) :asc] ;; Put nulls at the end
-    [:name-relevance :desc] (order-by-closest-like :offering/name name {:suffix (str "." root-name)})
+    [:name-relevance :desc] (db/order-by-similarity :offering/name name {:suffix (str "." root-name)})
     [order-by order-by-dir]))
 
 
