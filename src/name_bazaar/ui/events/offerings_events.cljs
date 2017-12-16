@@ -12,7 +12,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei]]
+    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei top-level-name? name-label]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -309,8 +309,7 @@
   :offerings/loaded
   interceptors
   (fn [{:keys [:db]} [offering-address {:keys [:load-ownership?]} offering]]
-    (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?
-                  :offering/original-owner :auction-offering/winning-bidder :offering/new-owner] :as offering}
+    (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
                     (update-in [:offerings offering-address] merge offering)
@@ -638,6 +637,21 @@
                                                       :min-end-time-now? true
                                                       :total-count? true}
                                              :on-success [:offerings.total-count/loaded]}]}))
+
+(reg-event-fx
+  :offerings/transfer-ownership
+  interceptors
+  (fn [{:keys [:db]} [name owner]]
+    {:dispatch
+     (if (top-level-name? name)
+       [:registrar/transfer {:ens.record/label (name-label name)
+                             :ens.record/owner owner}
+        {:result-href (path-for :route.offerings/detail {:offering/address owner})
+         :on-tx-receipt-n [[:offerings.ownership/load [owner]]
+                           [:district0x.snackbar/show-message
+                            (gstring/format "Ownership of %s was transferred" name)]]}]
+       [:ens/set-owner {:ens.record/name name
+                        :ens.record/owner owner}])}))
 
 (reg-event-fx
   :offerings.total-count/loaded

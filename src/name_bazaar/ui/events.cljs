@@ -15,14 +15,16 @@
     [clojure.string :as str]
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
+    [district0x.shared.big-number :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx all-contracts-loaded?]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [url-query-params->form-data truncate]]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [top-level-name?]]
+    [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.db :refer [default-db]]
     [name-bazaar.ui.events.ens-events]
@@ -32,8 +34,9 @@
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
+    [name-bazaar.ui.events.reverse-registrar-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix path-for]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
@@ -138,6 +141,9 @@
                 {:reset-params? true}]
      :forward-events active-address-changed-forwarding}
 
+    :route.user/manage-names
+    {:dispatch [:name.ownership/load (:name query-params)]}
+
     :route.user/my-settings
     {:dispatch [:district0x-emails/load (:active-address db)]
      :forward-events active-address-changed-forwarding}
@@ -183,6 +189,24 @@
                                     :dispatch [:ens.records.owner/resolve node]}]}}
              (when (top-level-name? name)
                {:dispatch [:registrar.entries/load [(name->label-hash name)]]})))))
+
+(reg-event-fx
+  :name/transfer-ownership
+  interceptors
+  (fn [{:keys [:db]} [name owner]]
+    {:dispatch
+     (if (top-level-name? name)
+       [:registrar/transfer {:ens.record/label (name-label name)
+                             :ens.record/owner owner}
+        {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
+         :on-tx-receipt-n [[:ens.records/load [(namehash name)]
+                            {:load-resolver? true}]
+                           [:district0x.snackbar/show-message
+                            (gstring/format "Ownership of %s was transferred to %s"
+                                            name
+                                            (truncate owner 10))]]}]
+       [:ens/set-owner {:ens.record/name name
+                        :ens.record/owner owner}])}))
 
 (reg-event-fx
   :saved-searches/add
@@ -231,7 +255,9 @@
     (let [addrs (get-in db [:my-addresses])]
       (info ["Trying my address" addrs])
       {:db db
-       :dispatch-n (map #(vec [:public-resolver.name/load %]) addrs)})))
+       :dispatch-n (conj
+                    (map #(vec [:public-resolver.name/load %]) addrs)
+                    [:ens.records.resolver/load (map reverse-record-node addrs)])})))
 
 (reg-event-fx
   :watch-my-addresses-changed

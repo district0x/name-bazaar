@@ -14,8 +14,10 @@
     [name-bazaar.ui.db :refer [default-db]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
-(defn namehash [name]
-  (js/EthEnsNamehash.hash name))
+(def namehash
+  (memoize
+   (fn namehash* [name]
+     (js/EthEnsNamehash.hash name))))
 
 (defn normalize [name]
   (js/EthEnsNamehash.normalize name))
@@ -172,3 +174,9 @@
   (if (web3/address? name-or-addr)
     (truncate name-or-addr (or trunc 10))
     (strip-root-registrar-suffix name-or-addr)))
+
+(def reverse-record-node
+  (memoize
+   (fn reverse-record-node*
+     [addr] (namehash (str (apply str (drop 2 addr))
+                           ".addr.reverse")))))

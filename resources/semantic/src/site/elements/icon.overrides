@@ -2,6 +2,11 @@
          Site Overrides
 *******************************/
 
+i.icon.user-network {
+  &:before {
+    content: @user-network;
+  }
+}
 i.icon.arrow-up {
   &:before {
     content: @arrow-up;

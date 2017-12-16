@@ -13,8 +13,7 @@
         (if (= 1 (count @my-addresses))
           [:div.active-address-select.single-address.ellipsis
            (dissoc single-address-props :address)
-           (truncate (get single-address-props :address @active-address)
-                     (or (:single-address-truncate single-address-props) 20))]
+           (get single-address-props :address @active-address)]
           [ui/Select
            (r/merge-props
              {:select-on-blur false
@@ -24,5 +23,5 @@
                            (dispatch [:district0x/set-active-address (aget data "value")]))
               :fluid true
               :options (doall (for [address @my-addresses]
-                                {:value address :text (truncate address 20)}))}
+                                {:value address :text address}))}
              select-field-props)])))))

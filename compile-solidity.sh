@@ -12,6 +12,7 @@ solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../buil
 solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi ens/ENS.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi ens/PublicResolver.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi ens/ReverseRegistrar.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
 
 cd ../build
@@ -24,3 +25,4 @@ wc -c OfferingRequests.bin | awk '{print "OfferingRequests: " $1}'
 wc -c DelegateProxy.bin | awk '{print "DelegateProxy: " $1}'
 wc -c Forwarder.bin | awk '{print "Forwarder: " $1}'
 wc -c PublicResolver.bin | awk '{print "PublicResolver: " $1}'
+wc -c ReverseRegistrar.bin | awk '{print "ReverseRegistrar: " $1}'

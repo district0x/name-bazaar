@@ -8,8 +8,8 @@
     [goog.string :as gstring]
     [goog.string.format]
     [re-frame.core :refer [subscribe dispatch]]
-    [reagent.core :as r]
-    [soda-ash.core :as ui]))
+    [soda-ash.core :as ui]
+    [reagent.core :as r]))
 
 (defn main-title [props]
   [:div.title

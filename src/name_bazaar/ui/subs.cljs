@@ -18,6 +18,7 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.public-resolver-subs]
     [name-bazaar.ui.subs.registrar-subs]
+    [name-bazaar.ui.subs.reverse-registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
     [name-bazaar.ui.utils :refer [parse-query-params path-for reverse-resolve-address strip-root-registrar-suffix]]
     [re-frame.core :refer [reg-sub subscribe reg-sub-raw]]
@@ -84,3 +85,12 @@
       (:user/address route-params)
       (update :user/address #(or (reverse-resolve-address reverse-records (:user/address route-params))
                                  (:user/address route-params))))))
+
+(reg-sub
+  :transfer-ownership/tx-pending?
+  (fn [[ node label top-level-name?]]
+    (if top-level-name?
+      [(subscribe [:registrar.transfer/tx-pending? label])]
+      [(subscribe [:ens.set-owner/tx-pending? node])]))
+  first)
+
