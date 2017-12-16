@@ -13,7 +13,9 @@
                  [cljsjs/react-meta-tags "0.3.0-1"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
-                 [honeysql "0.9.1"]
+                 ;[honeysql "0.9.1"]
+                 ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
+                 [madvas/honeysql "0.9.1"]
                  [lein-doo "0.1.8"]
                  [medley "1.0.0"]
                  [org.clojure/clojurescript "1.9.946"]
@@ -58,7 +60,9 @@
   :exclusions [[cljsjs/prop-types]
                [com.taoensso/encore]
                [org.clojure/clojure]
-               [org.clojure/clojurescript]]
+               [org.clojure/clojurescript]
+               ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
+               [honeysql]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
