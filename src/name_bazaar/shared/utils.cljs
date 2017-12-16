@@ -1,6 +1,6 @@
 (ns name-bazaar.shared.utils
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-web3.core :as web3]
     [cljs.core.match :refer-macros [match]]
     [clojure.string :as string]

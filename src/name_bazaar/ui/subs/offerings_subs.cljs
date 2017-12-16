@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.subs.offerings-subs
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]

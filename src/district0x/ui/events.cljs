@@ -2,8 +2,8 @@
   (:require
     [ajax.core :as ajax]
     [akiroz.re-frame.storage :as re-frame-storage]
+    [bignumber.core :as bn]
     [cemerick.url :as url]
-    [cljs-bignumber :as bn]
     [cljs-time.coerce :as time-coerce]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]

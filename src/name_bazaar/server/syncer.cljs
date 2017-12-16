@@ -1,6 +1,6 @@
 (ns name-bazaar.server.syncer
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-web3.core :as web3]
     [cljs-web3.eth :as web3-eth]
     [clojure.string :as string]

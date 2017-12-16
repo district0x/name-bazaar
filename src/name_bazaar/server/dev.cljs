@@ -85,7 +85,7 @@
                                       :console? true}
                             :endpoints {:port 6200
                                         :middlewares [logging-middlewares]}
-                            :web3 {:port 8549 #_ 8545}
+                            :web3 {:port 8549}
                             :emailer {:print-mode? true}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true

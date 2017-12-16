@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.events.public-resolver-events
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-web3.core :as web3]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]

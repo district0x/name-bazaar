@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.events.watched-names-events
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]

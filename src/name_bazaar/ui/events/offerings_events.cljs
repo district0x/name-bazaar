@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.events.offerings-events
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-time.coerce :refer [to-epoch]]
     [cljs-web3.core :as web3]
     [cljs.spec.alpha :as s]

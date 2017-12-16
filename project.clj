@@ -25,7 +25,7 @@
                  [re-frisk "0.4.4"]
                  [soda-ash "0.4.0"]
 
-                 [district0x/cljs-bignumber "1.0.0"]
+                 [district0x/bignumber "1.0.0"]
                  [district0x/district-encryption "1.0.0"]
                  [district0x/district-sendgrid "1.0.0"]
                  [district0x/district-server-config "1.0.0"]

@@ -1,6 +1,6 @@
 (ns name-bazaar.ui.events.registrar-events
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address?]]

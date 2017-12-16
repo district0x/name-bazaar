@@ -1,7 +1,7 @@
 (ns district0x.shared.utils
   (:require
+    [bignumber.core :as bn]
     [cemerick.url :as url]
-    [cljs-bignumber :as bn]
     [cljs-time.coerce :refer [from-long to-local-date-time]]
     [cljs-time.core :refer [date-time to-default-time-zone]]
     [cljs-web3.core :as web3]
