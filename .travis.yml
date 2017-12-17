@@ -9,6 +9,6 @@ before_script:
   - "echo 'Installing Ganache'"
   - npm install -g ganache-cli
   - "echo 'Running Ganache'"
-  - ganache-cli -p 8549 &
+  - ganache-cli -p 8549 > /dev/null &
   - "echo 'Compiling contracts'"
   - lein compile-solidity
