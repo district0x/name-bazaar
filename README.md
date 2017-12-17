@@ -106,4 +106,7 @@ lein build-css
 
 # To build all 3 in parallel use
 lein build-prod
+
+# To run prod server
+node server/name-bazaar.js
 ```
