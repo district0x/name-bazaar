@@ -25,7 +25,7 @@
 (defstate ^{:on-reload :noop} syncer
   :start (start (merge (:syncer @config)
                        (:syncer (mount/args))))
-  :stop  (stop syncer))
+  :stop (stop syncer))
 
 (def info-text "Handling blockchain event")
 (def error-text "Error handling blockchain event")
@@ -107,8 +107,8 @@
 
 (defn on-ens-transfer [err {{:keys [:node :owner] :as args} :args}]
   (try
-    (let [offering (offering/get-offering owner)]
-      (when offering
+    (when (db/offering-exists? owner)
+      (let [offering (offering/get-offering owner)]
         (logging/info info-text {:args args} ::on-ens-new-owner)
         (db/set-offering-node-owner?! {:offering/address owner
                                        :offering/node-owner? (node-owner? owner offering)})))
