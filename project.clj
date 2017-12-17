@@ -73,7 +73,6 @@
             [lein-pdo "0.1.1"]]
 
   :npm {:dependencies [[eth-ens-namehash "2.0.0"]
-                       [ethereumjs-testrpc "4.1.3"]
                        [semantic-ui "2.2.13"]
                        [solc "0.4.13"]
                        [source-map-support "0.4.0"]

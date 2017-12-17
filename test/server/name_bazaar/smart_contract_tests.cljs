@@ -1,6 +1,6 @@
 (ns server.name-bazaar.smart-contract-tests
   (:require
-    [cljs-bignumber :as bn]
+    [bignumber.core :as bn]
     [cljs-time.coerce :refer [to-epoch from-long]]
     [cljs-time.core :as time]
     [cljs-web3.core :as web3]

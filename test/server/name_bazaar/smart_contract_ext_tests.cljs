@@ -1,5 +1,6 @@
 (ns server.name-bazaar.smart-contract-ext-tests
   (:require
+    [bignumber.core :as bn]
     [cljs-time.coerce :refer [to-epoch from-long]]
     [cljs-time.core :as t]
     [cljs-web3.core :as web3]
@@ -9,7 +10,6 @@
     [cljs.test :refer-macros [deftest is testing run-tests use-fixtures async]]
     [district.server.smart-contracts :refer [contract-address]]
     [district.server.web3 :refer [web3]]
-    [cljs-bignumber :as bn]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei wei->eth]]
     [mount.core :as mount]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
