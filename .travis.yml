@@ -6,5 +6,9 @@ before_install:
 before_script:
   - "echo 'Installing Solc'"
   - sudo apt-get --yes install solc
+  - "echo 'Installing Ganache'"
+  - npm install -g ganache-cli
+  - "echo 'Running Ganache'"
+  - ganache-cli -p 8549 &
   - "echo 'Compiling contracts'"
   - lein compile-solidity
