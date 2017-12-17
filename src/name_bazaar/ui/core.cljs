@@ -23,9 +23,9 @@
 (def debug? ^boolean js/goog.DEBUG)
 
 (defn dev-setup []
+  (d0x-logging/setup! ui-db/log-level)
   (when debug?
     (enable-console-print!)
-    (d0x-logging/setup! ui-db/log-level)
     (enable-re-frisk!)))
 
 (defn mount-root []
