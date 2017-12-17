@@ -48,7 +48,7 @@
    :after
    (fn []
      (mount/stop)
-     (async done (js/setTimeout #(done) 3000)))})
+     (async done (js/setTimeout #(done) 500)))})
 
 (deftest offering-reclaiming-buy-now-tld
   (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]

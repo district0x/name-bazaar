@@ -48,7 +48,7 @@
    :after
    (fn []
      (mount/stop)
-     (async done (js/setTimeout #(done) 3000)))})
+     (async done (js/setTimeout #(done) 500)))})
 
 (deftest create-auction-offering
   (let [[addr0 addr1 addr2] (web3-eth/accounts @web3)]
