@@ -1472,6 +1472,7 @@ input[type="range"] {
       margin: 10px 17px;
       padding-bottom: 10px;
       cursor: pointer;
+      position: relative;
       &:not(:last-child) {
         border-bottom: 1px solid @borderColor;
       }
@@ -1481,6 +1482,7 @@ input[type="range"] {
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
+        padding-right: 7px;
       }
       .transaction-content {
         display: flex;
@@ -1540,6 +1542,25 @@ input[type="range"] {
             }
           }
         }
+      }
+      .transaction-remove {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        opacity: 0;
+        will-change: opacity;
+        transition: opacity 0.1s ease-in;
+        &:before {
+          font-size: 7px;
+          content: @times;
+          color: @grey;
+        }
+        @media only screen and (max-width: @largestTabletScreen) {
+          opacity: 1;
+        }
+      }
+      &:hover .transaction-remove {
+        opacity: 1;
       }
     }
   }

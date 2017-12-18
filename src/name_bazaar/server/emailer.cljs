@@ -13,7 +13,6 @@
     [name-bazaar.server.deployer]
     [name-bazaar.server.emailer.templates :as templates]
     [name-bazaar.server.generator]
-    [name-bazaar.shared.smart-contracts]
     [taoensso.timbre :refer [info warn error]]))
 
 (declare start)

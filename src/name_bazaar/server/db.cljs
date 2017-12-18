@@ -6,10 +6,7 @@
     [district.server.db :as db]
     [district0x.shared.utils :refer [combination-of? collify]]
     [district.server.db.column-types :refer [address not-nil default-nil default-zero default-false sha3-hash primary-key]]
-    [honeysql-postgres.helpers :refer [create-table with-columns]]
-    [honeysql-postgres.format]
     [honeysql.core :as sql]
-    [honeysql.format]
     [honeysql.helpers :refer [merge-where merge-order-by merge-left-join defhelper]]
     [name-bazaar.shared.utils :refer [emergency-state-new-owner unregistered-new-owner unregistered-price-wei]]
     [mount.core :as mount :refer [defstate]]))

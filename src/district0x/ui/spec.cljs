@@ -94,7 +94,7 @@
                                                                                    :transaction/value
                                                                                    :transaction/result-href
                                                                                    :transaction/created-on])))
-(s/def :transaction-log/ids-chronological (s/coll-of :transaction/hash :kind list?))
+(s/def :transaction-log/ids-chronological (s/coll-of :transaction/hash))
 (s/def :transaction-log/ids-by-form (s/map-of :contract/key
                                               (s/map-of :contract/method
                                                         (s/map-of :transaction/from

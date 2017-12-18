@@ -503,6 +503,19 @@
        :localstorage (merge localstorage (select-keys new-db [:transaction-log]))
        :dispatch [:district0x.transaction-log/set-open true tx-hash]})))
 
+(reg-event-fx
+  :district0x.transactions/remove
+  [interceptors (inject-cofx :localstorage)]
+  (fn [{:keys [:db :localstorage]} [tx-hash]]
+    (let [{:keys [:contract-key :contract-method :tx-opts]} (get-in db [:transaction-log :transactions tx-hash])
+          new-db (-> db
+                   (medley/dissoc-in [:transaction-log :transactions tx-hash])
+                   (update-in [:transaction-log :ids-chronological] (partial remove #(= tx-hash %)))
+                   (update-in [:transaction-log :ids-by-form contract-key contract-method (:from tx-opts)]
+                              (partial medley/map-vals (partial remove #(= tx-hash %)))))]
+      {:db new-db
+       :localstorage (merge localstorage (select-keys new-db [:transaction-log]))})))
+
 (defn- assoc-gas-used-costs [{:keys [:gas-used :gas-price] :as transaction} usd-rate]
   (if (and gas-used gas-price)
     (let [gas-used-cost (bn/number (wei->eth (* (bn/number gas-price) gas-used)))]

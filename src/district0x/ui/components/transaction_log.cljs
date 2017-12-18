@@ -83,6 +83,12 @@
      [:i.icon]
      [:div.transaction-status-text status-text]]))
 
+(defn transaction-remove [{{:keys [:hash]} :transaction}]
+  [:i.icon.transaction-remove
+   {:on-click (fn [e]
+                (dispatch [:district0x.transactions/remove hash])
+                (.stopPropagation e))}])
+
 (defn transaction [{:keys [:transaction :container-props :border-bottom-style]}]
   (let [{:keys [:hash :contract-key :contract-method :result-href :highlighted?]} transaction]
     [:div.transaction
@@ -103,7 +109,8 @@
        [transaction-id {:transaction transaction}]]
       [:div.right-section
        [transaction-status {:transaction transaction}]
-       [transaction-value {:transaction transaction}]]]]))
+       [transaction-value {:transaction transaction}]]]
+     [transaction-remove {:transaction transaction}]]))
 
 (defn no-transactions []
   [:div.no-transactions "You haven't made any transactions yet."])

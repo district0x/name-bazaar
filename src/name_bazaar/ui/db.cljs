@@ -16,7 +16,7 @@
 (goog-define log-level "error")
 
 (def development-config
-  {:node-url #_ "http://localhost:8549" "http://localhost:8545"
+  {:node-url "http://localhost:8549" #_ "http://localhost:8545"
    :load-node-addresses? true
    :root-url "https://beta.namebazaar.io"
    :server-url "http://localhost:6200"})
