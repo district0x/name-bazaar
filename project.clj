@@ -34,7 +34,7 @@
                  [district0x/district-server-logging "1.0.1"]
                  [district0x/district-server-smart-contracts "1.0.1"]
                  [district0x/district-server-web3 "1.0.1"]
-                 [district0x/district-server-web3-watcher "1.0.1"]
+                 [district0x/district-server-web3-watcher "1.0.2"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
