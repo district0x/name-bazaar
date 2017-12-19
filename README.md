@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/district0x/name-bazaar.svg?branch=master)](https://travis-ci.org/district0x/name-bazaar)
-
 # Name Bazaar
+
+[![Build Status](https://travis-ci.org/district0x/name-bazaar.svg?branch=master)](https://travis-ci.org/district0x/name-bazaar)
 
 A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service.
 
