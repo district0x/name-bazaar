@@ -777,7 +777,7 @@ h4, h5, h6 {
       & > .right-section {
         @media only screen and (max-width: @largestTabletScreen) {
           width: 50px;
-          .active-address-balance {
+          div, .active-address-balance {
             display: none;
           }
         }
