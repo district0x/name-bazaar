@@ -138,16 +138,9 @@
       [:i.book.icon]]]]])
 
 (defn app-headline []
-  [ui/Grid
-   {:columns 1
-    :centered true}
-   [ui/GridColumn
-    {:computer 7
-     :tablet 12
-     :mobile 15
-     :text-align :center}
-    [:h1.intro-headline
-     "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."]]])
+  [:div.grid.headline
+   [:h1.intro-headline
+    "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."]])
 
 (defn offerings-total-count []
   (let [total-count (subscribe [:offerings/total-count])]
@@ -184,16 +177,7 @@
         [namebazaar-logo]]
        [offerings-total-count-mobile]
        [app-headline]
-       [ui/Grid
-        {:columns 1
-         :centered true}
-        [ui/GridColumn
-         {:widescreen 7
-          :large-screen 9
-          :computer 12
-          :tablet 12
-          :mobile 15}
-         [search-bar]]]
+       [:div.grid [search-bar]]
        [app-pages]
        [offerings-columns]
        [footer]])))
