@@ -76,32 +76,24 @@
         offerings-most-active (subscribe [:offerings/home-page-most-active])
         offerings-ending-soon (subscribe [:offerings/home-page-ending-soon])]
     (fn []
-      [ui/Grid
-       {:class :offerings-grid
-        :columns 3
-        :centered true}
-       (for [props [{:title "Latest"
-                     :offerings (:items @offerings-newest)
-                     :show-more-href offerings-newest-url
-                     :icon-class "leaf"}
-                    {:title "Most Active"
-                     :offerings (:items @offerings-most-active)
-                     :show-more-href offerings-most-active-url
-                     :icon-class "pulse"}
-                    {:title "Ending Soon"
-                     :offerings (:items @offerings-ending-soon)
-                     :show-more-href offerings-ending-soon-url
-                     :icon-class "flag"}]]
-         [ui/GridColumn
-          {:key (:title props)
-           :widescreen 3
-           :large-screen 4
-           :computer 5
-           :tablet 8
-           :mobile 16
-           :text-align "center"
-           :class :offering-column}
-          [offerings-column props]])])))
+      [:div
+       [:div.grid.offerings-wrap
+        [:div.flex.offerings-grid
+         (for [props [{:title "Latest"
+                       :offerings (:items @offerings-newest)
+                       :show-more-href offerings-newest-url
+                       :icon-class "leaf"}
+                      {:title "Most Active"
+                       :offerings (:items @offerings-most-active)
+                       :show-more-href offerings-most-active-url
+                       :icon-class "pulse"}
+                      {:title "Ending Soon"
+                       :offerings (:items @offerings-ending-soon)
+                       :show-more-href offerings-ending-soon-url
+                       :icon-class "flag"}]]
+           ^{:key (:title props)}
+           [:div.offering-column.centered
+            [offerings-column props]])]]])))
 
 (defn namebazaar-logo []
   [:a
@@ -110,17 +102,8 @@
     {:src "./images/logo@2x.png"}]])
 
 (defn app-pages []
-  [ui/Grid
-   {:columns 1
-    :centered true
-    :class :app-page-link-grid}
-   [ui/GridColumn
-    {:widescreen 5
-     :large-screen 8
-     :computer 9
-     :tablet 12
-     :mobile 16
-     :text-align "center"}
+  [:div
+   [:div.grid.app-page-link-grid
     [:div.app-page-button-links
      [:a.ui.button
       {:href (path-for :route.offerings/search)}

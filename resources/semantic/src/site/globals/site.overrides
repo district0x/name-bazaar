@@ -161,9 +161,14 @@ h4, h5, h6 {
       }
     }
   }
-  .ui.grid.app-page-link-grid {
+  .grid.app-page-link-grid {
     position: relative;
     margin: 30px 0;
+    grid-template-columns: (5/16 * 100%);
+    .grid-query(8, @largestLargeMonitor);
+    .grid-query(9, @largestSmallMonitor);
+    .grid-query(12, @largestTabletScreen);
+    .grid-query(16, @largestMobileScreen);
     &:after {
       content: '';
       border-top: 1px solid fade(@lightBrown, 12);
@@ -174,51 +179,78 @@ h4, h5, h6 {
       height: 100%;
       z-index: -1;
     }
-    .column {
+    > * {
       background-color: @bodyBackground;
       display: flex !important;
       justify-content: center;
-      .app-page-button-links {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
+      
+    }
+    .app-page-button-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
 
-        .ui.button {
-          align-items: center;
-          background-color: #FFF;
-          border-radius: 12px;
-          box-shadow: 6px 6px 49px -2px rgba(0, 0, 0, 0.07);
-          color: @brown;
-          display: flex;
-          font-size: 12px;
-          font-weight: normal;
-          justify-content: center;
-          margin: 10px;
-          width: 156px;
-          height: 44px;
-          i.icon {
-            margin: 0 0 0 8px;
-            line-height: 100%;
-            color: @darkBlueText;
-            &.hand {
-              font-size: 23px;
-            }
-            &.price-tag {
-              font-size: 20px;
-            }
-            &.book {
-              font-size: 18px;
-            }
+      .ui.button {
+        align-items: center;
+        background-color: #FFF;
+        border-radius: 12px;
+        box-shadow: 6px 6px 49px -2px rgba(0, 0, 0, 0.07);
+        color: @brown;
+        display: flex;
+        font-size: 12px;
+        font-weight: normal;
+        justify-content: center;
+        margin: 10px;
+        width: 156px;
+        height: 44px;
+        i.icon {
+          margin: 0 0 0 8px;
+          line-height: 100%;
+          color: @darkBlueText;
+          &.hand {
+            font-size: 23px;
+          }
+          &.price-tag {
+            font-size: 20px;
+          }
+          &.book {
+            font-size: 18px;
           }
         }
       }
     }
   }
   @media only screen and (max-width: @largestTabletScreen) {
-    .offerings-grid {
+    ui.grid.offerings-grid {
       display: none;
       padding: 0 10px !important;
+    }
+  }
+  .grid.offerings-wrap {
+    grid-template-columns: (9/16 * 100%);
+    .grid-query(12, @largestLargeMonitor);
+    .grid-query(15, @largestSmallMonitor);
+    .grid-query(15, @largestTabletScreen);
+    .grid-query(16, @largestMobileScreen);
+  }
+  .flex-item-size(@cols, @disp) {
+    @media only screen and (max-width: @disp) {
+      width: (100%/@cols);
+    }
+  }
+  .flex.offerings-grid {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    padding: 0px;
+    > * {
+      padding: 1rem;
+      width: (100%/3);
+      .flex-item-size(3, @largestLargeMonitor);
+      .flex-item-size(3, @largestSmallMonitor);
+      .flex-item-size(2, @largestTabletScreen);
+      .flex-item-size(1, @largestMobileScreen);
     }
   }
   .offering-column {
