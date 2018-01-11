@@ -140,15 +140,13 @@
        "Names Offered: " @total-count])))
 
 (defn footer []
-  [ui/Grid
-   {:text-align :center
-    :class :footer
-    :vertical-align :middle}
-   [:span.footer-logo]
-   [:h3.part-of-district0x
-    "Part of the "
-    [:a {:href "https://district0x.io" :target :_blank}
-     "district0x Network"]]])
+  [:div
+   [:div.footer
+    [:span.footer-logo]
+    [:h3.part-of-district0x
+     "Part of the "
+     [:a {:href "https://district0x.io" :target :_blank}
+      "district0x Network"]]]])
 
 (defmethod page :route/home []
   (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]

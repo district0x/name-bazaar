@@ -306,6 +306,10 @@ h4, h5, h6 {
     }
   }
   .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     margin-top: 30px !important;
     .part-of-district0x {
       display: flex;
