@@ -52,7 +52,7 @@
                   " You'd need to send at least " min-bid-str "."]
 
                  :else
-                 [:div "You need to send at least " min-bid-str " to become the higest bidder."])))
+                 [:div "You need to send at least " min-bid-str " to become the highest bidder."])))
 
            (when active?
              [:div "To place a bid, you can send Ether directly into the " [d0x-misc/etherscan-link
