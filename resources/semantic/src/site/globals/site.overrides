@@ -331,7 +331,7 @@ h4, h5, h6 {
   }
 }
 
-.column.main-content {
+.main-content {
   margin: 35px 0;
   @media only screen and (min-width: @computerBreakpoint) {
     margin: 65px 0;
@@ -676,6 +676,31 @@ h4, h5, h6 {
 }
 
 .app-container {
+  .grid {
+    display: grid;
+    grid-template-columns: (8/16 * 100%);
+    /*margin-right: -1rem;
+    margin-left: -1rem;
+    margin-bottom: -1rem;*/
+    justify-content: center;
+    .grid-query(12, @largestLargeMonitor);
+    .grid-query(15, @largestSmallMonitor);
+    .grid-query(14, @largestTabletScreen);
+    .grid-query(16, @largestMobileScreen);
+    > .segment
+    {
+      margin: 1rem;
+    }
+  }
+  /*.grid.headline {
+    .grid-query(7, @largestLargeMonitor);
+    .grid-query(7, @largestSmallMonitor);
+    .grid-query(12, @largestTabletScreen);
+    .grid-query(15, @largestMobileScreen);
+    > * {
+      text-align: center;
+    }
+  }*/
   & > .ui.menu.left {
     overflow: hidden;
     @media only screen and (max-width: @largestTabletScreen) {
@@ -1243,8 +1268,31 @@ h4, h5, h6 {
   }
 }
 
-.ui.grid.checkbox-filtering-options {
-  & > .column {
+.grid.checkbox-filtering-options {
+
+  grid-template-columns: (16/16 * 100%);
+  .grid-query(16, @largestLargeMonitor);
+  .grid-query(16, @largestSmallMonitor);
+  .grid-query(16, @largestTabletScreen);
+  .grid-query(16, @largestMobileScreen);
+  & > * {
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ui.checkbox > label {
+  }
+}
+
+.grid.bids {
+
+  grid-template-columns: 8fr 5fr;
+  .header {
+    grid-column: 1 / span 2;
+  }
+  & > * {
     padding-top: 7px !important;
     padding-bottom: 7px !important;
     overflow: hidden;
