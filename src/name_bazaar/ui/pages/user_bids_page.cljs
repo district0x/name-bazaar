@@ -66,26 +66,7 @@
            [:div.grid.bids.no-inner-horizontal-padding.mobile-inner-vertical-padding
             [:div.header [:h1.ui title]]
             [:div.search-checkboxes [user-bids-search-checkboxes]]
-            [:div.order [user-bids-order-by-select]]]
-           #_[ui/Grid
-            {:padded true
-             :class "no-inner-horizontal-padding mobile-inner-vertical-padding"}
-            [ui/GridColumn
-             {:width 16
-              :class :join-upper}
-             [:h1.ui.header title]]
-            [ui/GridColumn
-             {:computer 8
-              :tablet 16
-              :mobile 16}
-             [user-bids-search-checkboxes]]
-            [ui/GridColumn
-             {:computer 6
-              :tablet 8
-              :mobile 16
-              :floated "right"
-              :vertical-align :bottom}
-             [user-bids-order-by-select]]]]
+            [:div.order [user-bids-order-by-select]]]]
           [offering-infinite-list
            {:class "primary"
             :total-count total-count

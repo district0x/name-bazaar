@@ -1306,6 +1306,15 @@ h4, h5, h6 {
   }
 }
 
+.grid.search {
+  grid-template-columns: (6/16 * 100%);
+  display: grid;
+  .grid-query(6, @largestLargeMonitor);
+  .grid-query(6, @largestSmallMonitor);
+  .grid-query(7, @largestTabletScreen);
+  .grid-query(14, @largestMobileScreen);
+}
+
 .show-advanced-search-options {
   text-align: center;
   width: 100%;
