@@ -73,27 +73,13 @@
        [ui/ModalContent
         [:div
          [:div.grid.search
-          [:div
-           [input
-            {:label "Search Name"
-             :fluid true
-             :value @saved-search-name
-             :on-change #(reset! saved-search-name (aget %2 "value"))}]]]
-         [ui/Grid
-          [ui/GridRow
-           [ui/GridColumn
-            {:computer 6
-             :tablet 8
-             :mobile 14}
-            [input
-             {:label "Search Name"
-              :fluid true
-              :value @saved-search-name
-              :on-change #(reset! saved-search-name (aget %2 "value"))}]]]
-          [ui/GridRow
-           {:class :description}
-           [ui/GridColumn
-            "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]]]
+          [input
+           {:label "Search Name"
+            :fluid true
+            :value @saved-search-name
+            :on-change #(reset! saved-search-name (aget %2 "value"))}]
+          [:div.description
+           "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]]
        [ui/ModalActions
         [ui/Button
          {:secondary true

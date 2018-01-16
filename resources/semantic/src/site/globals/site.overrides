@@ -1306,13 +1306,25 @@ h4, h5, h6 {
   }
 }
 
+.grid-query-2(@col1, @col2, @disp) {
+  @media only screen and (max-width: @disp) {
+    grid-template-columns: (@col1/16 * 100%) (@col2/16 * 100%);
+  }
+}
 .grid.search {
   grid-template-columns: (6/16 * 100%);
   display: grid;
-  .grid-query(6, @largestLargeMonitor);
-  .grid-query(6, @largestSmallMonitor);
-  .grid-query(7, @largestTabletScreen);
-  .grid-query(14, @largestMobileScreen);
+  .grid-query-2(6, 10, @largestLargeMonitor);
+  .grid-query-2(6, 10, @largestSmallMonitor);
+  .grid-query-2(7, 9, @largestTabletScreen);
+  .grid-query-2(14, 2, @largestMobileScreen);
+  .description {
+    grid-column: 1 / span 2;
+  }
+  div {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .show-advanced-search-options {
