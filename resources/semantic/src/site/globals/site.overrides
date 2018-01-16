@@ -692,15 +692,6 @@ h4, h5, h6 {
       margin: 1rem;
     }
   }
-  /*.grid.headline {
-    .grid-query(7, @largestLargeMonitor);
-    .grid-query(7, @largestSmallMonitor);
-    .grid-query(12, @largestTabletScreen);
-    .grid-query(15, @largestMobileScreen);
-    > * {
-      text-align: center;
-    }
-  }*/
   & > .ui.menu.left {
     overflow: hidden;
     @media only screen and (max-width: @largestTabletScreen) {
@@ -1291,6 +1282,18 @@ h4, h5, h6 {
   grid-template-columns: 8fr 5fr;
   .header {
     grid-column: 1 / span 2;
+  }
+  .order {
+    align-self: end;
+    @media only screen and (max-width: @largestMobileScreen) {
+      & {
+        grid-column: 1 / span 2;
+      }
+    }
+    overflow:visible;
+    .wrapper {
+      position: absolute;
+    }
   }
   & > * {
     padding-top: 7px !important;

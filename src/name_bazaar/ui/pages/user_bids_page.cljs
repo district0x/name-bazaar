@@ -67,7 +67,7 @@
             [:div.header [:h1.ui title]]
             [:div.search-checkboxes [user-bids-search-checkboxes]]
             [:div.order [user-bids-order-by-select]]]
-           [ui/Grid
+           #_[ui/Grid
             {:padded true
              :class "no-inner-horizontal-padding mobile-inner-vertical-padding"}
             [ui/GridColumn
