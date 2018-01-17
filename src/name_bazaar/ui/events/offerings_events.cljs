@@ -257,20 +257,20 @@
                     :contract-key type
                     :contract-address offering-address
                     :form-id (select-keys form-data [:offering/address])
-                    :result-href (path-for :route.offerings/detail form-data)                   
+                    :result-href (path-for :route.offerings/detail form-data)
                     :on-tx-receipt-n [[:district0x.snackbar/show-message
                                        (gstring/format "Offering for %s was deleted" name)]
                                       [:offerings/on-offering-changed {:offering offering-address}]]}
                    (if (offering-supports-unregister? type version)
                      {:contract-method :unregister
-                      :form-data form-data}                    
-                     (case type                       
+                      :form-data form-data}
+                     (case type
 
                        :buy-now-offering
                        {:contract-method :set-settings
                         :form-data (assoc form-data :offering/price unregistered-price-wei)
                         :args-order [:offering/price]}
-                       
+
                        :auction-offering
                        {:contract-method :set-settings
                         :form-data (-> form-data
@@ -624,7 +624,7 @@
                                                         :order-by-dir :desc})}]
                     [:offerings/search {:search-results-path [:search-results :offerings :home-page-ending-soon]
                                         :params (merge common-params
-                                                       {:order-by :offering/end-time
+                                                       {:order-by :auction-offering/end-time
                                                         :order-by-dir :asc})}]]})))
 
 (reg-event-fx
