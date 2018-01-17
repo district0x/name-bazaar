@@ -51,7 +51,6 @@
   (mount/stop #'district.server.endpoints/endpoints)
   (mount/start #'district.server.endpoints/endpoints))
 
-
 (defn deploy-to-mainnet []
   (mount/stop #'district.server.web3/web3
               #'district.server.smart-contracts/smart-contracts)
@@ -66,18 +65,16 @@
                          #'district.server.web3/web3
                          #'district.server.smart-contracts/smart-contracts))
 
-
 (defn redeploy []
   (mount/stop)
   (-> (mount/with-args
         (merge
-          (mount/args)
-          {:deployer {:write? true}
-           :generator {:total-accounts 1
-                       :offerings-per-account 2}}))
-    (mount/start)
-    pprint/pprint))
-
+         (mount/args)
+         {:deployer {:write? true}
+          :config {:default {:generator {:total-accounts 1
+                                         :offerings-per-account 2}}}}))
+      (mount/start)
+      pprint/pprint))
 
 (defn -main [& _]
   (-> (mount/with-args
