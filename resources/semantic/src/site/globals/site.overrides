@@ -1327,6 +1327,43 @@ h4, h5, h6 {
   }
 }
 
+.grid.search-params {
+  grid-template-columns: 8fr 8fr 7fr 7fr 2fr;
+  display: grid;
+  .keyword {
+    grid-column: 1 / span 2;
+  }
+  .contains {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .saved-searches {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .save-search-button {
+    grid-row: 1;
+    grid-column: 5;
+  }
+  .checkbox {
+    &.buy-now, &.auction, &.tld {
+      grid-column: 1;
+    }
+    &.subnames, &.ex-numbers, &.ex-specials {
+      grid-column: 2;
+    }
+    &.buy-now, &.subnames {
+      grid-row: 2;
+    }
+    &.auction, &.ex-numbers {
+      grid-row: 3;
+    }
+    &.tld, &.ex-specials {
+      grid-row: 4;
+    }
+  }
+}
+
 .show-advanced-search-options {
   text-align: center;
   width: 100%;

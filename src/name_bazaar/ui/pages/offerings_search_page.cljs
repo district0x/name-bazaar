@@ -15,7 +15,8 @@
     [name-bazaar.ui.utils :refer [offerings-sold-query-params]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
-    [soda-ash.core :as ui]))
+    [soda-ash.core :as ui]
+    [taoensso.timbre :refer-macros [info warn error]]))
 
 (defn offerings-keyword-text-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -227,118 +228,148 @@
         mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn []
       [ui/Segment
-       [ui/Grid
-        {:celled :internally}
-        [ui/GridRow
-         [ui/GridColumn
-          {:computer 8
-           :tablet 8
-           :mobile 16}
-          [offerings-keyword-text-field]]
-         (when @mobile?
-           [ui/GridColumn
-            {:class "join-upper hide-divider"
-             :mobile 16}
-            [:div.offerings-search-options-section
-             [order-by-select-field]
+       [:div
+        [:div.grid.search-params
+         (concat
+          [[:div.keyword [offerings-keyword-text-field]]
+           [:div.saved-searches [saved-searches-select]]
+           [:div.save-search-button [save-search-button]]]
+          (when (or (not @mobile?) @open?)
+            [[:div.buy-now.checkbox [buy-now-offerings-checkbox]]
+             [:div.auction.checkbox [auction-offerings-checkbox]]
+             [:div.tld.checkbox [top-level-names-checkbox]]
+             [:div.subnames.checkbox [subnames-checkbox]]
+             [:div.ex-numbers.checkbox [exclude-numbers-checkbox]]
+             [:div.ex-specials.checkbox [exclude-special-chars-checkbox]]
+             [min-price-input]
+             [max-price-input]
+             [min-length-input]
+             [max-length-input]])
+          (if @mobile?
+            [[order-by-select-field]
              [reset-filter-button
-              {:on-click #(reset! open? false)}]]])
-         [ui/GridColumn
-          {:vertical-align :bottom
-           :class "hide-divider join-upper"
-           :computer 8
-           :tablet 8
-           :mobile 16}
-          [:div.offerings-search-options-section
-           [ui/Grid
-            (when-not @mobile?
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [offerings-keyword-position-select]])
+              {:on-click #(reset! open? false)}]]
+            [[:div.contains [offerings-keyword-position-select]]])
+          (if (and @mobile? (not @open?))
+            [[:div.show-advanced-search-options
+              {:on-click #(reset! open? true)}
+              "Show Advanced Options ▾"]]))]
+
+
+
+
+        [ui/Grid
+         {:celled :internally}
+         [ui/GridRow
+          [ui/GridColumn
+           {:computer 8
+            :tablet 8
+            :mobile 16}
+           [offerings-keyword-text-field]]
+          (when @mobile?
+            [ui/GridColumn
+             {:class "join-upper hide-divider"
+              :mobile 16}
+             [:div.offerings-search-options-section
+              [order-by-select-field]
+              [reset-filter-button
+               {:on-click #(reset! open? false)}]]])
+          [ui/GridColumn
+           {:vertical-align :bottom
+            :class "hide-divider join-upper"
+            :computer 8
+            :tablet 8
+            :mobile 16}
+           [:div.offerings-search-options-section
+            [ui/Grid
+             (when-not @mobile?
+               [ui/GridColumn
+                {:computer 8
+                 :tablet 8
+                 :mobile 16}
+                [offerings-keyword-position-select]])
+             [ui/GridColumn
+              {:computer 8
+               :tablet 8
+               :mobile 16}
+              [saved-searches-select]]]
+            [save-search-button]]]]
+         (if (or (not @mobile?) @open?)
+           [ui/GridRow
             [ui/GridColumn
              {:computer 8
               :tablet 8
               :mobile 16}
-             [saved-searches-select]]]
-           [save-search-button]]]]
-        (if (or (not @mobile?) @open?)
-          [ui/GridRow
-           [ui/GridColumn
-            {:computer 8
-             :tablet 8
-             :mobile 16}
-            [ui/Grid
-             {:class :checkbox-filtering-options}
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [buy-now-offerings-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [subnames-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [auction-offerings-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [exclude-numbers-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [top-level-names-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [exclude-special-chars-checkbox]]]]
-           [ui/GridColumn
-            {:computer 8
-             :tablet 8
-             :mobile 16
-             :class :mobile-hide-divider}
-            [:div.offerings-search-options-section
              [ui/Grid
+              {:class :checkbox-filtering-options}
               [ui/GridColumn
                {:computer 8
                 :tablet 8
                 :mobile 16}
-               [min-price-input]]
+               [buy-now-offerings-checkbox]]
               [ui/GridColumn
                {:computer 8
                 :tablet 8
                 :mobile 16}
-               [max-price-input]]
+               [subnames-checkbox]]
               [ui/GridColumn
                {:computer 8
                 :tablet 8
                 :mobile 16}
-               [min-length-input]]
+               [auction-offerings-checkbox]]
               [ui/GridColumn
                {:computer 8
                 :tablet 8
                 :mobile 16}
-               [max-length-input]]
+               [exclude-numbers-checkbox]]
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [top-level-names-checkbox]]
+              [ui/GridColumn
+               {:computer 8
+                :tablet 8
+                :mobile 16}
+               [exclude-special-chars-checkbox]]]]
+            [ui/GridColumn
+             {:computer 8
+              :tablet 8
+              :mobile 16
+              :class :mobile-hide-divider}
+             [:div.offerings-search-options-section
+              [ui/Grid
+               [ui/GridColumn
+                {:computer 8
+                 :tablet 8
+                 :mobile 16}
+                [min-price-input]]
+               [ui/GridColumn
+                {:computer 8
+                 :tablet 8
+                 :mobile 16}
+                [max-price-input]]
+               [ui/GridColumn
+                {:computer 8
+                 :tablet 8
+                 :mobile 16}
+                [min-length-input]]
+               [ui/GridColumn
+                {:computer 8
+                 :tablet 8
+                 :mobile 16}
+                [max-length-input]]
+               (when-not @mobile?
+                 [ui/GridColumn
+                  {:width 16}
+                  [order-by-select-field]])]
               (when-not @mobile?
-                [ui/GridColumn
-                 {:width 16}
-                 [order-by-select-field]])]
-             (when-not @mobile?
-               [reset-filter-button])]]]
-          [ui/GridRow
-           {:centered true}
-           [:div.show-advanced-search-options
-            {:on-click #(reset! open? true)}
-            "Show Advanced Options ▾"]])]])))
+                [reset-filter-button])]]]
+           [ui/GridRow
+            {:centered true}
+            [:div.show-advanced-search-options
+             {:on-click #(reset! open? true)}
+             "Show Advanced Options ▾"]])]]])))
 
 (defn offerings-search-results []
   (let [search-results (subscribe [:offerings/main-search])
