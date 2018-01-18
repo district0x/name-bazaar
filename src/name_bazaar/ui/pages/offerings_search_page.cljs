@@ -241,15 +241,24 @@
              [:div.subnames.checkbox [subnames-checkbox]]
              [:div.ex-numbers.checkbox [exclude-numbers-checkbox]]
              [:div.ex-specials.checkbox [exclude-special-chars-checkbox]]
-             [min-price-input]
-             [max-price-input]
-             [min-length-input]
-             [max-length-input]])
-          (if @mobile?
-            [[order-by-select-field]
-             [reset-filter-button
-              {:on-click #(reset! open? false)}]]
-            [[:div.contains [offerings-keyword-position-select]]])
+             [:div.grid.search-params-price
+              [:div.min-price [min-price-input]]
+              [:div.max-price [max-price-input]]
+              [:div.min-length [min-length-input]]
+              [:div.max-length [max-length-input]]
+              (when-not @mobile?
+                [:div.order
+                 [order-by-select-field]])
+              (when-not @mobile?
+                [:div.reset
+                 [reset-filter-button
+                  {:on-click #(reset! open? false)}]])]
+             (if @mobile?
+               [:div.order
+                [order-by-select-field]
+                [reset-filter-button
+                 {:on-click #(reset! open? false)}]]
+               [:div.contains [offerings-keyword-position-select]])])
           (if (and @mobile? (not @open?))
             [[:div.show-advanced-search-options
               {:on-click #(reset! open? true)}

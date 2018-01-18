@@ -1330,7 +1330,13 @@ h4, h5, h6 {
 .grid.search-params {
   grid-template-columns: 8fr 8fr 7fr 7fr 2fr;
   display: grid;
+  > * {
+    padding-top: 1rem;
+    padding-left: 2rem;
+  }
   .keyword {
+    padding-bottom: 2rem;
+    padding-right: 2rem;
     grid-column: 1 / span 2;
   }
   .contains {
@@ -1338,6 +1344,7 @@ h4, h5, h6 {
     grid-row: 1;
   }
   .saved-searches {
+    padding-right: 1rem;
     grid-column: 4;
     grid-row: 1;
   }
@@ -1353,6 +1360,8 @@ h4, h5, h6 {
       grid-column: 2;
     }
     &.buy-now, &.subnames {
+      border: solid rgba(116,100,126,.07);
+      border-width: 1px 0px 0px 0px;
       grid-row: 2;
     }
     &.auction, &.ex-numbers {
@@ -1360,6 +1369,41 @@ h4, h5, h6 {
     }
     &.tld, &.ex-specials {
       grid-row: 4;
+    }
+  }
+  .grid.search-params-price {
+    border: solid rgba(116,100,126,.07);
+    border-width: 1px 0px 0px 1px;
+    grid-row: 2 / span 4;
+    grid-column: 3 / span 3;
+    grid-template-columns: 3fr 3fr 1fr;
+    display: grid;
+    .min-price {
+      grid-row: 1;
+      grid-column: 1;
+    }
+    .max-price {
+      grid-row: 1;
+      grid-column: 2;
+    }
+    .min-length {
+      grid-row: 2;
+      grid-column: 1;
+    }
+    .max-length {
+      grid-row: 2;
+      grid-column: 2;
+    }
+    .order {
+      grid-row: 3;
+      grid-column: 1 / span 2;
+    }
+    .reset {
+      grid-row: 3;
+      grid-column: 3;
+    }
+    > * {
+      padding-top: 2rem;
     }
   }
 }
