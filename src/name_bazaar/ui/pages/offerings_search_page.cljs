@@ -267,7 +267,7 @@
 
 
 
-        [ui/Grid
+        #_[ui/Grid
          {:celled :internally}
          [ui/GridRow
           [ui/GridColumn

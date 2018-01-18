@@ -1349,6 +1349,8 @@ h4, h5, h6 {
     grid-row: 1;
   }
   .save-search-button {
+    margin-left: 0px;
+    padding-left: 0px;
     grid-row: 1;
     grid-column: 5;
   }
@@ -1397,13 +1399,35 @@ h4, h5, h6 {
     .order {
       grid-row: 3;
       grid-column: 1 / span 2;
+      margin-bottom: 1rem;
     }
     .reset {
+      padding-left: 1rem;
       grid-row: 3;
       grid-column: 3;
     }
     > * {
       padding-top: 2rem;
+    }
+  }
+  .search-options-icon-button {
+    width: 22px;
+    height: 22px;
+    margin-left: 0px;
+    padding-left: 0px;
+
+    cursor: pointer;
+    align-self: flex-end;
+
+    font-size: 22px;
+    &.disabled {
+      opacity: 0.5;
+    }
+    &.bookmark, &.bookmark-remove {
+      color: @pink;
+    }
+    &.filter {
+      color: @purple;
     }
   }
 }
