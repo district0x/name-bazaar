@@ -1368,7 +1368,7 @@ h4, h5, h6 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   .grid.keyword-position {
-    padding-left: 2rem;
+    //padding-left: 2rem;
     width: 100%;
     display: grid;
     grid-template-columns: 3fr 3fr 1fr;
@@ -1378,6 +1378,8 @@ h4, h5, h6 {
     }
   }
   .grid.checkbox-filtering-options {
+    border: solid rgba(116,100,126,.2);
+    border-width: 1px 0px 0px 0px;
     padding-left: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1389,6 +1391,8 @@ h4, h5, h6 {
   .grid.offerings-search-options-section {
     padding-left: 2rem;
     display: grid;
+    border: solid rgba(116,100,126,.2);
+    border-width: 1px 0px 0px 1px;
     grid-template-columns: 3fr 3fr 1fr;
     > * {
       padding-right: 1rem;
@@ -1420,8 +1424,26 @@ h4, h5, h6 {
   }
   .keyword {
     padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-bottom: 2rem;
     padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  .search-options-icon-button {
+    width: 22px;
+    height: 22px;
+    margin-left: 10px;
+    cursor: pointer;
+    align-self: flex-end;
+    font-size: 22px;
+    &.disabled {
+      opacity: 0.5;
+    }
+    &.bookmark, &.bookmark-remove {
+      color: @pink;
+    }
+    &.filter {
+      color: @purple;
+    }
   }
 }
 
