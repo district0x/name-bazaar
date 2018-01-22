@@ -273,12 +273,13 @@
                  [:div.order-by-select
                   [order-by-select-field]])
                (when-not @mobile?
-                 [reset-filter-button])]]
+                 [:div.reset-filter
+                  [reset-filter-button]])]]
              [[:div.show-advanced-search-options
                {:on-click #(reset! open? true)}
                "Show Advanced Options ▾"]]))]])
 
-       [ui/Grid
+       #_[ui/Grid
         {:celled :internally}
         [ui/GridRow
          [ui/GridColumn

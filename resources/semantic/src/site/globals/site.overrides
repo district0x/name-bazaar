@@ -1395,11 +1395,13 @@ h4, h5, h6 {
     border-width: 1px 0px 0px 1px;
     grid-template-columns: 3fr 3fr 1fr;
     > * {
+      padding-top: 2rem;
       padding-right: 1rem;
       padding-left: 1rem;
     }
     .order-by-select {
       grid-column: 1 / span 2;
+      padding-bottom: 2rem;
     }
     .min-length {
       grid-column: 1;
@@ -1433,7 +1435,7 @@ h4, h5, h6 {
     height: 22px;
     margin-left: 10px;
     cursor: pointer;
-    align-self: flex-end;
+    //align-self: flex-end;
     font-size: 22px;
     &.disabled {
       opacity: 0.5;
