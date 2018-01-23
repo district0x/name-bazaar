@@ -1377,11 +1377,16 @@ h4, h5, h6 {
       padding-left: 1rem;
     }
   }
+  .offerings-mode-section {
+    padding-top: 17px;
+  }
   .grid.checkbox-filtering-options {
     border: solid rgba(116,100,126,.2);
     border-width: 1px 0px 0px 0px;
-    padding-left: 2rem;
+    padding-top: 1rem;
+    padding-left: 15px;
     display: grid;
+    grid-template-rows: repeat(3, 38px);
     grid-template-columns: 1fr 1fr;
     > * {
       padding-right: 1rem;
@@ -1406,8 +1411,8 @@ h4, h5, h6 {
     .min-length {
       grid-column: 1;
     }
-    .icon.filter.search-options-icon-button {
-      grid-column: 3;
+    .reset-filter {
+      padding-top: 6px;
     }
   }
   /*
@@ -1431,6 +1436,7 @@ h4, h5, h6 {
     padding-right: 2rem;
   }
   .search-options-icon-button {
+    padding-top: 6px;
     width: 22px;
     height: 22px;
     margin-left: 10px;

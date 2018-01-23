@@ -237,7 +237,7 @@
                [order-by-select-field]
                [reset-filter-button
                 {:on-click #(reset! open? false)}]]])
-           [[:div.offerings-search-options-section
+           [[:div.offerings-mode-section
              [:div.grid.keyword-position
               (when-not @mobile?
                 [:div.position-selector
@@ -279,7 +279,7 @@
                {:on-click #(reset! open? true)}
                "Show Advanced Options ▾"]]))]])
 
-       #_[ui/Grid
+       [ui/Grid
         {:celled :internally}
         [ui/GridRow
          [ui/GridColumn
