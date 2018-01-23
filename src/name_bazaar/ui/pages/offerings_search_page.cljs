@@ -233,10 +233,12 @@
            [[:div.keyword
              [offerings-keyword-text-field]]]
            (when @mobile?
-             [[:div.offerings-search-options-section
-               [order-by-select-field]
-               [reset-filter-button
-                {:on-click #(reset! open? false)}]]])
+             [[:div.grid.offerings-search-options-section-mobile
+               [:div.order-by-select
+                [order-by-select-field]]
+               [:div.reset-filter
+                [reset-filter-button
+                 {:on-click #(reset! open? false)}]]]])
            [[:div.offerings-mode-section
              [:div.grid.keyword-position
               (when-not @mobile?
