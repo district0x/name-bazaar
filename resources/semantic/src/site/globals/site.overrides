@@ -1393,8 +1393,10 @@ h4, h5, h6 {
     }
   }
   .grid.checkbox-filtering-options {
-    border: solid rgba(116,100,126,.2);
-    border-width: 1px 0px 0px 0px;
+    @media only screen and (min-width: @largestMobileScreen) {
+      border: solid rgba(116,100,126,.2);
+      border-width: 1px 0px 0px 0px;
+    }
     padding-top: 1rem;
     padding-left: 15px;
     display: grid;
@@ -1414,8 +1416,10 @@ h4, h5, h6 {
   .grid.offerings-search-options-section {
     padding-left: 1rem;
     display: grid;
-    border: solid rgba(116,100,126,.2);
-    border-width: 1px 0px 0px 1px;
+    @media only screen and (min-width: @largestMobileScreen) {
+      border: solid rgba(116,100,126,.2);
+      border-width: 1px 0px 0px 1px;
+    }
     grid-template-columns: 45% 45% 10%;
     > * {
       padding-top: 2rem;
@@ -1452,22 +1456,15 @@ h4, h5, h6 {
     .order-by-select {
       grid-column: 1 / span 2;
     }
+    .reset-filter {
+      padding-left: 0px;
+    }
     > * {
       padding-top: 2rem;
       padding-right: 1rem;
       padding-left: 1rem;
     }
   }
-  /*
-  margin-right: -1rem;
-  margin-left: -1rem;
-  margin-bottom: -1rem;
-  justify-content: center;
-  .grid-query(9, @largestLargeMonitor);
-  .grid-query(12, @largestSmallMonitor);
-  .grid-query(12, @largestTabletScreen);
-  .grid-query(15, @largestMobileScreen);
-  */
   > * {
     padding-right: 1rem;
     padding-left: 1rem;

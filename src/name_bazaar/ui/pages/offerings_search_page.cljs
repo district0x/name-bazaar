@@ -281,7 +281,7 @@
                {:on-click #(reset! open? true)}
                "Show Advanced Options ▾"]]))]])
 
-       [ui/Grid
+       #_[ui/Grid
         {:celled :internally}
         [ui/GridRow
          [ui/GridColumn
