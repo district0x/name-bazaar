@@ -63,29 +63,22 @@
         [:div.offering-stats
          {:class type}
          (if auction?
-           [ui/Grid
-            {:celled true
-             :columns 3
-             :centered true}
-            [ui/GridColumn
-             {:width 8
-              :class :price}
-             [:i.icon.dollar-circle]
-             [:div.offering-stat
-              [:h5.ui.header.sub
-               (if (pos? bid-count) "Highest Bid" "Starting Price")]
-              [:div.stat-number price-formatted]]]
-            [ui/GridColumn
-             {:width 8
-              :class :bid-count}
-             [:i.icon.hammer]
-             [:div.offering-stat
-              [:h5.ui.header.sub "Number of bids"]
-              [:div.stat-number bid-count]]]
-            [ui/GridRow
-             [ui/GridColumn
-              {:width 16
-               :class :time-remaining}
+           [:div
+            [:div.grid.auction
+             [:div.price
+              [:i.icon.dollar-circle]
+              [:div.offering-stat
+               [:h5.ui.header.sub
+                (if (pos? bid-count) "Highest Bid" "Starting Price")]
+               [:div.stat-number price-formatted]]]
+             [:div.bid-count
+              {:width 8
+               :class :bid-count}
+              [:i.icon.hammer]
+              [:div.offering-stat
+               [:h5.ui.header.sub "Number of bids"]
+               [:div.stat-number bid-count]]]
+             [:div.time-remaining
               [:i.icon.clock]
               [:div.offering-stat
                [:h5.ui.header.sub "Time Remaining"]

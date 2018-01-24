@@ -1897,6 +1897,28 @@ input[type="range"] {
   }
 }
 
+.offering-stats {
+  .grid.auction {
+    grid-template-columns: repeat(2, 50%);
+    display: grid;
+    height: 285px;
+    justify-content: center;
+    border: solid rgba(116,100,126,.2);
+    border-width: 1px;
+    .time-remaining {
+      grid-column: 1 / span 2;
+      border-top: solid rgba(116,100,126,.2);
+      border-top-width: 1px;
+    }
+    .bid-count {
+      border-left: solid rgba(116,100,126,.2);
+      border-left-width: 1px;
+    }
+    > * {
+      padding: 2rem;
+    }
+  }
+}
 .grid.offering-countdown {
   grid-template-columns: repeat(4,1fr);
   display: grid;
@@ -1909,18 +1931,4 @@ input[type="range"] {
       border-left-width: 1px;
     }
   }
-  
-  /*
-  .grid-query-2(10, 6, @largestLargeMonitor);
-  .grid-query-2(10, 6, @largestSmallMonitor);
-  .grid-query-2(10, 6, @largestTabletScreen);
-  .grid-query-2(14, 2, @largestMobileScreen);
-  > * {
-    padding: 2rem;
-    @media only screen and (max-width: @largestMobileScreen) {
-      padding-top: 1rem;
-      padding-bottom: 1rem;
-      grid-column: 1 / span 2;
-    }
-  }*/
 }
