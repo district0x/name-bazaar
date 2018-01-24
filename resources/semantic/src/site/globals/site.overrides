@@ -1382,6 +1382,7 @@ h4, h5, h6 {
     }
     @media only screen and (max-width: @largestMobileScreen) {
       .saved-searches-select {
+        padding-bottom: 4rem;
         grid-column: 1 / span 2;
       }
     }
@@ -1390,6 +1391,7 @@ h4, h5, h6 {
     padding-top: 17px;
     @media only screen and (max-width: @largestMobileScreen) {
       grid-column: 1 / span 2;
+      padding-top: 27px;
     }
   }
   .grid.checkbox-filtering-options {
@@ -1439,6 +1441,11 @@ h4, h5, h6 {
         grid-column: 1 / span 2;
       }
     }
+    @media only screen and (max-width: @largestMobileScreen) {
+      .max-length {
+        padding-bottom: 2rem;
+      }
+    }
     .reset-filter {
       padding-left: 0px;
       padding-top: 6px;
@@ -1475,7 +1482,10 @@ h4, h5, h6 {
     padding-left: 2rem;
     padding-right: 2rem;
     @media only screen and (max-width: @largestMobileScreen) {
+
       grid-column: 1 / span 2;
+      padding-top: 2rem;
+      padding-bottom: 0rem;
     }
   }
   .search-options-icon-button {
@@ -1498,6 +1508,8 @@ h4, h5, h6 {
   }
   @media only screen and (max-width: @largestMobileScreen) {
     .show-advanced-search-options {
+      border: solid rgba(116,100,126,.2);
+      border-width: 1px 0px 0px 0px;
       grid-column: 1 / span 2;
     }
   }
