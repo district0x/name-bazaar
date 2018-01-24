@@ -1918,7 +1918,26 @@ input[type="range"] {
       padding: 2rem;
     }
   }
+  .grid.price {
+    grid-template-columns: 100%;
+    display: grid;
+    //height: 285px;
+    justify-content: center;
+    border: solid rgba(116,100,126,.2);
+    border-width: 1px;
+    grid-template-rows: 20% 70%;
+    .dollar-circle {
+      padding-top: 0.5rem;
+      padding-left: 1rem;
+    }
+    > * {
+      .offering-stat {
+        padding: 1rem;
+      }
+    }
+  }
 }
+
 .grid.offering-countdown {
   grid-template-columns: repeat(4,1fr);
   display: grid;

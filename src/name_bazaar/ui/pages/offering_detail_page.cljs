@@ -83,7 +83,12 @@
               [:div.offering-stat
                [:h5.ui.header.sub "Time Remaining"]
                [auction-offering-countdown]]]]]
-           [ui/Grid
+           [:div.grid.price
+            [:i.icon.dollar-circle]
+            [:div.offering-stat
+             [:h5.ui.header.sub "Price"]
+             [:div.stat-number price-formatted]]]
+           #_[ui/Grid
             {:columns 1
              :celled true}
             [ui/GridColumn
