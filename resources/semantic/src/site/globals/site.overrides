@@ -927,7 +927,7 @@ h4, h5, h6 {
             &.time-remaining {
               .offering-stat {
                 padding: 0;
-                .ui.grid {
+                .grid {
                   width: 100%;
                   margin-top: 5px;
                   .column {
@@ -1895,4 +1895,32 @@ input[type="range"] {
       grid-column: 1 / span 2;
     }
   }
+}
+
+.grid.offering-countdown {
+  grid-template-columns: repeat(4,1fr);
+  display: grid;
+  justify-content: center;
+  width: 100%;
+  > * {
+    text-align: center;
+    &.hours,&.minutes,&.seconds {
+      border-left: solid rgba(116,100,126,.2);
+      border-left-width: 1px;
+    }
+  }
+  
+  /*
+  .grid-query-2(10, 6, @largestLargeMonitor);
+  .grid-query-2(10, 6, @largestSmallMonitor);
+  .grid-query-2(10, 6, @largestTabletScreen);
+  .grid-query-2(14, 2, @largestMobileScreen);
+  > * {
+    padding: 2rem;
+    @media only screen and (max-width: @largestMobileScreen) {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      grid-column: 1 / span 2;
+    }
+  }*/
 }

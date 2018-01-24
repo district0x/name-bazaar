@@ -45,15 +45,12 @@
     (fn [props]
       (let [{:keys [:offering/address]} @offering
             time-remaining @(subscribe [:auction-offering/end-time-countdown address])]
-        [ui/Grid
-         {:columns "equal"
-          :divided true
-          :text-align :center
-          :vertical-align :middle}
+        [:div.grid.offering-countdown
          (for [unit [:days :hours :minutes :seconds]]
            (let [amount (get time-remaining unit 0)]
-             [ui/GridColumn
-              {:key unit}
+             ^{:key unit}
+             [:div
+              {:class unit}
               [:div.stat-number amount]
               [:div.time-unit (pluralize (time-unit->text unit) amount)]]))]))))
 
