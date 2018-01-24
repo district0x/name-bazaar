@@ -33,6 +33,9 @@
 
 (defn search-params-panel []
   [ui/Segment
+   [:div.grid.request-search-panel
+    [offerings-keyword-text-field]
+    [offering-requests-keyword-position-select]]
    [ui/Grid
     {:celled :internally}
     [ui/GridRow
