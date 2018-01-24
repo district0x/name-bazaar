@@ -679,9 +679,6 @@ h4, h5, h6 {
   .grid {
     display: grid;
     grid-template-columns: (8/16 * 100%);
-    /*margin-right: -1rem;
-    margin-left: -1rem;
-    margin-bottom: -1rem;*/
     justify-content: center;
     .grid-query(12, @largestLargeMonitor);
     .grid-query(15, @largestSmallMonitor);
@@ -1337,34 +1334,6 @@ h4, h5, h6 {
   font-size: 13px;
 }
 
-/*
-.offerings-search-options-section {
-  display: flex;
-  align-items: center;
-  & > .ui.grid {
-    flex-grow: 1;
-  }
-
-  & > .search-options-icon-button {
-    width: 22px;
-    height: 22px;
-    margin-left: 20px;
-    cursor: pointer;
-    align-self: flex-end;
-    font-size: 22px;
-    &.disabled {
-      opacity: 0.5;
-    }
-    &.bookmark, &.bookmark-remove {
-      color: @pink;
-    }
-    &.filter {
-      color: @purple;
-    }
-  }
-}
-*/
-
 .grid.search-params {
   display: grid;
   grid-template-columns: 50% 50%;
@@ -1448,7 +1417,7 @@ h4, h5, h6 {
     }
     .reset-filter {
       padding-left: 0px;
-      padding-top: 6px;
+      padding-: 17px;
     }
     @media only screen and (max-width: @largestMobileScreen) {
       grid-column: 1 / span 2;
@@ -1477,7 +1446,7 @@ h4, h5, h6 {
     padding-left: 1rem;
   }
   .keyword {
-    padding-top: 1rem;
+    padding-top: 17px;
     padding-bottom: 2rem;
     padding-left: 2rem;
     padding-right: 2rem;
@@ -1492,9 +1461,7 @@ h4, h5, h6 {
     padding-top: 6px;
     width: 22px;
     height: 22px;
-    //margin-left: 10px;
     cursor: pointer;
-    //align-self: flex-end;
     font-size: 22px;
     &.disabled {
       opacity: 0.5;
