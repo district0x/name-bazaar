@@ -1951,3 +1951,25 @@ input[type="range"] {
     }
   }
 }
+
+
+.grid.layout-grid {
+  grid-template-columns: 50% 50%;
+  display: grid;
+  justify-content: center;
+  width: 100%;
+  //.grid-query-2(6, 10, @largestLargeMonitor);
+  //.grid-query-2(6, 10, @largestSmallMonitor);
+  //.grid-query-2(7, 9, @largestTabletScreen);
+  //.grid-query-2(14, 2, @largestMobileScreen);
+  > * {
+    padding-left: 33px;
+    padding-top: 1.5rem;
+    @media only screen and (max-width: @largestMobileScreen) {
+      & {
+        padding-left: 20px;
+        grid-column: 1 / span 2;
+      }
+    }
+  }
+}

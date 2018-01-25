@@ -92,31 +92,47 @@
 (defn offering-detail []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn []
-      [ui/Grid
-       {:class "layout-grid submit-footer offering-detail"
-        :celled "internally"}
-       [ui/GridRow
-        [ui/GridColumn
-         {:mobile 16
-          :computer 8}
-         [:div.tags
-          [offering-detail-status-tag]
-          [offering-detail-type-tag]]
-         [:div
-          [offering-general-info
-           {:offering @offering}]]]
-        [ui/GridColumn
-         {:mobile 16
-          :computer 8}
-         [offering-stats]]]
-       [ui/GridRow
-        {:centered true}
-        [offering-middle-section
-         {:offering @offering}]]
-       [ui/GridRow
-        {:centered true}
-        [offering-bottom-section
-         {:offering @offering}]]])))
+      [:div
+       [ui/Grid
+        {:class "layout-grid submit-footer offering-detail"
+         :celled "internally"}
+        [ui/GridRow
+         [ui/GridColumn
+          {:mobile 16
+           :computer 8}
+          [:div.tags
+           [offering-detail-status-tag]
+           [offering-detail-type-tag]]
+          [:div
+           [offering-general-info
+            {:offering @offering}]]]
+         [ui/GridColumn
+          {:mobile 16
+           :computer 8}
+          [offering-stats]]]
+        [ui/GridRow
+         {:centered true}
+         [offering-middle-section
+          {:offering @offering}]]
+        [ui/GridRow
+         {:centered true}
+         [offering-bottom-section
+          {:offering @offering}]]]
+       #_[:div.grid.layout-grid.submit-footer.offering-detail
+        [:div.tags
+         [offering-detail-status-tag]
+         [offering-detail-type-tag]]
+        [:div
+         [offering-general-info
+          {:offering @offering}]]
+        [:div.offering-stats [offering-stats]]
+        [:div.offering-middle-section
+         [offering-middle-section
+          {:offering @offering}]]
+        [:div.offering-bottom-section
+         [offering-bottom-section
+          {:offering @offering}]]]
+       ])))
 
 (defn similar-offerings []
   (let [search-results (subscribe [:offerings/similar-offerings])]
@@ -154,24 +170,12 @@
                       {:meta {:title (str name " Auction")
                                     :description (str name " is offered on NameBazaar!")}})
          [ui/Segment
-          [ui/Grid
-           {:class "layout-grid"}
-           [ui/GridRow
-            [ui/GridColumn
-             {:class :join-lower
-              :computer 8
-              :tablet 8
-              :mobile 16}
-             [:h1.ui.header "Offering " name]]
-            [ui/GridColumn
-             {:class :join-lower
-              :computer 8
-              :tablet 8
-              :mobile 16
-              :floated "right"}
-             [share-buttons
-              {:url @(subscribe [:page-share-url :route.offerings/detail {:offering/address address}])
-               :title (str "Check out offering for " name " on NameBazaar")}]]]]
+          [:div.grid.layout-grid
+           [:div.header [:h1.join-lower.ui.header "Offering " name]]
+           [:div.join-lower.share-buttons
+            [share-buttons
+             {:url @(subscribe [:page-share-url :route.offerings/detail {:offering/address address}])
+              :title (str "Check out offering for " name " on NameBazaar")}]]]
           (if offering-loaded?
             [offering-detail]
             [:div.padded [content-placeholder]])]
