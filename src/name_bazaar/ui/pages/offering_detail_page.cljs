@@ -118,21 +118,20 @@
          {:centered true}
          [offering-bottom-section
           {:offering @offering}]]]
-       #_[:div.grid.layout-grid.submit-footer.offering-detail
+       [:div.grid.submit-footer.offering-detail
         [:div.tags
          [offering-detail-status-tag]
          [offering-detail-type-tag]]
-        [:div
+        [:div.general-info
          [offering-general-info
           {:offering @offering}]]
-        [:div.offering-stats [offering-stats]]
-        [:div.offering-middle-section
+        [:div.offering-st [offering-stats]]
+        [:div.offering-middle
          [offering-middle-section
           {:offering @offering}]]
         [:div.offering-bottom-section
          [offering-bottom-section
-          {:offering @offering}]]]
-       ])))
+          {:offering @offering}]]]])))
 
 (defn similar-offerings []
   (let [search-results (subscribe [:offerings/similar-offerings])]
