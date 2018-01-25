@@ -87,16 +87,7 @@
             [:i.icon.dollar-circle]
             [:div.offering-stat
              [:h5.ui.header.sub "Price"]
-             [:div.stat-number price-formatted]]]
-           #_[ui/Grid
-            {:columns 1
-             :celled true}
-            [ui/GridColumn
-             {:class :price}
-             [:i.icon.dollar-circle]
-             [:div.offering-stat
-              [:h5.ui.header.sub "Price"]
-              [:div.stat-number price-formatted]]]])]))))
+             [:div.stat-number price-formatted]]])]))))
 
 (defn offering-detail []
   (let [offering (subscribe [:offerings/route-offering])]
