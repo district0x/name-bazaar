@@ -2035,3 +2035,22 @@ input[type="range"] {
     }
   }
 }
+
+.grid.ens-record-offerings {
+  //margin-right: -1rem;
+  //margin-left: -1rem;
+  //margin-bottom: -1rem;
+  display: grid;
+  grid-template-columns: (7/16 * 100%);
+  justify-content: right;
+  .grid-query(7, @largestLargeMonitor);
+  .grid-query(7, @largestSmallMonitor);
+  .grid-query(9, @largestTabletScreen);
+  .grid-query(16, @largestMobileScreen);
+  > * {
+    padding: 20px;
+    @media only screen and (min-width: @largestMobileScreen) {
+      padding: 33px;
+    }
+  }
+}
