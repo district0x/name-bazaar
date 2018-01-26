@@ -40,15 +40,6 @@
          [:div.grid.ens-record-offerings.no-inner-horizontal-padding.mobile-inner-vertical-padding.join-lower
           [:div.order-by-select
            [ens-record-offerings-order-by-select-field]]]
-         [ui/Grid
-          {:padded true
-           :class "no-inner-horizontal-padding mobile-inner-vertical-padding join-lower"}
-          [ui/GridColumn
-           {:computer 6
-            :tablet 8
-            :mobile 16
-            :floated :right}
-           [ens-record-offerings-order-by-select-field]]]
          [offering-infinite-list
           {:class "secondary"
            :total-count total-count
