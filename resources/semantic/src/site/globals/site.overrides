@@ -2034,24 +2034,4 @@ input[type="range"] {
       min-width: 85px;
     }
   }
-
-/*
-  .ui.grid.layout-grid {
-    margin: 0;
-    & > .row {
-      padding: 0;
-      & > .column {
-        padding: @segmentGutter;
-        @media only screen and (max-width: @largestMobileScreen) {
-          padding: @segmentGutterMobile;
-        }
-        box-shadow: none !important;
-        &:empty {
-          display: none;
-        }
-      }
-    }
-
-  }
-  */
 }
