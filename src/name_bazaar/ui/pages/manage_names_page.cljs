@@ -85,7 +85,7 @@
             submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
         [:div
          [:div.grid.submit-footer.offering-form
-          [:div.grid.relaxed
+          [:div.relaxed
            [:div.name-ownership
             [ens-name-input-ownership-validated
              {:value name
