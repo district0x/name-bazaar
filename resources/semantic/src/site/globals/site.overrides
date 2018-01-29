@@ -1966,12 +1966,33 @@ input[type="range"] {
   width: 100%;
   > * {
     padding-left: 33px;
+    padding-right: 33px;
     padding-top: 1.5rem;
     @media only screen and (max-width: @largestMobileScreen) {
       & {
         padding-left: 20px;
+        padding-right: 20px;
         grid-column: 1 / span 2;
       }
+    }
+  }
+  &.ens-name-detail
+  {
+    @media only screen and (min-width: @largestMobileScreen) {
+      .links-section {
+        text-align: right;
+      }
+    }
+  }
+  .button {
+
+    margin-top: 1rem;
+    grid-column: ~"1/span 2";
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    text-align: center;
+    button {
+      padding: .78571429em 1.5em .78571429em;
     }
   }
 }
@@ -2090,7 +2111,6 @@ input[type="range"] {
     text-align: center;
     button {
       padding: .78571429em 1.5em .78571429em;
-      //margin: auto;
     }
   }
   @media only screen and (max-width: @largestMobileScreen) {
@@ -2100,3 +2120,4 @@ input[type="range"] {
     }
   }
 }
+
