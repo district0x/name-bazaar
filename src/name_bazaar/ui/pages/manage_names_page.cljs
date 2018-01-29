@@ -123,61 +123,7 @@
                :pending? @(subscribe [:public-resolver.set-addr/tx-pending? (namehash full-name)])
                :pending-text "Pointing name..."
                :on-click #(dispatch [:public-resolver/set-addr @form-data])}
-              "Point name"])]]
-
-         [ui/Grid
-          {:class "layout-grid submit-footer offering-form"}
-          [ui/GridRow
-           [ui/GridColumn
-            [ui/Grid
-             {:relaxed "very"}
-             [ui/GridColumn
-              {:computer 8
-               :mobile 16}
-              [ens-name-input-ownership-validated
-               {:value name
-                :on-change (fn [_ data]
-                             (swap! form-data assoc :ens.record/name (aget data "value"))
-                             (load-addr (full-name-fn (aget data "value"))))}]]
-             [ui/GridColumn
-              {:computer 8
-               :mobile 16}
-              [address-text-field
-               {:value addr
-                :disabled (not default-resolver?)
-                :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
-          [ui/GridRow
-           [ui/GridColumn
-            {:mobile 16
-             :class "join-upper"}
-            [:p.input-info
-             "Pointing  your name to an address enables others to send funds to "
-             (or full-name "human-readable address")
-             ", instead of hexadecimal number."]
-            (when name-record
-              [:p.input-info
-               full-name " is currently pointed to " (:public-resolver.record/addr name-record) "."])
-            (when-not default-resolver?
-              [:p.input-info
-               "Before you can point name to an address, you must setup resolver for your name."])]]
-          [ui/GridRow
-           {:centered true}
-           [:div
-            (if-not default-resolver?
-              [transaction-button
-               {:primary true
-                :disabled submit-disabled?
-                :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
-                :pending-text "Setting up resolver..."
-                :on-click #(dispatch [:ens/set-resolver @form-data])}
-               "Setup resolver"]
-              [transaction-button
-               {:primary true
-                :disabled submit-disabled?
-                :pending? @(subscribe [:public-resolver.set-addr/tx-pending? (namehash full-name)])
-                :pending-text "Pointing name..."
-                :on-click #(dispatch [:public-resolver/set-addr @form-data])}
-               "Point name"])]]]]))))
+              "Point name"])]]]))))
 
 (defn point-address-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
