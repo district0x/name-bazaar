@@ -2073,6 +2073,10 @@ input[type="range"] {
   width: 100%;
   > * {
     padding: 2rem 33px;
+    @media only screen and (max-width: @largestMobileScreen) {
+      padding: 1rem 20px;
+      grid-column: ~"1/span 2";
+    }
   }
 
   .info {
@@ -2087,6 +2091,12 @@ input[type="range"] {
     button {
       padding: .78571429em 1.5em .78571429em;
       //margin: auto;
+    }
+  }
+  @media only screen and (max-width: @largestMobileScreen) {
+    .name-ownership, .address, .subname {
+        padding-top: 15px;
+        padding-bottom: 15px;
     }
   }
 }
