@@ -38,29 +38,17 @@
 (defn offering-expanded-body [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
                 :offering/original-owner]} offering]
-    [ui/Grid
-     {:class "layout-grid submit-footer offering-detail"
-      :celled :internally}
-     [ui/GridRow
-      [ui/GridColumn
-       {:computer 8
-        :tablet 8
-        :mobile 16}
-       [offering-general-info
-        {:offering offering}]]
-      [ui/GridColumn
-       {:computer 8
-        :tablet 8
-        :text-align :right
-        :mobile 16}
-       [links-section
-        {:offering offering}]]]
-     [ui/GridRow
-      {:centered true}
+    [:div.grid.expanded-layout-grid.submit-footer.offering-detail
+     [:div.info
+      [offering-general-info
+       {:offering offering}]]
+     [:div.offering-detail
+      [links-section
+       {:offering offering}]]
+     [:div.middle
       [offering-middle-section
        {:offering offering}]]
-     [ui/GridRow
-      {:centered true}
+     [:div.button
       [offering-bottom-section
        {:offering offering}]]]))
 

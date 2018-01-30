@@ -1985,7 +1985,6 @@ input[type="range"] {
     }
   }
   .button {
-
     margin-top: 1rem;
     grid-column: ~"1/span 2";
     padding-top: 1.5rem;
@@ -2121,3 +2120,64 @@ input[type="range"] {
   }
 }
 
+
+.grid.expanded-layout-grid {
+  padding-bottom: 25px;
+  grid-template-columns: 50% 50%;
+  display: grid;
+  justify-content: center;
+  width: 100%;
+  > * {
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 1.5rem;
+    @media only screen and (max-width: @largestMobileScreen) {
+      & {
+        padding-left: 20px;
+        padding-right: 20px;
+        grid-column: 1 / span 2;
+      }
+    }
+  }
+  .middle {
+    text-align: center;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    grid-column: ~"1/span 2";
+  }
+  .info {
+    padding-bottom: 1.5rem;
+  }
+  &.offering-detail
+  {
+    .links-section {
+      //text-align: left;
+      @media only screen and (min-width: @largestMobileScreen) {
+        text-align: right;
+      }
+    }
+  }
+  > .button {
+    margin-top: 1rem;
+    @media only screen and (max-width: @largestMobileScreen) {
+      margin-top: 0px;
+    }
+    grid-column: ~"1/span 2";
+    padding-top: 0;
+    padding-bottom: 0;
+    text-align: center;
+    button {
+      padding: .78571429em 1.5em .78571429em;
+    }
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background: @brownBackground url(../images/namebazaar-pattern.png) no-repeat top center;
+    background-size: 100% auto;
+    & > * {
+      padding: 25px;
+    }
+    .button {
+      min-width: 85px;
+    }
+  }
+}
