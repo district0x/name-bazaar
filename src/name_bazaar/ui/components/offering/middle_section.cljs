@@ -105,12 +105,7 @@
         show-auction-bid-info? (and auction? (not active-address-owner?))
         name-not-valid? (not (and valid-name? normalized?))
         emergency-cancel? (= new-owner emergency-state-new-owner)]
-    [ui/GridColumn
-     {:text-align :center
-      :computer 10
-      :tablet 12
-      :mobile 16
-      :class "offering-middle-section"}
+    [:div
      (when name-not-valid?
        [non-valid-name-warning])
 

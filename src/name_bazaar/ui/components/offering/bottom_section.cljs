@@ -93,33 +93,26 @@
             {:offering offering}]]
 
           (offering-buyable? offering-status)
-          [ui/GridColumn
-           {:widescreen 6
-            :large-screen 7
-            :computer 8
-            :tablet 8
-            :mobile 14
-            :text-align :center}
-           [:div.bid-section
-            [:div.header "Your Bid"]
-            [:div.input-section
-             [token-input
-              {:value (or @bid-value min-bid)
-               :disabled invalid-name?
-               :on-change #(reset! bid-value (aget %2 "value"))
-               :fluid true}
-              "Your bid"]
-             [transaction-button
-              {:primary true
-               :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
-               :pending-text "Bidding..."
-               :disabled (or
-                           invalid-name?
-                           (not (>= (or @bid-value min-bid) min-bid))
-                           (= offering-status :offering.status/missing-ownership))
-               :on-click #(dispatch [:auction-offering/bid {:offering/address address
-                                                            :offering/price (or @bid-value min-bid)}])}
-              "Bid Now"]]]])))))
+          [:div.bid-section
+           [:div.header "Your Bid"]
+           [:div.input-section
+            [token-input
+             {:value (or @bid-value min-bid)
+              :disabled invalid-name?
+              :on-change #(reset! bid-value (aget %2 "value"))
+              :fluid true}
+             "Your bid"]
+            [transaction-button
+             {:primary true
+              :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
+              :pending-text "Bidding..."
+              :disabled (or
+                         invalid-name?
+                         (not (>= (or @bid-value min-bid) min-bid))
+                         (= offering-status :offering.status/missing-ownership))
+              :on-click #(dispatch [:auction-offering/bid {:offering/address address
+                                                           :offering/price (or @bid-value min-bid)}])}
+             "Bid Now"]]])))))
 
 (defn section-for-buy-now-buyer [{:keys [:offering] :as props}]
   (let [{:keys [:offering/price :offering/address :offering/new-owner :offering/valid-name?

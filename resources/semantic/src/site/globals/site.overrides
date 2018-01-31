@@ -2131,6 +2131,7 @@ input[type="range"] {
     padding-left: 0px;
     padding-right: 0px;
     padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
     @media only screen and (max-width: @largestMobileScreen) {
       & {
         padding-left: 20px;
@@ -2140,10 +2141,22 @@ input[type="range"] {
     }
   }
   .middle {
+    border-top: 1px solid @borderColor;
+    border-bottom: 1px solid @borderColor;
     text-align: center;
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-top: 0;
+    padding-bottom: 0;
     grid-column: ~"1/span 2";
+    .description {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+      width: (10/16 * 100%);
+      .width-query(10, @largestLargeMonitor);
+      .width-query(10, @largestSmallMonitor);
+      .width-query(12, @largestTabletScreen);
+      .width-query(16, @largestMobileScreen);
+      margin: auto;
+    }
   }
   .info {
     padding-bottom: 1.5rem;
@@ -2158,9 +2171,16 @@ input[type="range"] {
     }
   }
   > .button {
-    margin-top: 1rem;
     @media only screen and (max-width: @largestMobileScreen) {
       margin-top: 0px;
+    }
+    > div {
+      width: (7/16 * 100%);
+      .width-query(8, @largestLargeMonitor);
+      .width-query(9, @largestSmallMonitor);
+      .width-query(10, @largestTabletScreen);
+      .width-query(16, @largestMobileScreen);
+      margin: auto;
     }
     grid-column: ~"1/span 2";
     padding-top: 0;
