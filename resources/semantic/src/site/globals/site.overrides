@@ -374,10 +374,14 @@ h4, h5, h6 {
 
 .search-results-list-item {
   width: 100%;
-
+  display: grid;
+  grid-template-columns: 4fr 2fr 3fr 3fr 4fr;
+  justify-content: center;
+/*
   &.ui.grid > .row > .column {
     padding: 0;
   }
+*/
 
   .search-results-list-item-header {
     opacity: 0;
