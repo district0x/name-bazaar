@@ -64,7 +64,7 @@
   (fn [[{:keys [:registrar.entry/registration-date]}
         reveal-period]]
     (when registration-date
-      (query-end-bidding-date registration-date reveal-period))))
+      (query-end-bidding-date registration-date (or reveal-period {:hours 48})))))
 
 (reg-sub
   :registrar/bidding-time-remaining
