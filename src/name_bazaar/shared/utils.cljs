@@ -137,7 +137,7 @@
     (-> (zipmap registrar-entry-props entry)
       (update :registrar.entry.deed/address #(if (= % "0x") zero-address %))
       (update :registrar.entry/state (comp registrar-entry-states bn/number))
-      (update :registrar.entry/registration-date (if parse-dates? evm-time->local-date-time bn/number))
+      (update :registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
       (update :registrar.entry/value bn/number)
       (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
 

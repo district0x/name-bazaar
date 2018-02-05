@@ -103,6 +103,24 @@
 
 (s/def :registrar/entries (s/map-of :ens.record/label-hash :registrar/entry))
 
+(s/def :registrar/label string?)
+
+(s/def :registrar/bid-salt #(or (nil? %)
+                                (string? %)))
+
+(s/def :registrar/bid-value #(or (nil? %)
+                                  (string? %)))
+
+(s/def ::bid (s/merge (s/keys :req [:registrar/label :registrar/bid-salt :registrar/bid-value]
+                              :opt [:registration-bids/state :registration-bids/bid-unsealed?])
+                      (s/map-of #{:registrar/label :registrar/bid-salt :registrar/bid-value
+                                  :registration-bids/state :registration-bids/bid-unsealed?} any?)))
+
+(s/def ::user-bids (s/map-of :ens.record/label-hash ::bid))
+
+(s/def ::registration-bids (s/map-of address? ::user-bids))
+
+
 (s/def :watched-names/order (s/coll-of :ens.record/node))
 (s/def ::watched-names (s/keys :req [:ens/records]
                                :req-un [:watched-names/order]))
@@ -147,5 +165,6 @@
                                                 ::now
                                                 ::search-results
                                                 ::saved-searches
-                                                ::offerings-main-search-drawer]
+                                                ::offerings-main-search-drawer
+                                                ::registration-bids]
                                        :opts [:offerings/total-count])))

@@ -26,7 +26,7 @@
     [district0x.ui.location-fx]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash file-write]]
     [district0x.ui.window-fx]
     [goog.string :as gstring]
     [goog.string.format]
@@ -807,6 +807,15 @@
     {:location/add-to-query [query-params]}))
 
 (reg-event-fx
+  :district0x.location/set-query-and-nav-to
+  interceptors
+  (fn [{:keys [:db]} [route query-params routes]]
+    {:async-flow {:first-dispatch [:district0x.location/nav-to route {} routes]
+                  :rules [{:when :seen?
+                           :events [:district0x.location/nav-to]
+                           :dispatch [:district0x.location/set-query query-params]}]}}))
+
+(reg-event-fx
   :district0x.window/set-focus
   interceptors
   (fn [{:keys [db]} [focused?]]
@@ -867,3 +876,8 @@
   interceptors
   (fn [_ [routes]]
     {:history/start {:routes routes}}))
+
+(reg-fx
+ :file/write
+ (fn [[filename content]]
+   (file-write filename content)))

@@ -9,7 +9,6 @@
     [re-frame.core :refer [subscribe dispatch]]
     [soda-ash.core :as ui]))
 
-
 (defn ens-name-input [{:keys [:value :on-change] :as props}]
   [input
    (r/merge-props
