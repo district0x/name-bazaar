@@ -70,9 +70,7 @@
   (-> (mount/with-args
         (merge
           (mount/args)
-          {:deployer {:write? true}
-           :generator {:total-accounts 1
-                       :offerings-per-account 2}}))
+          {:deployer {:write? true}}))
     (mount/start)
     pprint/pprint))
 
@@ -88,7 +86,9 @@
                             :ui {:public-key "2564e15aaf9593acfdc633bd08f1fc5c089aa43972dd7e8a36d67825cd0154602da47d02f30e1f74e7e72c81ba5f0b3dd20d4d4f0cc6652a2e719a0e9d4c7f10943"
                                  :use-instant-registrar? true
                                  :reveal-period {:hours 48}
-                                 :etherscan-url "https://rinkeby.etherscan.io"}}}
+                                 :etherscan-url "https://rinkeby.etherscan.io"}
+                            :generator {:total-accounts 10
+                                        :offerings-per-account 3}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
                            :auto-mining? true}
