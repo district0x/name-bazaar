@@ -23,16 +23,13 @@
      {:async-flow {:first-dispatch [:registration-bids.state/load label-hash]
                    :rules [{:when :seen?
                             :events [:registration-bids.state/update]
-                            :dispatch [:registration-bids.ens-record/load label-hash
-                                       (nb-ui-utils/namehash (str name constants/registrar-root))]}]}})))
+                            :dispatch [:registration-bids.ens-record/load (nb-ui-utils/namehash (str name constants/registrar-root))]}]}})))
 
 (re-frame/reg-event-fx
  :registration-bids.ens-record/load
  [constants/interceptors]
- (fn [{:keys [:db]} [label-hash name-hash]]
-   (let [registrar-state (get-in db [:registrar/entries label-hash :registrar.entry/state])]
-     (when (= :registrar.entry.state/owned registrar-state)
-       {:dispatch [:ens.records/load [name-hash] {:load-resolver? true}]}))))
+ (fn [{:keys [:db]} [name-hash]]
+   {:dispatch [:ens.records/load [name-hash] {:load-resolver? true}]}))
 
 (re-frame/reg-event-fx
  :registration-bids.state/load

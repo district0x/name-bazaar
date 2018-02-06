@@ -338,11 +338,9 @@
                       :tablet 8
                       :computer 8
                       :class :right-bordered}
-                     [ens-record-general-info/ens-record-general-info
-                      {:ens.record/name (str @label constants/registrar-root)}]
-                     [registrar-entry-general-info/registrar-entry-general-info
-                      {:ens.record/name @label
-                       :registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
+                     [ens-record-general-info/ens-record-general-info {:ens.record/name (str @label constants/registrar-root)}]
+                     [registrar-entry-general-info/registrar-entry-general-info {:ens.record/name @label
+                                                                                 :registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
                     [ui/GridColumn
                      {:mobile 16
                       :tablet 8

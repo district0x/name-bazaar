@@ -22,7 +22,7 @@
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
-                 [re-frisk "0.4.4"]
+                 [re-frisk "0.5.3"]
                  [soda-ash "0.76.0"]
 
                  [district0x/bignumber "1.0.1"]
