@@ -181,7 +181,7 @@
       (let [{:keys [:offering/address :offering/auction? :offering/name :offering/price :offering/created-on
                     :offering/type :offering/finalized-on :offering/new-owner :auction-offering/bid-count
                     :auction-offering/end-time]} offering]
-        [:div.ui.grid.padded.search-results-list-item
+        [:div.search-results-list-item
          (if-not address
            [list-item-placeholder]
            [:div

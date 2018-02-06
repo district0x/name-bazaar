@@ -374,9 +374,6 @@ h4, h5, h6 {
 
 .search-results-list-item {
   width: 100%;
-  display: grid;
-  grid-template-columns: 4fr 2fr 3fr 3fr 4fr;
-  justify-content: center;
 /*
   &.ui.grid > .row > .column {
     padding: 0;
@@ -384,8 +381,17 @@ h4, h5, h6 {
 */
 
   .search-results-list-item-header {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 4fr 2fr 3fr 3fr 4fr;
+    justify-content: center;
     opacity: 0;
     transition: opacity .15s ease-in;
+    align-items: center;
     will-change: opacity;
 
     .offering-main-text {
@@ -420,6 +426,7 @@ h4, h5, h6 {
 
     .offering-auction-item {
       transition: opacity .20s ease-in;
+      justify-self: center;
       .amount {
         font-size: 33px;
         color: #dde4ef;
@@ -433,6 +440,9 @@ h4, h5, h6 {
           font-size: 17px;
         }
       }
+    }
+    .price {
+      justify-self: right;
     }
     .tags {
       display: flex;
