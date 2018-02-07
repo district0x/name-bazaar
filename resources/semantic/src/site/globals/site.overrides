@@ -1563,7 +1563,12 @@ h4, h5, h6 {
       grid-row: 4;
     }
   }
+  .name, .type, .token, .auction-bid-increase {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
   .input-info.min-bid-increase {
+    padding-top: 0px;
     grid-column-end: ~"span 2";
   }
   .duration-slider {
@@ -1571,10 +1576,6 @@ h4, h5, h6 {
     border-top: 1px solid @borderColor;
     border-bottom: 1px solid @borderColor;
   }
-  /*.submit-button {
-    text-align: center;
-    grid-column-end: ~"span 2";
-  }*/
   .extension-duration-slider {
     width: 100%;
   }
