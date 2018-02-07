@@ -2234,3 +2234,10 @@ input[type="range"] {
     }
   }
 }
+
+.grid.user-offerings-search-params {
+  & > * {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+}
