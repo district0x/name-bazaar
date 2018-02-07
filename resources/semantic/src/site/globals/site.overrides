@@ -1557,6 +1557,22 @@ h4, h5, h6 {
 }
 
 .offering-form {
+  .auction-bid-increase {
+    grid-area: ~"2/2";
+    @media only screen and (max-width: @largestMobileScreen) {
+      grid-row: 4;
+    }
+  }
+  .input-info.min-bid-increase {
+    grid-column-end: ~"span 2";
+  }
+  .duration-slider {
+    grid-column-end: ~"span 2";
+  }
+  .submit-button {
+    text-align: center;
+    grid-column-end: ~"span 2";
+  }
   .extension-duration-slider {
     width: 100%;
   }
