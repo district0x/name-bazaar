@@ -1568,11 +1568,13 @@ h4, h5, h6 {
   }
   .duration-slider {
     grid-column-end: ~"span 2";
+    border-top: 1px solid @borderColor;
+    border-bottom: 1px solid @borderColor;
   }
-  .submit-button {
+  /*.submit-button {
     text-align: center;
     grid-column-end: ~"span 2";
-  }
+  }*/
   .extension-duration-slider {
     width: 100%;
   }
