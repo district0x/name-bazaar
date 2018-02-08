@@ -2241,3 +2241,36 @@ input[type="range"] {
     padding-bottom: 7px;
   }
 }
+
+.grid.user-offerings {
+  grid-template-columns: 62% 38%;
+  .grid-query-2(10, 6, @largestLargeMonitor);
+  .grid-query-2(10, 6, @largestSmallMonitor);
+  .grid-query-2(8, 8, @largestTabletScreen);
+  .grid-query-2(8, 8, @largestMobileScreen);
+  display: grid;
+  width: 100%;
+  padding-top: 33px;
+  @media only screen and (max-width: @largestMobileScreen) {
+    padding-top: 0px;
+  }
+  .user-offerings-search-params {
+    align-self: start;
+    justify-content: left !important;
+  }
+  .offerings-order {
+    align-self: end;
+  }
+  & > * {
+    padding: 1rem 33px 1rem 33px;
+    @media only screen and (max-width: @largestMobileScreen) {
+      & {
+        grid-column: 1 / span 2;
+        padding: 1rem 1rem 1rem 1rem;
+      }
+      &.offerings-order {
+        padding-bottom: 3rem;
+      }
+    }
+  }
+}
