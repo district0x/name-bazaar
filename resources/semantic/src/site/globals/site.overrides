@@ -2274,3 +2274,20 @@ input[type="range"] {
     }
   }
 }
+
+.grid.watched-names {
+  grid-template-columns: 62% 38%;
+  .grid-query-2(10, 6, @largestLargeMonitor);
+  .grid-query-2(10, 6, @largestSmallMonitor);
+  .grid-query-2(8, 8, @largestTabletScreen);
+  .grid-query-2(8, 8, @largestMobileScreen);
+  .watched-names-list {
+    grid-column: 1 / span 2;
+  }
+  .ui.grid.list-header {
+    padding: 0px !important;
+  }
+  .infinite-list {
+    padding: 0px !important;
+  }
+}
