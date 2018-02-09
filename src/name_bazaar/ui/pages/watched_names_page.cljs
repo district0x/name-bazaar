@@ -96,7 +96,7 @@
         "Clear All"]]
       [:div.watched-names-list
        [watched-names-infinite-list]]]
-     [ui/Grid
+     #_[ui/Grid
       {:class "layout-grid"}
       [ui/GridRow
        [ui/GridColumn
