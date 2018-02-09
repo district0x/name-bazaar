@@ -2306,6 +2306,9 @@ input[type="range"] {
       .grid-query(9, @largestSmallMonitor);
       .grid-query(12, @largestTabletScreen);
       .grid-query(16, @largestMobileScreen);*/
+      .search-results-list-item-header {
+        grid-template-columns: 3fr 2fr;
+      }
     }
     .request-count {
       grid-column-start: 5;
@@ -2325,4 +2328,9 @@ input[type="range"] {
       border-bottom-right-radius: 0;         
     }
   }
+}
+
+.search-results-list-item.mobile {
+  //display: grid;
+  padding-left: 0px !important;
 }

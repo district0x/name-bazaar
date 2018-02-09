@@ -17,9 +17,7 @@
     (fn [{:keys [:offering-request] :as props}]
       (let [{:keys [:offering-request/node :offering-request/name :offering-request/requesters-count]} offering-request]
         [:div.grid.search-results-list-item.offering-request
-         (r/merge-props
-           {:class (when @mobile? "mobile")}
-           (dissoc props :offering-request))
+         (dissoc props :offering-request)
          (if-not node
            [list-item-placeholder]
            [:div

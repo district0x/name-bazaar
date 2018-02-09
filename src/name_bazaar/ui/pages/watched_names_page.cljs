@@ -44,7 +44,7 @@
          {:disable-expand? true
           :collapsed-height (constants/infinite-list-collapsed-item-height @mobile?)}
          [:div.grid.search-results-list-item
-          {:class (when @mobile? "mobile")}
+          ;;{:class (when @mobile? "mobile")}
           [:div.search-results-list-item-header.opacity-1 name]
           #_[ui/GridRow
            {:class "search-results-list-item-header opacity-1"
