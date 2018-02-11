@@ -6,7 +6,7 @@
     [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query]]
+    [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query solidity-sha3]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
@@ -24,6 +24,13 @@
 
 (defn sha3 [x]
   (str "0x" (js/keccak_256 x)))
+
+(defn seal-bid [label-hash bidder-address bid-value-wei bid-hash]
+  {:pre [number? bid-value-wei]}
+  (solidity-sha3 label-hash
+                 bidder-address
+                 bid-value-wei
+                 bid-hash))
 
 (def name->label-hash (comp sha3 name-label))
 

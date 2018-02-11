@@ -2,9 +2,12 @@
   (:require
     [bidi.bidi :as bidi]
     [cemerick.url :as url]
+    [cljsjs.filesaverjs]
+    [cljs.pprint :refer [cl-format]]
     [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
     [cljs-time.core :as t :refer [date-time to-default-time-zone]]
     [cljs-time.format :as time-format]
+    [cljs-web3.core :as web3]
     [clojure.set :as set]
     [clojure.string :as string]
     [district0x.shared.utils :as d0x-shared-utils]
@@ -26,6 +29,12 @@
 (defn current-url []
   (url/url (string/replace (.-href js/location) "#" "")))
 
+(defn current-protocol []
+  (-> js/window .-location .-protocol))
+
+(defn current-host []
+  (-> js/window .-location .-host))
+
 (defn current-location-hash []
   (let [hash (-> js/document
                .-location
@@ -40,6 +49,14 @@
    (bidi/match-route routes route))
   ([routes]
    (match-current-location routes (current-location-hash))))
+
+(defn safe-assoc-in
+  "Invariant version of assoc-in.
+  Returns unchanged map if `ks` path is empty"
+  [m ks v]
+  (if (get-in m (-> ks drop-last vec))
+    (assoc-in m ks v)
+    m))
 
 (defn valid-length?
   ([s max-length] (valid-length? s max-length 0))
@@ -58,9 +75,13 @@
 (defn pluralize [text count]
   (str text (when (not= count 1) "s")))
 
-(defn etherscan-url [address & [{:keys [:type]
-                                 :or {type :address}}]]
-  (gstring/format "https://etherscan.io/%s/%s" (if (= type :address) "address" "tx") address))
+(defn etherscan-url
+  ([root-url address {:keys [:type]}]
+   (gstring/format (str root-url "/%s/%s") (if (= type :address) "address" "tx") address))
+  ([address {:keys [:type]}]
+   (etherscan-url "https://etherscan.io" address {:type type}))
+  ([address]
+   (etherscan-url "https://etherscan.io" address {:type :address})))
 
 (defn etherscan-tx-url [tx-hash]
   (etherscan-url tx-hash {:type :transaction}))
@@ -89,6 +110,10 @@
 (defn format-date [date]
   (when date
     (time-format/unparse-local (time-format/formatter "EEE, dd MMM yyyy") date)))
+
+(defn format-iso8601 [date]
+  (when date
+    (time-format/unparse (time-format/formatters :basic-date-time-no-ms) date)))
 
 (defn format-eth [x]
   (when x
@@ -169,6 +194,29 @@
 (defn provides-web3? []
   (boolean (aget js/window "web3")))
 
+(defn left-pad
+  ([s len] (left-pad s len " "))
+  ([s len ch]
+   (cl-format nil (str "~" len ",'" ch "d") (str s))))
+
+(defn remove-0x [s]
+  (string/replace s #"0x" ""))
+
+(defn solidity-sha3 [& args]
+  (web3/sha3 (string/join ""
+                          (map (fn [arg]
+                                 (cond
+                                   (and (string? arg) (string/starts-with? arg "0x"))
+                                   (remove-0x arg)
+
+                                   (string? arg)
+                                   (remove-0x (web3/to-hex arg))
+
+                                   (number? arg)
+                                   (left-pad (remove-0x (web3/to-hex arg)) 64 "0")))
+                               args))
+             {:encoding "hex"}))
+
 (defn parse-props-children [props children]
   (if (or (map? props) (nil? props))
     [props children]
@@ -237,10 +285,17 @@
   (let [agent (.-userAgent (.-navigator js/window))]
     (not (= (.indexOf agent "prerendercloud") -1))))
 
+(defn handle-file-read [evt callback]
+  (let [target (.-currentTarget evt)
+        file (-> target .-files (aget 0))
+        reader (js/FileReader.)]
+    (set! (.-value target) "")
+    (set! (.-onload reader) (fn [e]
+                              (callback (-> e .-target .-result))))
+    (.readAsText reader file)))
 
-
-
-
-
-
-
+(defn file-write [filename content & [mime-type]]
+  (js/saveAs (new js/Blob
+                  (clj->js [content])
+                  (clj->js {:type (or mime-type (str "application/json;charset=UTF-8"))}))
+             filename))

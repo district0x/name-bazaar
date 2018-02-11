@@ -30,16 +30,16 @@
     [name-bazaar.ui.events.infinite-list-events]
     [name-bazaar.ui.events.offering-requests-events]
     [name-bazaar.ui.events.offerings-events]
+    [name-bazaar.ui.events.registration-bids-events]
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.events.reverse-registrar-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix path-for]]
+    [name-bazaar.ui.utils :as nb-ui-utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix path-for]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [district0x.ui.history :as history]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
-
 
 (def active-address-changed-forwarding {:register :active-address-changed
                                         :events #{:district0x/set-active-address}
@@ -85,6 +85,15 @@
 
     :route.offerings/create
     {:dispatch [:name.ownership/load (:name query-params)]}
+
+    :route.registrar/register
+    (cond
+      (not (nil? (:name query-params)))
+      {:dispatch-n [[:registration-bids.states/load]
+                    [:registration-bids.state/load (sha3 (-> query-params
+                                                             :name
+                                                             nb-ui-utils/strip-root-registrar-suffix))]]}
+      :else {:dispatch [:registration-bids.states/load]})
 
     :route.ens-record/detail
     {:dispatch-n [[:name.all-details/load (:ens.record/name route-params)]
@@ -150,7 +159,6 @@
     :route/home
     {:dispatch-n [[:offerings.home-page/search]
                   [:offerings.total-count/load]]}
-
 
     nil))
 
