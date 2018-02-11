@@ -57,11 +57,13 @@
   :page-share-url
   :<- [:root-url]
   (fn [root-url [_ route params]]
-    (string/replace
-      (str
-        root-url
-        (path-for route (update params :user/address strip-root-registrar-suffix)))
-      "#" "")))
+    (let [params (update params :user/address strip-root-registrar-suffix)]
+      (when (:user/address params)
+        (string/replace
+          (str
+            root-url
+            (path-for route params))
+          "#" "")))))
 
 (reg-sub
  :reverse-resolved-address
