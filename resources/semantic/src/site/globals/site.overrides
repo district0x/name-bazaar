@@ -380,6 +380,35 @@ h4, h5, h6 {
   }
 */
 
+  &.list-header{
+    @media only screen and (max-width: @largestMobileScreen) {
+      display: none;
+    }
+    margin-top: 33px;
+    display: grid;
+    width: auto;
+    margin-right: 33px;
+    margin-left: 33px;
+    grid-template-columns: 4fr 2fr 3fr 3fr 4fr;
+    justify-content: center;
+    align-items: center;
+    background-color: #fbfcfe;
+    border-top: 1px solid @borderColor;
+    border-bottom: 1px solid @borderColor;
+    height: 54px;
+    .bids {
+      text-align: center;
+      grid-column: 3;
+    }
+    .time {
+      text-align: center;
+      grid-column: 4;
+    }
+    .sold {
+      text-align: right;
+      grid-column: 5;
+    }
+  }
   .search-results-list-item-header {
     padding-top: 1rem;
     padding-bottom: 1rem;

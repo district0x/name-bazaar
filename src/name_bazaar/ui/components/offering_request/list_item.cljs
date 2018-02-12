@@ -25,19 +25,7 @@
                          (when @visible? "opacity-1"))
              :ref #(reset! visible? true)}
             [:div.name name]
-            [:div.request-count requesters-count (pluralize " request" requesters-count)]]
-           #_[ui/GridRow
-            {:class (str "search-results-list-item-header "
-                         (when @visible? "opacity-1"))
-             :ref #(reset! visible? true)
-             :vertical-align :middle}
-            [ui/GridColumn
-             {:width 10}
-             name]
-            [ui/GridColumn
-             {:width 6
-              :text-align :right}
-             requesters-count (pluralize " request" requesters-count)]])]))))
+            [:div.request-count requesters-count (pluralize " request" requesters-count)]])]))))
 
 (defn offering-request-list-item []
   (let [mobile? (subscribe [:district0x.window.size/mobile?])]
