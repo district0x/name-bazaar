@@ -2378,3 +2378,28 @@ input[type="range"] {
   }
 }
 
+
+.grid.user-purchases {
+  grid-template-columns: 100%;
+  grid-template-columns: 62% 38%;
+  .grid-query-2(10, 6, @largestLargeMonitor);
+  .grid-query-2(10, 6, @largestSmallMonitor);
+  .grid-query-2(8, 8, @largestTabletScreen);
+  .grid-query-2(8, 8, @largestMobileScreen);
+  > * {
+    padding: 33px;
+    //text-align: center;
+
+    @media only screen and (max-width: @largestMobileScreen) {
+      padding: 1rem 20px;
+      grid-column: ~"1/span 2";
+    }
+  }
+  .email {
+    padding-bottom: 0px;
+  }
+
+  .button {
+    text-align: center;
+  }
+}

@@ -38,19 +38,10 @@
                             :description (if-let [address (:user/address @route-params)]
                                            (str "See all ENS name purchases of " address))}}
          [ui/Segment
-          [ui/Grid
-           {:padded true
-            :class :no-inner-horizontal-padding}
-           [ui/GridColumn
-            {:width 16
-             :class :join-upper}
-            [:h1.ui.header title]]
-           [ui/GridColumn
-            {:computer 6
-             :tablet 8
-             :mobile 16
-             :floated "right"}
-            [user-purchases-order-by-select]]]
+          [:div
+           [:div.grid.user-purchases
+            [:div.header [:h1.ui.header title]]
+            [:div.order [user-purchases-order-by-select]]]]
           [offering-infinite-list
            {:class "primary"
             :total-count total-count
