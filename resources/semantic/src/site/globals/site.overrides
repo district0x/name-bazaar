@@ -2363,3 +2363,18 @@ input[type="range"] {
   //display: grid;
   padding-left: 0px !important;
 }
+
+.grid.my-settings {
+  grid-template-columns: 100%;
+  > * {
+    padding: 33px;
+    //text-align: center;
+  }
+  .email {
+    padding-bottom: 0px;
+  }
+  .button {
+    text-align: center;
+  }
+}
+
