@@ -222,3 +222,18 @@ i.icon.hand {
     content: @hand;
   }
 }
+i.icon.hand {
+  &:before {
+    content: @hand;
+  }
+}
+i.icon.google {
+  &:before {
+    content: @google;
+  }
+}
+i.icon.apple {
+  &:before {
+    content: @apple;
+  }
+}

@@ -18,6 +18,7 @@
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.public-resolver-subs]
     [name-bazaar.ui.subs.registrar-subs]
+    [name-bazaar.ui.subs.registration-bids-subs]
     [name-bazaar.ui.subs.reverse-registrar-subs]
     [name-bazaar.ui.subs.watched-names-subs]
     [name-bazaar.ui.utils :refer [parse-query-params path-for reverse-resolve-address strip-root-registrar-suffix]]
@@ -57,11 +58,13 @@
   :page-share-url
   :<- [:root-url]
   (fn [root-url [_ route params]]
-    (string/replace
-      (str
-        root-url
-        (path-for route (update params :user/address strip-root-registrar-suffix)))
-      "#" "")))
+    (let [params (update params :user/address strip-root-registrar-suffix)]
+      (when (:user/address params)
+        (string/replace
+          (str
+            root-url
+            (path-for route params))
+          "#" "")))))
 
 (reg-sub
  :reverse-resolved-address
@@ -93,4 +96,3 @@
       [(subscribe [:registrar.transfer/tx-pending? label])]
       [(subscribe [:ens.set-owner/tx-pending? node])]))
   first)
-

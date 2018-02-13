@@ -8,9 +8,13 @@
     [cljs.core.async :refer [<! >! chan]]
     [clojure.set :as set]
     [clojure.string :as string]
+    [cognitect.transit :as transit]
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]))
+
+(def json-reader (transit/reader :json))
+(def transit-writer (transit/writer :json))
 
 (defn address? [x]
   (web3/address? x))
@@ -104,6 +108,17 @@
       {}
       (js-keys obj))
     obj))
+
+(defn json->clj
+  [json]
+  (transit/read json-reader json))
+
+(defn clj->json
+  [coll]
+  (.stringify js/JSON (clj->js coll)))
+
+(defn write-transit [body]
+  (transit/write transit-writer body))
 
 (defn eth-props->wei-props [args wei-keys]
   (medley/map-kv (fn [key value]
@@ -213,5 +228,3 @@
 (defn evm-time->local-date-time [x]
   (when-let [dt (evm-time->date-time x)]
     (to-default-time-zone dt)))
-
-

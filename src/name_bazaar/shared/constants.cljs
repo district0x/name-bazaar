@@ -1,8 +1,15 @@
 (ns name-bazaar.shared.constants)
 
+(def min-name-length 7)
+
+(def ownership-period {:years 2})
+
+(def empty-label-hash "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470")
+
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
         ["register" :route.registrar/register]
+        ["instant-registration" :route.registrar/instant-registration]
         ["watched-names" :route/watched-names]
         [["user/" :user/address "/offerings"] :route.user/offerings]
         [["user/" :user/address "/purchases"] :route.user/purchases]
@@ -20,4 +27,3 @@
         ["about" :route/about]
         ["how-it-works" :route/how-it-works]
         [true :route/home]]])
-

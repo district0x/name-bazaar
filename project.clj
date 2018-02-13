@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[cljs-http "0.1.43"]
                  [cljs-web3 "0.19.0-0-8"]
+                 [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "15.6.1-2"]
                  [cljsjs/react-datepicker "0.55.0-0"]
@@ -16,14 +17,13 @@
                  ;[honeysql "0.9.1"]
                  ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
                  [madvas/honeysql "0.9.1"]
-                 [lein-doo "0.1.8"]
                  [medley "1.0.0"]
                  [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.9.4"]
-                 [re-frisk "0.4.4"]
-                 [soda-ash "0.4.0"]
+                 [re-frisk "0.5.3"]
+                 [soda-ash "0.76.0"]
 
                  [district0x/bignumber "1.0.1"]
                  [district0x/district-encryption "1.0.0"]
@@ -47,7 +47,7 @@
                  [cljsjs/react-highlight "1.0.5-0"]
                  [cljsjs/react-truncate "2.0.3-0"]
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
-                 [com.andrewmcveigh/cljs-time "0.5.1"]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
                  [com.cognitect/transit-cljs "0.8.243"]
                  [com.taoensso/timbre "4.10.0"]
                  [com.taoensso/encore "2.92.0"]
@@ -57,8 +57,7 @@
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
                  [madvas.re-frame/web3-fx "0.2.1"]]
 
-  :exclusions [[cljsjs/prop-types]
-               [com.taoensso/encore]
+  :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
                [org.clojure/clojurescript]
                ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
@@ -68,7 +67,7 @@
             [lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.14"]
             [lein-shell "0.5.0"]
-            [lein-doo "0.1.7"]
+            [lein-doo "0.1.8"]
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
@@ -90,12 +89,10 @@
 
   :source-paths ["src" "test"]
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
+  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target" "dev-server"]
 
   :figwheel {:server-port 4544
-             :css-dirs ["resources/public/css"]
-             ;:repl-eval-timeout 120000
-             }
+             :css-dirs ["resources/public/css"]}
 
   :repl-options {:timeout 120000}
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
