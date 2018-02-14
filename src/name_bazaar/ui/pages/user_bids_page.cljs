@@ -63,7 +63,7 @@
                                            (str "See all bids for ENS name offerings of " address))}}
          [ui/Segment
           [:div
-           [:div.grid.bids.no-inner-horizontal-padding.mobile-inner-vertical-padding
+           [:div.grid.bids
             [:div.header [:h1.ui title]]
             [:div.search-checkboxes [user-bids-search-checkboxes]]
             [:div.order [user-bids-order-by-select]]]]
