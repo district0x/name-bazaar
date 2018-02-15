@@ -85,6 +85,7 @@ h4, h5, h6 {
     .grid-query(7, @largestSmallMonitor);
     .grid-query(12, @largestTabletScreen);
     .grid-query(15, @largestMobileScreen);
+    margin-bottom: 0px;
     > * {
       text-align: center;
     }
@@ -135,6 +136,7 @@ h4, h5, h6 {
     margin-bottom: 15px;
   }
   .intro-headline {
+    padding-top: 0px;
     font-size: 20px;
     font-weight: 300;
     line-height: 1.5;
@@ -2432,7 +2434,6 @@ input[type="range"] {
 
 
 .grid.user-purchases {
-  grid-template-columns: 100%;
   grid-template-columns: 62% 38%;
   .grid-query-2(10, 6, @largestLargeMonitor);
   .grid-query-2(10, 6, @largestSmallMonitor);
@@ -2456,8 +2457,30 @@ input[type="range"] {
   }
 }
 
-.register-name-page {
+.grid.register-name-page {
+  display: grid;
+  grid-template-columns: 62% 38%;
+  width: 100%;
+  .grid-query-2(10, 6, @largestLargeMonitor);
+  .grid-query-2(10, 6, @largestSmallMonitor);
+  .grid-query-2(8, 8, @largestTabletScreen);
+  .grid-query-2(8, 8, @largestMobileScreen);
 
+  .search-bar {
+    padding: 33px 33px 33px 33px;
+    max-width: 500px;
+    @media only screen and (max-width: @largestMobileScreen) {
+      padding: 1rem 20px;
+      grid-column: ~"1/span 2";
+    }
+  }
+  .user-bids-button {
+    padding: 33px;
+    @media only screen and (max-width: @largestMobileScreen) {
+      padding: 1rem 20px;
+      grid-column: ~"1/span 2";
+    }
+  }
   .right-bordered {
     border-right : solid #e8e8e8 0.5px;
   }
@@ -2678,9 +2701,30 @@ input[type="range"] {
       border-radius: 0px !important;
     }
   }
+  .middle-section {
+    border-top: 1px solid @borderColor;
+    grid-column: ~"1/span 2";
+    > * {
+      padding-bottom: 2rem;
+      padding-top: 2rem;
+      width: 62.5%;
+      margin-right: auto;
+      margin-left: auto;
+      @media only screen and (max-width: @largestMobileScreen) {
+        padding: 1rem 20px;
+        width: 100%;
+      }
+    }
+  }
 
   .bid-section {
+    grid-column: ~"1/span 2";
+    text-align: center;
     .input-section {
+      width: 62.5%;
+      margin-right: auto;
+      margin-left: auto;
+      margin-bottom: 2rem;
       display: flex;
       flex-direction: row;
       @media only screen and (max-width: @largestMobileScreen) {
