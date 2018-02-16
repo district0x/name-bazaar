@@ -325,6 +325,8 @@ h4, h5, h6 {
       font-size: 12px;
       font-weight: 400;
       margin: 0;
+      padding-left: 1rem;
+      padding-right: 1rem;
       a {
         margin-left: 3px;
       }
@@ -947,21 +949,45 @@ h4, h5, h6 {
         }
 
         .offering-stat {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          align-items: center;
-          justify-content: space-around;
-          padding: 7px 0;
-          white-space: nowrap;
+          //display: flex;
+          //flex-direction: column;
+          //height: 100%;
+          //align-items: center;
+          //justify-content: space-around;
+          //padding: 7px 0;
+          //white-space: nowrap;
+          text-align: center;
           .ui.header.sub {
             font-size: 11px;
           }
           .stat-number {
+            padding-top: 1rem;
+            //padding-bottom: 1rem;
             font-family: @secondaryHeaderFont;
             font-size: 32px;
             @media only screen and (max-width: @largestMobileScreen) {
               font-size: 27px;
+            }
+          }
+        }
+        i.icon {
+          font-size: 18px;
+          color: @grey;
+        }
+        .time-remaining {
+          .offering-stat {
+            //padding: 0;
+            .grid {
+              width: 100%;
+              //margin-top: 5px;
+              .column {
+                padding: 0;
+              }
+              .time-unit {
+                font-size: 12px;
+                text-transform: capitalize;
+                margin-top: 5px;
+              }
             }
           }
         }
@@ -995,9 +1021,6 @@ h4, h5, h6 {
           }
         }
       }
-      .tags {
-        margin-bottom: @segmentGutterMobile;
-      }
     }
   }
 }
@@ -1019,6 +1042,7 @@ h4, h5, h6 {
   font-size: 12px;
   line-height: 30px;
   margin-right: 14px;
+  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1407,6 +1431,7 @@ h4, h5, h6 {
 .grid.search-params {
   display: grid;
   grid-template-columns: 50% 50%;
+  padding-top: 2rem;
   .grid.keyword-position {
     width: 100%;
     display: grid;
@@ -1989,7 +2014,7 @@ input[type="range"] {
   .grid.auction {
     grid-template-columns: repeat(2, 50%);
     display: grid;
-    height: 285px;
+    //height: 285px;
     justify-content: center;
     border: solid rgba(116,100,126,.2);
     border-width: 1px;
@@ -1997,13 +2022,14 @@ input[type="range"] {
       grid-column: 1 / span 2;
       border-top: solid rgba(116,100,126,.2);
       border-top-width: 1px;
+      padding-bottom: 8px;
     }
     .bid-count {
       border-left: solid rgba(116,100,126,.2);
       border-left-width: 1px;
     }
     > * {
-      padding: 2rem;
+      padding: 8px 12px 28px 12px;
     }
   }
   .grid.price {
@@ -2030,6 +2056,7 @@ input[type="range"] {
   grid-template-columns: repeat(4,1fr);
   display: grid;
   justify-content: center;
+  padding-top: 1rem;
   width: 100%;
   > * {
     text-align: center;
@@ -2089,28 +2116,29 @@ input[type="range"] {
   display: grid;
   justify-content: center;
   width: 100%;
-  > * {
-  }
   .offering-st {
     margin: 33px;
-    grid-area: ~"1/2/span 2/2";
+    grid-row: ~"1/span 2";
   }
   .tags {
-    padding: 33px;
-    grid-area: ~"1/1/1/1";
+    padding: 33px 33px 0px;
+    grid-row: ~"1/1";
   }
   .general-info {
     padding: 33px;
-    grid-area: ~"2/1/2/1";
+    grid-column: ~"1/2";
   }
   .offering-middle {
     border-top: solid rgba(116,100,126,.2);
     border-top-width: 1px;
-    grid-area: ~"3/1/3/span 2";
+    grid-column: ~"1/span 2";
     text-align: center;
-    //margin-top: 2rem;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    margin-top: 2rem;
+    //padding-top: 2rem;
+    //padding-bottom: 2rem;
+    .description {
+      padding: 3rem;
+    }
     .offering-middle-section {
       width: (10/16 * 100%);
       padding-right: 3rem;
@@ -2123,22 +2151,43 @@ input[type="range"] {
     }
   }
   .offering-bottom-section {
-    grid-area: ~"4/1/4/span 2";
+    grid-column: ~"1/span 2";
     border-bottom-left-radius: @segmentBorderRadius;
     border-bottom-right-radius: @segmentBorderRadius;
     background: @brownBackground url(../images/namebazaar-pattern.png) no-repeat top center;
     background-size: 100% auto;
     .bid-section {
-      position: relative;
-      left: 31.25%;
-      right: 31.25%;
-      width: 37.5%;
+      margin: auto;
+      width: 50%;
     }
     & > * {
       padding: 25px;
     }
     .button {
       min-width: 85px;
+    }
+  }
+
+  @media only screen and (max-width: @largestTabletScreen) {
+    .offering-st, .tags, .general-info, .offering-bottom-section {
+      grid-column: ~"1/span 2";
+      padding: 20px;
+    }
+    .offering-st {
+      grid-row: 3;
+      margin: 0px;
+    }
+    .tags {
+      padding-bottom: 0px;
+    }
+    .offering-bottom-section .bid-section {
+      margin: auto;
+      width: 100%;
+    }
+    .offering-middle {
+      .description {
+        padding: 20px;
+      }
     }
   }
 }
