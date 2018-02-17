@@ -470,7 +470,7 @@
           (when (not (contains? #{:registrar.entry.state/owned-phase-different-owner
                                   :registrar.entry.state/owned-phase-different-owner-not-finalized
                                   :registrar.entry.state/reveal-phase-user-outbid} state))
-            [:div.bid-section
+            [:div.bid-section.button
              (when show-bid-section?
                [:div.header "Your Bid"])
              [:div {:class (when show-bid-section?

@@ -2211,7 +2211,7 @@ input[type="range"] {
   }
 }
 
-.submit-footer > :last-child {
+.submit-footer > .button:last-child {
   border-bottom-left-radius: @segmentBorderRadius;
   border-bottom-right-radius: @segmentBorderRadius;
   background: @brownBackground url(../images/namebazaar-pattern.png) no-repeat top center;
