@@ -2273,15 +2273,23 @@ input[type="range"] {
     padding-bottom: 1.5rem;
     @media only screen and (max-width: @largestMobileScreen) {
       & {
-        padding-left: 20px;
-        padding-right: 20px;
+        > div {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
         grid-column: 1 / span 2;
       }
     }
   }
   .middle {
-    border-top: 1px solid @borderColor;
-    border-bottom: 1px solid @borderColor;
+    > div {
+      border-top: 1px solid @borderColor;
+      border-bottom: 1px solid @borderColor;
+      &:empty {
+        border-top: none;
+        border-bottom: none;
+      }
+    }
     text-align: center;
     padding-top: 0;
     padding-bottom: 0;
@@ -2476,8 +2484,15 @@ input[type="range"] {
     padding: 33px;
     //text-align: center;
   }
-  .email {
+  .success {
     padding-bottom: 0px;
+    padding-top: 33px;
+  }
+  .description {
+    padding-top: 0px;
+  }
+  .email {
+    padding-bottom: 33px;
   }
   .button {
     text-align: center;
