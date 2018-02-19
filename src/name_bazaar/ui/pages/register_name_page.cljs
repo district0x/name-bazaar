@@ -463,10 +463,11 @@
                         :status status :icon icon :text text}]]
           [:div.user-bids-button [user-bids-buttons state]]
           [:div.middle-section
-           [middle-section state {:label-hash label-hash
-                                  :registrar-state registrar-state
-                                  :highest-bid highest-bid
-                                  :owner owner}]]
+           [:div.ui.internally.celled.grid.layout-grid.register-name-page
+            [middle-section state {:label-hash label-hash
+                                   :registrar-state registrar-state
+                                   :highest-bid highest-bid
+                                   :owner owner}]]]
           (when (not (contains? #{:registrar.entry.state/owned-phase-different-owner
                                   :registrar.entry.state/owned-phase-different-owner-not-finalized
                                   :registrar.entry.state/reveal-phase-user-outbid} state))
