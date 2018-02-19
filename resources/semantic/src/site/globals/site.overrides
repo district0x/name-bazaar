@@ -375,7 +375,9 @@ h4, h5, h6 {
     will-change: opacity;
   }
 }
-
+.grid.search-results-list-item.offering-request {
+  grid-template-columns: 100%;
+}
 .search-results-list-item {
   width: 100%;
 /*
