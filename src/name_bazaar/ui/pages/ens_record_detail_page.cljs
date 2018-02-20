@@ -73,6 +73,7 @@
         [app-layout {:meta {:title (str name " name details")
                             :description (str "See details about " name ". Status: " state-text)}}
          [ui/Segment
+          {:class "ens-record-details"}
           [:h1.ui.header.padded name]
           [ens-name-details
            {:ens.record/name name

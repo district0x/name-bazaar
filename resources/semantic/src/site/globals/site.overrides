@@ -1105,6 +1105,18 @@ h4, h5, h6 {
   margin-bottom: 15px;
 }
 
+.ens-record-details {
+  .grid.layout-grid.ens-name-detail {
+    > * {
+      padding-right: 33px;
+      padding-left: 33px;
+      @media only screen and (max-width: @largestMobileScreen) {
+        padding-right: 20px;
+        padding-left: 20px;
+      }
+    }
+  }
+}
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;
@@ -1148,7 +1160,7 @@ h4, h5, h6 {
 
 .bottom-section-buttons {
   & > .ui.button {
-    margin: 0 5px;
+    margin: 5px 5px 5px;
   }
 }
 
@@ -1607,7 +1619,7 @@ h4, h5, h6 {
   }
 }
 
-.ui.grid.search-results-list-item.offering-request {
+.grid.search-results-list-item.offering-request {
   @media only screen and (max-width: @largestMobileScreen) {
     padding-right: 12px !important;
   }
@@ -2325,9 +2337,9 @@ input[type="range"] {
     }
     > div {
       width: (7/16 * 100%);
-      .width-query(8, @largestLargeMonitor);
-      .width-query(9, @largestSmallMonitor);
-      .width-query(10, @largestTabletScreen);
+      .width-query(10, @largestLargeMonitor);
+      .width-query(10, @largestSmallMonitor);
+      .width-query(15, @largestTabletScreen);
       .width-query(16, @largestMobileScreen);
       margin: auto;
     }
@@ -2435,6 +2447,9 @@ input[type="range"] {
   }
   .expandable-list-item
   {
+    .grid.search-results-list-item {
+      grid-template-columns: 100%;
+    }
     .body {
       padding-bottom: 2rem;
     }
@@ -2497,7 +2512,11 @@ input[type="range"] {
     padding-bottom: 33px;
   }
   .button {
+    padding: 2rem;
     text-align: center;
+    > * {
+      padding: .78571429em 1.5em .78571429em;
+    }
   }
 }
 
@@ -2772,6 +2791,9 @@ input[type="range"] {
   }
   .middle-section {
     border-top: 1px solid @borderColor;
+    .row {
+      display: block; 
+    }
     grid-column: ~"1/span 2";
     > * {
       padding-bottom: 2rem;
@@ -2784,6 +2806,10 @@ input[type="range"] {
         margin-left: 0px;
         width: 100%;
       }
+    }
+    .grid.layout-grid.register-name-page {
+      padding-bottom: 0px;
+      padding-top: 0px;
     }
   }
 
