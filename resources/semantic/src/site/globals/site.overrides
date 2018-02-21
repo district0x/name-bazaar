@@ -1621,7 +1621,7 @@ h4, h5, h6 {
 
 .grid.search-results-list-item.offering-request {
   @media only screen and (max-width: @largestMobileScreen) {
-    padding-right: 12px !important;
+    padding: 12px;
   }
 }
 
