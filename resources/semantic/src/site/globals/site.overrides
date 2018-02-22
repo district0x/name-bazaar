@@ -2181,7 +2181,10 @@ input[type="range"] {
       padding: 25px;
     }
     .button {
+      display: block;
       min-width: 85px;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 
@@ -2249,6 +2252,9 @@ input[type="range"] {
     @media only screen and (max-width: @largestMobileScreen) {
       padding: 1rem 20px;
       grid-column: ~"1/span 2";
+      &.auction-end-time {
+        padding-top: 33px;
+      }
     }
   }
 
@@ -2359,6 +2365,8 @@ input[type="range"] {
     }
     .button {
       min-width: 85px;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 }
