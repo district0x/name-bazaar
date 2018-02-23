@@ -1163,6 +1163,12 @@ h4, h5, h6 {
     margin: 5px 5px 5px;
   }
 }
+.grid .offering-detail .bottom-section-buttons {
+  & > .ui.button {
+    color: black;
+    margin: 5px 5px 5px;
+  }
+}
 
 .ui.segment {
   & > .padded {
@@ -2820,7 +2826,9 @@ input[type="range"] {
           grid-column: ~"1/span 2";
         }
       }
-      > .description {
+      > .info {
+      }
+      > .description, .bid-info {
         border-right: 1px solid @borderColor;
       }
     }

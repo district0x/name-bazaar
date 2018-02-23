@@ -301,7 +301,7 @@
                                 ::start-auctions-and-bid-pending}
                      state)
                    [:div.grid.midsect.empty
-                    [:div.description [description state]]]
+                    [:div.info [description state]]]
 
                    (contains? #{:registrar.entry.state/auction-user-made-bid
                                 :registrar.entry.state/auction-no-user-made-bid
