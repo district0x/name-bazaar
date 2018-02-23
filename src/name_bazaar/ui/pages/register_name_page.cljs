@@ -300,52 +300,31 @@
                                 ::start-auction-pending
                                 ::start-auctions-and-bid-pending}
                      state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 10
-                      :computer 10}
-                     [description state]]]
+                   [:div.grid.midsect.empty
+                    [:div.description [description state]]]
 
                    (contains? #{:registrar.entry.state/auction-user-made-bid
                                 :registrar.entry.state/auction-no-user-made-bid
                                 ::unseal-bid-pending}
                      state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
-                     [:b.description.underlined
-                      [ens-record-etherscan-link/ens-record-etherscan-link
-                       {:ens.record/name @label}]]
-                     [description state]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                   [:div.grid.midsect.made-bid
+                    [:b.description.underlined
+                     [ens-record-etherscan-link/ens-record-etherscan-link
+                      {:ens.record/name @label}]]
+                    [:div.description [description state]]
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
                    (contains? #{:registrar.entry.state/owned-phase-user-owner
                                 :registrar.entry.state/owned-phase-different-owner
                                 :registrar.entry.state/owned-phase-different-owner-not-finalized} state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
+                   [:div.grid.midsect.dif-owner
+                    [:div.description
                      [ens-record-general-info/ens-record-general-info {:ens.record/name (str @label constants/registrar-root)}]
                      [registrar-entry-general-info/registrar-entry-general-info {:ens.record/name @label
                                                                                  :registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
@@ -355,40 +334,24 @@
                                 :registrar.entry.state/owned-phase-user-owner-not-finalized
                                 :registrar.entry.state/owned-phase-user-owner
                                 ::finalize-auction-pending} state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
+                   [:div.grid.midsect.reveal
+                    [:div.bid-info
                      [ens-bid-info state highest-bid owner]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
                    (= :registrar.entry.state/reveal-phase-user-outbid state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
-                     [:b.description.underlined
-                      [ens-record-etherscan-link/ens-record-etherscan-link
-                       {:ens.record/name @label}]]
-                     [ens-bid-info state highest-bid owner]
-                     [:div.top-padded
-                      [:div.description.warning "Unfortunately your bid isn't the highest for this name."]
-                      [:div.description.warning [:b "99.5% of your bid was refunded to you."]]]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                   [:div.grid.midsect.reveal-outbid
+                    [:b.description.underlined
+                     [ens-record-etherscan-link/ens-record-etherscan-link
+                      {:ens.record/name @label}]]
+                    [:div.bid-info
+                     [ens-bid-info state highest-bid owner]]
+                    [:div.top-padded
+                     [:div.description.warning "Unfortunately your bid isn't the highest for this name."]
+                     [:div.description.warning [:b "99.5% of your bid was refunded to you."]]]
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]))]
     (fn [state & [opts]]
@@ -463,11 +426,10 @@
                         :status status :icon icon :text text}]]
           [:div.user-bids-button [user-bids-buttons state]]
           [:div.middle-section
-           [:div.ui.internally.celled.grid.layout-grid.register-name-page
-            [middle-section state {:label-hash label-hash
-                                   :registrar-state registrar-state
-                                   :highest-bid highest-bid
-                                   :owner owner}]]]
+           [middle-section state {:label-hash label-hash
+                                  :registrar-state registrar-state
+                                  :highest-bid highest-bid
+                                  :owner owner}]]
           (when (not (contains? #{:registrar.entry.state/owned-phase-different-owner
                                   :registrar.entry.state/owned-phase-different-owner-not-finalized
                                   :registrar.entry.state/reveal-phase-user-outbid} state))

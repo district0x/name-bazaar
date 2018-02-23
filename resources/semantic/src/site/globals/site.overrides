@@ -2799,25 +2799,30 @@ input[type="range"] {
   }
   .middle-section {
     border-top: 1px solid @borderColor;
-    .row {
-      display: block; 
-    }
     grid-column: ~"1/span 2";
+    padding: 0px;
     > * {
-      padding-bottom: 2rem;
-      padding-top: 2rem;
-      width: 62.5%;
-      margin-right: auto;
-      margin-left: 33px;
+      //width: 62.5%;
       @media only screen and (max-width: @largestMobileScreen) {
-        padding: 1rem 20px;
         margin-left: 0px;
         width: 100%;
       }
     }
-    .grid.layout-grid.register-name-page {
-      padding-bottom: 0px;
-      padding-top: 0px;
+    .grid.midsect {
+      width: 100%;
+      grid-template-columns: 50% 50%;
+      > * {
+        padding: 2rem 33px;
+      }
+      @media only screen and (max-width: @largestMobileScreen) {
+        > * {
+          padding: 1rem 20px;
+          grid-column: ~"1/span 2";
+        }
+      }
+      > .description {
+        border-right: 1px solid @borderColor;
+      }
     }
   }
 
@@ -2857,4 +2862,5 @@ input[type="range"] {
       }
     }
   }
+
 }
