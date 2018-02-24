@@ -1165,7 +1165,6 @@ h4, h5, h6 {
 }
 .grid .offering-detail .bottom-section-buttons {
   & > .ui.button {
-    color: black;
     margin: 5px 5px 5px;
   }
 }
