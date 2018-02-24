@@ -35,21 +35,19 @@
   (let [search-results (subscribe [:offerings/user-offerings])]
     (fn []
       (let [{:keys [:params]} @search-results]
-        [ui/Grid
-         {:class :checkbox-filtering-options
-          :padded :vertically}
-         [ui/GridColumn
-          {:width 16}
-          [ui/Checkbox
-           {:label "Open"
-            :checked (boolean (:open? params))
-            :on-change #(dispatch [:offerings.user-offerings/set-params-and-search {:open? (aget %2 "checked")}])}]]
-         [ui/GridColumn
-          {:width 16}
-          [ui/Checkbox
-           {:label "Completed"
-            :checked (boolean (:finalized? params))
-            :on-change #(dispatch [:offerings.user-offerings/set-params-and-search {:finalized? (aget %2 "checked")}])}]]]))))
+        [:div
+         [:div.grid.user-offerings-search-params
+          [:div.open.checkbox
+           [ui/Checkbox
+            {:label "Open"
+             :checked (boolean (:open? params))
+             :on-change #(dispatch [:offerings.user-offerings/set-params-and-search
+                                    {:open? (aget %2 "checked")}])}]]
+          [:div.completed.checkbox
+           [ui/Checkbox
+            {:label "Completed"
+             :checked (boolean (:finalized? params))
+             :on-change #(dispatch [:offerings.user-offerings/set-params-and-search {:finalized? (aget %2 "checked")}])}]]]]))))
 
 (defn user-offerings []
   (let [search-results (subscribe [:offerings/user-offerings])
@@ -61,42 +59,22 @@
                             :description (if-let [address (:user/address @route-params)]
                                            (str "See all ENS name offerings of " address))}}
          [ui/Segment
-          [ui/Grid
-           {:padded true
-            :class "no-inner-horizontal-padding mobile-inner-vertical-padding"}
-           [ui/GridRow
-            {:class :join-upper}
-            [ui/GridColumn
-             {:computer 8
-              :tablet 8
-              :mobile 16}
-             [:h1.ui.header title]]
-            [ui/GridColumn
-             {:computer 6
-              :tablet 8
-              :mobile 16
-              :floated "right"}
-             [:div
-              [share-buttons
-               {:url
-                (if (:user/address @route-params)
-                  @(subscribe [:page-share-url :route.user/offerings @route-params])
-                  @(subscribe [:page-share-url :route.user/offerings {:user/address @active-address}]))
-                :title
-                (str title " on NameBazaar")}]]]]
-           [ui/GridRow
-            {:vertical-align :bottom}
-            [ui/GridColumn
-             {:computer 8
-              :tablet 8
-              :mobile 16}
-             [user-offerings-search-params]]
-            [ui/GridColumn
-             {:computer 6
-              :tablet 8
-              :mobile 16
-              :floated "right"}
-             [user-offerings-order-by-select]]]]
+          [:div.grid.user-offerings
+           [:div.header
+            [:h1.ui.header title]]
+           [:div.share-buttoms
+            [share-buttons
+             {:url
+              (if (:user/address @route-params)
+                @(subscribe [:page-share-url :route.user/offerings @route-params])
+                @(subscribe [:page-share-url :route.user/offerings {:user/address @active-address}]))
+              :title
+              (str title " on NameBazaar")}]]
+           [:div.offerings-search-params
+            [user-offerings-search-params]]
+           [:div.offerings-order
+            [user-offerings-order-by-select]]]
+
           [offering-infinite-list
            {:class "primary"
             :total-count total-count

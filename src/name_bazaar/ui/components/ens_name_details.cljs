@@ -46,37 +46,26 @@
 (defn ens-name-details [{:keys [:ens.record/name
                                 :registrar.entry/state-text
                                 :show-name-detail-link?] :as props}]
-  [ui/Grid
-   {:class "layout-grid submit-footer ens-name-detail"
-    :celled :internally}
-   [ui/GridRow
-    [ui/GridColumn
-     {:computer 8
-      :tablet 8
-      :mobile 16}
+  [:div
+   [:div.grid.layout-grid.submit-footer.ens-name-detail
+
+    [:div.general-info
      [ens-record-general-info
-      {:ens.record/name name}]
+                        {:ens.record/name name}]
      (when (top-level-name? name)
        [registrar-entry-general-info
         {:ens.record/name name
          :registrar.entry/state-text state-text}])]
-    [ui/GridColumn
-     {:computer 8
-      :tablet 8
-      :text-align :right
-      :mobile 16}
-     [:div.description.links-section
-      (when show-name-detail-link?
-        [name-detail-link
-         {:ens.record/name name}])
-      [ens-record-etherscan-link
-       {:ens.record/name name}]
-      [add-to-watched-names-button
-       {:ens.record/name name}]
-      [create-offering-link
-       {:ens.record/name name}]]]]
-   [ui/GridRow
-    {:centered true}
-    [:div
+    [:div.description.links-section
+     (when show-name-detail-link?
+       [name-detail-link
+        {:ens.record/name name}])
+     [ens-record-etherscan-link
+      {:ens.record/name name}]
+     [add-to-watched-names-button
+      {:ens.record/name name}]
+     [create-offering-link
+      {:ens.record/name name}]]
+    [:div.button
      [add-request-button
       {:ens.record/name name}]]]])

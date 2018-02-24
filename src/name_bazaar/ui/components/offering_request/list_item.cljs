@@ -16,24 +16,16 @@
         mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn [{:keys [:offering-request] :as props}]
       (let [{:keys [:offering-request/node :offering-request/name :offering-request/requesters-count]} offering-request]
-        [:div.ui.grid.padded.search-results-list-item.offering-request
-         (r/merge-props
-           {:class (when @mobile? "mobile")}
-           (dissoc props :offering-request))
+        [:div.grid.search-results-list-item.offering-request
+         (dissoc props :offering-request)
          (if-not node
            [list-item-placeholder]
-           [ui/GridRow
+           [:div
             {:class (str "search-results-list-item-header "
                          (when @visible? "opacity-1"))
-             :ref #(reset! visible? true)
-             :vertical-align :middle}
-            [ui/GridColumn
-             {:width 10}
-             name]
-            [ui/GridColumn
-             {:width 6
-              :text-align :right}
-             requesters-count (pluralize " request" requesters-count)]])]))))
+             :ref #(reset! visible? true)}
+            [:div.name name]
+            [:div.request-count requesters-count (pluralize " request" requesters-count)]])]))))
 
 (defn offering-request-list-item []
   (let [mobile? (subscribe [:district0x.window.size/mobile?])]
