@@ -37,14 +37,8 @@
             {:keys [:items :loading? :params :total-count]} @search-results]
         [ui/Segment
          [:h1.ui.header.padded name " Offerings"]
-         [ui/Grid
-          {:padded true
-           :class "no-inner-horizontal-padding mobile-inner-vertical-padding join-lower"}
-          [ui/GridColumn
-           {:computer 6
-            :tablet 8
-            :mobile 16
-            :floated :right}
+         [:div.grid.ens-record-offerings.no-inner-horizontal-padding.mobile-inner-vertical-padding.join-lower
+          [:div.order-by-select
            [ens-record-offerings-order-by-select-field]]]
          [offering-infinite-list
           {:class "secondary"
@@ -79,6 +73,7 @@
         [app-layout {:meta {:title (str name " name details")
                             :description (str "See details about " name ". Status: " state-text)}}
          [ui/Segment
+          {:class "ens-record-details"}
           [:h1.ui.header.padded name]
           [ens-name-details
            {:ens.record/name name

@@ -101,92 +101,66 @@
                                           valid-min-bid-increase?))
                                  (and auction?
                                       (t/after? @now (from-date (.toDate (js/moment end-time))))))]
-        [ui/Grid
-         {:class "layout-grid submit-footer offering-form"
-          :celled "internally"}
-         [ui/GridRow
-          [ui/GridColumn
-           {:width 16}
-           [ui/Grid
-            {:relaxed "very"}
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [ens-name-input-ownership-validated
-              {:value name
-               :disabled editing?
-               :on-change #(swap! form-data assoc :offering/name (aget %2 "value"))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16
-              :vertical-align :bottom}
-             [offering-type-select
-              {:value type
-               :fluid true
-               :disabled editing?
-               :on-change #(swap! form-data assoc :offering/type (keyword (aget %2 "value")))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
+        [:div
+         [:div.grid.offering-form.submit-footer
+          [:div.name
+           [ens-name-input-ownership-validated
+            {:value name
+             :disabled editing?
+             :on-change #(swap! form-data assoc :offering/name (aget %2 "value"))}]]
+          [:div.type
+           [offering-type-select
+            {:value type
+             :fluid true
+             :disabled editing?
+             :on-change #(swap! form-data assoc :offering/type (keyword (aget %2 "value")))}]]
+          [:div.token
+           [token-input
+            {:label (if auction? "Starting Price" "Price")
+             :class "offering-price"
+             :fluid true
+             :value price
+             :error (not valid-price?)
+             :on-change #(swap! form-data assoc :offering/price (aget %2 "value"))}]]
+          (when auction?
+            [:div.input-info.min-bid-increase
+             "New bids will need to be at least " min-bid-increase " ETH higher than previous highest bid."])
+          (when auction?
+            [:div.auction-bid-increase
              [token-input
-              {:label (if auction? "Starting Price" "Price")
-               :class "offering-price"
+              {:label "Min. Bid Increase"
+               :class "offering-min-bid-increase"
                :fluid true
-               :value price
-               :error (not valid-price?)
-               :on-change #(swap! form-data assoc :offering/price (aget %2 "value"))}]]
-            (when auction?
-              [ui/GridColumn
-               {:computer 8
-                :mobile 16}
-               [token-input
-                {:label "Min. Bid Increase"
-                 :class "offering-min-bid-increase"
-                 :fluid true
-                 :value min-bid-increase
-                 :error (not valid-min-bid-increase?)
-                 :on-change #(swap! form-data assoc :auction-offering/min-bid-increase (aget %2 "value"))}]])
-            (when auction?
-              [ui/GridColumn
-               {:mobile 16
-                :class :join-upper}
-               [:div.input-info.min-bid-increase
-                "New bids will need to be at least " min-bid-increase " ETH higher than previous highest bid."]])]]]
-         (when auction?
-           [ui/GridRow
-            [ui/GridColumn
-             {:width 16}
+               :value min-bid-increase
+               :error (not valid-min-bid-increase?)
+               :on-change #(swap! form-data assoc :auction-offering/min-bid-increase (aget %2 "value"))}]])
+
+          (when auction?
+            [:div.duration-slider
              [offering-extension-duration-slider
               {:value extension-duration
-               :on-change #(swap! form-data assoc :auction-offering/extension-duration (aget % "target" "value"))}]]])
-         (when (or auction? (not editing?))
-           [ui/GridRow
-            {:class (when (not auction?) :hide-divider)}
-            (when auction?
-              [ui/GridColumn
-               {:computer 8
-                :mobile 16}
-               [auction-end-time-date-picker
-                {:selected end-time
-                 :on-change #(swap! form-data assoc :auction-offering/end-time %)}]])
-            (when-not editing?
-              [ui/GridColumn
-               {:mobile 16
-                :class "join-upper"}
-               [:p.input-info
-                (if auction?
-                  "You will be able to edit parameters of this auction as long as there are no bids."
-                  "You will be able to edit offering price even after creation.")]
-               [:p.input-info
-                [:b "IMPORTANT:"]
-                " After creating an auction, you must transfer ownership of the name to the auction contract
+               :on-change #(swap! form-data assoc :auction-offering/extension-duration (aget % "target" "value"))}]])
+          (when (and (or auction? (not editing?))
+                     auction?)
+            [:div.auction-end-time
+             [auction-end-time-date-picker
+              {:selected end-time
+               :on-change #(swap! form-data assoc :auction-offering/end-time %)}]])
+          (when (and (or auction? (not editing?))
+                         (not editing?))
+            [:div.info
+             [:p.input-info
+              (if auction?
+                "You will be able to edit parameters of this auction as long as there are no bids."
+                "You will be able to edit offering price even after creation.")]
+             [:p.input-info
+              [:b "IMPORTANT:"]
+              " After creating an auction, you must transfer ownership of the name to the auction contract
                 in order for it to display in search and for the name to be able to be sold. You will be notified once
                 the name can be transferred, or you can complete this process from the "
-                [:a {:href (path-for :route.user/my-offerings)} "My Offerings page"]
-                " at a later time."]])])
-         [ui/GridRow
-          {:centered true}
-          [:div
+              [:a {:href (path-for :route.user/my-offerings)} "My Offerings page"]
+              " at a later time."]])
+          [:div.button
            (if-not editing?
              [ui/Button
               {:primary true

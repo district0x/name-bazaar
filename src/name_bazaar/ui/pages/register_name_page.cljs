@@ -300,52 +300,31 @@
                                 ::start-auction-pending
                                 ::start-auctions-and-bid-pending}
                      state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 10
-                      :computer 10}
-                     [description state]]]
+                   [:div.grid.midsect.empty
+                    [:div.info [description state]]]
 
                    (contains? #{:registrar.entry.state/auction-user-made-bid
                                 :registrar.entry.state/auction-no-user-made-bid
                                 ::unseal-bid-pending}
                      state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
-                     [:b.description.underlined
-                      [ens-record-etherscan-link/ens-record-etherscan-link
-                       {:ens.record/name @label}]]
-                     [description state]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                   [:div.grid.midsect.made-bid
+                    [:b.description.underlined
+                     [ens-record-etherscan-link/ens-record-etherscan-link
+                      {:ens.record/name @label}]]
+                    [:div.description [description state]]
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
                    (contains? #{:registrar.entry.state/owned-phase-user-owner
                                 :registrar.entry.state/owned-phase-different-owner
                                 :registrar.entry.state/owned-phase-different-owner-not-finalized} state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
+                   [:div.grid.midsect.dif-owner
+                    [:div.description
                      [ens-record-general-info/ens-record-general-info {:ens.record/name (str @label constants/registrar-root)}]
                      [registrar-entry-general-info/registrar-entry-general-info {:ens.record/name @label
                                                                                  :registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
@@ -355,40 +334,24 @@
                                 :registrar.entry.state/owned-phase-user-owner-not-finalized
                                 :registrar.entry.state/owned-phase-user-owner
                                 ::finalize-auction-pending} state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
+                   [:div.grid.midsect.reveal
+                    [:div.bid-info
                      [ens-bid-info state highest-bid owner]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
                    (= :registrar.entry.state/reveal-phase-user-outbid state)
-                   [ui/GridRow
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :right-bordered}
-                     [:b.description.underlined
-                      [ens-record-etherscan-link/ens-record-etherscan-link
-                       {:ens.record/name @label}]]
-                     [ens-bid-info state highest-bid owner]
-                     [:div.top-padded
-                      [:div.description.warning "Unfortunately your bid isn't the highest for this name."]
-                      [:div.description.warning [:b "99.5% of your bid was refunded to you."]]]]
-                    [ui/GridColumn
-                     {:mobile 16
-                      :tablet 8
-                      :computer 8
-                      :class :mobile-hide-divider}
+                   [:div.grid.midsect.reveal-outbid
+                    [:b.description.underlined
+                     [ens-record-etherscan-link/ens-record-etherscan-link
+                      {:ens.record/name @label}]]
+                    [:div.bid-info
+                     [ens-bid-info state highest-bid owner]]
+                    [:div.top-padded
+                     [:div.description.warning "Unfortunately your bid isn't the highest for this name."]
+                     [:div.description.warning [:b "99.5% of your bid was refunded to you."]]]
+                    [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]))]
     (fn [state & [opts]]
@@ -450,130 +413,110 @@
                                            ::start-auction-pending
                                            ::start-auctions-and-bid-pending} state)
             bid-disabled? #(or (empty? @label)
-                             (contains? #{:registrar.entry.state/empty-name
-                                          :registrar.entry.state/loading
-                                          ::invalid-length
-                                          ::subname
-                                          ::start-auction-pending
-                                          ::start-auctions-and-bid-pending} state))]
-        [ui/Grid
-         {:class "layout-grid submit-footer register-name-page"
-          :celled "internally"}
-
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :tablet 8
-            :computer 8}
+                               (contains? #{:registrar.entry.state/empty-name
+                                            :registrar.entry.state/loading
+                                            ::invalid-length
+                                            ::subname
+                                            ::start-auction-pending
+                                            ::start-auctions-and-bid-pending} state))]
+        [:div
+         [:div.grid.register-name-page.submit-footer
+          [:div.search-bar
            [search-bar {:options bids-by-importance
                         :status status :icon icon :text text}]]
-
-          [ui/GridColumn
-           {:mobile 16
-            :tablet 8
-            :computer 5
-            :floated :right
-            :class :join-upper}
-           [user-bids-buttons state]]]
-
-         [middle-section state {:label-hash label-hash
-                                :registrar-state registrar-state
-                                :highest-bid highest-bid
-                                :owner owner}]
-         [ui/GridRow
-          {:centered true}
-          [ui/GridColumn
-           {:mobile 8
-            :tablet 8
-            :computer 10
-            :text-align :center}
-           (when (not (contains? #{:registrar.entry.state/owned-phase-different-owner
-                                   :registrar.entry.state/owned-phase-different-owner-not-finalized
-                                   :registrar.entry.state/reveal-phase-user-outbid} state))
-             [:div.bid-section
+          [:div.user-bids-button [user-bids-buttons state]]
+          [:div.middle-section
+           [middle-section state {:label-hash label-hash
+                                  :registrar-state registrar-state
+                                  :highest-bid highest-bid
+                                  :owner owner}]]
+          (when (not (contains? #{:registrar.entry.state/owned-phase-different-owner
+                                  :registrar.entry.state/owned-phase-different-owner-not-finalized
+                                  :registrar.entry.state/reveal-phase-user-outbid} state))
+            [:div.bid-section.button
+             (when show-bid-section?
+               [:div.header "Your Bid"])
+             [:div {:class (when show-bid-section?
+                             :input-section)}
               (when show-bid-section?
-                [:div.header "Your Bid"])
-              [:div {:class (when show-bid-section?
-                              :input-section)}
-               (when show-bid-section?
-                 [input/token-input
-                  {:value (or @bid-value-input 0.01)
-                   :on-change #(reset! bid-value-input (aget %2 "value"))
-                   :fluid true}
-                  "Your bid"])
-               (when (contains? #{:registrar.entry.state/auction-user-made-bid
-                                  :registrar.entry.state/reveal-phase-user-made-bid
-                                  :registrar.entry.state/reveal-phase-no-user-made-bid
-                                  ::unseal-bid-pending} state)
-                 [transaction-button/transaction-button {:primary true
-                                                         :disabled (not (= :registrar.entry.state/reveal-phase-user-made-bid state))
-                                                         :pending? unseal-bid-pending?
-                                                         :pending-text text
-                                                         :on-click (fn []
-                                                                     (re-frame/dispatch [:registrar/transact :unseal-bid {:registrar/label @label
-                                                                                                                          :registrar/bid-value bid-value
-                                                                                                                          :registrar/bid-salt bid-salt}])
-                                                                     (load-bid-state @label))}
-                  "Reveal Bid"])
-               (when (contains? #{:registrar.entry.state/reveal-phase-user-winning
-                                  :registrar.entry.state/owned-phase-user-owner-not-finalized
-                                  ::finalize-auction-pending} state)
-                 [transaction-button/transaction-button {:primary true
-                                                         :disabled (not (= :registrar.entry.state/owned-phase-user-owner-not-finalized state))
-                                                         :pending? finalize-auction-pending?
-                                                         :pending-text text
-                                                         :on-click (fn []
-                                                                     (re-frame/dispatch [:registrar/transact :finalize-auction {:registrar/label @label}])
-                                                                     (load-bid-state @label))}
-                  "Finalize Bid"])
-               (when (= :registrar.entry.state/owned-phase-user-owner state)
-                 [transaction-button/transaction-button {:primary true
-                                                         :disabled (not (= :registrar.entry.state/owned-phase-user-owner state))
-                                                         :on-click (fn []
-                                                                     (re-frame/dispatch [:district0x.location/set-query-and-nav-to :route.offerings/create
-                                                                                         {:ens.record/name (str @label constants/registrar-root)}
-                                                                                         constants/routes]))}
-                  "Create Offering"])
-               (when (contains? #{:registrar.entry.state/loading
-                                  :registrar.entry.state/empty-name
-                                  :registrar.entry.state/open
-                                  :registrar.entry.state/auction-no-user-made-bid
-                                  ::invalid-length
-                                  ::subname
-                                  ::start-auctions-and-bid-pending} state)
-                 [transaction-button/transaction-button
-                  {:primary true
-                   :disabled (bid-disabled?)
-                   :pending? start-auctions-and-bid-pending?
-                   :pending-text text
-                   :on-click (fn []
-                               (cond
-                                 (= state :registrar.entry.state/open)
-                                 (re-frame/dispatch [:registrar/transact :start-auctions-and-bid {:registrar/label @label
-                                                                                                  :registrar/bid-value @bid-value-input}])
+                [input/token-input
+                 {:value (or @bid-value-input 0.01)
+                  :on-change #(reset! bid-value-input (aget %2 "value"))
+                  :fluid true}
+                 "Your bid"])
+              (when (contains? #{:registrar.entry.state/auction-user-made-bid
+                                 :registrar.entry.state/reveal-phase-user-made-bid
+                                 :registrar.entry.state/reveal-phase-no-user-made-bid
+                                 ::unseal-bid-pending} state)
+                [transaction-button/transaction-button {:primary true
+                                                        :disabled (not (= :registrar.entry.state/reveal-phase-user-made-bid state))
+                                                        :pending? unseal-bid-pending?
+                                                        :pending-text text
+                                                        :on-click (fn []
+                                                                    (re-frame/dispatch [:registrar/transact :unseal-bid {:registrar/label @label
+                                                                                                                         :registrar/bid-value bid-value
+                                                                                                                         :registrar/bid-salt bid-salt}])
+                                                                    (load-bid-state @label))}
+                 "Reveal Bid"])
+              (when (contains? #{:registrar.entry.state/reveal-phase-user-winning
+                                 :registrar.entry.state/owned-phase-user-owner-not-finalized
+                                 ::finalize-auction-pending} state)
+                [transaction-button/transaction-button {:primary true
+                                                        :disabled (not (= :registrar.entry.state/owned-phase-user-owner-not-finalized state))
+                                                        :pending? finalize-auction-pending?
+                                                        :pending-text text
+                                                        :on-click (fn []
+                                                                    (re-frame/dispatch [:registrar/transact :finalize-auction {:registrar/label @label}])
+                                                                    (load-bid-state @label))}
+                 "Finalize Bid"])
+              (when (= :registrar.entry.state/owned-phase-user-owner state)
+                [transaction-button/transaction-button {:primary true
+                                                        :disabled (not (= :registrar.entry.state/owned-phase-user-owner state))
+                                                        :on-click (fn []
+                                                                    (re-frame/dispatch [:district0x.location/set-query-and-nav-to :route.offerings/create
+                                                                                        {:ens.record/name (str @label constants/registrar-root)}
+                                                                                        constants/routes]))}
+                 "Create Offering"])
+              (when (contains? #{:registrar.entry.state/loading
+                                 :registrar.entry.state/empty-name
+                                 "registrar.entry.state/open"
+                                 :registrar.entry.state/auction-no-user-made-bid
+                                 ::invalid-length
+                                 ::subname
+                                 ::start-auctions-and-bid-pending} state)
+                [transaction-button/transaction-button
+                 {:primary true
+                  :disabled (bid-disabled?)
+                  :pending? start-auctions-and-bid-pending?
+                  :pending-text text
+                  :on-click (fn []
+                              (cond
+                                (= state :registrar.entry.state/open)
+                                (re-frame/dispatch [:registrar/transact :start-auctions-and-bid {:registrar/label @label
+                                                                                                 :registrar/bid-value @bid-value-input}])
 
-                                 (= state :registrar.entry.state/auction-no-user-made-bid)
-                                 (re-frame/dispatch [:registrar/transact :new-bid {:registrar/label @label
-                                                                                   :registrar/bid-value @bid-value-input}])
+                                (= state :registrar.entry.state/auction-no-user-made-bid)
+                                (re-frame/dispatch [:registrar/transact :new-bid {:registrar/label @label
+                                                                                  :registrar/bid-value @bid-value-input}])
 
-                                 :else (logging/error "Unknown state" {:state state} ::transaction-button))
-                               (load-bid-state @label))}
-                  "Bid Now"])
-               (when (contains? #{:registrar.entry.state/loading
-                                  :registrar.entry.state/open
-                                  :registrar.entry.state/empty-name
-                                  ::invalid-length
-                                  ::subname
-                                  ::start-auction-pending
-                                  ::start-auctions-and-bid-pending} state)
-                 [transaction-button/transaction-button {:color :purple
-                                                         :disabled (bid-disabled?)
-                                                         :pending? start-auction-pending?
-                                                         :pending-text text
-                                                         :on-click (fn []
-                                                                     (re-frame/dispatch [:registrar/transact :start-auction {:registrar/label @label}])
-                                                                     (load-bid-state @label))}
-                  "Open Without Bid"])]])]]]))))
+                                :else (logging/error "Unknown state" {:state state} ::transaction-button))
+                              (load-bid-state @label))}
+                 "Bid Now"])
+              (when (contains? #{:registrar.entry.state/loading
+                                 :registrar.entry.state/open
+                                 :registrar.entry.state/empty-name
+                                 ::invalid-length
+                                 ::subname
+                                 ::start-auction-pending
+                                 ::start-auctions-and-bid-pending} state)
+                [transaction-button/transaction-button {:color :purple
+                                                        :disabled (bid-disabled?)
+                                                        :pending? start-auction-pending?
+                                                        :pending-text text
+                                                        :on-click (fn []
+                                                                    (re-frame/dispatch [:registrar/transact :start-auction {:registrar/label @label}])
+                                                                    (load-bid-state @label))}
+                 "Open Without Bid"])]])]]))))
 
 (defmethod misc/page :route.registrar/register []
   (let [{:keys [:name] :as query-params} @(re-frame/subscribe [:district0x/query-params])

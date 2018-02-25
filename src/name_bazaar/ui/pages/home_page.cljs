@@ -76,32 +76,24 @@
         offerings-most-active (subscribe [:offerings/home-page-most-active])
         offerings-ending-soon (subscribe [:offerings/home-page-ending-soon])]
     (fn []
-      [ui/Grid
-       {:class :offerings-grid
-        :columns 3
-        :centered true}
-       (for [props [{:title "Latest"
-                     :offerings (:items @offerings-newest)
-                     :show-more-href offerings-newest-url
-                     :icon-class "leaf"}
-                    {:title "Most Active"
-                     :offerings (:items @offerings-most-active)
-                     :show-more-href offerings-most-active-url
-                     :icon-class "pulse"}
-                    {:title "Ending Soon"
-                     :offerings (:items @offerings-ending-soon)
-                     :show-more-href offerings-ending-soon-url
-                     :icon-class "flag"}]]
-         [ui/GridColumn
-          {:key (:title props)
-           :widescreen 3
-           :large-screen 4
-           :computer 5
-           :tablet 8
-           :mobile 16
-           :text-align "center"
-           :class :offering-column}
-          [offerings-column props]])])))
+      [:div
+       [:div.grid.offerings-wrap
+        [:div.flex.offerings-grid
+         (for [props [{:title "Latest"
+                       :offerings (:items @offerings-newest)
+                       :show-more-href offerings-newest-url
+                       :icon-class "leaf"}
+                      {:title "Most Active"
+                       :offerings (:items @offerings-most-active)
+                       :show-more-href offerings-most-active-url
+                       :icon-class "pulse"}
+                      {:title "Ending Soon"
+                       :offerings (:items @offerings-ending-soon)
+                       :show-more-href offerings-ending-soon-url
+                       :icon-class "flag"}]]
+           ^{:key (:title props)}
+           [:div.offering-column.centered
+            [offerings-column props]])]]])))
 
 (defn namebazaar-logo []
   [:a
@@ -110,17 +102,8 @@
     {:src "./images/logo@2x.png"}]])
 
 (defn app-pages []
-  [ui/Grid
-   {:columns 1
-    :centered true
-    :class :app-page-link-grid}
-   [ui/GridColumn
-    {:widescreen 5
-     :large-screen 8
-     :computer 9
-     :tablet 12
-     :mobile 16
-     :text-align "center"}
+  [:div
+   [:div.grid.app-page-link-grid
     [:div.app-page-button-links
      [:a.ui.button
       {:href (path-for :route.offerings/search)}
@@ -138,16 +121,9 @@
       [:i.book.icon]]]]])
 
 (defn app-headline []
-  [ui/Grid
-   {:columns 1
-    :centered true}
-   [ui/GridColumn
-    {:computer 7
-     :tablet 12
-     :mobile 15
-     :text-align :center}
-    [:h1.intro-headline
-     "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."]]])
+  [:div.grid.headline
+   [:h1.intro-headline
+    "A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service."]])
 
 (defn offerings-total-count []
   (let [total-count (subscribe [:offerings/total-count])]
@@ -164,15 +140,13 @@
        "Names Offered: " @total-count])))
 
 (defn footer []
-  [ui/Grid
-   {:text-align :center
-    :class :footer
-    :vertical-align :middle}
-   [:span.footer-logo]
-   [:h3.part-of-district0x
-    "Part of the "
-    [:a {:href "https://district0x.io" :target :_blank}
-     "district0x Network"]]])
+  [:div
+   [:div.footer
+    [:span.footer-logo]
+    [:h3.part-of-district0x
+     "Part of the "
+     [:a {:href "https://district0x.io" :target :_blank}
+      "district0x Network"]]]])
 
 (defmethod page :route/home []
   (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
@@ -184,16 +158,7 @@
         [namebazaar-logo]]
        [offerings-total-count-mobile]
        [app-headline]
-       [ui/Grid
-        {:columns 1
-         :centered true}
-        [ui/GridColumn
-         {:widescreen 7
-          :large-screen 9
-          :computer 12
-          :tablet 12
-          :mobile 15}
-         [search-bar]]]
+       [:div.grid [search-bar]]
        [app-pages]
        [offerings-columns]
        [footer]])))

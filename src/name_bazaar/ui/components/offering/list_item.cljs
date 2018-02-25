@@ -38,29 +38,17 @@
 (defn offering-expanded-body [{:keys [:offering]}]
   (let [{:keys [:offering/address :offering/name :offering/contains-non-ascii? :offering/top-level-name?
                 :offering/original-owner]} offering]
-    [ui/Grid
-     {:class "layout-grid submit-footer offering-detail"
-      :celled :internally}
-     [ui/GridRow
-      [ui/GridColumn
-       {:computer 8
-        :tablet 8
-        :mobile 16}
-       [offering-general-info
-        {:offering offering}]]
-      [ui/GridColumn
-       {:computer 8
-        :tablet 8
-        :text-align :right
-        :mobile 16}
-       [links-section
-        {:offering offering}]]]
-     [ui/GridRow
-      {:centered true}
+    [:div.grid.expanded-layout-grid.submit-footer.offering-detail
+     [:div.info
+      [offering-general-info
+       {:offering offering}]]
+     [:div.offering-detail
+      [links-section
+       {:offering offering}]]
+     [:div.middle
       [offering-middle-section
        {:offering offering}]]
-     [ui/GridRow
-      {:centered true}
+     [:div.button
       [offering-bottom-section
        {:offering offering}]]]))
 
@@ -193,51 +181,37 @@
       (let [{:keys [:offering/address :offering/auction? :offering/name :offering/price :offering/created-on
                     :offering/type :offering/finalized-on :offering/new-owner :auction-offering/bid-count
                     :auction-offering/end-time]} offering]
-        [:div.ui.grid.padded.search-results-list-item
+        [:div.search-results-list-item
          (if-not address
            [list-item-placeholder]
-           [ui/GridRow
-            {:ref #(reset! visible? true)                   ;; For fade-in animation
-             :class (str "search-results-list-item-header "
-                         (when @visible? "opacity-1"))
-             :vertical-align :middle}
-            [ui/GridColumn
-             {:width 4}
-             [offering-header-main-text
-              {:show-created-on? show-created-on?
-               :offering offering}]]
-            [ui/GridColumn
-             {:width 2
-              :text-align :center}
-             [offering-header-offering-type
-              {:offering offering}]]
-            [ui/GridColumn
-             {:width 3
-              :text-align :center}
-             [:div.offering-auction-item
-              {:class (if (and auction? bid-count) "opacity-1" "opacity-0")}
-              [:div.amount bid-count]]]
-            [ui/GridColumn
-             {:width 3
-              :text-align :center}
-             (let [[unit amount] (if-not show-finalized-on?
-                                   (time-remaining-biggest-unit (t/now) end-time)
-                                   (time-remaining-biggest-unit finalized-on (t/now)))]
-               [:div.offering-auction-item.time-left
-                {:class (if (or (and auction? end-time)
-                                show-finalized-on?)
-                          :opacity-1
-                          :opacity-0)}
-                [:div.amount amount " " [:span.unit (cond-> (time-unit->short-text unit)
-                                                      (contains? #{:days :hours} unit) (pluralize amount))]]])]
-            [ui/GridColumn
-             {:class "price-column"
-              :width 4
-              :text-align :right
-              :vertical-align :middle}
-             [offering-header-tags props]
-             [offering-header-price
-              {:offering offering}]]])]))))
+           [:div
+              {:ref #(reset! visible? true) ;; For fade-in animation
+               :class (str "search-results-list-item-header "
+                           (when @visible? "opacity-1"))}
+              [:div.main-text
+               [offering-header-main-text
+                {:show-created-on? show-created-on?
+                 :offering offering}]]
+              [:div.offering-type
+               [offering-header-offering-type
+                {:offering offering}]]
+              [:div.offering-auction-item
+               {:class (if (and auction? bid-count) "opacity-1" "opacity-0")}
+               [:div.amount bid-count]]
+              (let [[unit amount] (if-not show-finalized-on?
+                                    (time-remaining-biggest-unit (t/now) end-time)
+                                    (time-remaining-biggest-unit finalized-on (t/now)))]
+                [:div.offering-auction-item.time-left
+                 {:class (if (or (and auction? end-time)
+                                 show-finalized-on?)
+                           :opacity-1
+                           :opacity-0)}
+                 [:div.amount amount " " [:span.unit (cond-> (time-unit->short-text unit)
+                                                       (contains? #{:days :hours} unit) (pluralize amount))]]])
+              [:div.price
+               [offering-header-tags props]
+               [offering-header-price
+                {:offering offering}]]])]))))
 
 (defn offering-list-item []
   (let [mobile? (subscribe [:district0x.window.size/mobile?])]

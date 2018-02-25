@@ -184,17 +184,8 @@
           :context @app-container-ref}
          [transaction-log
           {:title-props {:on-click #(dispatch [:district0x.transaction-log/set-open false])}}]]
-        [ui/Grid
-         {:columns 1
-          :centered true
-          :padded true}
-         (into [ui/GridColumn
-                {:class :main-content
-                 :widescreen 8
-                 :large-screen 12
-                 :tablet 14
-                 :mobile 15}]
-               children)]]
+        [:div.grid.main-content
+         children]]
        [snackbar
         {:action-button-props {:primary true
                                :size :small}}]])))

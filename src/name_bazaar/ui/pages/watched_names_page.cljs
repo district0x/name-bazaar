@@ -43,14 +43,8 @@
         [expandable-list-item
          {:disable-expand? true
           :collapsed-height (constants/infinite-list-collapsed-item-height @mobile?)}
-         [:div.ui.grid.padded.search-results-list-item
-          {:class (when @mobile? "mobile")}
-          [ui/GridRow
-           {:class "search-results-list-item-header opacity-1"
-            :vertical-align :middle}
-           [ui/GridColumn
-            {:width 16}
-            name]]]]))))
+         [:div.grid.search-results-list-item
+          [:div.search-results-list-item-header.opacity-1 name]]]))))
 
 (defn watched-names-infinite-list []
   (let [mobile? (subscribe [:district0x.window.size/mobile?])
@@ -86,20 +80,12 @@
    [ui/Segment
     {:class "watched-names"}
     [:h1.ui.header.padded "Watched Names"]
-    [ui/Grid
-     {:class "layout-grid"}
-     [ui/GridRow
-      [ui/GridColumn
-       {:computer 8
-        :tablet 12
-        :mobile 16}
-       [add-watched-name-form]]]
-     [ui/GridRow
-      [ui/GridColumn
-       {:class :join-upper
-        :text-align :right}
+    [:div
+     [:div.grid.layout-grid.watched-names
+      [:div.watched-name-form [add-watched-name-form]]
+      [:div.clear-all
        [:a.clear-all
         {:on-click #(dispatch [:watched-names/remove-all])}
-        "Clear All"]]]
-     [ui/GridRow
-      [watched-names-infinite-list]]]]])
+        "Clear All"]]
+      [:div.watched-names-list
+       [watched-names-infinite-list]]]]]])

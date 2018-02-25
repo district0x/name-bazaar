@@ -83,59 +83,45 @@
             name-record @(subscribe [:public-resolver/record (namehash full-name)])
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
             submit-disabled? (not= ownership-status :ens.ownership-status/owner)]
-        [ui/Grid
-         {:class "layout-grid submit-footer offering-form"}
-         [ui/GridRow
-          [ui/GridColumn
-           [ui/Grid
-            {:relaxed "very"}
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [ens-name-input-ownership-validated
-              {:value name
-               :on-change (fn [_ data]
-                            (swap! form-data assoc :ens.record/name (aget data "value"))
-                            (load-addr (full-name-fn (aget data "value"))))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [address-text-field
-              {:value addr
-               :disabled (not default-resolver?)
-               :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :class "join-upper"}
-           [:p.input-info
-            "Pointing  your name to an address enables others to send funds to "
-            (or full-name "human-readable address")
-            ", instead of hexadecimal number."]
-           (when name-record
-             [:p.input-info
-              full-name " is currently pointed to " (:public-resolver.record/addr name-record) "."])
-           (when-not default-resolver?
-             [:p.input-info
-              "Before you can point name to an address, you must setup resolver for your name."])]]
-         [ui/GridRow
-          {:centered true}
-          [:div
-           (if-not default-resolver?
-             [transaction-button
-              {:primary true
-               :disabled submit-disabled?
-               :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
-               :pending-text "Setting up resolver..."
-               :on-click #(dispatch [:ens/set-resolver @form-data])}
-              "Setup resolver"]
-             [transaction-button
-              {:primary true
-               :disabled submit-disabled?
-               :pending? @(subscribe [:public-resolver.set-addr/tx-pending? (namehash full-name)])
-               :pending-text "Pointing name..."
-               :on-click #(dispatch [:public-resolver/set-addr @form-data])}
-              "Point name"])]]]))))
+        [:div.grid.submit-footer.offering-form
+         [:div.name-ownership
+          [ens-name-input-ownership-validated
+           {:value name
+            :on-change (fn [_ data]
+                         (swap! form-data assoc :ens.record/name (aget data "value"))
+                         (load-addr (full-name-fn (aget data "value"))))}]]
+         [:div.address
+          [address-text-field
+           {:value addr
+            :disabled (not default-resolver?)
+            :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]
+         [:div.info
+          [:p.input-info
+           "Pointing  your name to an address enables others to send funds to "
+           (or full-name "human-readable address")
+           ", instead of hexadecimal number."]
+          (when name-record
+            [:p.input-info
+             full-name " is currently pointed to " (:public-resolver.record/addr name-record) "."])
+          (when-not default-resolver?
+            [:p.input-info
+             "Before you can point name to an address, you must setup resolver for your name."])]
+         [:div.button
+          (if-not default-resolver?
+            [transaction-button
+             {:primary true
+              :disabled submit-disabled?
+              :pending? @(subscribe [:ens.set-resolver/tx-pending? (namehash full-name)])
+              :pending-text "Setting up resolver..."
+              :on-click #(dispatch [:ens/set-resolver @form-data])}
+             "Setup resolver"]
+            [transaction-button
+             {:primary true
+              :disabled submit-disabled?
+              :pending? @(subscribe [:public-resolver.set-addr/tx-pending? (namehash full-name)])
+              :pending-text "Pointing name..."
+              :on-click #(dispatch [:public-resolver/set-addr @form-data])}
+             "Point name"])]]))))
 
 (defn point-address-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
@@ -146,58 +132,43 @@
             submit-disabled? (empty? name)
             addr-record @(subscribe [:public-resolver/reverse-record addr])
             default-resolver? @(subscribe [:ens.record/default-resolver? (reverse-record-node addr)])]
-        [ui/Grid
-         {:class "layout-grid submit-footer offering-form"}
-         [ui/GridRow
-          [ui/GridColumn
-           [ui/Grid
-            {:relaxed "very"}
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [ens-name-input-ownership-validated
-              {:value name
-               :warn-only? true
-               :disabled (not default-resolver?)
-               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [address-text-field
-              {:value addr
-               :disabled true
-               :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]]]]
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :class "join-upper"}
-           [:p.input-info
-            "Your address " (truncate addr 10) " will be pointing to "
-            (or full-name "chosen name")
-            ". This will help Ethereum applications to find human-readable name from your address."]
-           (when-not default-resolver?
-             [:p.input-info
-              "Before you can point address to a name, you must setup resolver for your address."])
-           (when addr-record
-             [:p.input-info
-              addr " is currently pointed to " (:public-resolver.record/name addr-record) "."])]]
-         [ui/GridRow
-          {:centered true}
-          [:div
-           (if-not default-resolver?
-             [transaction-button
-              {:primary true
-               :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? addr])
-               :pending-text "Setting up resolver..."
-               :on-click #(dispatch [:reverse-registrar/claim-with-resolver @form-data])}
-              "Setup resolver"]
-             [transaction-button
-              {:primary true
-               :disabled submit-disabled?
-               :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
-               :pending-text "Pointing address..."
-               :on-click #(dispatch [:public-resolver/set-name @form-data])}
-              "Point address"])]]]))))
+        [:div.grid.submit-footer.offering-form
+         [:div.name-ownership [ens-name-input-ownership-validated
+                               {:value name
+                                :warn-only? true
+                                :disabled (not default-resolver?)
+                                :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+         [:div.address
+          [address-text-field
+           {:value addr
+            :disabled (not default-resolver?)
+            :on-change #(swap! form-data assoc :ens.record/addr (aget %2 "value"))}]]
+         [:div.info
+          [:p.input-info
+           "Your address " (truncate addr 10) " will be pointing to "
+           (or full-name "chosen name")
+           ". This will help Ethereum applications to find human-readable name from your address."]
+          (when-not default-resolver?
+            [:p.input-info
+             "Before you can point address to a name, you must setup resolver for your address."])
+          (when addr-record
+            [:p.input-info
+             addr " is currently pointed to " (:public-resolver.record/name addr-record) "."])]
+         [:div.button
+          (if-not default-resolver?
+            [transaction-button
+             {:primary true
+              :pending? @(subscribe [:reverse-registrar.claim-with-resolver/tx-pending? addr])
+              :pending-text "Setting up resolver..."
+              :on-click #(dispatch [:reverse-registrar/claim-with-resolver @form-data])}
+             "Setup resolver"]
+            [transaction-button
+             {:primary true
+              :disabled submit-disabled?
+              :pending? @(subscribe [:public-resolver.set-name/tx-pending? (reverse-record-node addr)])
+              :pending-text "Pointing address..."
+              :on-click #(dispatch [:public-resolver/set-name @form-data])}
+             "Point address"])]]))))
 
 (defn create-subname-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
@@ -215,47 +186,34 @@
             submit-disabled? (or
                               (not correct-subname?)
                               (not= ownership-status :ens.ownership-status/owner))]
-        [ui/Grid
-         {:class "layout-grid submit-footer offering-form"}
-         [ui/GridRow
-          [ui/GridColumn
-           [ui/Grid
-            {:relaxed "very"}
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [ens-name-input-ownership-validated
-              {:value name
-               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [subname-text-field
-              {:value subname
-               :on-change #(swap! form-data assoc :ens.record/subname (aget %2 "value"))}]]]]]
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :class "join-upper"}
-           [:p.input-info
-            "You can freely create any number of unique subnames from owned name. "
-            "Each subname can be traded, transferred or pointed to an address, same way as any other ENS name."]
-           [:p.input-info
-            (when correct-subname?
-              (str
-               full-subname " will be created"))]]]
-         [ui/GridRow
-          {:centered true}
-          [:div
-           [transaction-button
-            {:primary true
-             :disabled submit-disabled?
-             :pending? @(subscribe [:ens.set-subnode-owner/tx-pending?
-                                    (namehash full-name)
-                                    (when subname (sha3 subname))])
-             :pending-text "Creating subname..."
-             :on-click #(dispatch [:ens/set-subnode-owner @form-data])}
-            "Create Subname"]]]]))))
+        [:div.grid.submit-footer.offering-form
+         [:div.name-ownership
+          [ens-name-input-ownership-validated
+           {:value name
+            :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+
+         [:div.subname
+          [subname-text-field
+           {:value subname
+            :on-change #(swap! form-data assoc :ens.record/subname (aget %2 "value"))}]]
+         [:div.info
+          [:p.input-info
+           "You can freely create any number of unique subnames from owned name. "
+           "Each subname can be traded, transferred or pointed to an address, same way as any other ENS name."]
+          [:p.input-info
+           (when correct-subname?
+             (str
+              full-subname " will be created"))]]
+         [:div.button
+          [transaction-button
+           {:primary true
+            :disabled submit-disabled?
+            :pending? @(subscribe [:ens.set-subnode-owner/tx-pending?
+                                   (namehash full-name)
+                                   (when subname (sha3 subname))])
+            :pending-text "Creating subname..."
+            :on-click #(dispatch [:ens/set-subnode-owner @form-data])}
+           "Create Subname"]]]))))
 
 (defn transfer-ownership-form [defaults]
   (let [form-data (r/atom (default-transfer-name-form-data defaults))]
@@ -271,47 +229,33 @@
             top-level? (top-level-name? full-name)
             node-hash (sha3 name)
             registrar-entry @(subscribe [:registrar/entry node-hash])]
-        [ui/Grid
-         {:class "layout-grid submit-footer offering-form"}
-         [ui/GridRow
-          [ui/GridColumn
-           [ui/Grid
-            {:relaxed "very"}
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [ens-name-input-ownership-validated
-              {:value name
-               :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
-            [ui/GridColumn
-             {:computer 8
-              :mobile 16}
-             [address-text-field
-              {:value owner
-               :on-change #(swap! form-data assoc :ens.record/owner (aget %2 "value"))}]]]]]
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :class "join-upper"}
-           [:p.input-info
-            "By transferring ownership you're giving full control over ENS name as well as its locked funds to a new owner."]
-           (when-not submit-disabled?
-             [:p.input-info
-              owner " will become owner of the " full-name ","
-              (when top-level?
-                (str " as well as owner of the locked value "
-                     (format-eth-with-code
-                       (:registrar.entry.deed/value registrar-entry))))])]]
-         [ui/GridRow
-          {:centered true}
-          [:div
-           [transaction-button
-            {:primary true
-             :disabled submit-disabled?
-             :pending? @(subscribe [:transfer-ownership/tx-pending? (namehash full-name) name top-level?])
-             :pending-text "Transferring ownership..."
-             :on-click #(dispatch [:name/transfer-ownership full-name owner])}
-            "Transfer ownership"]]]]))))
+        [:div.grid.submit-footer.offering-form
+         [:div.name-ownership
+          [ens-name-input-ownership-validated
+           {:value name
+            :on-change #(swap! form-data assoc :ens.record/name (aget %2 "value"))}]]
+         [:div.address
+          [address-text-field
+           {:value owner
+            :on-change #(swap! form-data assoc :ens.record/owner (aget %2 "value"))}]]
+         [:div.info
+          [:p.input-info
+           "By transferring ownership you're giving full control over ENS name as well as its locked funds to a new owner."]
+          (when-not submit-disabled?
+            [:p.input-info
+             owner " will become owner of the " full-name ","
+             (when top-level?
+               (str " as well as owner of the locked value "
+                    (format-eth-with-code
+                     (:registrar.entry.deed/value registrar-entry))))])]
+         [:div.button
+          [transaction-button
+           {:primary true
+            :disabled submit-disabled?
+            :pending? @(subscribe [:transfer-ownership/tx-pending? (namehash full-name) name top-level?])
+            :pending-text "Transferring ownership..."
+            :on-click #(dispatch [:name/transfer-ownership full-name owner])}
+           "Transfer ownership"]]]))))
 
 (defmethod page :route.user/manage-names []
   (fn []

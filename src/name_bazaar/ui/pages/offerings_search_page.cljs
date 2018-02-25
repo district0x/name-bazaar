@@ -71,20 +71,14 @@
          (dissoc props :on-confirm :on-cancel))
        [ui/ModalHeader "Save Search"]
        [ui/ModalContent
-        [ui/Grid
-         [ui/GridRow
-          [ui/GridColumn
-           {:computer 6
-            :tablet 8
-            :mobile 14}
-           [input
-            {:label "Search Name"
-             :fluid true
-             :value @saved-search-name
-             :on-change #(reset! saved-search-name (aget %2 "value"))}]]]
-         [ui/GridRow
-          {:class :description}
-          [ui/GridColumn
+        [:div
+         [:div.grid.search
+          [input
+           {:label "Search Name"
+            :fluid true
+            :value @saved-search-name
+            :on-change #(reset! saved-search-name (aget %2 "value"))}]
+          [:div.description
            "Note: Search is saved only in your browser. It's not stored on a blockchain or a server"]]]]
        [ui/ModalActions
         [ui/Button
@@ -233,118 +227,59 @@
         mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn []
       [ui/Segment
-       [ui/Grid
-        {:celled :internally}
-        [ui/GridRow
-         [ui/GridColumn
-          {:computer 8
-           :tablet 8
-           :mobile 16}
-          [offerings-keyword-text-field]]
-         (when @mobile?
-           [ui/GridColumn
-            {:class "join-upper hide-divider"
-             :mobile 16}
-            [:div.offerings-search-options-section
-             [order-by-select-field]
-             [reset-filter-button
-              {:on-click #(reset! open? false)}]]])
-         [ui/GridColumn
-          {:vertical-align :bottom
-           :class "hide-divider join-upper"
-           :computer 8
-           :tablet 8
-           :mobile 16}
-          [:div.offerings-search-options-section
-           [ui/Grid
-            (when-not @mobile?
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [offerings-keyword-position-select]])
-            [ui/GridColumn
-             {:computer 8
-              :tablet 8
-              :mobile 16}
-             [saved-searches-select]]]
-           [save-search-button]]]]
-        (if (or (not @mobile?) @open?)
-          [ui/GridRow
-           [ui/GridColumn
-            {:computer 8
-             :tablet 8
-             :mobile 16}
-            [ui/Grid
-             {:class :checkbox-filtering-options}
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [buy-now-offerings-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [subnames-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [auction-offerings-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [exclude-numbers-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [top-level-names-checkbox]]
-             [ui/GridColumn
-              {:computer 8
-               :tablet 8
-               :mobile 16}
-              [exclude-special-chars-checkbox]]]]
-           [ui/GridColumn
-            {:computer 8
-             :tablet 8
-             :mobile 16
-             :class :mobile-hide-divider}
-            [:div.offerings-search-options-section
-             [ui/Grid
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [min-price-input]]
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [max-price-input]]
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [min-length-input]]
-              [ui/GridColumn
-               {:computer 8
-                :tablet 8
-                :mobile 16}
-               [max-length-input]]
+       (concat
+        [[:div.grid.search-params
+          (concat
+           [[:div.keyword
+             [offerings-keyword-text-field]]]
+           (when @mobile?
+             [[:div.grid.offerings-search-options-section-mobile
+               [:div.order-by-select
+                [order-by-select-field]]
+               [:div.reset-filter
+                [reset-filter-button
+                 {:on-click #(reset! open? false)}]]]])
+           [[:div.offerings-mode-section
+             [:div.grid.keyword-position
               (when-not @mobile?
-                [ui/GridColumn
-                 {:width 16}
-                 [order-by-select-field]])]
-             (when-not @mobile?
-               [reset-filter-button])]]]
-          [ui/GridRow
-           {:centered true}
-           [:div.show-advanced-search-options
-            {:on-click #(reset! open? true)}
-            "Show Advanced Options ▾"]])]])))
+                [:div.position-selector
+                 [offerings-keyword-position-select]])
+              [:div.saved-searches-select
+               [saved-searches-select]]
+              [:div.saved-button
+               [save-search-button]]]]]
+           (if (or (not @mobile?) @open?)
+             [[:div.grid.checkbox-filtering-options
+               [:div.checkbox.buy-now
+                [buy-now-offerings-checkbox]]
+               [:div.checkbox.subnames
+                [subnames-checkbox]]
+               [:div.checkbox.auction-offerings
+                [auction-offerings-checkbox]]
+               [:div.checkbox.exclude-numbers
+                [exclude-numbers-checkbox]]
+               [:div.checkbox.tld
+                [top-level-names-checkbox]]
+               [:div.checkbox.specialchars
+                [exclude-special-chars-checkbox]]]
+              [:div.grid.offerings-search-options-section
+               [:div.min-price
+                [min-price-input]]
+               [:div.max-price
+                [max-price-input]]
+               [:div.min-length
+                [min-length-input]]
+               [:div.max-length
+                [max-length-input]]
+               (when-not @mobile?
+                 [:div.order-by-select
+                  [order-by-select-field]])
+               (when-not @mobile?
+                 [:div.reset-filter
+                  [reset-filter-button]])]]
+             [[:div.show-advanced-search-options
+               {:on-click #(reset! open? true)}
+               "Show Advanced Options ▾"]]))]])])))
 
 (defn offerings-search-results []
   (let [search-results (subscribe [:offerings/main-search])
