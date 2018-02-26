@@ -16,31 +16,22 @@
         active-address-has-email? (subscribe [:district0x-emails/active-address-has-email?])]
     (fn []
       (let [valid? (valid-email? @email-value {:allow-empty? true})]
-        [ui/Grid
-         {:class "layout-grid submit-footer"}
-         [ui/GridRow
-          [ui/GridColumn
-           {:mobile 16
-            :tablet 8
-            :computer 6}
+        [:div
+         [:div.grid.my-settings.submit-footer
+          [:div.email
            [input
             {:label "Email"
              :fluid true
              :value @email-value
              :error (not valid?)
-             :on-change #(reset! email-value (aget %2 "value"))}]]]
-         [ui/GridRow
-          [ui/GridColumn
-           {:class :join-upper}
-           (when @active-address-has-email?
-             [:div.description.success "Your address has encrypted email associated already"])
-           [:div.description
-            "Email associated with your address will be encrypted and stored on a public blockchain. "
-            "Only our email server will be able to decrypt it. We'll use it to send you notifications about
-             your purchases, sells and offering requests."]]]
-         [ui/GridRow
-          {:centered true}
-          [:div
+             :on-change #(reset! email-value (aget %2 "value"))}]]
+          (when @active-address-has-email?
+            [:div.description.success "Your address has encrypted email associated already"])
+          [:div.description
+           "Email associated with your address will be encrypted and stored on a public blockchain. "
+           "Only our email server will be able to decrypt it. We'll use it to send you notifications about
+             your purchases, sells and offering requests."]
+          [:div.button
            [transaction-button
             {:primary true
              :disabled (or (empty? @email-value)

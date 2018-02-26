@@ -35,27 +35,23 @@
   (let [search-results (subscribe [:offerings/user-bids])]
     (fn []
       (let [{:keys [:params]} @search-results]
-        [ui/Grid
-         {:class :checkbox-filtering-options
-          :padded :vertically}
-         [ui/GridColumn
-          {:width 16}
+        [:div
+         [:div.grid.checkbox-filtering-options
           [ui/Checkbox
            {:label "Winning"
             :checked (boolean (:winning? params))
-            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:winning? (aget %2 "checked")}])}]]
-         [ui/GridColumn
-          {:width 16}
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search
+                                   {:winning? (aget %2 "checked")}])}]
           [ui/Checkbox
            {:label "Outbid"
             :checked (boolean (:outbid? params))
-            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:outbid? (aget %2 "checked")}])}]]
-         [ui/GridColumn
-          {:width 16}
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search
+                                   {:outbid? (aget %2 "checked")}])}]
           [ui/Checkbox
            {:label "Finished auctions"
             :checked (not (:min-end-time-now? params))
-            :on-change #(dispatch [:offerings.user-bids/set-params-and-search {:min-end-time-now? (not (aget %2 "checked"))}])}]]]))))
+            :on-change #(dispatch [:offerings.user-bids/set-params-and-search
+                                   {:min-end-time-now? (not (aget %2 "checked"))}])}]]]))))
 
 (defn user-bids []
   (let [search-results (subscribe [:offerings/user-bids])
@@ -66,25 +62,11 @@
                             :description (if-let [address (:user/address @route-params)]
                                            (str "See all bids for ENS name offerings of " address))}}
          [ui/Segment
-          [ui/Grid
-           {:padded true
-            :class "no-inner-horizontal-padding mobile-inner-vertical-padding"}
-           [ui/GridColumn
-            {:width 16
-             :class :join-upper}
-            [:h1.ui.header title]]
-           [ui/GridColumn
-            {:computer 8
-             :tablet 16
-             :mobile 16}
-            [user-bids-search-checkboxes]]
-           [ui/GridColumn
-            {:computer 6
-             :tablet 8
-             :mobile 16
-             :floated "right"
-             :vertical-align :bottom}
-            [user-bids-order-by-select]]]
+          [:div
+           [:div.grid.bids
+            [:div.header [:h1.ui title]]
+            [:div.search-checkboxes [user-bids-search-checkboxes]]
+            [:div.order [user-bids-order-by-select]]]]
           [offering-infinite-list
            {:class "primary"
             :total-count total-count

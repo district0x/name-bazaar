@@ -45,15 +45,12 @@
     (fn [props]
       (let [{:keys [:offering/address]} @offering
             time-remaining @(subscribe [:auction-offering/end-time-countdown address])]
-        [ui/Grid
-         {:columns "equal"
-          :divided true
-          :text-align :center
-          :vertical-align :middle}
+        [:div.grid.offering-countdown
          (for [unit [:days :hours :minutes :seconds]]
            (let [amount (get time-remaining unit 0)]
-             [ui/GridColumn
-              {:key unit}
+             ^{:key unit}
+             [:div
+              {:class unit}
               [:div.stat-number amount]
               [:div.time-unit (pluralize (time-unit->text unit) amount)]]))]))))
 
@@ -66,71 +63,50 @@
         [:div.offering-stats
          {:class type}
          (if auction?
-           [ui/Grid
-            {:celled true
-             :columns 3
-             :centered true}
-            [ui/GridColumn
-             {:width 8
-              :class :price}
-             [:i.icon.dollar-circle]
-             [:div.offering-stat
-              [:h5.ui.header.sub
-               (if (pos? bid-count) "Highest Bid" "Starting Price")]
-              [:div.stat-number price-formatted]]]
-            [ui/GridColumn
-             {:width 8
-              :class :bid-count}
-             [:i.icon.hammer]
-             [:div.offering-stat
-              [:h5.ui.header.sub "Number of bids"]
-              [:div.stat-number bid-count]]]
-            [ui/GridRow
-             [ui/GridColumn
-              {:width 16
-               :class :time-remaining}
+           [:div
+            [:div.grid.auction
+             [:div.price
+              [:i.icon.dollar-circle]
+              [:div.offering-stat
+               [:h5.ui.header.sub
+                (if (pos? bid-count) "Highest Bid" "Starting Price")]
+               [:div.stat-number price-formatted]]]
+             [:div.bid-count
+              {:width 8
+               :class :bid-count}
+              [:i.icon.hammer]
+              [:div.offering-stat
+               [:h5.ui.header.sub "Number of bids"]
+               [:div.stat-number bid-count]]]
+             [:div.time-remaining
               [:i.icon.clock]
               [:div.offering-stat
                [:h5.ui.header.sub "Time Remaining"]
                [auction-offering-countdown]]]]]
-           [ui/Grid
-            {:columns 1
-             :celled true}
-            [ui/GridColumn
-             {:class :price}
-             [:i.icon.dollar-circle]
-             [:div.offering-stat
-              [:h5.ui.header.sub "Price"]
-              [:div.stat-number price-formatted]]]])]))))
+           [:div.grid.price
+            [:i.icon.dollar-circle]
+            [:div.offering-stat
+             [:h5.ui.header.sub "Price"]
+             [:div.stat-number price-formatted]]])]))))
 
 (defn offering-detail []
   (let [offering (subscribe [:offerings/route-offering])]
     (fn []
-      [ui/Grid
-       {:class "layout-grid submit-footer offering-detail"
-        :celled "internally"}
-       [ui/GridRow
-        [ui/GridColumn
-         {:mobile 16
-          :computer 8}
-         [:div.tags
-          [offering-detail-status-tag]
-          [offering-detail-type-tag]]
-         [:div
-          [offering-general-info
-           {:offering @offering}]]]
-        [ui/GridColumn
-         {:mobile 16
-          :computer 8}
-         [offering-stats]]]
-       [ui/GridRow
-        {:centered true}
-        [offering-middle-section
-         {:offering @offering}]]
-       [ui/GridRow
-        {:centered true}
-        [offering-bottom-section
-         {:offering @offering}]]])))
+      [:div
+       [:div.grid.submit-footer.offering-detail
+        [:div.tags
+         [offering-detail-status-tag]
+         [offering-detail-type-tag]]
+        [:div.general-info
+         [offering-general-info
+          {:offering @offering}]]
+        [:div.offering-st [offering-stats]]
+        [:div.offering-middle
+         [offering-middle-section
+          {:offering @offering}]]
+        [:div.offering-bottom-section
+         [offering-bottom-section
+          {:offering @offering}]]]])))
 
 (defn similar-offerings []
   (let [search-results (subscribe [:offerings/similar-offerings])]
@@ -168,24 +144,12 @@
                       {:meta {:title (str name " Auction")
                                     :description (str name " is offered on NameBazaar!")}})
          [ui/Segment
-          [ui/Grid
-           {:class "layout-grid"}
-           [ui/GridRow
-            [ui/GridColumn
-             {:class :join-lower
-              :computer 8
-              :tablet 8
-              :mobile 16}
-             [:h1.ui.header "Offering " name]]
-            [ui/GridColumn
-             {:class :join-lower
-              :computer 8
-              :tablet 8
-              :mobile 16
-              :floated "right"}
-             [share-buttons
-              {:url @(subscribe [:page-share-url :route.offerings/detail {:offering/address address}])
-               :title (str "Check out offering for " name " on NameBazaar")}]]]]
+          [:div.grid.layout-grid
+           [:div.header [:h1.join-lower.ui.header "Offering " name]]
+           [:div.join-lower.share-buttons
+            [share-buttons
+             {:url @(subscribe [:page-share-url :route.offerings/detail {:offering/address address}])
+              :title (str "Check out offering for " name " on NameBazaar")}]]]
           (if offering-loaded?
             [offering-detail]
             [:div.padded [content-placeholder]])]

@@ -33,20 +33,9 @@
 
 (defn search-params-panel []
   [ui/Segment
-   [ui/Grid
-    {:celled :internally}
-    [ui/GridRow
-     [ui/GridColumn
-      {:computer 10
-       :tablet 10
-       :mobile 16}
-      [offerings-keyword-text-field]]
-     [ui/GridColumn
-      {:class "hide-divider mobile-join-upper"
-       :computer 6
-       :tablet 6
-       :mobile 16}
-      [offering-requests-keyword-position-select]]]]])
+   [:div.grid.request-search-panel
+    [:div.keyword [offerings-keyword-text-field]]
+    [:div.position [offering-requests-keyword-position-select]]]])
 
 (defn offering-requests-search-results []
   (let [search-results (subscribe [:offering-requests/main-search])]
