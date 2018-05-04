@@ -479,7 +479,7 @@
                  "Create Offering"])
               (when (contains? #{:registrar.entry.state/loading
                                  :registrar.entry.state/empty-name
-                                 "registrar.entry.state/open"
+                                 :registrar.entry.state/open
                                  :registrar.entry.state/auction-no-user-made-bid
                                  ::invalid-length
                                  ::subname
