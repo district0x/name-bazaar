@@ -7,22 +7,23 @@
                  [cljs-web3 "0.19.0-0-8"]
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
-                 [cljsjs/react "15.6.1-2"]
-                 [cljsjs/react-datepicker "0.55.0-0"]
-                 [cljsjs/react-dom "15.6.1-2"]
-                 [cljsjs/react-infinite "0.12.1-0"]
+                 [cljsjs/react "16.4.1-0"]
+                 [cljsjs/react-datepicker "1.5.0-0"]
+                 [cljsjs/react-dom "16.4.1-0"]
+                 [cljsjs/react-infinite "0.13.0-0"]
                  [cljsjs/react-meta-tags "0.3.0-1"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
-                 ;[honeysql "0.9.1"]
-                 ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
-                 [madvas/honeysql "0.9.1"]
+                 [honeysql "0.9.3"]
                  [medley "1.0.0"]
                  [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
-                 [re-frame "0.9.4"]
-                 [re-frisk "0.5.3"]
+                 ;; TODO: On vbump, remove exclusion when new re-frame bumps reagent to 0.8.1+
+                 [re-frame "0.10.5" :exclusions [reagent]]
+                 [reagent "0.8.1"]
+                 ;; --------------------------------------------------------------------------
+                 [re-frisk "0.5.4"]
                  [soda-ash "0.76.0"]
 
                  [district0x/bignumber "1.0.1"]
@@ -59,13 +60,11 @@
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
-               [org.clojure/clojurescript]
-               ;; Until PR https://github.com/jkk/honeysql/pull/195 is merged
-               [honeysql]]
+               [org.clojure/clojurescript]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
-            [lein-figwheel "0.5.14"]
+            [lein-figwheel "0.5.16"]
             [lein-shell "0.5.0"]
             [lein-doo "0.1.8"]
             [lein-npm "0.6.2"]
@@ -85,16 +84,22 @@
 
   :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
 
+  :repl-options {:timeout 120000}
+
   :min-lein-version "2.5.3"
 
   :source-paths ["src" "test"]
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target" "dev-server"]
+  :clean-targets ^{:protect false} ["resources/public/js/compiled"
+                                    "target"
+                                    "dev-server"
+                                    "server-tests"
+                                    "browser-tests"]
 
   :figwheel {:server-port 4544
-             :css-dirs ["resources/public/css"]}
+             :css-dirs ["resources/public/css"]
+             :repl-eval-timeout 30000} ;; 30 seconds
 
-  :repl-options {:timeout 120000}
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
 
@@ -107,16 +112,20 @@
             "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
-                                  [binaryage/devtools "0.9.7"]
-                                  [com.cemerick/piggieback "0.2.2"]
-                                  [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
+                                  [binaryage/devtools "0.9.10"]
+                                  [cider/piggieback "0.3.9"]
+                                  [figwheel "0.5.16"]
+                                  [figwheel-sidecar "0.5.16" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev" "src"]
+                   :plugins [[lein-figwheel "0.5.16"]]
+                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]
+                                  :timeout 120000}
                    :resource-paths ["resources"]}}
-
-  :cljsbuild {:builds [{:id "dev"
-                        :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
-                                       "src/district0x/ui" "src/district0x/shared"]
+  
+  :cljsbuild {:builds [;; Development on client-side UI, which uses a testnet
+                       {:id "dev-ui"
+                        :source-paths ["src"]
                         :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
@@ -129,17 +138,36 @@
                                                      district0x.ui.history.pushroute-hosts "localhost"
                                                      name-bazaar.ui.db.log-level "debug"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
+
+                       ;; Development on client-side UI, with mainnet
+                       {:id "dev-ui-only"
+                        :source-paths ["src"]
+                        :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :output-dir "resources/public/js/compiled/out-ui-only"
+                                   :asset-path "js/compiled/out-ui-only"
+                                   :source-map-timestamp true
+                                   :preloads [print.foo.preloads.devtools]
+                                   :closure-defines {goog.DEBUG true
+                                                     name-bazaar.ui.db.environment "prod"
+                                                     district0x.ui.history.pushroute-hosts "localhost"
+                                                     name-bazaar.ui.db.log-level "debug"}
+                                   :external-config {:devtools/config {:features-to-install :all}}}}
+
+                       ;; Development on server-side with testnet
                        {:id "dev-server"
-                        :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/shared"]
+                        :source-paths ["src" "dev"]
                         :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
-                        :compiler {:main "name-bazaar.server.dev"
+                        :compiler {:main "cljs.user"
                                    :output-to "dev-server/name-bazaar.js",
                                    :output-dir "dev-server",
                                    :target :nodejs,
                                    :optimizations :none,
                                    :closure-defines {goog.DEBUG true}
                                    :source-map true}}
+
+                       ;; Production on server-side with mainnet
                        {:id "server"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.server.core"
@@ -150,6 +178,8 @@
                                    :source-map "server/name-bazaar.js.map"
                                    :closure-defines {goog.DEBUG false}
                                    :pretty-print false}}
+
+                       ;; Production on client-side with mainnet
                        {:id "min"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
@@ -161,9 +191,10 @@
                                                      name-bazaar.ui.db.log-level "error"}
                                    :pretty-print false
                                    :pseudo-names false}}
+
+                       ;; Testing on server-side
                        {:id "server-tests"
-                        :source-paths ["src/name_bazaar/server" "src/name_bazaar/shared"
-                                       "src/district0x/shared" "test/server"]
+                        :source-paths ["src" "test"]
                         :figwheel true
                         :compiler {:main "server.run-tests"
                                    :output-to "server-tests/server-tests.js",
@@ -172,10 +203,10 @@
                                    :optimizations :none,
                                    :verbose false
                                    :source-map true}}
+
+                       ;; Testing on client-side
                        {:id "browser-tests"
-                        :source-paths ["src/name_bazaar/ui" "src/name_bazaar/shared"
-                                       "src/district0x/ui" "src/district0x/shared"
-                                       "test/browser"]
+                        :source-paths ["src" "test"]
                         :compiler {:output-to "browser-tests/browser-tests.js",
                                    :output-dir "browser-tests",
                                    :main browser.run-tests
