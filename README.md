@@ -8,30 +8,50 @@ See at [https://namebazaar.io](https://namebazaar.io)
 
 Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tree/master/resources/public/contracts/src).
 
-## Start dev server
+## Starting a dev server with an Ethereum Testnet
+
+In a terminal, start a ganache blockchain
+
 ```bash
-# In separete terminal start Ganache blockchain
 ganache-cli -p 8549
+```
 
-# In separate terminal start autocompiling smart-contracts
+Open another terminal, start autocompiling smart-contracts
+
+```bash
 lein auto compile-solidity
+```
 
-# In separate terminal start server REPL
-git clone https://github.com/district0x/name-bazaar
-lein deps
+Open another terminal, start a repl and build the dev server (with
+figwheel repl)
+
+```bash
 lein repl
 (start-server!)
+```
 
-# In separate terminal run server
+Figwheel will prompt for a connection for the repl instance.
+
+Open another terminal, run the compiled server script, which should
+connect to the figwheel repl.
+
+```bash
 node dev-server/name-bazaar.js
 ```
+
 #### Redeploy smart-contracts and generate mock data
+
 ```bash
-# In server REPL run:
-(name-bazaar.server.dev/redeploy)
+# In the figwheel server REPL run:
+(redeploy)
 ```
+
+Redeployment / Generation can take a long time, please be patient.
+
+
 #### Start server with custom config
 Namebazaar uses [district-server-config](https://github.com/district0x/district-server-config) for loading configuration. So you can create `config.edn` somewhat like this:
+
 ```clojure
 {:emailer {:private-key "25677d268904ea651f84e37cfd580696c5c793dcd9730c415bf03b96003c09e9ef8"
            :print-mode? true}
@@ -42,17 +62,41 @@ Namebazaar uses [district-server-config](https://github.com/district0x/district-
  :web3 {:port 8549}
  :endpoints {:port 6200}}
 ```
+
 ## Start dev UI
+
+If you wish to connect to the dev server discussed above, open a
+separate terminal, and build the client-side ui
+
 ```bash
 lein repl
 (start-ui!)
+```
 
-# In separate terminal run
+You can then connect to the server through a web browser at http://localhost:4541
+
+## Start a development UI for client-side development only
+
+If you're only focusing on working with the UI, you can start a UI
+interface which connects to the production server using mainnet.
+
+```bash
+lein repl
+(start-ui! :ui-only? true)
+```
+
+In separate terminal, start the supplied docker nginx server
+
+```bash
 docker-compose build nginx
 docker-compose up nginx
 
 # Visit website at http://localhost:3001
 ```
+
+**Note: using this client is using the main ethereum network, it is
+ill-advised to carry out transactions unless you know what you are doing!**
+
 
 ## Backend (server) tests:
 
@@ -86,7 +130,9 @@ docker-compose up nginx
 and start (start-ui!), (start-server!) as usual, but open the site on http://localhost:3001
 
 ## Build for production
+
 Following commands are used to build system for production
+
 ```bash
 lein build-prod-server
 lein build-prod-ui
