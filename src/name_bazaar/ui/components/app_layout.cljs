@@ -1,5 +1,6 @@
 (ns name-bazaar.ui.components.app-layout
   (:require
+    [district.ui.mobile.subs :as mobile-subs]
     [district0x.ui.components.active-address-balance :refer [active-address-balance]]
     [district0x.ui.components.active-address-select :refer [active-address-select]]
     [district0x.ui.components.snackbar :refer [snackbar]]
@@ -113,9 +114,21 @@
                       {:value address
                        :text (format-user-address address @(subscribe [:reverse-resolved-address address]))}))}}])))
 
+
+(defn mobile-coinbase-overlay []
+  (let [mobile-coinbase-appstore-link @(subscribe [::mobile-subs/coinbase-appstore-link])]
+    (fn []
+      [:div#mobile-coinbase-overlay
+       {:on-click #(dispatch [:district0x.location/nav-to-url mobile-coinbase-appstore-link])}
+       [:span "Make offers with"]
+       [:img {:src "/images/coinbase_logo.png"}]])))
+
+
 (defn app-bar []
   (let [open? (subscribe [:district0x.transaction-log/open?])
-        my-addresses (subscribe [:district0x/my-addresses])]
+        my-addresses (subscribe [:district0x/my-addresses])
+        mobile-coinbase-compatible? @(subscribe [::mobile-subs/coinbase-compatible?])]
+    
     (fn []
       [:div.app-bar
        [:div.left-section
@@ -134,7 +147,9 @@
         (if (empty? @my-addresses)
           [:div "No Accounts"]
           [active-address-balance])
-        [:i.icon.transactions]]])))
+        [:i.icon.transactions]]
+       (when (and (empty? @my-addresses) mobile-coinbase-compatible?)
+         [mobile-coinbase-overlay])])))
 
 (defn app-layout []
   (let [drawer-open? (subscribe [:district0x/menu-drawer-open?])
