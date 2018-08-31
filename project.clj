@@ -12,6 +12,7 @@
                  [cljsjs/react-dom "16.4.1-0"]
                  [cljsjs/react-infinite "0.13.0-0"]
                  [cljsjs/react-meta-tags "0.3.0-1"]
+                 [com.rpl/specter "1.1.1"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.3"]
@@ -19,10 +20,9 @@
                  [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
-                 ;; TODO: On vbump, remove exclusion when new re-frame bumps reagent to 0.8.1+
-                 [re-frame "0.10.5" :exclusions [reagent]]
+                 [re-frame "0.10.5"]
+                 ;; Can be removed when re-frame vbump includes reagent 8.0.1+
                  [reagent "0.8.1"]
-                 ;; --------------------------------------------------------------------------
                  [re-frisk "0.5.4"]
                  [soda-ash "0.76.0"]
 
@@ -60,7 +60,9 @@
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
-               [org.clojure/clojurescript]]
+               [org.clojure/clojurescript]
+               ;; Can be removed when re-frame vbump includes reagent 8.0.1+
+               [reagent]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
@@ -135,22 +137,6 @@
                                    :preloads [print.foo.preloads.devtools]
                                    :closure-defines {goog.DEBUG true
                                                      name-bazaar.ui.db.environment "dev"
-                                                     district0x.ui.history.pushroute-hosts "localhost"
-                                                     name-bazaar.ui.db.log-level "debug"}
-                                   :external-config {:devtools/config {:features-to-install :all}}}}
-
-                       ;; Development on client-side UI, with mainnet
-                       {:id "dev-ui-only"
-                        :source-paths ["src"]
-                        :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
-                        :compiler {:main "name-bazaar.ui.core"
-                                   :output-to "resources/public/js/compiled/app.js"
-                                   :output-dir "resources/public/js/compiled/out-ui-only"
-                                   :asset-path "js/compiled/out-ui-only"
-                                   :source-map-timestamp true
-                                   :preloads [print.foo.preloads.devtools]
-                                   :closure-defines {goog.DEBUG true
-                                                     name-bazaar.ui.db.environment "prod"
                                                      district0x.ui.history.pushroute-hosts "localhost"
                                                      name-bazaar.ui.db.log-level "debug"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
