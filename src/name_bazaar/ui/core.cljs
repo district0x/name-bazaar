@@ -3,12 +3,14 @@
     [cljs-time.extend]
     [cljs.spec.alpha :as s]
     [cljsjs.web3]
+    [district.ui.mobile]
     [district0x.ui.events]
     [district0x.ui.history :as history]
     [district0x.ui.logging :as d0x-logging]
     [district0x.ui.subs]
     [district0x.ui.utils :as d0x-ui-utils :refer [prerender-user-agent?]]
     [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
+    [mount.core :as mount]
     [name-bazaar.ui.components.main-panel :refer [main-panel]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.db :as ui-db]
@@ -31,6 +33,7 @@
 (defn mount-root []
   (google-analytics-fx/set-enabled! (not debug?))
   (clear-subscription-cache!)
+  (mount/start #'district.ui.mobile/mobile)
   (r/render [main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []

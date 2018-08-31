@@ -24,6 +24,9 @@
       (set-location-hash! path)
       (set-history! path))))
 
+(defn nav-to-url! [url]
+  (set! (.-href js/location) url))
+
 (defn set-location-query! [query-params]
   (let [url-query (cond
                     (map? query-params) (when-let [query (url/map->query query-params)]
@@ -46,6 +49,11 @@
   :location/nav-to
   (fn [[route route-params routes]]
     (nav-to! route route-params routes)))
+
+(reg-fx
+  :location/nav-to-url
+  (fn [[url]]
+    (nav-to-url! url)))
 
 (reg-fx
   :location/add-to-query

@@ -35,6 +35,7 @@
                  [district0x/district-server-smart-contracts "1.0.1"]
                  [district0x/district-server-web3 "1.0.1"]
                  [district0x/district-server-web3-watcher "1.0.2"]
+                 [district0x/district-ui-mobile "1.0.0"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
@@ -111,6 +112,7 @@
                                   [com.cemerick/piggieback "0.2.2"]
                                   [figwheel-sidecar "0.5.14" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 

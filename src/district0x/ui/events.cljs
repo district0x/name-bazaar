@@ -801,6 +801,12 @@
     {:location/nav-to [route route-params routes]}))
 
 (reg-event-fx
+  :district0x.location/nav-to-url
+  interceptors
+  (fn [{:keys [:db]} [url]]
+    {:location/nav-to-url [url]}))
+
+(reg-event-fx
   :district0x.location/add-to-query
   interceptors
   (fn [_ [query-params]]
