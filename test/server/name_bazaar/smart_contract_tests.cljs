@@ -220,7 +220,7 @@
           (is (not (nil? offering))))
         (when offering
 
-          (testing "Transferrnig ownership to the offer"
+          (testing "Transferring ownership to the offer"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr0})))
           (testing "Can't bid below the price"
