@@ -98,7 +98,6 @@
       [(subscribe [:ens.set-owner/tx-pending? node])]))
   first)
 
-
 ;; TODO: move into district.ui.mobile repo
 (reg-sub
   ::mobile-subs/coinbase-appstore-link
@@ -106,6 +105,6 @@
   :<- [::mobile-subs/ios?]
   (fn [[android? ios?]]
     (cond
-      (true? android?) (:android-mobile-link constants/coinbase)
-      (true? ios?) (:ios-mobile-link constants/coinbase)
+      android? (:android-mobile-link constants/coinbase)
+      ios? (:ios-mobile-link constants/coinbase)
       :else (:main-mobile-link constants/coinbase))))

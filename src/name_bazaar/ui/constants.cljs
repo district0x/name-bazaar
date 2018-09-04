@@ -41,7 +41,6 @@
 (defn infinite-list-collapsed-item-height [mobile?]
   (if mobile? 70 54))
 
-
 (def coinbase
   {:main-mobile-link "https://wallet.coinbase.com/"
    :android-mobile-link "https://play.google.com/store/apps/details?id=org.toshi"
