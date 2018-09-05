@@ -30,11 +30,21 @@
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
-(def spent-gas-threshold 200000)
+;; ganache-cli default value
+(def gas-price 2e10)
 
 (defn now []
   (from-long (* (:timestamp (web3-eth/get-block @web3 (web3-eth/block-number @web3))) 1000)))
 
+(defn get-transaction-cost
+  "Get the total transaction cost for the given `transaction-address`.
+
+  Returns a BigNumber of the total wei that was required to carry out
+  the transaction."
+  [transaction-address]
+  (let [transaction-receipt (web3-eth/get-transaction-receipt @web3 transaction-address)
+        unit-of-gas-used (:gas-used transaction-receipt)]
+    (bn/* unit-of-gas-used gas-price)))
 
 (use-fixtures
   :each
@@ -44,10 +54,10 @@
            {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
-       (mount/only [#'district.server.web3
-                    #'district.server.smart-contracts/smart-contracts
-                    #'name-bazaar.server.deployer/deployer])
-       (mount/start)))
+         (mount/only [#'district.server.web3
+                      #'district.server.smart-contracts/smart-contracts
+                      #'name-bazaar.server.deployer/deployer])
+         (mount/start)))
    :after
    (fn []
      (mount/stop)
@@ -177,34 +187,35 @@
                                {:from addr0})))
     (testing "Offering the name with overdue endtime fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "abc.eth"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/minus (now) (time/seconds 1)))
-                               :auction-offering/extension-duration 0
-                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))
+                             {:offering/name "abc.eth"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/minus (now) (time/seconds 1)))
+                              :auction-offering/extension-duration 0
+                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             {:from addr0}))))
     (testing "Offering the name with 0 bidincrease fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "abc.eth"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 1)))
-                               :auction-offering/extension-duration 0
-                               :auction-offering/min-bid-increase (web3/to-wei 0 :ether)}
-                              {:from addr0}))))
+                             {:offering/name "abc.eth"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 1)))
+                              :auction-offering/extension-duration 0
+                              :auction-offering/min-bid-increase (web3/to-wei 0 :ether)}
+                             {:from addr0}))))
     (let [tx-hash (auction-offering-factory/create-offering!
-                    {:offering/name "abc.eth"
-                     :offering/price (eth->wei 0.1)
-                     :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                     :auction-offering/extension-duration 0
-                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                    {:from addr0})]
+                   {:offering/name "abc.eth"
+                    :offering/price (eth->wei 0.1)
+                    :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                    :auction-offering/extension-duration 0
+                    :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                   {:from addr0})]
       (testing "Offering the name for a bid"
         (is tx-hash))
 
       (let [{{:keys [:offering]} :args}
             (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
                                                                 :from-block 0
-                                                                :owner addr0})]
+                                                                :owner addr0})
+            bid-value-user-2 (web3/to-wei 0.2 :ether)]
         (testing "on-offering event should fire"
           (is (not (nil? offering))))
         (when offering
@@ -226,7 +237,7 @@
                                                           :from addr2}))))
           (testing "Correct increase of the bid is accepted"
             (is (auction-offering/bid! {:offering/address offering}
-                                       {:value (web3/to-wei 0.2 :ether)
+                                       {:value bid-value-user-2
                                         :from addr2})))
           (let [balance-of-2 (web3-eth/get-balance @web3 addr2)]
             (testing "Arbitrary increase of the bid is ok"
@@ -260,9 +271,10 @@
               (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
 
             (testing "User who was overbid, getting his funds back from auction offering."
-              (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.2 :ether))
-                        (web3-eth/get-balance @web3 addr2))
-                     spent-gas-threshold)))))))))
+              ;; Note: transaction costs don't apply, `balance-of-2` is tracked after the bid
+              (let [expected-balance (bn/+ balance-of-2 bid-value-user-2)
+                    actual-balance (web3-eth/get-balance @web3 addr2)]
+                (is (bn/zero? (bn/- expected-balance actual-balance)))))))))))
 
 
 (deftest offering-tld-ownership
@@ -293,20 +305,20 @@
 
     (testing "Can't offer for bid name I don't manage"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "notowned"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                               :auction-offering/extension-duration 0
-                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))
+                             {:offering/name "notowned"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                              :auction-offering/extension-duration 0
+                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             {:from addr0}))))
     (testing "Can't offer for bid name I don't own"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "notowndeed"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                               :auction-offering/extension-duration 0
-                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))))
+                             {:offering/name "notowndeed"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                              :auction-offering/extension-duration 0
+                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             {:from addr0}))))))
 
 (deftest offering-subdomain-ownership
   (let [[addr0 addr1 addr2] (web3-eth/accounts @web3)]
@@ -315,17 +327,17 @@
                                {:from addr0}))
 
       (is (ens/set-subnode-owner!
-            {:ens.record/label "mysub"
-             :ens.record/node "tld.eth"
-             :ens.record/owner addr0}
-            {:from addr0}))
+           {:ens.record/label "mysub"
+            :ens.record/node "tld.eth"
+            :ens.record/owner addr0}
+           {:from addr0}))
 
       (is (= addr0 (ens/owner {:ens.record/node (namehash "mysub.tld.eth")})))
       (is (ens/set-subnode-owner!
-            {:ens.record/label "theirsub"
-             :ens.record/node "tld.eth"
-             :ens.record/owner addr1}
-            {:from addr0}))
+           {:ens.record/label "theirsub"
+            :ens.record/node "tld.eth"
+            :ens.record/owner addr1}
+           {:from addr0}))
       (is (= addr0 (ens/owner {:ens.record/node (namehash "tld.eth")})))
       (is (= addr1 (ens/owner {:ens.record/node (namehash "theirsub.tld.eth")}))))
 
@@ -376,12 +388,12 @@
                                {:from addr1})))
 
     (let [tx-hash (auction-offering-factory/create-offering!
-                    {:offering/name "abc.eth"
-                     :offering/price (eth->wei 0.1)
-                     :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                     :auction-offering/extension-duration 0
-                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                    {:from addr1})]
+                   {:offering/name "abc.eth"
+                    :offering/price (eth->wei 0.1)
+                    :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                    :auction-offering/extension-duration 0
+                    :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                   {:from addr1})]
 
       (testing "Offering the name for a bid"
         (is tx-hash))
@@ -393,41 +405,76 @@
         (testing "on-offering event should fire"
           (is (not (nil? offering))))
 
-        (let [balance-of-1 (web3-eth/get-balance @web3 addr1)
+        (let [;; starting account balances
+              balance-of-1 (web3-eth/get-balance @web3 addr1)
               balance-of-2 (web3-eth/get-balance @web3 addr2)
-              balance-of-3 (web3-eth/get-balance @web3 addr3)]
-          (testing "Transferrnig ownership to the offer"
-            (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
-                                     {:from addr1})))
+              balance-of-3 (web3-eth/get-balance @web3 addr3)
+              
+              ;; bid values
+              bid-value-user-2 (web3/to-wei 0.1 :ether)
+              bid-value-user-3 (web3/to-wei 0.2 :ether)
+              bid-value-user-3-overbid (web3/to-wei 0.3 :ether)
+
+              ;; A temporary transaction log store
+              transaction-log (atom {})
+              log-tx! (fn [id result] (swap! transaction-log assoc id result) result)]
+
+          (testing "Transferring ownership to the offer"
+            (is (log-tx! :t1-register
+                         (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
+                                              {:from addr1}))))
 
           (testing "User 2 can place a proper bid"
-            (is (auction-offering/bid! {:offering/address offering}
-                                       {:value (web3/to-wei 0.1 :ether)
-                                        :from addr2})))
+            (is (log-tx! :t2-user2-place-bid
+                         (auction-offering/bid! {:offering/address offering}
+                                                {:value bid-value-user-2
+                                                 :from addr2}))))
+
+          (testing "Ensure User 2 has made the appropriate bid transaction with gas costs."
+            (let [bid-tx (:t2-user2-place-bid @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-tx)
+                  expected-balance (bn/- balance-of-2 tx-total-cost)
+                  expected-balance (bn/- expected-balance bid-value-user-2)
+                  actual-balance (web3-eth/get-balance @web3 addr2)]
+              (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 can place a proper bid too"
-            (is (auction-offering/bid! {:offering/address offering}
-                                       {:value (web3/to-wei 0.2 :ether)
-                                        :from addr3})))
+            (is (log-tx! :t3-user3-place-bid
+                         (auction-offering/bid! {:offering/address offering}
+                                                {:value bid-value-user-3
+                                                 :from addr3}))))
 
           (testing "User 2, who was overbid, should have his funds back from auction offering."
-            (is (< (- balance-of-2 (web3-eth/get-balance @web3 addr2))
-                   spent-gas-threshold)))
+            (let [;; The user will have his funds back, but he would still have paid a gas price
+                  bid-tx (:t2-user2-place-bid @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-tx)
+                  expected-balance (bn/- balance-of-2 tx-total-cost)
+                  actual-balance (web3-eth/get-balance @web3 addr2)]
+              (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 funds are spent on the bid"
-            (is (< (- balance-of-3
-                      (bn/+ (web3-eth/get-balance @web3 addr3) (web3/to-wei 0.2 :ether)))
-                   spent-gas-threshold)))
+            (let [bid-tx (:t3-user3-place-bid @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-tx)
+                  expected-balance (bn/- balance-of-3 tx-total-cost)
+                  expected-balance (bn/- expected-balance bid-value-user-3)
+                  actual-balance (web3-eth/get-balance @web3 addr3)]
+              (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 can overbid in order to afk himself"
-            (is (auction-offering/bid! {:offering/address offering}
-                                       {:value (web3/to-wei 0.3 :ether)
-                                        :from addr3})))
+            (is (log-tx! :t4-user3-place-overbid
+                         (auction-offering/bid! {:offering/address offering}
+                                                {:value bid-value-user-3-overbid
+                                                 :from addr3}))))
 
           (testing "User 3 who overbid himself, gets back only his own previous bids."
-            (is (< (- balance-of-3
-                      (bn/+ (web3-eth/get-balance @web3 addr3) (web3/to-wei 0.3 :ether)))
-                   spent-gas-threshold)))
+            (let [bid-tx-3 (:t3-user3-place-bid @transaction-log)
+                  bid-tx-4 (:t4-user3-place-overbid @transaction-log)
+                  tx-total-cost (bn/+ (get-transaction-cost bid-tx-3)
+                                      (get-transaction-cost bid-tx-4))
+                  expected-balance (bn/- balance-of-3 tx-total-cost)
+                  expected-balance (bn/- expected-balance bid-value-user-3-overbid)
+                  actual-balance (web3-eth/get-balance @web3 addr3)]
+              (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (web3-evm/increase-time! @web3 [(time/in-seconds (time/days 15))])
 
@@ -441,16 +488,20 @@
                                  :auction-offering/bid-count]))))
 
           (testing "Finalizing works when it's time"
-            (is (auction-offering/finalize! offering {:from addr0})))
+            (is (log-tx! :t5-user1-finalize
+                         (auction-offering/finalize! offering {:from addr0}))))
           (testing "Ensuring the new owner gets his name"
             (is (= addr3 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
           (testing "Ensuring the new owner gets his deed"
             (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
 
           (testing "Ensuring the previous owner gets the funds"
-            (is (< (- (web3-eth/get-balance @web3 addr1)
-                      (bn/+ balance-of-1 (web3/to-wei 0.3 :ether)))
-                   spent-gas-threshold))))))))
+            (let [bid-tx-1 (:t1-register @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-tx-1)
+                  expected-balance (bn/+ balance-of-1 bid-value-user-3-overbid)
+                  expected-balance (bn/- expected-balance tx-total-cost)
+                  actual-balance (web3-eth/get-balance @web3 addr1)]
+              (is (bn/zero? (bn/- expected-balance actual-balance))))))))))
 
 (deftest create-auction-offering-sanity-checks
   (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
@@ -459,19 +510,19 @@
                                {:from addr0})))
     (testing "Offering with the endtime too far in the future fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "abc.eth"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/plus (now)
-                                                                               (time/days (* 4 30))
-                                                                               (time/hours 1)))
-                               :auction-offering/extension-duration 0
-                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))
+                             {:offering/name "abc.eth"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/plus (now)
+                                                                              (time/days (* 4 30))
+                                                                              (time/hours 1)))
+                              :auction-offering/extension-duration 0
+                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             {:from addr0}))))
     (testing "Offering with the extension duration longer than auction duration fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "abc.eth"
-                               :offering/price (eth->wei 0.1)
-                               :auction-offering/end-time (to-epoch (time/plus (now) (time/days (* 2 30))))
-                               :auction-offering/extension-duration (time/in-seconds (time/days 61))
-                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))))
+                             {:offering/name "abc.eth"
+                              :offering/price (eth->wei 0.1)
+                              :auction-offering/end-time (to-epoch (time/plus (now) (time/days (* 2 30))))
+                              :auction-offering/extension-duration (time/in-seconds (time/days 61))
+                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             {:from addr0}))))))
