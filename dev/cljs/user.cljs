@@ -8,9 +8,9 @@
 (info "Run (redeploy) in the CLJS REPL for a fresh environment.")
 
 
-;; Redeploy Smart Contracts
-;; Note: this can cause the REPL to timeout while executing.
-(defn redeploy []
+(defn redeploy 
+  "Redeploy Smart Contracts"
+  []
   (warn "Redeployment is a long process, please be patient...")
   (.nextTick
    js/process
