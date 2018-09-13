@@ -444,6 +444,8 @@
                                                 {:value bid-value-user-3
                                                  :from addr3}))))
 
+          ;; FIXME: Compare to transaction receipt for original gas spent
+          ;; Issue # 131
           (testing "User 2, who was overbid, should have his funds back from auction offering."
             (let [;; The user will have his funds back, but he would still have paid a gas price
                   bid-tx (:t2-user2-place-bid @transaction-log)
@@ -466,6 +468,8 @@
                                                 {:value bid-value-user-3-overbid
                                                  :from addr3}))))
 
+          ;; FIXME: Compare to transaction receipt for original gas spent
+          ;; Issue # 131
           (testing "User 3 who overbid himself, gets back only his own previous bids."
             (let [bid-tx-3 (:t3-user3-place-bid @transaction-log)
                   bid-tx-4 (:t4-user3-place-overbid @transaction-log)
