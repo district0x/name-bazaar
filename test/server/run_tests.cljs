@@ -3,6 +3,7 @@
     [cljs.nodejs :as nodejs]
     [cljs.pprint]
     [cljs.test :refer [run-tests]]
+    [doo.runner :refer-macros [doo-tests]]
     [server.name-bazaar.smart-contract-altering-tests]
     [server.name-bazaar.smart-contract-ext-tests]
     [server.name-bazaar.smart-contract-tests]))
@@ -16,9 +17,7 @@
              'server.name-bazaar.smart-contract-ext-tests
              'server.name-bazaar.smart-contract-altering-tests))
 
-(defn -main [& _]
-  (run-tests 'server.name-bazaar.smart-contract-tests
-             'server.name-bazaar.smart-contract-ext-tests
-             'server.name-bazaar.smart-contract-altering-tests))
 
-(set! *main-cli-fn* -main)
+(doo-tests 'server.name-bazaar.smart-contract-tests
+           'server.name-bazaar.smart-contract-ext-tests
+           'server.name-bazaar.smart-contract-altering-tests)

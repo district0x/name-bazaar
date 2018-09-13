@@ -917,6 +917,10 @@ h4, h5, h6 {
           div, .active-address-balance {
             display: none;
           }
+	  & > i.icon {
+	      margin-right: 7px;
+	      text-align: center;
+	  }
         }
         background-color: @purple;
         color: @whiteTextColor;
@@ -934,9 +938,35 @@ h4, h5, h6 {
         & > i.icon {
           font-size: 24px;
           margin-left: 7px;
+	  line-height: 100%;
         }
       }
+
+      & > #mobile-coinbase-overlay {
+	  cursor: pointer;
+	  position: absolute;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  top: @appBarHeight;
+	  height: 2em;
+	  width: @transactionLogWidth;
+	  right: 0;
+	  
+	  @media only screen and (max-width: @largestTabletScreen) {
+	      width: 100%;
+	  }
+	  
+	  span {
+	      font-size: 1.1em;
+	  }
+	  
+	  img {
+	      max-height: 2em;
+	  }
+      }
     }
+
     .offering-detail {
       .offering-stats {
         box-shadow: 2px 4px 4px 2px @bodyBackground;

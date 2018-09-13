@@ -5,6 +5,7 @@
     [cljs-web3.core :as web3]
     [clojure.set :as set]
     [clojure.string :as string]
+    [district.ui.mobile.subs :as mobile-subs]
     [district0x.shared.utils :as d0x-shared-utils :refer [empty-address? zero-address?]]
     [district0x.ui.utils :as d0x-ui-utils :refer [time-remaining time-biggest-unit format-time-duration-unit]]
     [goog.string :as gstring]
@@ -96,3 +97,14 @@
       [(subscribe [:registrar.transfer/tx-pending? label])]
       [(subscribe [:ens.set-owner/tx-pending? node])]))
   first)
+
+;; TODO: move into district.ui.mobile repo
+(reg-sub
+  ::mobile-subs/coinbase-appstore-link
+  :<- [::mobile-subs/android?]
+  :<- [::mobile-subs/ios?]
+  (fn [[android? ios?]]
+    (cond
+      android? (:android-mobile-link constants/coinbase)
+      ios? (:ios-mobile-link constants/coinbase)
+      :else (:main-mobile-link constants/coinbase))))
