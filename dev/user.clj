@@ -1,25 +1,47 @@
 (ns user
-  (:require [figwheel-sidecar.repl-api]))
+  (:require
+   [com.rpl.specter :as s] 
+   [figwheel-sidecar.repl-api :as fw-repl]
+   [figwheel-sidecar.config :as fw-config]
+   [taoensso.timbre :as timbre :refer [info]]))
+
+
+(defn set-closure-define
+  "Sets the :closure-defines for the given `build-id` in the given
+  figwheel config `config`"
+  [config build-id key value]
+  (s/setval
+   [:data :all-builds (s/filterer #(= (:id %) build-id)) s/FIRST
+    (s/keypath :build-options :closure-defines key)]
+   value config))
+
 
 (defn start-server! []
-  (figwheel-sidecar.repl-api/start-figwheel!
-    (assoc-in (figwheel-sidecar.config/fetch-config)
-              [:data :figwheel-options :server-port] 4541)
-    "dev-server")
-  (figwheel-sidecar.repl-api/cljs-repl "dev-server"))
+  (fw-repl/start-figwheel!
+   (assoc-in (fw-config/fetch-config)
+             [:data :figwheel-options :server-port] 4541)
+   "dev-server")
+  (fw-repl/cljs-repl "dev-server"))
 
-(defn start-ui! []
-  (figwheel-sidecar.repl-api/start-figwheel!
-    (figwheel-sidecar.config/fetch-config)
-    "dev")
-  (figwheel-sidecar.repl-api/cljs-repl "dev"))
+
+(defn start-ui!
+  [& {:keys [ui-only?] :or {ui-only? false}}]
+  (let [environment (if ui-only? "prod" "dev")
+        fig-config  (fw-config/fetch-config)]
+    (when ui-only? (info "Performing ui-only build..."))
+    (fw-repl/start-figwheel!
+     (set-closure-define fig-config "dev-ui" 'name-bazaar.ui.db.environment environment)
+     "dev-ui")
+    (fw-repl/cljs-repl "dev-ui")))
+
 
 (defn start-tests! []
-  (figwheel-sidecar.repl-api/start-figwheel!
-    (assoc-in (figwheel-sidecar.config/fetch-config)
-              [:data :figwheel-options :server-port] 4543)
-    "server-tests")
-  (figwheel-sidecar.repl-api/cljs-repl "server-tests"))
+  (fw-repl/start-figwheel!
+   (assoc-in (fw-config/fetch-config)
+             [:data :figwheel-options :server-port] 4543)
+   "server-tests")
+  (fw-repl/cljs-repl "server-tests"))
+
 
 (comment
   (start-ui!)

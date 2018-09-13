@@ -96,5 +96,3 @@
                    #'name-bazaar.server.generator/generator])
     (mount/start)
     pprint/pprint))
-
-(set! *main-cli-fn* -main)
