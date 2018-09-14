@@ -12,12 +12,6 @@
 
 (set! (.-error js/console) (fn [x] (.log js/console x)))
 
-(comment
-  (run-tests 'server.name-bazaar.smart-contract-tests
-             'server.name-bazaar.smart-contract-ext-tests
-             'server.name-bazaar.smart-contract-altering-tests))
-
-
 (doo-tests 'server.name-bazaar.smart-contract-tests
            'server.name-bazaar.smart-contract-ext-tests
            'server.name-bazaar.smart-contract-altering-tests)

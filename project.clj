@@ -87,8 +87,6 @@
 
   :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
 
-  :repl-options {:timeout 120000}
-
   :min-lein-version "2.5.3"
 
   :source-paths ["src" "test"]
@@ -120,7 +118,6 @@
                                   [figwheel "0.5.16"]
                                   [figwheel-sidecar "0.5.16" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :source-paths ["dev" "src"]
                    :plugins [[lein-figwheel "0.5.16"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]
