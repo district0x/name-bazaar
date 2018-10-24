@@ -1,41 +1,42 @@
 (ns district0x.ui.events
   (:require
-    [ajax.core :as ajax]
-    [akiroz.re-frame.storage :as re-frame-storage]
-    [bignumber.core :as bn]
-    [cemerick.url :as url]
-    [cljs-time.coerce :as time-coerce]
-    [cljs-time.core :as t]
-    [cljs-web3.core :as web3]
-    [cljs-web3.eth :as web3-eth]
-    [cljs-web3.personal :as web3-personal]
-    [cljs-web3.utils :as web3-utils]
-    [cljs.spec.alpha :as s]
-    [clojure.data :as data]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [day8.re-frame.async-flow-fx]
-    [day8.re-frame.http-fx]
-    [district.encryption :as encryption]
-    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
-    [district0x.ui.db]
-    [district0x.ui.dispatch-fx]
-    [district0x.ui.history :as history]
-    [district0x.ui.history-fx]
-    [district0x.ui.interval-fx]
-    [district0x.ui.location-fx]
-    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
-    [district0x.ui.spec]
-    [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash file-write]]
-    [district0x.ui.window-fx]
-    [goog.string :as gstring]
-    [goog.string.format]
-    [madvas.re-frame.google-analytics-fx]
-    [madvas.re-frame.web3-fx]
-    [medley.core :as medley]
-    [print.foo :include-macros true]
-    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+   [ajax.core :as ajax]
+   [akiroz.re-frame.storage :as re-frame-storage]
+   [bignumber.core :as bn]
+   [cemerick.url :as url]
+   [cljs-time.coerce :as time-coerce]
+   [cljs-time.core :as t]
+   [cljs-web3.core :as web3]
+   [cljs-web3.eth :as web3-eth]
+   [cljs-web3.personal :as web3-personal]
+   [cljs-web3.utils :as web3-utils]
+   [cljs.spec.alpha :as s]
+   [clojure.data :as data]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [day8.re-frame.async-flow-fx]
+   [day8.re-frame.http-fx]
+   [district.encryption :as encryption]
+   [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
+   [district0x.ui.db]
+   [district0x.ui.dispatch-fx]
+   [district0x.ui.history :as history]
+   [district0x.ui.history-fx]
+   [district0x.ui.interval-fx]
+   [district0x.ui.location-fx]
+   [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+   [district0x.ui.spec]
+   [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash file-write]]
+   [district0x.ui.web3-fx :as web3-fx.ethereum]
+   [district0x.ui.window-fx]
+   [goog.string :as gstring]
+   [goog.string.format]
+   [madvas.re-frame.google-analytics-fx]
+   [madvas.re-frame.web3-fx]
+   [medley.core :as medley]
+   [print.foo :include-macros true]
+   [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
+   [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -74,58 +75,100 @@
    :on-success on-success
    :on-failure on-failure})
 
-(defn initialize-db [default-db localstorage current-url]
-  (let [web3 (if (d0x-ui-utils/provides-web3?)
-               (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
-               (web3/create-web3 (:node-url default-db)))]
-    (as-> default-db db
-          (d0x-shared-utils/merge-in db localstorage)
-          (update db :active-page merge {:query-params (medley/map-keys keyword (:query current-url))
-                                         :path (:path current-url)})
-          (assoc db :web3 web3)
-          (update-in db [:transaction-log :settings] merge {:open? false :highlighted-transaction nil}))))
+
+(defn initialize-web3-instance
+  "Either re-uses a provided web3 provider, or creates a Web3 instance
+  for the re-frame `db`.
+
+  Returns the web3 instance to be included in the db side-effect"
+  [db]
+  (if (d0x-ui-utils/provides-web3?)
+    (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
+    (web3/create-web3 (:node-url db))))
+
+
+(defn initialize-db
+  "Update re-frame `db` with `localstorage` and `current-url` co-effects.
+
+  Notes:
+
+  - Returned `db` is used as a `:db` side-effect."
+  [db localstorage current-url]
+  (-> db
+      (d0x-shared-utils/merge-in localstorage)
+      (update :active-page merge
+              {:query-params (medley/map-keys keyword (:query current-url))
+               :path (:path current-url)})
+      (as-> db (assoc db :web3 (initialize-web3-instance db)))
+      (update-in [:transaction-log :settings] merge
+                 {:open? false
+                  :highlighted-transaction nil})))
+
 
 (defn- contains-tx-status? [tx-statuses {:keys [:status]}]
   (contains? tx-statuses status))
 
-(reg-event-fx
-  :district0x/initialize
-  [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
-  (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
-    (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)
-          transactions (get-in db [:transaction-log :transactions])
-          txs-to-reload (medley/filter-vals #(contains-tx-status? #{:tx.status/not-loaded :tx.status/pending} %)
-                                            transactions)]
-      (merge
-        {:db db
-         :ga/page-view [(if history/hashroutes?
-                          (d0x-ui-utils/current-location-hash)
-                          (history/get-state))]
-         :window/on-resize {:dispatch [:district0x.window/resized]
-                            :resize-interval 166}
-         :window/on-focus {:dispatch [:district0x.window/set-focus true]}
-         :window/on-blur {:dispatch [:district0x.window/set-focus false]}
-         :district0x/dispatch-n (vec (concat
-                                       (for [tx-hash (keys txs-to-reload)]
-                                         [:district0x/load-transaction-receipt tx-hash])
-                                       (for [tx-hash (keys txs-to-reload)]
-                                         [:web3-fx.contract/add-transaction-hash-to-watch
-                                          {:web3 (:web3 db)
-                                           :db-path [:contract/state-fns]
-                                           :transaction-hash tx-hash
-                                           :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
-         ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
-         :dispatch-later [{:ms (if (d0x-ui-utils/provides-web3?) 0 2000)
-                           :dispatch [:district0x/load-my-addresses]}
-                          {:ms (if (d0x-ui-utils/provides-web3?) 0 2000)
-                           :dispatch [:district0x/setup-address-reload-interval]}]}
-        (when conversion-rates
-          {:district0x/dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
-           :dispatch-interval {:dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
-                               :ms (or (:ms conversion-rates) 60000)
-                               :db-path [:district0x/load-conversion-rates-interval]}})
 
-        effects))))
+;; Initial Web3 Provider Allow/Deny functionality prompt (EIP-1102)
+(reg-event-fx
+ :district0x/initialize-web3
+ [trim-v]
+ (fn [_ [init-options]]
+   {::web3-fx.ethereum/authorize-ethereum-provider
+    {:on-accept [:district0x/setup-web3]
+     :on-reject [:district0x/setup-web3]
+     :on-error [:district0x/setup-web3]
+     :on-legacy [:district0x/setup-web3]}}))
+
+
+;; Setup Web3 Provider after EIP-1102 prompt
+;; - refresh db web3 instance.
+;; - refresh web3 addresses and polling events
+(reg-event-fx
+ :district0x/setup-web3
+ [trim-v]
+ (fn [{:keys [db]} _]
+   {:db (assoc db :web3 (initialize-web3-instance db))
+    :dispatch-later
+    [{:ms 0 :dispatch [:district0x.log/info :district0x/setup-web3]}
+     {:ms 0 :dispatch [:district0x/load-my-addresses]}
+     {:ms 0 :dispatch [:district0x/setup-address-reload-interval]}]}))
+
+(reg-event-fx
+ :district0x/initialize
+ [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
+ (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects] :as init-options}]]
+   (let [db (district0x.ui.events/initialize-db default-db localstorage current-url)
+         transactions (get-in db [:transaction-log :transactions])
+         txs-to-reload (medley/filter-vals #(contains-tx-status? #{:tx.status/not-loaded :tx.status/pending} %)
+                                           transactions)]
+     (merge
+      {:db db
+       :ga/page-view [(if history/hashroutes?
+                        (d0x-ui-utils/current-location-hash)
+                        (history/get-state))]
+       :window/on-resize {:dispatch [:district0x.window/resized]
+                          :resize-interval 166}
+       :window/on-focus {:dispatch [:district0x.window/set-focus true]}
+       :window/on-blur {:dispatch [:district0x.window/set-focus false]}
+       :district0x/dispatch-n (vec (concat
+                                    (for [tx-hash (keys txs-to-reload)]
+                                      [:district0x/load-transaction-receipt tx-hash])
+                                    (for [tx-hash (keys txs-to-reload)]
+                                      [:web3-fx.contract/add-transaction-hash-to-watch
+                                       {:web3 (:web3 db)
+                                        :db-path [:contract/state-fns]
+                                        :transaction-hash tx-hash
+                                        :on-tx-receipt [:district0x/on-tx-receipt {}]}])))
+       ;; In some cases web3 injection may not yet happened, so we'll give it some time, just in case
+       :dispatch-later [{:ms 1000 :dispatch [:district0x/initialize-web3 init-options]}]}
+      (when conversion-rates
+        {:district0x/dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
+         :dispatch-interval {:dispatch [:district0x/load-conversion-rates (:currencies conversion-rates)]
+                             :ms (or (:ms conversion-rates) 60000)
+                             :db-path [:district0x/load-conversion-rates-interval]}})
+
+      effects))))
 
 (reg-event-fx
   :district0x/set-current-location-as-active-page
@@ -602,17 +645,17 @@
                          submit-props)]})))
 
 (reg-event-fx
-  :district0x-emails/load
-  interceptors
-  (fn [{:keys [:db]} [address]]
-    (when address
-      (let [instance (get-instance db :district0x-emails)]
-        {:web3-fx.contract/constant-fns
-         {:fns [{:instance instance
-                 :method :emails
-                 :args [address]
-                 :on-success [:district0x-emails/loaded address]
-                 :on-error [:district0x.log/error]}]}}))))
+ :district0x-emails/load
+ interceptors
+ (fn [{:keys [:db]} [address]]
+   (when address
+     (let [instance (get-instance db :district0x-emails)]
+       {:web3-fx.contract/constant-fns
+        {:fns [{:instance instance
+                :method :emails
+                :args [address]
+                :on-success [:district0x-emails/loaded address]
+                :on-error [:district0x.log/error :district0x-emails/load]}]}}))))
 
 (reg-event-fx
   :district0x-emails/loaded
@@ -621,19 +664,19 @@
     {:db (assoc-in db [:district0x-emails address] email)}))
 
 (reg-event-fx
-  :district0x.contract/event-watch-once
-  interceptors
-  (fn [{:keys [:db]} [{:keys [:contract-key :on-success :on-error] :as event-params
-                       :or {on-error [:district0x.log/error]}}]]
-    (let [event-id (str "event-listen-once-" (rand-int 99999))
-          db-path [:web3-event-filters]]
-      {:web3-fx.contract/events
-       {:db-path db-path
-        :events [(merge event-params
-                        {:instance (get-instance db contract-key)
-                         :event-id event-id
-                         :on-success [:district0x.contract/event-stop-watching-once db-path event-id on-success]
-                         :on-error [:district0x.contract/event-stop-watching-once db-path event-id on-error]})]}})))
+ :district0x.contract/event-watch-once
+ interceptors
+ (fn [{:keys [:db]} [{:keys [:contract-key :on-success :on-error] :as event-params
+                      :or {on-error [:district0x.log/error :district0x.contract/event-watch-once]}}]]
+   (let [event-id (str "event-listen-once-" (rand-int 99999))
+         db-path [:web3-event-filters]]
+     {:web3-fx.contract/events
+      {:db-path db-path
+       :events [(merge event-params
+                       {:instance (get-instance db contract-key)
+                        :event-id event-id
+                        :on-success [:district0x.contract/event-stop-watching-once db-path event-id on-success]
+                        :on-error [:district0x.contract/event-stop-watching-once db-path event-id on-error]})]}})))
 
 (reg-event-fx
   :district0x.contract/event-stop-watching-once
@@ -715,20 +758,24 @@
     nil))
 
 (reg-event-fx
-  :district0x.log/error
-  interceptors
-  (fn [{:keys [:db]} errors]
-    (apply console :error errors)
-    nil))
+ :district0x.log/error
+ interceptors
+ (fn [_ errors]
+   (try
+     (apply console :error errors)
+     (catch ExceptionInfo e
+       (.error js/console (str "Failed reframe console error: " e))))
+   nil))
 
 (reg-event-fx
-  :district0x.log/info
-  interceptors
-  (fn [db result]
-    (apply console :log (map (if (and (not (string? result)) (some sequential? result))
-                                        (map (partial map bn/number) result)
-                                        result)
-                             bn/number))))
+ :district0x.log/info
+ interceptors
+ (fn [_ results]
+   (try
+     (apply console :log results)
+     (catch ExceptionInfo e
+       (.error js/console (str "Failed reframe console info: " e))))
+   nil))
 
 (reg-event-db
   :district0x.snackbar/close
