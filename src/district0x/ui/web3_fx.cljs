@@ -18,7 +18,6 @@
 (reg-fx
   ::authorize-ethereum-provider
   (fn [{:keys [:on-accept :on-reject :on-error :on-legacy]}]
-    #_(.log js/console "Using EIP-1102 Provider? " (supports-ethereum-provider?))
     (cond
       (supports-ethereum-provider?)
       (doto (-> js/window .-ethereum .enable) ;; js/Promise
