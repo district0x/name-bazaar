@@ -4,6 +4,7 @@
     [cljs.spec.alpha :as s]
     [cljsjs.web3]
     [district.ui.mobile]
+    [district.ui.logging]
     [district0x.ui.events]
     [district0x.ui.history :as history]
     [district0x.ui.logging :as d0x-logging]
@@ -33,7 +34,8 @@
 (defn mount-root []
   (google-analytics-fx/set-enabled! (not debug?))
   (clear-subscription-cache!)
-  (mount/start #'district.ui.mobile/mobile)
+  (-> (mount/with-args {:logging {:level :info :console? true}})
+      (mount/start #'district.ui.mobile/mobile #'district.ui.logging/logging))
   (r/render [main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []

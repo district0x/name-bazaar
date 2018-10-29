@@ -37,6 +37,7 @@
                  [district0x/district-server-web3 "1.0.1"]
                  [district0x/district-server-web3-watcher "1.0.2"]
                  [district0x/district-ui-mobile "1.0.0"]
+                 [district0x/district-ui-logging "1.0.3-SNAPSHOT"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]

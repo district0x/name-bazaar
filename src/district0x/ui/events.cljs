@@ -17,6 +17,7 @@
    [day8.re-frame.async-flow-fx]
    [day8.re-frame.http-fx]
    [district.encryption :as encryption]
+   [district.ui.logging.events :as logging]
    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
    [district0x.ui.db]
    [district0x.ui.dispatch-fx]
@@ -36,7 +37,7 @@
    [medley.core :as medley]
    [print.foo :include-macros true]
    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
-   [taoensso.timbre :as logging :refer-macros [info warn error]]))
+   [taoensso.timbre :as log :refer-macros [info warn error]]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -130,7 +131,7 @@
  (fn [{:keys [db]} _]
    {:db (assoc db :web3 (initialize-web3-instance db))
     :dispatch-later
-    [{:ms 0 :dispatch [:district0x.log/info :district0x/setup-web3]}
+    [{:ms 0 :dispatch [::logging/info :district0x/setup-web3]}
      {:ms 0 :dispatch [:district0x/load-my-addresses]}
      {:ms 0 :dispatch [:district0x/setup-address-reload-interval]}]}))
 
@@ -220,7 +221,7 @@
                   :timeout 3000
                   :response-format (ajax/transit-response-format)
                   :on-success [:district.server.config/loaded]
-                  :on-failure [:district0x.log/error :district.server.config/load]}}))
+                  :on-failure [::logging/error :district.server.config/load]}}))
 
 (reg-event-db
   :district.server.config/loaded
