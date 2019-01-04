@@ -116,16 +116,12 @@
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
             "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
                                   [cider/piggieback "0.3.9"]
-                                  [figwheel "0.5.16"]
                                   [figwheel-sidecar "0.5.16" :exclusions [org.clojure/core.async]]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :source-paths ["dev" "src"]
-                   :plugins [[lein-figwheel "0.5.16"]]
-                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]
-                                  :timeout 120000}
                    :resource-paths ["resources"]}}
 
   :cljsbuild {:builds [;; Development on client-side UI, which uses a testnet
