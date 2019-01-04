@@ -1,5 +1,12 @@
 language: clojure
 script: lein doo node "server-tests" once
+notifications:
+  email: false
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+    - district0x:53vhalUfg0MitsQwzjP5PWdd#travis-ci
 before_install:
  - sudo add-apt-repository --yes ppa:ethereum/ethereum
  - sudo apt-get -qq update

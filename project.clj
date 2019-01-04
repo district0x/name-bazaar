@@ -17,7 +17,8 @@
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.3"]
                  [medley "1.0.0"]
-                 [org.clojure/clojurescript "1.9.946"]
+                 ;; [org.clojure/clojurescript "1.9.946"]
+                 [org.clojure/clojurescript "1.10.439"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.10.5"]
@@ -118,9 +119,8 @@
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
-                                  [cider/piggieback "0.3.9"]
-                                  [figwheel-sidecar "0.5.16" :exclusions [org.clojure/core.async]]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [com.cemerick/piggieback "0.2.2"]
+                                  [figwheel-sidecar "0.5.16"]]
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
