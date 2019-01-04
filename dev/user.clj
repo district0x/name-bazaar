@@ -1,12 +1,12 @@
 (ns user
   (:require
-   [com.rpl.specter :as s] 
+   [com.rpl.specter :as s]
    [figwheel-sidecar.repl-api :as fw-repl]
    [figwheel-sidecar.config :as fw-config]
    [taoensso.timbre :as timbre :refer [info]]))
 
 
-(defn set-closure-define
+(defn- set-closure-define
   "Sets the :closure-defines for the given `build-id` in the given
   figwheel config `config`"
   [config build-id key value]
