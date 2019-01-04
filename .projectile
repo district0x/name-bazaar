@@ -1,0 +1,12 @@
+-/dev-server
+-/resources/public/js/compiled
+-/resources/public/contracts/build
+-/resources/semantic
+-/resources/public/fonts
+-/resources/public/icons
+-/resources/public/css
+-/resources/public/assets
+-/figwheel_server.log
+-/target
+-/node_modules
+-/.cljs_node_repl
