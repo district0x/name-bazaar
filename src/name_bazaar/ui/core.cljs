@@ -7,13 +7,13 @@
     [district.ui.logging]
     [district0x.ui.events]
     [district0x.ui.history :as history]
-    [district0x.ui.logging :as d0x-logging]
     [district0x.ui.subs]
     [district0x.ui.utils :as d0x-ui-utils :refer [prerender-user-agent?]]
     [madvas.re-frame.google-analytics-fx :as google-analytics-fx]
     [mount.core :as mount]
     [name-bazaar.ui.components.main-panel :refer [main-panel]]
     [name-bazaar.ui.constants :as constants]
+    [name-bazaar.ui.config :refer [config]]
     [name-bazaar.ui.db :as ui-db]
     [name-bazaar.ui.events]
     [name-bazaar.ui.subs]
@@ -26,7 +26,7 @@
 (def debug? ^boolean js/goog.DEBUG)
 
 (defn dev-setup []
-  (d0x-logging/setup! ui-db/log-level)
+  ;; (d0x-logging/setup! ui-db/log-level)
   (when debug?
     (enable-console-print!)
     (enable-re-frisk!)))
@@ -34,8 +34,9 @@
 (defn mount-root []
   (google-analytics-fx/set-enabled! (not debug?))
   (clear-subscription-cache!)
-  (-> (mount/with-args {:logging {:level :info :console? true}})
-      (mount/start #'district.ui.mobile/mobile #'district.ui.logging/logging))
+  (-> (mount/with-args config)
+      (mount/start #'district.ui.mobile/mobile
+                   #'district.ui.logging/logging))
   (r/render [main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []

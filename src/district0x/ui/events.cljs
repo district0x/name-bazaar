@@ -19,6 +19,7 @@
    [district.encryption :as encryption]
    [district.ui.logging.events :as logging]
    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
+   [district.shared.error-handling :refer [try-catch]]
    [district0x.ui.db]
    [district0x.ui.dispatch-fx]
    [district0x.ui.history :as history]
@@ -83,9 +84,10 @@
 
   Returns the web3 instance to be included in the db side-effect"
   [db]
-  (if (d0x-ui-utils/provides-web3?)
-    (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
-    (web3/create-web3 (:node-url db))))
+  (try-catch
+   (if (d0x-ui-utils/provides-web3?)
+     (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
+     (web3/create-web3 (:node-url db)))))
 
 
 (defn initialize-db
@@ -131,7 +133,7 @@
  (fn [{:keys [db]} _]
    {:db (assoc db :web3 (initialize-web3-instance db))
     :dispatch-later
-    [{:ms 0 :dispatch [::logging/info :district0x/setup-web3]}
+    [{:ms 0 :dispatch [::logging/error "Initialized web3 instance" :district0x/setup-web3]}
      {:ms 0 :dispatch [:district0x/load-my-addresses]}
      {:ms 0 :dispatch [:district0x/setup-address-reload-interval]}]}))
 
@@ -212,16 +214,17 @@
           {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
-  :district.server.config/load
-  interceptors
-  (fn [{:keys [db]} _]
-    {:db db
-     :http-xhrio {:method :get
-                  :uri (str (url/url (:server-url db) "/config"))
-                  :timeout 3000
-                  :response-format (ajax/transit-response-format)
-                  :on-success [:district.server.config/loaded]
-                  :on-failure [::logging/error :district.server.config/load]}}))
+ :district.server.config/load
+ interceptors
+ (fn [{:keys [db]} _]
+   (let [uri (str (url/url (:server-url db) "/config"))]
+     {:db db
+      :http-xhrio {:method :get
+                   :uri uri
+                   :timeout 3000
+                   :response-format (ajax/transit-response-format)
+                   :on-success [:district.server.config/loaded]
+                   :on-failure [::logging/error (str "Failed to load config from " uri) :district.server.config/load]}})))
 
 (reg-event-db
   :district.server.config/loaded
@@ -758,7 +761,7 @@
     (print.foo/look db)
     nil))
 
-(reg-event-fx
+#_(reg-event-fx
  :district0x.log/error
  interceptors
  (fn [_ errors]
@@ -768,7 +771,7 @@
        (.error js/console (str "Failed reframe console error: " e))))
    nil))
 
-(reg-event-fx
+#_(reg-event-fx
  :district0x.log/info
  interceptors
  (fn [_ results]

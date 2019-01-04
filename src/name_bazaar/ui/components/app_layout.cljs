@@ -128,7 +128,7 @@
   (let [open? (subscribe [:district0x.transaction-log/open?])
         my-addresses (subscribe [:district0x/my-addresses])
         mobile-coinbase-compatible? @(subscribe [::mobile-subs/coinbase-compatible?])]
-    
+
     (fn []
       [:div.app-bar
        [:div.left-section
@@ -178,6 +178,7 @@
                                                                           nav-menu-items-props
                                                                           nav-menu-items-props-no-instant-registration)]
                 (let [href (or href (path-for route))]
+                  ^{:key text}
                   [ui/MenuItem
                    {:key text
                     :as "a"
