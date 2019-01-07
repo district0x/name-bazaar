@@ -124,10 +124,11 @@
                            (dispatch [:offerings.similar-offerings/set-params-and-search
                                       {:offset offset :limit limit} {:append? true}]))}
           (doall
-            (for [[i offering] (medley/indexed items)]
-              [offering-list-item
-               {:key i
-                :offering offering}]))]]))))
+           (for [[i offering] (medley/indexed items)]
+             ^{:key i}
+             [offering-list-item
+              {:key i
+               :offering offering}]))]]))))
 
 (defmethod page :route.offerings/detail []
   (let [route-params (subscribe [:district0x/route-params])]

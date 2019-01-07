@@ -6,6 +6,7 @@
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
     [clojure.string :as string]
+    [district.ui.logging.events :as logging]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
@@ -16,7 +17,8 @@
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [taoensso.timbre :as log]
+    ))
 
 (reg-event-fx
   :buy-now-offering-factory/create-offering
@@ -70,7 +72,9 @@
                                                                            :owner sender-address}
                                                        :blockchain-filter-opts "latest"
                                                        :on-success [:offering/my-offering-added offering]
-                                                       :on-error [:district0x.log/error]}]}))
+                                                       :on-error [::logging/error "Failed to observe create offering event"
+                                                                  (merge offering {:user sender-address})
+                                                                  :offering/create-offering-sent]}]}))
 
 (reg-event-fx
   :offering/my-offering-added
@@ -303,7 +307,8 @@
              {:instance (get-instance db :buy-now-offering offering-address)
               :method :offering
               :on-success [:offerings/loaded offering-address opts]
-              :on-error [:district0x.log/error]})}}))
+              :on-error [::logging/error "Failed to load buy-now offering" {:offering-address offering-address}
+                         :offerings/load]})}}))
 
 (reg-event-fx
   :offerings/loaded
@@ -331,7 +336,8 @@
              {:instance (get-instance db :auction-offering offering-address)
               :method :auction-offering
               :on-success [:offerings.auction/loaded offering-address]
-              :on-error [:district0x.log/error]})}}))
+              :on-error [::logging/error "Failed to load auction offering" {:offerings-address offering-address}
+                         :offerings.auction/load]})}}))
 
 (reg-event-fx
   :offerings/resolve-addresses
@@ -380,7 +386,10 @@
                     :method :pending-returns
                     :args [user-address]
                     :on-success [:offerings.auction.pending-returns/loaded offering-address user-address]
-                    :on-error [:district0x.log/error]}))))}}))
+                    :on-error [:logging/error "Failed to load auction pending returns"
+                               {:user user-address
+                                :offering-address offering-address}
+                               :offerings.auction.pending-returns/load]}))))}}))
 
 (reg-event-fx
   :offerings.auction.pending-returns/loaded
@@ -416,7 +425,8 @@
                  :event-filter-opts {:offering address}
                  :blockchain-filter-opts "latest"
                  :on-success [:offerings/on-offering-changed]
-                 :on-error [:district0x.log/error]})}}))
+                 :on-error [::logging/error "Failed to install event filter" {:offering-address address}
+                            :offerings/watch]})}}))
 
 (reg-event-fx
   :offerings/on-offering-changed

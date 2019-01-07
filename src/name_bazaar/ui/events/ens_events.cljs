@@ -3,8 +3,8 @@
     [bignumber.core :as bn]
     [cljs.spec.alpha :as s]
     [clojure.set :as set]
+    [district.ui.logging.events :as logging]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
-    [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
@@ -14,7 +14,8 @@
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record get-offering-name get-offering]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [taoensso.timbre :as log]
+    ))
 
 (reg-event-fx
   :ens/set-owner
@@ -46,14 +47,14 @@
                   :method :owner
                   :args [node]
                   :on-success [:ens.records.owner/loaded node]
-                  :on-error [:district0x.log/error]})
+                  :on-error [::logging/error "Failed to load ENS record owner" {:node node} :ens.records/load]})
                (when load-resolver?
                  (for [node nodes]
                    {:instance instance
                     :method :resolver
                     :args [node]
                     :on-success [:ens.records.resolver/loaded node]
-                    :on-error [:district0x.log/error]})))}})))
+                    :on-error [::logging/error "Failed to load ENS record resolver" {:node node} :ens.records/load]})))}})))
 
 (reg-event-fx
   :ens.records.active-offerings/load
@@ -65,7 +66,9 @@
                                                         :fields [:offering/node :offering/address]
                                                         :node-owner? true}
                                                :on-success [:ens.records.active-offerings/loaded nodes]
-                                               :on-failure [:district0x.log/error]}]})))
+                                               :on-failure [::logging/error "Failed to load END record active offerings"
+                                                            {:nodes nodes}
+                                                            :ens.records.active-offerings/load]}]})))
 
 (reg-event-fx
   :ens.records.owner/loaded
@@ -86,7 +89,8 @@
                :method :resolver
                :args [node]
                :on-success [:ens.records.resolver/loaded node]
-               :on-error [:district0x.log/error]})}})))
+               :on-error [::logging/error "Failed to load ENS record resolver" {:node node}
+                          :ens.records.resolver/load]})}})))
 
 (reg-event-fx
   :ens.records.resolver/loaded
