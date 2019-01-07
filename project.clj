@@ -134,11 +134,7 @@
                                    :asset-path "js/compiled/out"
                                    :source-map-timestamp true
                                    :preloads [print.foo.preloads.devtools]
-                                   :closure-defines {goog.DEBUG true
-                                                     ;; name-bazaar.ui.db.environment "dev"
-                                                     district0x.ui.history.pushroute-hosts "localhost"
-                                                     ;; name-bazaar.ui.db.log-level "debug"
-                                                     }
+                                   :closure-defines {name-bazaar.ui.config.environment "dev"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
                        ;; Development on server-side with testnet
@@ -171,11 +167,7 @@
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
                                    :optimizations :advanced
-                                   :closure-defines {goog.DEBUG false
-                                                     ;; name-bazaar.ui.db.environment "prod"
-                                                     district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"
-                                                     ;; name-bazaar.ui.db.log-level "error"
-                                                     }
+                                   :closure-defines {name-bazaar.ui.config.environment "prod"}
                                    :pretty-print false
                                    :pseudo-names false}}
 

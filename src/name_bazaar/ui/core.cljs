@@ -23,10 +23,9 @@
     [reagent.core :as r]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
-(def debug? ^boolean js/goog.DEBUG)
+(def debug? ^boolean (:debug? config))
 
 (defn dev-setup []
-  ;; (d0x-logging/setup! ui-db/log-level)
   (when debug?
     (enable-console-print!)
     (enable-re-frisk!)))
