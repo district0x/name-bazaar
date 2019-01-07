@@ -13,9 +13,11 @@
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
     [name-bazaar.ui.components.search-results.infinite-list :refer [search-results-infinite-list]]
     [name-bazaar.ui.utils :refer [offerings-sold-query-params]]
+    [print.foo :refer [look]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
-    [soda-ash.core :as ui]))
+    [soda-ash.core :as ui]
+    ))
 
 (defn offerings-keyword-text-field []
   (let [search-params (subscribe [:offerings.main-search/params])]
@@ -221,12 +223,79 @@
                       (dispatch [:district0x.location/set-query (if @sold-page?
                                                                   offerings-sold-query-params
                                                                   "")]))})])))
-
+;; TODO: key
 (defn search-params-panel []
   (let [open? (r/atom false)
         mobile? (subscribe [:district0x.window.size/mobile?])]
     (fn []
+
       [ui/Segment
+
+       (concat
+
+        [[:div.grid.search-params {:key :search-params}
+
+          (concat
+           [[:div.keyword {:key :keyword}
+              [offerings-keyword-text-field]]]
+
+           (when @mobile?
+             [[:div.grid.offerings-search-options-section-mobile {:key :offerings-search-options-section-mobile}
+               [:div.order-by-select
+                [order-by-select-field]]
+               [:div.reset-filter
+                [reset-filter-button
+                 {:on-click #(reset! open? false)}]]]])
+
+           [[:div.offerings-mode-section {:key :offerings-mode-section}
+             [:div.grid.keyword-position
+              (when-not @mobile?
+                [:div.position-selector
+                 [offerings-keyword-position-select]])
+              [:div.saved-searches-select
+               [saved-searches-select]]
+              [:div.saved-button
+               [save-search-button]]]]]
+
+           (if (or (not @mobile?) @open?)
+             [[:div.grid.checkbox-filtering-options {:key :checkbox-filtering-options}
+               [:div.checkbox.buy-now
+                [buy-now-offerings-checkbox]]
+               [:div.checkbox.subnames
+                [subnames-checkbox]]
+               [:div.checkbox.auction-offerings
+                [auction-offerings-checkbox]]
+               [:div.checkbox.exclude-numbers
+                [exclude-numbers-checkbox]]
+               [:div.checkbox.tld
+                [top-level-names-checkbox]]
+               [:div.checkbox.specialchars
+                [exclude-special-chars-checkbox]]]
+              [:div.grid.offerings-search-options-section {:key :offerings-search-options-section}
+               [:div.min-price
+                [min-price-input]]
+               [:div.max-price
+                [max-price-input]]
+               [:div.min-length
+                [min-length-input]]
+               [:div.max-length
+                [max-length-input]]
+               (when-not @mobile?
+                 [:div.order-by-select
+                  [order-by-select-field]])
+               (when-not @mobile?
+                 [:div.reset-filter
+                  [reset-filter-button]])]]
+             [[:div.show-advanced-search-options
+               {:on-click #(reset! open? true)}
+               "Show Advanced Options ▾"]])
+
+           )]])
+
+       ]
+
+
+      #_[ui/Segment
        (concat
         [[:div.grid.search-params
           (concat
@@ -302,6 +371,7 @@
                                       {:append? true}]))}
           (doall
             (for [[i offering] (medley/indexed items)]
+              ^{:key i}
               [offering-list-item
                {:key i
                 :offering offering
