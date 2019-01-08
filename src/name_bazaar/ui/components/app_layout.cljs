@@ -199,7 +199,10 @@
          [transaction-log
           {:title-props {:on-click #(dispatch [:district0x.transaction-log/set-open false])}}]]
         [:div.grid.main-content
-         children]]
+         ;; meta to every child element to avoid react warnings
+         (map-indexed (fn [index item]
+                        (with-meta item {:key (keyword "c" index)}))
+                      children)]]
        [snackbar
         {:action-button-props {:primary true
                                :size :small}}]])))

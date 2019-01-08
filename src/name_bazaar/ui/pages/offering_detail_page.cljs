@@ -48,9 +48,9 @@
         [:div.grid.offering-countdown
          (for [unit [:days :hours :minutes :seconds]]
            (let [amount (get time-remaining unit 0)]
-             ^{:key unit}
              [:div
-              {:class unit}
+              {:key unit
+               :class unit}
               [:div.stat-number amount]
               [:div.time-unit (pluralize (time-unit->text unit) amount)]]))]))))
 
@@ -141,7 +141,7 @@
                       :buy-now-offering {:meta {:title (str name " Offering")
                                                 :description (str name " is offered on NameBazaar! Price: " (format-eth-with-code price))}}
                       {:meta {:title (str name " Auction")
-                                    :description (str name " is offered on NameBazaar!")}})
+                              :description (str name " is offered on NameBazaar!")}})
          [ui/Segment
           [:div.grid.layout-grid
            [:div.header [:h1.join-lower.ui.header "Offering " name]]

@@ -222,7 +222,7 @@
      {:db db
       :http-xhrio {:method :get
                    :uri uri
-                   :timeout 3000
+                   :timeout 30000 ;; 30 seconds
                    :response-format (ajax/transit-response-format)
                    :on-success [:district.server.config/loaded]
                    :on-failure [::logging/error "Failed to load config" {:uri uri} :district.server.config/load]}})))

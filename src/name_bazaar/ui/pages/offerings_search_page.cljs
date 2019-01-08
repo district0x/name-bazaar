@@ -318,5 +318,5 @@
   (let [xs-sm? (subscribe [:district0x.window.size/max-tablet?])]
     (fn []
       [app-layout {:meta {:title "NameBazaar - Search ENS Offerings"}}
-       ^{:key :c1} [search-params-panel]
-       ^{:key :c2} [offerings-search-results]])))
+       [search-params-panel]
+       [offerings-search-results]])))
