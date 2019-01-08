@@ -9,9 +9,7 @@
     [mount.core :as mount]
     [name-bazaar.server.api]
     [name-bazaar.server.db]
-    ;; [name-bazaar.server.deployer]
     [name-bazaar.server.emailer]
-    ;; [name-bazaar.server.generator]
     [name-bazaar.server.syncer]
     [name-bazaar.shared.smart-contracts]
     [taoensso.timbre :as log]))
@@ -39,8 +37,6 @@
                                       (log/warn "Ethereum node went offline")
                                       (mount/stop #'name-bazaar.server.syncer/syncer
                                                   #'name-bazaar.server.emailer/emailer))}})
-      #_(mount/except [#'name-bazaar.server.deployer/deployer
-                       #'name-bazaar.server.generator/generator])
       (mount/start))
   (log/warn "System started" {:config (medley/dissoc-in @config [:emailer :private-key])}))
 
