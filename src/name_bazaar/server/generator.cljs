@@ -8,7 +8,6 @@
     [district.server.config :refer [config]]
     [district.server.web3 :refer [web3]]
     [district0x.shared.utils :refer [rand-str rand-nth-except]]
-    [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]
@@ -24,11 +23,7 @@
 (def normalize (aget (js/require "eth-ens-namehash") "normalize"))
 (def sha3 (comp (partial str "0x") (aget (js/require "js-sha3") "keccak_256")))
 
-(declare start)
-(defstate ^{:on-reload :noop} generator :start (start (merge (:generator @config)
-                                                             (:generator (mount/args)))))
-
-(defn start [{:keys [:total-accounts :offerings-per-account :offering/type]}]
+(defn generate [{:keys [:total-accounts :offerings-per-account :offering/type]}]
   (let [my-accounts (web3-eth/accounts @web3)]
     (dotimes [address-index total-accounts]
       (dotimes [_ offerings-per-account]

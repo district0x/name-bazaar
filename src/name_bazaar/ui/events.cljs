@@ -15,9 +15,11 @@
     [clojure.string :as str]
     [clojure.string :as string]
     [day8.re-frame.async-flow-fx]
+    [district.ui.logging.events :as logging]
     [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address?]]
     [district0x.ui.debounce-fx]
     [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx all-contracts-loaded?]]
+    [district0x.ui.history :as history]
     [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils :refer [truncate]]
     [goog.string :as gstring]
@@ -30,16 +32,16 @@
     [name-bazaar.ui.events.infinite-list-events]
     [name-bazaar.ui.events.offering-requests-events]
     [name-bazaar.ui.events.offerings-events]
-    [name-bazaar.ui.events.registration-bids-events]
-    [name-bazaar.ui.events.registrar-events]
-    [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.events.public-resolver-events]
+    [name-bazaar.ui.events.registrar-events]
+    [name-bazaar.ui.events.registration-bids-events]
     [name-bazaar.ui.events.reverse-registrar-events]
+    [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
     [name-bazaar.ui.utils :as nb-ui-utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix path-for]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [district0x.ui.history :as history]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [taoensso.timbre :as log]
+    ))
 
 (def active-address-changed-forwarding {:register :active-address-changed
                                         :events #{:district0x/set-active-address}
@@ -52,7 +54,7 @@
          (= (second event) (namehash (ensure-registrar-root-suffix address))))))
 
 (defn- route->initial-effects [{:keys [:handler :route-params :query-params]} db]
-  (info [:HANDLER handler])
+  (log/info "Handling active page change" {:handler handler} ::route->initial-effects)
   (condp = handler
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
@@ -166,12 +168,13 @@
   :active-page-changed
   interceptors
   (fn [{:keys [:db]}]
-    (info "PAGE CHANGED")
-    (merge
-      {:forward-events {:unregister :active-address-changed}}
-      (route->initial-effects (:active-page db) db)
-      {:district0x/dispatch [:offerings/stop-watching-all]
-       :db (assoc-in db [:infinite-list :expanded-items] {})})))
+    (let [active-page (:active-page db)]
+      (log/info "Active page changed" active-page ::active-page-changed)
+      (merge
+       {:forward-events {:unregister :active-address-changed}}
+       (route->initial-effects active-page db)
+       {:district0x/dispatch [:offerings/stop-watching-all]
+        :db (assoc-in db [:infinite-list :expanded-items] {})}))))
 
 (reg-event-fx
   :name.ownership/load
@@ -250,7 +253,7 @@
   interceptors
   (fn [{:keys [db]}]
     (let [name-or-addr (get-in db [:active-page :route-params :user/address])]
-      (info ["TRY ADDR RESOLUTION" name-or-addr])
+      (log/info "Trying address resolution" {:name-or-addr name-or-addr} ::resolve-route-user-address)
       (if (web3/address? name-or-addr)
         {:dispatch [:public-resolver.name/load name-or-addr]}
         {:dispatch [:public-resolver.addr/load (namehash (ensure-registrar-root-suffix name-or-addr))]}))))
@@ -260,7 +263,7 @@
   interceptors
   (fn [{:keys [db]}]
     (let [addrs (get-in db [:my-addresses])]
-      (info ["Trying my address" addrs])
+      (log/info "Resolving address" {:address addrs} ::resolve-my-addresses)
       {:db db
        :dispatch-n (conj
                     (map #(vec [:public-resolver.name/load %]) addrs)

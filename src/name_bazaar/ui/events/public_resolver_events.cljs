@@ -1,36 +1,39 @@
 (ns name-bazaar.ui.events.public-resolver-events
   (:require
-    [bignumber.core :as bn]
-    [cljs-web3.core :as web3]
-    [cljs.spec.alpha :as s]
-    [clojure.set :as set]
-    [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
-    [district0x.shared.utils :as d0x-shared-utils]
-    [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
-    [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
-    [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query]]
-    [goog.string :as gstring]
-    [goog.string.format]
-    [medley.core :as medley]
-    [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
-    [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
-
-
+   [bignumber.core :as bn]
+   [cljs-web3.core :as web3]
+   [cljs.spec.alpha :as s]
+   [clojure.set :as set]
+   [district.ui.logging.events :as logging]
+   [district0x.shared.utils :as d0x-shared-utils :refer [eth->wei empty-address? merge-in]]
+   [district0x.ui.events :refer [get-contract get-instance get-instance reg-empty-event-fx]]
+   [district0x.ui.spec-interceptors :refer [validate-args conform-args validate-db validate-first-arg]]
+   [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query]]
+   [goog.string :as gstring]
+   [goog.string.format]
+   [medley.core :as medley]
+   [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
+   [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 parse-query-params path-for get-ens-record-name get-offering-name get-offering]]
+   [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
+   [taoensso.timbre :as log]
+   ))
 
 (reg-event-fx
  :public-resolver.addr/load
  interceptors
  (fn [{:keys [:db]} [node]]
-   (let [instance (get-instance db :public-resolver)]
+   (let [instance (get-instance db :public-resolver)
+         args [node]]
      {:web3-fx.contract/constant-fns
       {:fns
        [{:instance instance
          :method :addr
-         :args [node]
+         :args args
          :on-success [:public-resolver.addr/loaded node]
-         :on-error [:district0x.log/error]}]}})))
+         :on-error [::logging/error "Failed to load address from public resolver" {:contract {:name :public-resolver
+                                                                                              :method :addr
+                                                                                              :args args}}
+                    :public-resolver.addr/load]}]}})))
 
 (reg-event-fx
  :public-resolver.addr/loaded
@@ -46,14 +49,22 @@
    (when (and (not (empty-address? addr))
               (web3/address? addr))
      (let [node (reverse-record-node addr)
-           instance (get-instance db :public-resolver)]
+           instance (get-instance db :public-resolver)
+           args [node]]
+
+       ;; (prn instance)
+
        {:web3-fx.contract/constant-fns
         {:fns
          [{:instance instance
            :method :name
-           :args [node]
+           :args args
            :on-success [:public-resolver.name/loaded addr]
-           :on-error [:district0x.log/error]}]}}))))
+           :on-error [::logging/error "Failed to load name from public resolver" {:address addr
+                                                                                  :contract {:name :public-resolver
+                                                                                             :method :name
+                                                                                             :args args}}
+                      :public-resolver.name/load]}]}}))))
 
 (reg-event-fx
  :public-resolver.name/loaded

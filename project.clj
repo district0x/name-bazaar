@@ -17,7 +17,8 @@
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.3"]
                  [medley "1.0.0"]
-                 [org.clojure/clojurescript "1.9.946"]
+                 ;; [org.clojure/clojurescript "1.9.946"]
+                 [org.clojure/clojurescript "1.10.439"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.10.5"]
@@ -32,12 +33,13 @@
                  [district0x/district-server-config "1.0.1"]
                  [district0x/district-server-db "1.0.1"]
                  [district0x/district-server-endpoints "1.0.1"]
-                 [district0x/district-server-logging "1.0.1"]
+                 [district0x/district-server-logging "1.0.4"]
                  [district0x/district-server-smart-contracts "1.0.1"]
                  [district0x/district-server-web3 "1.0.1"]
                  [district0x/district-server-web3-watcher "1.0.2"]
+                 [district0x/district-ui-logging "1.0.4"]
                  [district0x/district-ui-mobile "1.0.0"]
-                 [district0x/district-ui-logging "1.0.3-SNAPSHOT"]
+                 [district0x/error-handling "1.0.1-SNAPSHOT"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
@@ -74,12 +76,14 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [[eth-ens-namehash "2.0.0"]
+  :npm {:dependencies [
+                       ["@sentry/node" "4.2.1"]
+                       [eth-ens-namehash "2.0.0"]
                        [semantic-ui "2.2.13"]
-                       [solc "0.4.13"]
                        [source-map-support "0.4.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]]
+                       [xhr2 "0.1.4"]
+                       ]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -113,18 +117,13 @@
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
             "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
 
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
-                                  [cider/piggieback "0.3.9"]
-                                  [figwheel "0.5.16"]
-                                  [figwheel-sidecar "0.5.16" :exclusions [org.clojure/core.async]]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [com.cemerick/piggieback "0.2.2"]
+                                  [figwheel-sidecar "0.5.16"]]
                    :source-paths ["dev" "src"]
-                   :plugins [[lein-figwheel "0.5.16"]]
-                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]
-                                  :timeout 120000}
                    :resource-paths ["resources"]}}
-  
+
   :cljsbuild {:builds [;; Development on client-side UI, which uses a testnet
                        {:id "dev-ui"
                         :source-paths ["src"]
@@ -135,10 +134,7 @@
                                    :asset-path "js/compiled/out"
                                    :source-map-timestamp true
                                    :preloads [print.foo.preloads.devtools]
-                                   :closure-defines {goog.DEBUG true
-                                                     name-bazaar.ui.db.environment "dev"
-                                                     district0x.ui.history.pushroute-hosts "localhost"
-                                                     name-bazaar.ui.db.log-level "debug"}
+                                   :closure-defines {name-bazaar.ui.config.environment "dev"}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
                        ;; Development on server-side with testnet
@@ -171,10 +167,7 @@
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
                                    :optimizations :advanced
-                                   :closure-defines {goog.DEBUG false
-                                                     name-bazaar.ui.db.environment "prod"
-                                                     district0x.ui.history.pushroute-hosts "beta.namebazaar.io,namebazaar.io"
-                                                     name-bazaar.ui.db.log-level "error"}
+                                   :closure-defines {name-bazaar.ui.config.environment "prod"}
                                    :pretty-print false
                                    :pseudo-names false}}
 

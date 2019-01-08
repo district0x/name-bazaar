@@ -19,6 +19,7 @@
    [district.encryption :as encryption]
    [district.ui.logging.events :as logging]
    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
+   [district.shared.error-handling :refer [try-catch]]
    [district0x.ui.db]
    [district0x.ui.dispatch-fx]
    [district0x.ui.history :as history]
@@ -37,7 +38,7 @@
    [medley.core :as medley]
    [print.foo :include-macros true]
    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
-   [taoensso.timbre :as log :refer-macros [info warn error]]))
+   [taoensso.timbre :as log]))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -83,9 +84,10 @@
 
   Returns the web3 instance to be included in the db side-effect"
   [db]
-  (if (d0x-ui-utils/provides-web3?)
-    (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
-    (web3/create-web3 (:node-url db))))
+  (try-catch
+   (if (d0x-ui-utils/provides-web3?)
+     (new (aget js/window "Web3") (web3/current-provider (aget js/window "web3")))
+     (web3/create-web3 (:node-url db)))))
 
 
 (defn initialize-db
@@ -131,7 +133,7 @@
  (fn [{:keys [db]} _]
    {:db (assoc db :web3 (initialize-web3-instance db))
     :dispatch-later
-    [{:ms 0 :dispatch [::logging/info :district0x/setup-web3]}
+    [{:ms 0 :dispatch [::logging/info "Initialized web3 instance" :district0x/setup-web3]}
      {:ms 0 :dispatch [:district0x/load-my-addresses]}
      {:ms 0 :dispatch [:district0x/setup-address-reload-interval]}]}))
 
@@ -208,20 +210,22 @@
            {:web3 (:web3 new-db)
             :fns [{:f web3-eth/accounts
                    :on-success [:district0x/my-addresses-loaded]
-                   :on-error [:district0x/dispatch-n [[:district0x/my-addresses-loaded []]]]}]}}
+                   :on-error [:district0x/dispatch-n [[::logging/info "No addresses could be loaded" :district0x/load-my-addresses]
+                                                      [:district0x/my-addresses-loaded []]]]}]}}
           {:dispatch [:district0x/my-addresses-loaded []]})))))
 
 (reg-event-fx
-  :district.server.config/load
-  interceptors
-  (fn [{:keys [db]} _]
-    {:db db
-     :http-xhrio {:method :get
-                  :uri (str (url/url (:server-url db) "/config"))
-                  :timeout 3000
-                  :response-format (ajax/transit-response-format)
-                  :on-success [:district.server.config/loaded]
-                  :on-failure [::logging/error :district.server.config/load]}}))
+ :district.server.config/load
+ interceptors
+ (fn [{:keys [db]} _]
+   (let [uri (str (url/url (:server-url db) "/config"))]
+     {:db db
+      :http-xhrio {:method :get
+                   :uri uri
+                   :timeout 30000 ;; 30 seconds
+                   :response-format (ajax/transit-response-format)
+                   :on-success [:district.server.config/loaded]
+                   :on-failure [::logging/error "Failed to load config" {:uri uri} :district.server.config/load]}})))
 
 (reg-event-db
   :district.server.config/loaded
@@ -241,7 +245,8 @@
                            code-type
                            version
                            [:district0x/smart-contract-loaded key code-type]
-                           [:district0x.log/error :district0x/load-smart-contracts]))))}))
+                           [::logging/error "Failed to load smart contract" {:key key :name name :code-type code-type}
+                            :district0x/load-smart-contracts]))))}))
 
 (reg-event-fx
   :district0x/clear-smart-contracts
@@ -305,14 +310,16 @@
         :fns [{:f web3-eth/contract-new
                :args (concat [(:abi contract)] args [tx-opts])
                :on-success [:district0x/contract-deployed (select-keys params [:contract-key :on-success])]
-               :on-error [:district0x.log/error :district0x/deploy-contract contract-key]}]}})))
+               :on-error [::logging/error "Failed to deploy smart contract" {:contract-key contract-key
+                                                                             :tx-opts tx-opts}
+                          :district0x/deploy-contract]}]}})))
 
 (reg-event-fx
   :district0x/contract-deployed
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [db localstorage]} [{:keys [:on-success :contract-key]} instance]]
     (when-let [contract-address (aget instance "address")]
-      (console :log contract-key " deployed at " contract-address)
+      (log/info "Deployed contract at address" {:contract contract-key :address contract-address})
       (merge
         {:db (update-in db [:smart-contracts contract-key] merge {:address contract-address :instance instance})
          :localstorage (assoc-in localstorage [:smart-contracts contract-key] {:address contract-address})}
@@ -405,7 +412,8 @@
                   :timeout 20000
                   :response-format (ajax/json-response-format {:keywords? true})
                   :on-success [:district0x/conversion-rates-loaded]
-                  :on-failure [:district0x.log/error :district0x/conversion-rates-loaded]}}))
+                  :on-failure [::logging/error "Failed to load conversion rates" {:currencies currencies}
+                               :district0x/load-conversion-rates]}}))
 
 (reg-event-db
   :district0x/conversion-rates-loaded
@@ -435,7 +443,9 @@
   (fn [{:keys [db]} [{:keys [:form-data :form-id :args-order :contract-key :wei-keys
                              :contract-key :contract-method :contract-address :on-success] :as props}]]
     (let [{:keys [:web3 :active-address]} db
-          props (update props :tx-opts (partial merge {:from active-address}))]
+          props (update props :tx-opts (partial merge {:from active-address}))
+          args (-> (d0x-shared-utils/update-multi form-data wei-keys d0x-shared-utils/eth->wei)
+                   (d0x-shared-utils/map->vec args-order))]
       {:web3-fx.contract/state-fns
        {:web3 web3
         :db-path [:contract/state-fns]
@@ -443,13 +453,15 @@
                            (get-instance db contract-key contract-address)
                            (get-instance db contract-key))
                :method contract-method
-               :args (-> (d0x-shared-utils/update-multi form-data wei-keys d0x-shared-utils/eth->wei)
-                       (d0x-shared-utils/map->vec args-order))
+               :args args
                :tx-opts (:tx-opts props)
-               :on-success [:district0x/dispatch-n [[:district0x/load-transaction]
+               :on-success [:district0x/dispatch-n [[::logging/info "Transaction success" (merge props {:user active-address})
+                                                     :district0x/make-transaction]
+                                                    [:district0x/load-transaction]
                                                     [:district0x.transactions/add props]
                                                     (when on-success on-success)]]
-               :on-error [:district0x.log/error :district0x/make-transaction props]
+               :on-error [::logging/error "Transaction error" (merge props {:user active-address})
+                          :district0x/make-transaction]
                :on-tx-receipt [:district0x/on-tx-receipt props]}]}})))
 
 (reg-event-fx
@@ -484,7 +496,8 @@
       :fns [{:f web3-eth/get-transaction
              :args [transaction-hash]
              :on-success [:district0x/transaction-loaded transaction-hash]
-             :on-error [:district0x.log/error :district0x/load-transaction transaction-hash]}]}}))
+             :on-error [::logging/error "Failed to load transaction" {:transaction-hash transaction-hash}
+                        :district0x/load-transaction]}]}}))
 
 (reg-event-fx
   :district0x/transaction-loaded
@@ -509,7 +522,8 @@
       :fns [{:f web3-eth/get-transaction-receipt
              :args [transaction-hash]
              :on-success [:district0x/transaction-receipt-loaded]
-             :on-error [:district0x.log/error :district0x/load-transaction-receipt transaction-hash]}]}}))
+             :on-error [::logging/error "Failed to load transaction receipt" {:transaction-hash transaction-hash}
+                        :district0x/load-transaction-receipt]}]}}))
 
 (reg-event-fx
   :district0x/transaction-receipt-loaded
@@ -585,13 +599,13 @@
           new-db (assoc-in db [:transaction-log :transactions transaction-hash] transaction)]
       (let [{:keys [:gas :gas-used :gas-used-cost-usd :form-data :contract-key :contract-method]} transaction]
         (when (and gas gas-used)
-          (console :log
-                   (keyword contract-key contract-method)
-                   "gas-limit:" gas
-                   "gas-used:" gas-used
-                   "gas-used-cost-usd:" (to-locale-string gas-used-cost-usd 2)
-                   (str (int (* (/ gas-used gas) 100)) "%")
-                   form-data)))
+          (log/info (keyword contract-key contract-method)
+                    {:gas-limit gas
+                     :gas-used gas-used
+                     :gas-used-cost-usd (to-locale-string gas-used-cost-usd 2)
+                     :gas% (str (int (* (/ gas-used gas) 100)) "%")
+                     :form-data form-data}
+                    :district0x.transactions/update)))
       (merge
         {:db new-db
          :localstorage (merge localstorage (select-keys new-db [:transaction-log]))}))))
@@ -650,13 +664,17 @@
  interceptors
  (fn [{:keys [:db]} [address]]
    (when address
-     (let [instance (get-instance db :district0x-emails)]
+     (let [instance (get-instance db :district0x-emails)
+           args [address]]
        {:web3-fx.contract/constant-fns
         {:fns [{:instance instance
                 :method :emails
-                :args [address]
+                :args args
                 :on-success [:district0x-emails/loaded address]
-                :on-error [:district0x.log/error :district0x-emails/load]}]}}))))
+                :on-error [::logging/error "Failed to load email address" {:contract :district0x-emails
+                                                                           :method :emails
+                                                                           :args args}
+                           :district0x-emails/load]}]}}))))
 
 (reg-event-fx
   :district0x-emails/loaded
@@ -668,7 +686,7 @@
  :district0x.contract/event-watch-once
  interceptors
  (fn [{:keys [:db]} [{:keys [:contract-key :on-success :on-error] :as event-params
-                      :or {on-error [:district0x.log/error :district0x.contract/event-watch-once]}}]]
+                      :or {on-error [::logging/error "Event watch once error" event-params :district0x.contract/event-watch-once]}}]]
    (let [event-id (str "event-listen-once-" (rand-int 99999))
          db-path [:web3-event-filters]]
      {:web3-fx.contract/events
@@ -690,22 +708,22 @@
 (reg-event-fx
   :district0x.server/http-get
   interceptors
-  (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :on-failure :endpoint]
-                      :or {on-failure [:district0x.log/error]}} :as opts]]
-    {:http-xhrio (-> (merge
-                       {:method :get
-                        :timeout 20000
-                        :uri (str (url/url (:server-url db) endpoint))
-                        :response-format (ajax/transit-response-format)
-                        :on-success on-success
-                        :on-failure [:district0x.log/error]
-                        :params params}
-                       http-xhrio)
-                   (update :params (partial medley/map-vals (fn [v]
-                                                              (cond
-                                                                (keyword? v) (str v)
-                                                                (sequential? v) (map str v)
-                                                                :else v)))))}))
+  (fn [{:keys [db]} [{:keys [:http-xhrio :params :on-success :on-failure :endpoint]} :as opts]]
+    (let [uri (str (url/url (:server-url db) endpoint))]
+      {:http-xhrio (-> (merge
+                        {:method :get
+                         :timeout 20000
+                         :uri uri
+                         :response-format (ajax/transit-response-format)
+                         :on-success on-success
+                         :on-failure [::logging/error "Http GET request error" {:uri uri} :district0x.server/http-get]
+                         :params params}
+                        http-xhrio)
+                       (update :params (partial medley/map-vals (fn [v]
+                                                                  (cond
+                                                                    (keyword? v) (str v)
+                                                                    (sequential? v) (map str v)
+                                                                    :else v)))))})))
 
 (reg-event-fx
   :district0x.search-results/load
@@ -742,8 +760,12 @@
   interceptors
   (fn [{:keys [db]} [contract-key & args]]
     {:web3-fx.contract/constant-fns
-     {:fns [(concat [(get-instance db contract-key)] args [[:district0x.log/info]
-                                                           [:district0x.log/error]])]}}))
+     {:fns [(concat [(get-instance db contract-key)] args [[:logging/info "Contract constant fn call success" {:contract contract-key
+                                                                                                   :args args}
+                                                            :district0x.contract/constant-fn-call]
+                                                           [:logging/error "Contract constant fn call error" {:contract contract-key
+                                                                                                    :args args}
+                                                            :district0x.contract/constant-fn-call]])]}}))
 
 (reg-event-fx
   :district0x/clear-localstorage
@@ -757,26 +779,6 @@
   (fn [{:keys [:db]}]
     (print.foo/look db)
     nil))
-
-(reg-event-fx
- :district0x.log/error
- interceptors
- (fn [_ errors]
-   (try
-     (apply console :error errors)
-     (catch ExceptionInfo e
-       (.error js/console (str "Failed reframe console error: " e))))
-   nil))
-
-(reg-event-fx
- :district0x.log/info
- interceptors
- (fn [_ results]
-   (try
-     (apply console :log results)
-     (catch ExceptionInfo e
-       (.error js/console (str "Failed reframe console info: " e))))
-   nil))
 
 (reg-event-db
   :district0x.snackbar/close
@@ -833,8 +835,8 @@
     {:web3-fx.blockchain/fns
      {:web3 (:web3 db)
       :fns [[web3-personal/unlock-account address password (or seconds 999999)
-             [:district0x.log/info]
-             [:district0x.log/error :blockchain/unlock-account]]]}}))
+             [:logging/info "Unlock account success" {:user address} :district0x/unlock-account]
+             [:logging/error "Unlock account failure" {:user address} :district0x/unlock-account]]]}}))
 
 (reg-event-fx
   :district0x.location/set-query

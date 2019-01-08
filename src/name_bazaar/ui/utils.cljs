@@ -11,8 +11,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.db :refer [default-db]]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [name-bazaar.ui.db :refer [default-db]]))
 
 (def namehash
   (memoize

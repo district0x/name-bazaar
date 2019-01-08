@@ -1,40 +1,23 @@
 (ns name-bazaar.ui.db
   (:require
-    [cljs-time.coerce :refer [to-epoch]]
-    [cljs-time.core :as t]
-    [cljs-web3.core :as web3]
-    [cljs.spec.alpha :as s]
-    [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
-    [district0x.ui.db]
-    [district0x.ui.history :as history]
-    [district0x.ui.utils :refer [get-window-size namehash match-current-location]]
-    [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
-    [name-bazaar.ui.constants :as constants]
-    [re-frame.core :refer [dispatch]]))
-
-(goog-define environment "prod")
-(goog-define log-level "error")
-
-(def development-config
-  {:node-url "http://localhost:8549" #_ "http://localhost:8545"
-   :load-node-addresses? true
-   :root-url "https://beta.namebazaar.io"
-   :server-url "http://localhost:6200"})
-
-(def production-config
-  {:node-url "https://mainnet.infura.io/"
-   :load-node-addresses? false
-   :root-url "https://namebazaar.io"
-   :server-url "https://api.namebazaar.io"})
-
-(defn get-config [env-name]
-  (get {"dev" development-config
-        "prod" production-config} env-name production-config))
+   [cljs-time.coerce :refer [to-epoch]]
+   [cljs-time.core :as t]
+   [cljs-web3.core :as web3]
+   [cljs.spec.alpha :as s]
+   [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
+   [district0x.ui.db]
+   [district0x.ui.history :as history]
+   [district0x.ui.utils :refer [get-window-size namehash match-current-location]]
+   [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
+   [name-bazaar.ui.config :refer [config]]
+   [name-bazaar.ui.constants :as constants]
+   [re-frame.core :refer [dispatch]]
+   ))
 
 (def default-db
   (merge
     district0x.ui.db/default-db
-    (get-config environment)
+    config
     {:active-page (if history/hashroutes?
                     (match-current-location constants/routes)
                     (match-current-location constants/routes (history/get-state)))

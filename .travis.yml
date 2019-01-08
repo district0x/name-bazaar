@@ -1,14 +1,17 @@
 language: clojure
 script: lein doo node "server-tests" once
+notifications:
+  email: false
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+    - district0x:53vhalUfg0MitsQwzjP5PWdd#travis-ci
 before_install:
- - sudo add-apt-repository --yes ppa:ethereum/ethereum
- - sudo apt-get -qq update
+- npm install -g ganache-cli
+- sudo wget --no-check-certificate -P /bin https://github.com/ethereum/solidity/releases/download/v0.4.24/solc-static-linux
+- sudo chmod a+x /bin/solc-static-linux
+- sudo ln -s /bin/solc-static-linux /usr/bin/solc
 before_script:
-  - "echo 'Installing Solc'"
-  - sudo apt-get --yes install solc
-  - "echo 'Installing Ganache'"
-  - npm install -g ganache-cli
-  - "echo 'Running Ganache'"
-  - ganache-cli -p 8549 > /dev/null &
-  - "echo 'Compiling contracts'"
-  - lein compile-solidity
+- lein compile-solidity
+- ganache-cli -p 8549 -l 8000000 -d -m district0x > /dev/null &

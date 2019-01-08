@@ -12,7 +12,7 @@
     [district.server.db :refer [db]]
     [district.server.endpoints :as endpoints]
     [district.server.endpoints.middleware.logging :refer [logging-middlewares]]
-    [district.server.logging :refer [logging]]
+    [district.server.logging]
     [district.server.smart-contracts]
     [district.server.web3 :refer [web3]]
     [district.server.web3-watcher]
@@ -36,11 +36,11 @@
     [name-bazaar.server.db]
     [name-bazaar.server.deployer]
     [name-bazaar.server.emailer]
-    [name-bazaar.server.generator]
+    [name-bazaar.server.generator :as generator]
     [name-bazaar.server.syncer]
     [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
     [print.foo :include-macros true]
-    [taoensso.timbre :as logging]))
+    [taoensso.timbre :as log]))
 
 (nodejs/enable-util-print!)
 
@@ -74,6 +74,17 @@
     (mount/start)
     pprint/pprint))
 
+
+(defn generate-data
+  "Generate dev data"
+  []
+  (let [opts (or (:generator @config)
+                 {:total-accounts 1
+                  :offerings-per-account 1})]
+    (log/info "Generating data, please be patient..." ::generate-date)
+    (generator/generate opts)))
+
+
 (defn -main [& _]
   (-> (mount/with-args
         {:config {:default {:logging {:level "info"
@@ -85,14 +96,11 @@
                                       :private-key "25677d268904ea651f84e37cfd580696c5c793dcd9730c415bf03b96003c09e9ef8"}
                             :ui {:public-key "2564e15aaf9593acfdc633bd08f1fc5c089aa43972dd7e8a36d67825cd0154602da47d02f30e1f74e7e72c81ba5f0b3dd20d4d4f0cc6652a2e719a0e9d4c7f10943"
                                  :use-instant-registrar? true
-                                 :reveal-period {:hours 48}}
-                            :generator {:total-accounts 10
-                                        :offerings-per-account 3}}}
+                                 :reveal-period {:hours 48}}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
                            :auto-mining? true}
          :deployer {:write? true}})
-    (mount/except [#'name-bazaar.server.deployer/deployer
-                   #'name-bazaar.server.generator/generator])
+    (mount/except [#'name-bazaar.server.deployer/deployer])
     (mount/start)
     pprint/pprint))

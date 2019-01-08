@@ -1,10 +1,10 @@
 (ns name-bazaar.shared.utils
   (:require
-    [bignumber.core :as bn]
-    [cljs-web3.core :as web3]
-    [cljs.core.match :refer-macros [match]]
-    [clojure.string :as string]
-    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address evm-time->local-date-time]]))
+   [bignumber.core :as bn]
+   [cljs-web3.core :as web3]
+   [cljs.core.match :refer-macros [match]]
+   [clojure.string :as string]
+   [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address evm-time->local-date-time]]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
 (def unregistered-new-owner "0x00000000000000000000000000000000deaddead")

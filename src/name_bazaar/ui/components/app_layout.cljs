@@ -128,7 +128,7 @@
   (let [open? (subscribe [:district0x.transaction-log/open?])
         my-addresses (subscribe [:district0x/my-addresses])
         mobile-coinbase-compatible? @(subscribe [::mobile-subs/coinbase-compatible?])]
-    
+
     (fn []
       [:div.app-bar
        [:div.left-section
@@ -178,13 +178,12 @@
                                                                           nav-menu-items-props
                                                                           nav-menu-items-props-no-instant-registration)]
                 (let [href (or href (path-for route))]
-                  [ui/MenuItem
-                   {:key text
-                    :as "a"
-                    :href href
-                    :class class
-                    :on-click #(dispatch [:district0x.window/scroll-to-top])
-                    :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
+                  [ui/MenuItem {:key text
+                                :as "a"
+                                :href href
+                                :class class
+                                :on-click #(dispatch [:district0x.window/scroll-to-top])
+                                :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
                    [:i.icon
                     {:class icon}]
                    text])))
@@ -200,7 +199,10 @@
          [transaction-log
           {:title-props {:on-click #(dispatch [:district0x.transaction-log/set-open false])}}]]
         [:div.grid.main-content
-         children]]
+         ;; meta to every child element to avoid react warnings
+         (map-indexed (fn [index item]
+                        (with-meta item {:key (keyword "c" index)}))
+                      children)]]
        [snackbar
         {:action-button-props {:primary true
                                :size :small}}]])))
