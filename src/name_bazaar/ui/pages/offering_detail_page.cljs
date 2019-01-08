@@ -125,10 +125,8 @@
                                       {:offset offset :limit limit} {:append? true}]))}
           (doall
            (for [[i offering] (medley/indexed items)]
-             ^{:key i}
-             [offering-list-item
-              {:key i
-               :offering offering}]))]]))))
+             [offering-list-item {:key i
+                                  :offering offering}]))]]))))
 
 (defmethod page :route.offerings/detail []
   (let [route-params (subscribe [:district0x/route-params])]

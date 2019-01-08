@@ -11,9 +11,7 @@
    :node-url "http://localhost:8549"
    :load-node-addresses? true
    :root-url "http://0.0.0.0:4544"
-   :server-url "http://localhost:6200"
-
-   })
+   :server-url "http://localhost:6200"})
 
 (def production-config
   {:logging {:level :warn
@@ -22,9 +20,7 @@
    :node-url "https://mainnet.infura.io/"
    :load-node-addresses? false
    :root-url "https://namebazaar.io"
-   :server-url "https://api.namebazaar.io"
-
-   })
+   :server-url "https://api.namebazaar.io"})
 
 (def config
   (condp = environment

@@ -178,14 +178,12 @@
                                                                           nav-menu-items-props
                                                                           nav-menu-items-props-no-instant-registration)]
                 (let [href (or href (path-for route))]
-                  ^{:key text}
-                  [ui/MenuItem
-                   {:key text
-                    :as "a"
-                    :href href
-                    :class class
-                    :on-click #(dispatch [:district0x.window/scroll-to-top])
-                    :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
+                  [ui/MenuItem {:key text
+                                :as "a"
+                                :href href
+                                :class class
+                                :on-click #(dispatch [:district0x.window/scroll-to-top])
+                                :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
                    [:i.icon
                     {:class icon}]
                    text])))

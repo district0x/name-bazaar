@@ -14,30 +14,10 @@
    [re-frame.core :refer [dispatch]]
    ))
 
-;; (goog-define environment "prod")
-;; (goog-define log-level "error")
-
-#_(def development-config
-  {:node-url "http://localhost:8549" #_ "http://localhost:8545"
-   :load-node-addresses? true
-   :root-url "https://beta.namebazaar.io"
-   :server-url "http://localhost:6200"})
-
-#_(def production-config
-  {:node-url "https://mainnet.infura.io/"
-   :load-node-addresses? false
-   :root-url "https://namebazaar.io"
-   :server-url "https://api.namebazaar.io"})
-
-#_(defn get-config [env-name]
-  (get {"dev" development-config
-        "prod" production-config} env-name production-config))
-
 (def default-db
   (merge
     district0x.ui.db/default-db
     config
-    ;; (get-config environment)
     {:active-page (if history/hashroutes?
                     (match-current-location constants/routes)
                     (match-current-location constants/routes (history/get-state)))
