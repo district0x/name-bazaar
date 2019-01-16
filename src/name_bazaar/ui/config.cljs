@@ -5,8 +5,7 @@
 (def development-config
   {:debug? true
    :logging {:level :debug
-             :console? true
-             :sentry {:dsn "https://597ef71a10a240b0949c3b482fe4b9a4@sentry.io/1364232"}}
+             :console? true}
    :pushroute-hosts "localhost"
    :node-url "http://localhost:8549"
    :load-node-addresses? true
