@@ -3,7 +3,7 @@
    [com.rpl.specter :as s]
    [figwheel-sidecar.repl-api :as fw-repl]
    [figwheel-sidecar.config :as fw-config]
-   [taoensso.timbre :as timbre :refer [info]]))
+   [taoensso.timbre :as log]))
 
 
 (defn- set-closure-define
@@ -25,12 +25,14 @@
 
 
 (defn start-ui!
-  [& {:keys [ui-only?] :or {ui-only? false}}]
-  (let [environment (if ui-only? "prod" "dev")
+  "Start the client build.
+  Passing {:prod-config? true} points the client to the production server and logging service!"
+  [& {:keys [:prod-config?]}]
+  (let [environment (if prod-config? "prod" "dev")
         fig-config  (fw-config/fetch-config)]
-    (when ui-only? (info "Performing ui-only build..."))
+    (when prod-config? (log/info "Performing ui-only build..."))
     (fw-repl/start-figwheel!
-     (set-closure-define fig-config "dev-ui" 'name-bazaar.ui.db.environment environment)
+     (set-closure-define fig-config "dev-ui" 'name-bazaar.ui.config.environment environment)
      "dev-ui")
     (fw-repl/cljs-repl "dev-ui")))
 
