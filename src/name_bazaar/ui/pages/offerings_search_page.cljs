@@ -1,7 +1,7 @@
 (ns name-bazaar.ui.pages.offerings-search-page
   (:require
     [cemerick.url :as url]
-    [district0x.shared.utils :refer [non-neg-ether-value?]]
+    [district0x.shared.utils :refer [non-neg-ether-value? debounce]]
     [district0x.ui.components.input :refer [input]]
     [district0x.ui.components.misc :refer [page]]
     [medley.core :as medley]
@@ -16,17 +16,24 @@
     [print.foo :refer [look]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
-    [soda-ash.core :as ui]
-    ))
+    [soda-ash.core :as ui]))
 
 (defn offerings-keyword-text-field []
-  (let [search-params (subscribe [:offerings.main-search/params])]
+  (let [search-params (subscribe [:offerings.main-search/params])
+        input-value (r/atom (:name @search-params))
+        debounced-dispatch (debounce
+                            (fn [value]
+                              (dispatch [:district0x.location/add-to-query {:name value}]))
+                            500)]
     (fn []
       [input
        {:label "Keyword"
         :fluid true
-        :value (:name @search-params)
-        :on-change #(dispatch [:district0x.location/add-to-query {:name (aget %2 "value")}])}])))
+        :value @input-value
+        :on-change (fn [proxy event]
+                     (let [value (aget event "value")]
+                       (reset! input-value value)
+                       (debounced-dispatch value)))}])))
 
 (defn offerings-keyword-position-select []
   (let [search-params (subscribe [:offerings.main-search/params])]
