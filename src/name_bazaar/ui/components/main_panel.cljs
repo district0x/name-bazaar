@@ -27,5 +27,5 @@
 (defn main-panel []
   (let [active-page (subscribe [:district0x/active-page])]
     (fn []
-      (let [{:keys [:handler :query-params]} @active-page]
-        ^{:key (str handler query-params)} [page handler]))))
+      (let [{:keys [:handler]} @active-page]
+        ^{:key (str handler)} [page handler]))))
