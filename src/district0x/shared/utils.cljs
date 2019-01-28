@@ -11,7 +11,8 @@
     [cognitect.transit :as transit]
     [goog.string :as gstring]
     [goog.string.format]
-    [medley.core :as medley]))
+    [medley.core :as medley])
+  (:import [goog.async Debouncer]))
 
 (def json-reader (transit/reader :json))
 (def transit-writer (transit/writer :json))
@@ -228,3 +229,10 @@
 (defn evm-time->local-date-time [x]
   (when-let [dt (evm-time->date-time x)]
     (to-default-time-zone dt)))
+
+(defn debounce [f interval]
+  "Used for debouncing individual functions, not just effects. Ruthelessly stolen from:
+  https://www.martinklepsch.org/posts/simple-debouncing-in-clojurescript.html"
+  (let [dbnc (Debouncer. f interval)]
+    ;; We use apply here to support functions of various arities
+    (fn [& args] (.apply (.-fire dbnc) dbnc (to-array args)))))
