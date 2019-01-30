@@ -19,7 +19,6 @@
     [name-bazaar.ui.subs]
     [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
-    [re-frisk.core :refer [enable-re-frisk!]]
     [reagent.core :as r]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
@@ -27,8 +26,7 @@
 
 (defn dev-setup []
   (when debug?
-    (enable-console-print!)
-    (enable-re-frisk!)))
+    (enable-console-print!)))
 
 (defn mount-root []
   (google-analytics-fx/set-enabled! (not debug?))

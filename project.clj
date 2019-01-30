@@ -21,10 +21,9 @@
                  [org.clojure/clojurescript "1.10.439"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
-                 [re-frame "0.10.5"]
+                 [re-frame "0.10.6"]
                  ;; Can be removed when re-frame vbump includes reagent 8.0.1+
                  [reagent "0.8.1"]
-                 [re-frisk "0.5.4"]
                  [soda-ash "0.76.0"]
 
                  [district0x/bignumber "1.0.1"]
@@ -49,7 +48,7 @@
                  [cljs-ajax "0.7.2"]
                  [cljsjs/bignumber "2.1.4-1"]
                  [cljsjs/react-flexbox-grid "1.0.0-0"]
-                 [cljsjs/react-highlight "1.0.5-0"]
+                 [cljsjs/react-highlight "1.0.7-2"]
                  [cljsjs/react-truncate "2.0.3-0"]
                  [cljsjs/react-ultimate-pagination "0.8.0-0"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
@@ -64,9 +63,7 @@
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
-               [org.clojure/clojurescript]
-               ;; Can be removed when re-frame vbump includes reagent 8.0.1+
-               [reagent]]
+               [org.clojure/clojurescript]]
 
   :plugins [[lein-auto "0.1.2"]
             [lein-cljsbuild "1.1.7"]
@@ -79,7 +76,7 @@
   :npm {:dependencies [
                        ["@sentry/node" "4.2.1"]
                        [eth-ens-namehash "2.0.0"]
-                       [semantic-ui "2.2.13"]
+                       [semantic-ui "2.4.1"]
                        [source-map-support "0.4.0"]
                        [ws "2.0.1"]
                        [xhr2 "0.1.4"]
@@ -120,7 +117,9 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
                                   [com.cemerick/piggieback "0.2.2"]
-                                  [figwheel-sidecar "0.5.16"]]
+                                  [figwheel-sidecar "0.5.16"]
+                                  [day8.re-frame/re-frame-10x "0.3.6"]
+                                  [day8.re-frame/tracing "0.5.1"]]
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
@@ -133,8 +132,12 @@
                                    :output-dir "resources/public/js/compiled/out"
                                    :asset-path "js/compiled/out"
                                    :source-map-timestamp true
-                                   :preloads [print.foo.preloads.devtools]
-                                   :closure-defines {name-bazaar.ui.config.environment "dev"}
+                                   :optimizations :none
+                                   :preloads [print.foo.preloads.devtools
+                                              day8.re-frame-10x.preload]
+                                   :closure-defines {name-bazaar.ui.config.environment "dev"
+                                                     "re_frame.trace.trace_enabled_QMARK_" true
+                                                     goog.DEBUG true}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
                        ;; Development on server-side with testnet
