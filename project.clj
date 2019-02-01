@@ -73,14 +73,13 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [
-                       ["@sentry/node" "4.2.1"]
+  :npm {:dependencies [["@sentry/node" "4.2.1"]
+                       [chalk "2.3.0"]
                        [eth-ens-namehash "2.0.0"]
                        [semantic-ui "2.4.1"]
                        [source-map-support "0.4.0"]
                        [ws "2.0.1"]
-                       [xhr2 "0.1.4"]
-                       ]
+                       [xhr2 "0.1.4"]]
         :devDependencies [[karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
@@ -116,10 +115,11 @@
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
-                                  [com.cemerick/piggieback "0.2.2"]
-                                  [figwheel-sidecar "0.5.16"]
+                                  [cider/piggieback "0.3.10"]
+                                  [figwheel-sidecar "0.5.18"]
                                   [day8.re-frame/re-frame-10x "0.3.6"]
                                   [day8.re-frame/tracing "0.5.1"]]
+                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
@@ -136,8 +136,7 @@
                                    :preloads [print.foo.preloads.devtools
                                               day8.re-frame-10x.preload]
                                    :closure-defines {name-bazaar.ui.config.environment "dev"
-                                                     "re_frame.trace.trace_enabled_QMARK_" true
-                                                     goog.DEBUG true}
+                                                     "re_frame.trace.trace_enabled_QMARK_" true}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
                        ;; Development on server-side with testnet

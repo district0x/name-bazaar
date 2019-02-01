@@ -25,7 +25,8 @@
                                                :min-level :warn}}
                             :web3 {:port 8545}
                             :ui {:reveal-period {:hours 48}
-                                 :etherscan-url "https://etherscan.io"}}}
+                                 :etherscan-url "https://etherscan.io"
+                                 :cryptocompare-api-key "INSERT-YOUR-API-KEY-HERE"}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts}
          :endpoints {:middlewares [logging-middlewares]}
          :web3-watcher {:on-online (fn []

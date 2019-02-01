@@ -53,13 +53,15 @@
                                                          [:watch-my-addresses-changed]
                                                          (if history/hashroutes?
                                                            [:active-page-changed]
-                                                           [:district0x.history/start constants/routes])]}]}
+                                                           [:district0x.history/start constants/routes])]}
+                                           {:when :seen?
+                                            :events [:district.server.config/loaded]
+                                            :dispatch-n [[:setup-update-now-interval]
+                                                         [:district0x/load-conversion-rates [:USD]]]}]}
                       :forward-events {:register :active-page-changed
                                        :events #{:district0x/set-active-page}
                                        :dispatch-to [:active-page-changed]}
-                      :dispatch-n [[:setup-update-now-interval]
-                                   [:district0x/load-conversion-rates [:USD]]
-                                   [:district.server.config/load]]}
+                      :dispatch-n [[:district.server.config/load]]}
                      (when history/hashroutes?
                        {:window/on-hashchange {:dispatch [:district0x/set-current-location-as-active-page constants/routes]}}))}])
   (mount-root))

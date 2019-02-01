@@ -17,9 +17,9 @@
    [day8.re-frame.async-flow-fx]
    [day8.re-frame.http-fx]
    [district.encryption :as encryption]
+   [district.shared.error-handling :refer [try-catch]]
    [district.ui.logging.events :as logging]
    [district0x.shared.utils :as d0x-shared-utils :refer [wei->eth]]
-   [district.shared.error-handling :refer [try-catch]]
    [district0x.ui.db]
    [district0x.ui.dispatch-fx]
    [district0x.ui.history :as history]
@@ -37,8 +37,10 @@
    [madvas.re-frame.web3-fx]
    [medley.core :as medley]
    [print.foo :include-macros true]
+   [print.foo :refer [look]]
    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path trim-v after debug reg-fx console dispatch reg-cofx]]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   ))
 
 (re-frame-storage/reg-co-fx! :contribution {:fx :localstorage :cofx :localstorage})
 
@@ -407,8 +409,10 @@
   interceptors
   (fn [{:keys [db]} [currencies]]
     {:http-xhrio {:method :get
-                  :uri (str "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms="
-                            (string/join "," (map name currencies)))
+                  :uri (str "https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH&tsyms="
+                            (string/join "," (map name currencies))
+                            "&api_key="
+                            (get-in db [:config :cryptocompare-api-key]))
                   :timeout 20000
                   :response-format (ajax/json-response-format {:keywords? true})
                   :on-success [:district0x/conversion-rates-loaded]
@@ -416,10 +420,13 @@
                                :district0x/load-conversion-rates]}}))
 
 (reg-event-db
-  :district0x/conversion-rates-loaded
-  interceptors
-  (fn [db [response]]
-    (update db :conversion-rates merge response)))
+ :district0x/conversion-rates-loaded
+ interceptors
+ (fn [db [response]]
+   ;; this fantastic service returns 200 on error and puts the error in response
+   (when (= "Error" (:Response response))
+     (log/error (:Message response) response :district0x/conversion-rates-loaded))
+   (update db :conversion-rates merge (:ETH response))))
 
 (reg-event-fx
   :district0x/set-active-address
@@ -777,7 +784,7 @@
   :district0x.log/print-db
   interceptors
   (fn [{:keys [:db]}]
-    (print.foo/look db)
+    (look db)
     nil))
 
 (reg-event-db
