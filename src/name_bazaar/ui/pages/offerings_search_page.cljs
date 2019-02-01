@@ -290,7 +290,8 @@
                  [:div.reset-filter
                   [reset-filter-button]])]]
              [[:div.show-advanced-search-options
-               {:on-click #(reset! open? true)}
+               {:key :show-advanced-search-options
+                :on-click #(reset! open? true)}
                "Show Advanced Options ▾"]]))]])])))
 
 (defn offerings-search-results []
