@@ -75,6 +75,21 @@ lein repl
 
 You can then connect to the server through a web browser at http://localhost:4541
 
+### Semantic UI
+
+To build the Semantic UI pieces of the app you need to have `gulp` installed.
+Note that `gulp 4.x` does not work, you need a `3.x` version.
+
+`npm install gulp@^3.9.0 --save`
+
+Then use our handy script:
+
+`./semantic.sh build`
+or
+`./semantic.sh watch`
+
+Depending upon how you'd like to work.
+
 ## Start a development UI for client-side development only
 
 If you're only focusing on working with the UI, you can start a UI
