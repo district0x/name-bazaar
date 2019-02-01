@@ -191,7 +191,7 @@ h4, h5, h6 {
       background-color: @bodyBackground;
       display: flex !important;
       justify-content: center;
-      
+
     }
     .app-page-button-links {
       display: flex;
@@ -2163,9 +2163,14 @@ input[type="range"] {
   }
 }
 
+@media only screen and (max-width: 767px) {
+  .grid.offering-detail {
+    grid-template-rows: 10% repeat(4,22.5%);
+  }
+}
+
 .grid.offering-detail {
   grid-template-columns: 50% 50%;
-  grid-template-rows: 10% repeat(4,22.5%);
   display: grid;
   justify-content: center;
   width: 100%;
