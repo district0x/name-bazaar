@@ -115,7 +115,7 @@
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
-                                  [cider/piggieback "0.3.10"]
+                                  [cider/piggieback "0.4.0"]
                                   [figwheel-sidecar "0.5.18"]
                                   [day8.re-frame/re-frame-10x "0.3.6"]
                                   [day8.re-frame/tracing "0.5.1"]]
