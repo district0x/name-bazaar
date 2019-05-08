@@ -1,5 +1,5 @@
 language: clojure
-script: lein doo node "server-tests" once
+script: echo "JUST DEPLOYING MAINTAINENCE PAGE HERE" #lein doo node "server-tests" once
 notifications:
   email:
   recipients:
