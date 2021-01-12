@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "ens-repo/contracts/ENS.sol";
+import "ens-repo/contracts/ENSRegistry.sol";
 import "ens-repo/contracts/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
@@ -14,7 +14,7 @@ import "strings-lib-repo/strings.sol";
 contract OfferingFactory {
     using strings for *;
 
-    ENS public ens;
+    ENSRegistry public ens;
     OfferingRegistry public offeringRegistry;
     OfferingRequestsAbstract public offeringRequests;
 
@@ -22,7 +22,7 @@ contract OfferingFactory {
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
     function OfferingFactory (
-        ENS _ens,
+        ENSRegistry _ens,
         OfferingRegistry _offeringRegistry,
         OfferingRequestsAbstract _offeringRequests
     ) {

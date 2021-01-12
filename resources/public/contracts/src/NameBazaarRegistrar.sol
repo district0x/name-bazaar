@@ -9,7 +9,7 @@ contract NameBazaarRegistrar is Registrar {
      * @param ens The address of the ENS
      * @param rootNode The hash of the rootnode.
      */
-    function NameBazaarRegistrar(AbstractENS ens, bytes32 rootNode, uint startDate) Registrar(ens, rootNode, startDate) public {}
+    function NameBazaarRegistrar(ENS ens, bytes32 rootNode, uint startDate) Registrar(ens, rootNode, startDate) public {}
 
     /**
      * @dev Convenience function added by NameBazaar for instant registration
@@ -20,7 +20,7 @@ contract NameBazaarRegistrar is Registrar {
     function register(bytes32 _hash) payable {
         Deed bid = (new Deed).value(msg.value)(msg.sender);
         sealedBids[msg.sender][bytes32(0)] = bid;
-        entry newAuction = _entries[_hash];
+        Entry newAuction = _entries[_hash];
         newAuction.registrationDate = now - 6 days;
         newAuction.value = msg.value;
         newAuction.highestBid = msg.value;

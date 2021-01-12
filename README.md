@@ -27,6 +27,8 @@ In a terminal, start a ganache blockchain
 ./run-ganache.sh
 ```
 
+_(note that this uses docker and will try to pull `trufflesuite/ganache-cli:v6.12.1` image if you don't have it)_
+
 Open another terminal, start autocompiling smart-contracts
 
 ```bash

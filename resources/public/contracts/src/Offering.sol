@@ -5,7 +5,7 @@ pragma solidity ^0.4.18;
  * @dev Contains base logic for an offering and is meant to be extended.
  */
 
-import "ens-repo/contracts/ENS.sol";
+import "ens-repo/contracts/ENSRegistry.sol";
 import "ens-repo/contracts/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 
@@ -28,7 +28,7 @@ contract Offering {
     Offering public offering;
 
     // Hardcoded ENS address. For development will be replaced after compilation. This way we save gas to users deploying offering contracts.
-    ENS public constant ens = ENS(0x314159265dD8dbb310642f98f50C066173C1259b);
+    ENSRegistry public constant ens = ENSRegistry(0x314159265dD8dbb310642f98f50C066173C1259b);
 
     // Hardcoded namehash of "eth"
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
@@ -113,10 +113,10 @@ contract Offering {
         offering.price = _price;
     }
 
-   /**
-    * @dev Unregisters offering for not displaying it in UI
-    * Cannot be run if contract has ownership or it was already transferred to new owner
-    */
+    /**
+     * @dev Unregisters offering for not displaying it in UI
+     * Cannot be run if contract has ownership or it was already transferred to new owner
+     */
     function unregister()
         public
         onlyOriginalOwner
