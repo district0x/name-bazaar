@@ -24,7 +24,7 @@ git submodule update --init --recursive
 In a terminal, start a ganache blockchain
 
 ```bash
-ganache-cli -p 8549
+./run-ganache.sh
 ```
 
 Open another terminal, start autocompiling smart-contracts
