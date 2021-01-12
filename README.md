@@ -13,7 +13,7 @@ Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tr
 In a terminal, start a ganache blockchain
 
 ```bash
-ganache-cli -p 8549
+./run-ganache.sh
 ```
 
 Open another terminal, start autocompiling smart-contracts
