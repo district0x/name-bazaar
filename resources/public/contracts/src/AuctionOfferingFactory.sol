@@ -13,7 +13,7 @@ import "Forwarder.sol";
 contract AuctionOfferingFactory is OfferingFactory {
 
     function AuctionOfferingFactory(
-        ENS ens,
+        ENSRegistry ens,
         OfferingRegistry offeringRegistry,
         OfferingRequestsAbstract offeringRequests
     )

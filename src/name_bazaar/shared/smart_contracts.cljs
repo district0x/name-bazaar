@@ -22,7 +22,7 @@
    {:name "PublicResolver",
     :address "0x5FfC014343cd971B7eb70732021E26C35B744cc4"},
    :ens
-   {:name "ENS", :address "0x5c0a54e5d85d7422f47c0a4d877fe984aac1bf12"},
+   {:name "ENSRegistry", :address "0x5c0a54e5d85d7422f47c0a4d877fe984aac1bf12"},
    :offering-registry
    {:name "OfferingRegistry",
     :address "0xe22a7319429be44c75d15329c65643c19605c8d1"},
