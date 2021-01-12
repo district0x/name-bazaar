@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "ens/ENS.sol";
+import "ens/ENSRegistry.sol";
 import "ens/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
@@ -14,7 +14,7 @@ import "strings.sol";
 contract OfferingFactory {
     using strings for *;
 
-    ENS public ens;
+    ENSRegistry public ens;
     OfferingRegistry public offeringRegistry;
     OfferingRequestsAbstract public offeringRequests;
 
@@ -22,7 +22,7 @@ contract OfferingFactory {
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
     function OfferingFactory (
-        ENS _ens,
+        ENSRegistry _ens,
         OfferingRegistry _offeringRegistry,
         OfferingRequestsAbstract _offeringRequests
     ) {
@@ -40,7 +40,7 @@ contract OfferingFactory {
     * @param version uint The version of offering contract
     */
     function registerOffering(bytes32 node, bytes32 labelHash, address newOffering, uint version)
-        internal
+    internal
     {
         require(ens.owner(node) == msg.sender);
         if (node == sha3(rootNode, labelHash)) {

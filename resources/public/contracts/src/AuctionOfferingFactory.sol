@@ -13,7 +13,7 @@ import "Forwarder.sol";
 contract AuctionOfferingFactory is OfferingFactory {
 
     function AuctionOfferingFactory(
-        ENS ens,
+        ENSRegistry ens,
         OfferingRegistry offeringRegistry,
         OfferingRequestsAbstract offeringRequests
     )
@@ -30,7 +30,7 @@ contract AuctionOfferingFactory is OfferingFactory {
     * @param minBidIncrease uint The min bid increase of the auction
     */
     function createOffering(
-        // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
+    // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name,
         uint startPrice,
         uint64 endTime,

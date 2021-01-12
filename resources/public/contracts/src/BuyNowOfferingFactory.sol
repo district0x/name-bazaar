@@ -13,11 +13,11 @@ import "Forwarder.sol";
 contract BuyNowOfferingFactory is OfferingFactory {
 
     function BuyNowOfferingFactory(
-        ENS ens,
+        ENSRegistry ens,
         OfferingRegistry offeringRegistry,
         OfferingRequestsAbstract offeringRequests
     )
-        OfferingFactory(ens, offeringRegistry, offeringRequests)
+    OfferingFactory(ens, offeringRegistry, offeringRequests)
     {
     }
 
@@ -27,7 +27,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
     * @param price uint The price of the offering
     */
     function createOffering(
-        // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
+    // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name,
         uint price
     ) {

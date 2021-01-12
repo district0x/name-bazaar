@@ -19,7 +19,7 @@
  :deed
  {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :ens
- {:name "ENS", :address "0x314159265dD8dbb310642f98f50C066173C1259b"},
+ {:name "ENSRegistry", :address "0x314159265dD8dbb310642f98f50C066173C1259b"},
  :public-resolver
  {:name "PublicResolver", :address "0x5FfC014343cd971B7eb70732021E26C35B744cc4"},
  :offering-registry

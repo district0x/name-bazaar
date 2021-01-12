@@ -5,7 +5,7 @@ pragma solidity ^0.4.18;
  * @dev Contains base logic for an offering and is meant to be extended.
  */
 
-import "ens/ENS.sol";
+import "ens/ENSRegistry.sol";
 import "ens/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 
@@ -28,7 +28,7 @@ contract Offering {
     Offering public offering;
 
     // Hardcoded ENS address. For development will be replaced after compilation. This way we save gas to users deploying offering contracts.
-    ENS public constant ens = ENS(0x314159265dD8dbb310642f98f50C066173C1259b);
+    ENSRegistry public constant ens = ENSRegistry(0x314159265dD8dbb310642f98f50C066173C1259b);
 
     // Hardcoded namehash of "eth"
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
@@ -87,7 +87,7 @@ contract Offering {
         require(!isContractNodeOwner());
         _;
     }
-    
+
     /**
      * @dev Constructor of offering
      * Should be callable just once, by factory
@@ -100,8 +100,8 @@ contract Offering {
         uint128 _version,
         uint _price
     )
-        public
-        onlyWhenNotEmergencyPaused
+    public
+    onlyWhenNotEmergencyPaused
     {
         require(offering.createdOn == 0);               // Prevent constructing multiple times
         offering.node = _node;
@@ -113,30 +113,30 @@ contract Offering {
         offering.price = _price;
     }
 
-   /**
-    * @dev Unregisters offering for not displaying it in UI
-    * Cannot be run if contract has ownership or it was already transferred to new owner
-    */
+    /**
+     * @dev Unregisters offering for not displaying it in UI
+     * Cannot be run if contract has ownership or it was already transferred to new owner
+     */
     function unregister()
-        public
-        onlyOriginalOwner
-        onlyWithoutNewOwner
-        onlyWhenContractIsNotNodeOwner
+    public
+    onlyOriginalOwner
+    onlyWithoutNewOwner
+    onlyWhenContractIsNotNodeOwner
     {
         // New owner is not really this address, but it's the way to recogize if offering
         // was unregistered without having separate var for it, which is costly
         offering.newOwner = 0xdeaddead;
         fireOnChanged("unregister");
     }
-    
+
     /**
     * @dev Transfers ENS name ownership back to original owner
     * Can be run only by original owner or emergency multisig
     * Sets newOwner to special address 0xdead
     */
     function reclaimOwnership()
-        public
-        onlyWithoutNewOwner
+    public
+    onlyWithoutNewOwner
     {
         var isEmergency = isSenderEmergencyMultisig();
         require(isEmergency || isSenderOriginalOwner());
@@ -158,9 +158,9 @@ contract Offering {
     * @param _newOwner address New owner of ENS name
     */
     function transferOwnership(address _newOwner)
-        internal
-        onlyWhenNotEmergencyPaused
-        onlyWithoutNewOwner
+    internal
+    onlyWhenNotEmergencyPaused
+    onlyWithoutNewOwner
     {
         offering.newOwner = _newOwner;
         offering.finalizedOn = uint64(now);
@@ -174,7 +174,7 @@ contract Offering {
     * @param _newOwner address New owner of ENS name
     */
     function doTransferOwnership(address _newOwner)
-        private
+    private
     {
         if (isNodeTLDOfRegistrar()) {
             Registrar(ens.owner(rootNode)).transfer(offering.labelHash, _newOwner);
@@ -184,13 +184,13 @@ contract Offering {
     }
 
     function doSetSettings(uint _price)
-        internal
+    internal
     {
         offering.price = _price;
     }
 
     function fireOnChanged(bytes32 eventType, uint[] extraData)
-        internal
+    internal
     {
         offeringRegistry.fireOnOfferingChanged(offering.version, eventType, extraData);
     }
@@ -209,7 +209,7 @@ contract Offering {
             address deed;
             (,deed,,,) = Registrar(ens.owner(rootNode)).entries(offering.labelHash);
             return ens.owner(offering.node) == address(this) &&
-                   Deed(deed).owner() == address(this);
+            Deed(deed).owner() == address(this);
         } else {
             return ens.owner(offering.node) == address(this);
         }
