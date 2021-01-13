@@ -42,17 +42,17 @@
        {:class (if error? :error :success)}
        [input
         (r/merge-props
-         {:label "Address"
-          :fluid true
-          :value value
-          :error error?
-          :on-change (fn [e data]
-                       (let [value (aget data "value")]
-                         (when (valid-ens-name? value)
-                           (aset data "value" value)
-                           (on-change e data)
-                           (load-resolver value))))}
-         (dissoc props :on-change))]
+          {:label "Address"
+           :fluid true
+           :value value
+           :error error?
+           :on-change (fn [e data]
+                        (let [value (aget data "value")]
+                          (when (valid-ens-name? value)
+                            (aset data "value" value)
+                            (on-change e data)
+                            (load-resolver value))))}
+          (dissoc props :on-change))]
        [:div.ui.label (when error? "Invalid address")]])))
 
 (defn subname-text-field []
@@ -60,25 +60,25 @@
     [:div.input-state-label
      [input
       (r/merge-props
-       {:label "Subname"
-        :fluid true
-        :value value
-        :on-change (fn [e data]
-                     (let [value (aget data "value")]
-                       (when (valid-ens-name? value)
-                         (aset data "value" value)
-                         (on-change e data)
-                         (load-resolver value))))}
-       (dissoc props :on-change))]]))
+        {:label "Subname"
+         :fluid true
+         :value value
+         :on-change (fn [e data]
+                      (let [value (aget data "value")]
+                        (when (valid-ens-name? value)
+                          (aset data "value" value)
+                          (on-change e data)
+                          (load-resolver value))))}
+        (dissoc props :on-change))]]))
 
 (defn point-name-form [defaults]
   (let [form-data (r/atom (default-point-name-form-data defaults))]
     (fn []
       (let [{:keys [:ens.record/addr :ens.record/name]} @form-data
             ownership-status @(subscribe [:ens.record/ownership-status (when (seq name)
-                                                        (str name constants/registrar-root))])
+                                                                         (str name constants/registrar-root))])
             full-name-fn #(when (seq %)
-                           (str % constants/registrar-root))
+                            (str % constants/registrar-root))
             full-name (full-name-fn name)
             name-record @(subscribe [:public-resolver/record (namehash full-name)])
             default-resolver? @(subscribe [:ens.record/default-resolver? (namehash full-name)])
@@ -184,8 +184,8 @@
             correct-subname? (and (not (empty? subname))
                                   (valid-ens-name? full-name))
             submit-disabled? (or
-                              (not correct-subname?)
-                              (not= ownership-status :ens.ownership-status/owner))]
+                               (not correct-subname?)
+                               (not= ownership-status :ens.ownership-status/owner))]
         [:div.grid.submit-footer.offering-form
          [:div.name-ownership
           [ens-name-input-ownership-validated
@@ -203,7 +203,7 @@
           [:p.input-info
            (when correct-subname?
              (str
-              full-subname " will be created"))]]
+               full-subname " will be created"))]]
          [:div.button
           [transaction-button
            {:primary true
@@ -247,7 +247,7 @@
              (when top-level?
                (str " as well as owner of the locked value "
                     (format-eth-with-code
-                     (:name-bazaar-registrar.entry.deed/value registrar-entry))))])]
+                      (:name-bazaar-registrar.entry.deed/value registrar-entry))))])]
          [:div.button
           [transaction-button
            {:primary true

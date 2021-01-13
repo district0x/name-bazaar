@@ -85,11 +85,11 @@
                             (dispatch [:offerings.user-offerings/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}
            (doall
-            (for [[i offering] (medley/indexed items)]
-              [offering-list-item {:key i
-                                   :offering offering
-                                   :header-props {:show-sold? true
-                                                  :show-missing-ownership? true}}]))]]]))))
+             (for [[i offering] (medley/indexed items)]
+               [offering-list-item {:key i
+                                    :offering offering
+                                    :header-props {:show-sold? true
+                                                   :show-missing-ownership? true}}]))]]]))))
 
 (defmethod page :route.user/my-offerings []
   [user-offerings

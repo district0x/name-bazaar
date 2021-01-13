@@ -20,10 +20,10 @@
 
 (defn transform-search-results [items]
   (->> items
-    (map (fn [{:keys [:offering/name :offering/price :offering/address] :as offering}]
-           (when (and name price)
-             {:title name :price (format-eth-with-code price) :id address})))
-    (remove nil?)))
+       (map (fn [{:keys [:offering/name :offering/price :offering/address] :as offering}]
+              (when (and name price)
+                {:title name :price (format-eth-with-code price) :id address})))
+       (remove nil?)))
 
 (defn search-bar []
   (let [search-name (r/atom "")

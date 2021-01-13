@@ -59,9 +59,9 @@
 
 (defn empty-address? [x]
   (or
-   (empty? x)
-   (zero-address? x)
-   (not x)))
+    (empty? x)
+    (zero-address? x)
+    (not x)))
 
 (defn collify [x]
   (if (sequential? x) x [x]))
@@ -218,8 +218,8 @@
   (let [n (- 42 (count address))]
     (if (pos? n)
       (->> (subs address 2)
-        (str (string/join (take n (repeat "0"))))
-        (str "0x"))
+           (str (string/join (take n (repeat "0"))))
+           (str "0x"))
       address)))
 
 (defn evm-time->date-time [x]

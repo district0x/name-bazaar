@@ -67,9 +67,9 @@
                     :name-bazaar-registrar.entry.deed/address]}
             @(subscribe [:name-bazaar-registrar/entry (name->label-hash name)])
             state-text (registrar-entry-state->text (if (and (top-level-name? name)
-                                                         (< (count (name-label name)) 7))
-                                                  :name-bazaar-registrar.entry.state/not-yet-available
-                                                  state))]
+                                                             (< (count (name-label name)) 7))
+                                                      :name-bazaar-registrar.entry.state/not-yet-available
+                                                      state))]
         [app-layout {:meta {:title (str name " name details")
                             :description (str "See details about " name ". Status: " state-text)}}
          [ui/Segment

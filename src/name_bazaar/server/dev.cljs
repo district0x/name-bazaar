@@ -71,8 +71,8 @@
         (merge
           (mount/args)
           {:deployer {:write? true}}))
-    (mount/start)
-    pprint/pprint))
+      (mount/start)
+      pprint/pprint))
 
 
 (defn generate-data
@@ -101,6 +101,6 @@
                            :print-gas-usage? true
                            :auto-mining? true}
          :deployer {:write? true}})
-    (mount/except [#'name-bazaar.server.deployer/deployer])
-    (mount/start)
-    pprint/pprint))
+      (mount/except [#'name-bazaar.server.deployer/deployer])
+      (mount/start)
+      pprint/pprint))

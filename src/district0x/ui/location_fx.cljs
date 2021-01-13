@@ -41,8 +41,8 @@
 (defn add-to-location-query! [query-params]
   (let [current-query (:query (current-url))
         new-query (merge current-query (->> query-params
-                                         (medley/remove-keys nil?)
-                                         (medley/map-keys name)))]
+                                            (medley/remove-keys nil?)
+                                            (medley/map-keys name)))]
     (set-location-query! new-query)))
 
 (reg-fx

@@ -11,7 +11,7 @@
                   :auction-offering/end-time
                   :auction-offering/extension-duration
                   :auction-offering/min-bid-increase)
-             args)
+            args)
            [(merge {:gas 1000000}
                    opts)])))
 

@@ -5,7 +5,7 @@
 
 (defn get-offering [contract-address]
   (->> (contract-call [:buy-now-offering contract-address] :offering)
-    (parse-offering contract-address)))
+       (parse-offering contract-address)))
 
 (defn emergency-multisig [contract-address]
   (contract-call [:buy-now-offering contract-address] :emergency-multisig))

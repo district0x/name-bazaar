@@ -77,12 +77,12 @@
                             (dispatch [:offerings.user-bids/set-params-and-search
                                        {:offset offset :limit limit} {:append? true}]))}
            (doall
-            (for [[i offering] (medley/indexed items)]
-              [offering-list-item
-               {:key i
-                :offering offering
-                :header-props {:show-auction-winning? true
-                               :show-auction-pending-returns? true}}]))]]]))))
+             (for [[i offering] (medley/indexed items)]
+               [offering-list-item
+                {:key i
+                 :offering offering
+                 :header-props {:show-auction-winning? true
+                                :show-auction-pending-returns? true}}]))]]]))))
 
 (defmethod page :route.user/my-bids []
   [user-bids

@@ -1,18 +1,18 @@
 (ns name-bazaar.ui.db
   (:require
-   [cljs-time.coerce :refer [to-epoch]]
-   [cljs-time.core :as t]
-   [cljs-web3.core :as web3]
-   [cljs.spec.alpha :as s]
-   [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
-   [district0x.ui.db]
-   [district0x.ui.history :as history]
-   [district0x.ui.utils :refer [get-window-size namehash match-current-location]]
-   [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
-   [name-bazaar.ui.config :refer [config]]
-   [name-bazaar.ui.constants :as constants]
-   [re-frame.core :refer [dispatch]]
-   ))
+    [cljs-time.coerce :refer [to-epoch]]
+    [cljs-time.core :as t]
+    [cljs-web3.core :as web3]
+    [cljs.spec.alpha :as s]
+    [district0x.shared.utils :as d0x-shared-utils :refer [sha3? address? date? not-neg?]]
+    [district0x.ui.db]
+    [district0x.ui.history :as history]
+    [district0x.ui.utils :refer [get-window-size namehash match-current-location]]
+    [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
+    [name-bazaar.ui.config :refer [config]]
+    [name-bazaar.ui.constants :as constants]
+    [re-frame.core :refer [dispatch]]
+    ))
 
 (def default-db
   (merge

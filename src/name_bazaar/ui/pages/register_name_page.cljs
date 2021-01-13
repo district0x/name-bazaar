@@ -28,30 +28,30 @@
 (def registrar-auction-states
   ^{:doc "Higher weights are given higher priority in autosuggestions"}
   (merge #:name-bazaar-registrar.entry.state{:loading {:text "Checking ownership..." :icon :loader :color :grey :status :grey :weight 1}
-                                 :owned-phase-different-owner {:text "This name is owned" :icon :user2 :color :dark-blue :status :dark-blue :weight 2}
-                                 :owned-phase-user-owner {:text "You are now the owner of this name" :icon :user2 :color :green :status :success :weight 3}
-                                 :auction-user-made-bid {:text "You placed a bid for this name" :icon :hammer2 :color :yellow :status :warning :weight 4}
-                                 :reveal-phase-user-outbid {:text "You have been outbid" :icon :times :color :red :status :failure :weight 5}
-                                 :reveal-phase-user-winning {:text "Your bid is currently winning the auction" :icon :arrow-up :color :green :status :success :weight 6}
-                                 :auction-no-user-made-bid {:text "This name is availiable for bids" :icon :check :color :green :status :success :weight 7}
-                                 :owned-phase-user-owner-not-finalized {:text "Your bid has won the auction" :icon :user2 :color :green :status :success :weight 8}
-                                 :reveal-phase-user-made-bid {:text "Your bid is waiting to be revealed" :icon :clock2 :color :yellow :status :warning :weight 9}
-                                 :empty-name {:text "" :weight 0}
-                                 :open {:text "This name is available for bids" :icon :check :color :green :status :success :weight 0}
-                                 :reveal-phase-no-user-made-bid {:text "Bids are waiting to be revealed" :icon :times :color :yellow :status :warning :weight 0}
-                                 :owned-phase-different-owner-not-finalized {:text "This name is owned" :icon :user2 :color :dark-blue :status :dark-blue :weight 0}}
-    {::subname {:text "Subnames can't be registered" :color :red :status :failure :icon :times}
-     ::invalid-length {:text "Only names with 7 and more characters can be registered" :color :yellow :status :warning :icon :times}
-     ::start-auction-pending {:text "Opening..." :icon :loader :color :grey :status :grey :weight 1}
-     ::start-auctions-and-bid-pending {:text "Bidding..." :icon :loader :color :grey :status :grey :weight 1}
-     ::finalize-auction-pending {:text "Finalizing..." :icon :loader :color :grey :status :grey :weight 1}
-     ::unseal-bid-pending {:text "Revealing..." :icon :loader :color :grey :status :grey :weight 1}}))
+                                             :owned-phase-different-owner {:text "This name is owned" :icon :user2 :color :dark-blue :status :dark-blue :weight 2}
+                                             :owned-phase-user-owner {:text "You are now the owner of this name" :icon :user2 :color :green :status :success :weight 3}
+                                             :auction-user-made-bid {:text "You placed a bid for this name" :icon :hammer2 :color :yellow :status :warning :weight 4}
+                                             :reveal-phase-user-outbid {:text "You have been outbid" :icon :times :color :red :status :failure :weight 5}
+                                             :reveal-phase-user-winning {:text "Your bid is currently winning the auction" :icon :arrow-up :color :green :status :success :weight 6}
+                                             :auction-no-user-made-bid {:text "This name is availiable for bids" :icon :check :color :green :status :success :weight 7}
+                                             :owned-phase-user-owner-not-finalized {:text "Your bid has won the auction" :icon :user2 :color :green :status :success :weight 8}
+                                             :reveal-phase-user-made-bid {:text "Your bid is waiting to be revealed" :icon :clock2 :color :yellow :status :warning :weight 9}
+                                             :empty-name {:text "" :weight 0}
+                                             :open {:text "This name is available for bids" :icon :check :color :green :status :success :weight 0}
+                                             :reveal-phase-no-user-made-bid {:text "Bids are waiting to be revealed" :icon :times :color :yellow :status :warning :weight 0}
+                                             :owned-phase-different-owner-not-finalized {:text "This name is owned" :icon :user2 :color :dark-blue :status :dark-blue :weight 0}}
+         {::subname {:text "Subnames can't be registered" :color :red :status :failure :icon :times}
+          ::invalid-length {:text "Only names with 7 and more characters can be registered" :color :yellow :status :warning :icon :times}
+          ::start-auction-pending {:text "Opening..." :icon :loader :color :grey :status :grey :weight 1}
+          ::start-auctions-and-bid-pending {:text "Bidding..." :icon :loader :color :grey :status :grey :weight 1}
+          ::finalize-auction-pending {:text "Finalizing..." :icon :loader :color :grey :status :grey :weight 1}
+          ::unseal-bid-pending {:text "Revealing..." :icon :loader :color :grey :status :grey :weight 1}}))
 
 (def registration-bid-state->text
   #:name-bazaar-registrar.entry.state{:reveal-phase-user-made-bid {:text "bids are waiting to be revealed"}
-                          :owned-phase-user-owner-not-finalized {:text "bids are waiting for finalization"}
-                          :auction-no-user-made-bid {:text "names are waiting for a bid"}
-                          :reveal-phase-user-winning {:text "bids are winning"}})
+                                      :owned-phase-user-owner-not-finalized {:text "bids are waiting for finalization"}
+                                      :auction-no-user-made-bid {:text "names are waiting for a bid"}
+                                      :reveal-phase-user-winning {:text "bids are winning"}})
 
 (defn- supported-length? [name]
   (>= (count name) shared-constants/min-name-length))
@@ -61,7 +61,7 @@
 
 (defn load-bid-state [name]
   (when (and (supported-length? name)
-          (top-level? name))
+             (top-level? name))
     (re-frame/dispatch [:registration-bids.state.ens-record/load name])))
 
 (defn- ens-bid-info [state highest-bid owner]
@@ -100,7 +100,7 @@
 
           (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
                        ::unseal-bid-pending}
-            state)
+                     state)
           [:div.description "Your bid has been placed, but still needs to be revealed. Return when the timer at the right reaches zero and the 48 hour reveal period begins in order to reveal your bids." [:font {:color :red} [:b " *Bids that are not revealed in this period cannot be refunded*!"]]])))
 
 (defn- import-bids []
@@ -110,7 +110,7 @@
      [:input {:type :file
               :on-change (fn [evt]
                            (d0x-ui-utils/handle-file-read evt
-                             #(re-frame/dispatch [:registration-bids/import %])))}]
+                                                          #(re-frame/dispatch [:registration-bids/import %])))}]
      [:b "IMPORT BIDS"]
      [:i.icon.hammer-arrow-left.green.big]]))
 
@@ -172,7 +172,7 @@
       [:div.auction-clock.shadowed
        [:div.ui.segment
         [:i.icon.clock]
-        [:h5.ui.header.sub.centered  header]
+        [:h5.ui.header.sub.centered header]
         [:table
          [:tbody
           [:tr
@@ -215,8 +215,8 @@
                                                     (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-winning} state)
                                                     (let [registration-date (:name-bazaar-registrar.entry/registration-date @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash]))
                                                           end-ownership-date @(re-frame/subscribe [:name-bazaar-registrar/end-ownership-date label-hash])]
-                                                    [registration-date
-                                                     end-ownership-date
+                                                      [registration-date
+                                                       end-ownership-date
                                                        (str "Finalize your ENS bid - " @label)
                                                        "You are currently winning the auction, come back later to finalize it"])
 
@@ -233,7 +233,7 @@
       [:div.auction-calendar
        [add-to-calendar/add-to-calendar {:title title
                                          :url (str "https://namebazaar.io/register?name="
-                                                @label constants/registrar-root)
+                                                   @label constants/registrar-root)
                                          :description description
                                          :start-time (d0x-ui-utils/format-iso8601 start-time)
                                          :end-time (d0x-ui-utils/format-iso8601 end-time)}]])))
@@ -252,7 +252,7 @@
                                                         :circular true
                                                         :inverted true
                                                         :size :small}]])})
-        items))))
+                   items))))
 
 (defn- search-bar [{:keys [:options :status :icon :text]}]
   (fn [{:keys [:options :status :icon :text]}]
@@ -275,8 +275,8 @@
                        (reset! label v)))
         :on-search-change (fn [_ data]
                             (let [v (-> data
-                                      (aget "searchQuery")
-                                      (clojure.string/trim))]
+                                        (aget "searchQuery")
+                                        (clojure.string/trim))]
                               (reset! label v)))}]
       [:div.ui.label constants/registrar-root]]
      [:div.ui.label.top-padded (when icon
@@ -299,14 +299,14 @@
                                 ::invalid-length
                                 ::start-auction-pending
                                 ::start-auctions-and-bid-pending}
-                     state)
+                              state)
                    [:div.grid.midsect.empty
                     [:div.info [description state]]]
 
                    (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
                                 :name-bazaar-registrar.entry.state/auction-no-user-made-bid
                                 ::unseal-bid-pending}
-                     state)
+                              state)
                    [:div.grid.midsect.made-bid
                     [:b.description.underlined
                      [ens-record-etherscan-link/ens-record-etherscan-link
@@ -454,8 +454,8 @@
                                                         :pending-text text
                                                         :on-click (fn []
                                                                     (re-frame/dispatch [:name-bazaar-registrar/transact :unseal-bid {:name-bazaar-registrar/label @label
-                                                                                                                         :name-bazaar-registrar/bid-value bid-value
-                                                                                                                         :name-bazaar-registrar/bid-salt bid-salt}])
+                                                                                                                                     :name-bazaar-registrar/bid-value bid-value
+                                                                                                                                     :name-bazaar-registrar/bid-salt bid-salt}])
                                                                     (load-bid-state @label))}
                  "Reveal Bid"])
               (when (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-winning
@@ -493,11 +493,11 @@
                               (cond
                                 (= state :name-bazaar-registrar.entry.state/open)
                                 (re-frame/dispatch [:name-bazaar-registrar/transact :start-auctions-and-bid {:name-bazaar-registrar/label @label
-                                                                                                 :name-bazaar-registrar/bid-value @bid-value-input}])
+                                                                                                             :name-bazaar-registrar/bid-value @bid-value-input}])
 
                                 (= state :name-bazaar-registrar.entry.state/auction-no-user-made-bid)
                                 (re-frame/dispatch [:name-bazaar-registrar/transact :new-bid {:name-bazaar-registrar/label @label
-                                                                                  :name-bazaar-registrar/bid-value @bid-value-input}])
+                                                                                              :name-bazaar-registrar/bid-value @bid-value-input}])
 
                                 :else (logging/error "Unknown state" {:state state} ::transaction-button))
                               (load-bid-state @label))}

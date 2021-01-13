@@ -79,18 +79,18 @@
                                                               owner))}))
 
 (reg-event-fx
- :ens.records.resolver/load
- interceptors
- (fn [{:keys [:db]} [nodes]]
-   (let [instance (get-instance db :ens)]
-     {:web3-fx.contract/constant-fns
-      {:fns (for [node nodes]
-              {:instance instance
-               :method :resolver
-               :args [node]
-               :on-success [:ens.records.resolver/loaded node]
-               :on-error [::logging/error "Failed to load ENS record resolver" {:node node}
-                          :ens.records.resolver/load]})}})))
+  :ens.records.resolver/load
+  interceptors
+  (fn [{:keys [:db]} [nodes]]
+    (let [instance (get-instance db :ens)]
+      {:web3-fx.contract/constant-fns
+       {:fns (for [node nodes]
+               {:instance instance
+                :method :resolver
+                :args [node]
+                :on-success [:ens.records.resolver/loaded node]
+                :on-error [::logging/error "Failed to load ENS record resolver" {:node node}
+                           :ens.records.resolver/load]})}})))
 
 (reg-event-fx
   :ens.records.resolver/loaded
@@ -127,9 +127,9 @@
   (fn [{:keys [:db]} [form-data]]
     (let [public-resolver (get-in db [:smart-contracts :public-resolver :address])
           form-data (assoc form-data
-                           :ens.record/node (namehash (str (:ens.record/name form-data)
-                                                           constants/registrar-root))
-                           :ens.record/resolver (get form-data :ens.record/resolver public-resolver))
+                      :ens.record/node (namehash (str (:ens.record/name form-data)
+                                                      constants/registrar-root))
+                      :ens.record/resolver (get form-data :ens.record/resolver public-resolver))
           full-name (str (:ens.record/name form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Setup resolver for %s" full-name)
@@ -152,9 +152,9 @@
                                             :opt [:ens.record/owner]))]
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (assoc form-data
-                           :ens.record/node (namehash (str (:ens.record/name form-data)
-                                                           constants/registrar-root))
-                           :ens.record/label (sha3 (:ens.record/subname form-data)))
+                      :ens.record/node (namehash (str (:ens.record/name form-data)
+                                                      constants/registrar-root))
+                      :ens.record/label (sha3 (:ens.record/subname form-data)))
           full-name (str (:ens.record/name form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Create %s.%s"

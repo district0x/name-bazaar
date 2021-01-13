@@ -36,7 +36,7 @@
         finalized? (not (= 0 value))]
     (vector (match [loading? empty? open? auction? reveal? owned? (nil? bid-value) bid-unsealed? (= active-address owner) finalized?]
                    [_ true _ _ _ _ _ _ _ _] :name-bazaar-registrar.entry.state/empty-name
-                   [true false  _ _ _ _ _ _ _ _] :name-bazaar-registrar.entry.state/loading
+                   [true false _ _ _ _ _ _ _ _] :name-bazaar-registrar.entry.state/loading
                    [false false true _ _ _ _ _ _ _] state
                    [false false _ true _ _ true _ _ _] :name-bazaar-registrar.entry.state/auction-no-user-made-bid
                    [false false _ true _ _ false _ _ _] :name-bazaar-registrar.entry.state/auction-user-made-bid
@@ -52,51 +52,51 @@
             state)))
 
 (re-frame/reg-sub
- :registration-bids/user-bids
- (fn [db _]
-   (get-in db [:registration-bids (:active-address db)])))
+  :registration-bids/user-bids
+  (fn [db _]
+    (get-in db [:registration-bids (:active-address db)])))
 
 (re-frame/reg-sub
- :registration-bid
- (fn [db [_ label-hash]]
-   (get-in db [:registration-bids (:active-address db) label-hash])))
+  :registration-bid
+  (fn [db [_ label-hash]]
+    (get-in db [:registration-bids (:active-address db) label-hash])))
 
 (re-frame/reg-sub
- :registration-bids/bid-unsealed?
- (fn [[_ label-hash]]
-   [(re-frame/subscribe [:registration-bid label-hash])])
- (fn [[{:keys [:name-bazaar-registrar/bid-unsealed?] :as bid}]]
-   bid-unsealed?))
+  :registration-bids/bid-unsealed?
+  (fn [[_ label-hash]]
+    [(re-frame/subscribe [:registration-bid label-hash])])
+  (fn [[{:keys [:name-bazaar-registrar/bid-unsealed?] :as bid}]]
+    bid-unsealed?))
 
 (re-frame/reg-sub
- :registration-bids/state-count
- (fn [db [_ state]]
-   (let [active-address (:active-address db)]
-     (reduce (fn [m [label-hash {:keys [:name-bazaar-registrar/label ] :as bid}]]
-               (cond
-                 (not state)
-                 m
-                 (-> state
-                     (= (first (query-registrar-auction-state db active-address label-hash))))
-                 (update m :count inc)
-                 :else m))
-             {:registration-bids/state state :count nil}
-             (get-in db [:registration-bids active-address])))))
+  :registration-bids/state-count
+  (fn [db [_ state]]
+    (let [active-address (:active-address db)]
+      (reduce (fn [m [label-hash {:keys [:name-bazaar-registrar/label] :as bid}]]
+                (cond
+                  (not state)
+                  m
+                  (-> state
+                      (= (first (query-registrar-auction-state db active-address label-hash))))
+                  (update m :count inc)
+                  :else m))
+              {:registration-bids/state state :count nil}
+              (get-in db [:registration-bids active-address])))))
 
 (re-frame/reg-sub
- :registration-bids/user-bids-by-importance
- (fn [db [_ fsm]]
-   (let [active-address (:active-address db)
-         user-bids (get-in db [:registration-bids active-address])]
-     (sort (fn [{s1 :registration-bids/state} {s2 :registration-bids/state}]
-             (compare (get-in fsm [s2 :weight])
-                      (get-in fsm [s1 :weight])))
-           (reduce-kv (fn [res label-hash {:keys [registrar/label]}]
-                        (conj res {:title label :registration-bids/state (first (query-registrar-auction-state db active-address label-hash))}))
-                      []
-                      user-bids)))))
+  :registration-bids/user-bids-by-importance
+  (fn [db [_ fsm]]
+    (let [active-address (:active-address db)
+          user-bids (get-in db [:registration-bids active-address])]
+      (sort (fn [{s1 :registration-bids/state} {s2 :registration-bids/state}]
+              (compare (get-in fsm [s2 :weight])
+                       (get-in fsm [s1 :weight])))
+            (reduce-kv (fn [res label-hash {:keys [registrar/label]}]
+                         (conj res {:title label :registration-bids/state (first (query-registrar-auction-state db active-address label-hash))}))
+                       []
+                       user-bids)))))
 
 (re-frame/reg-sub
- :name-bazaar-registrar/auction-state
- (fn [db [_ label-hash]]
-   (query-registrar-auction-state db (:active-address db) label-hash)))
+  :name-bazaar-registrar/auction-state
+  (fn [db [_ label-hash]]
+    (query-registrar-auction-state db (:active-address db) label-hash)))

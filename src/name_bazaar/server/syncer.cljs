@@ -1,25 +1,25 @@
 (ns name-bazaar.server.syncer
   (:require
-   [bignumber.core :as bn]
-   [cljs-web3.core :as web3]
-   [cljs-web3.eth :as web3-eth]
-   [clojure.string :as string]
-   [district.server.config :refer [config]]
-   [district.server.smart-contracts :refer [replay-past-events]]
-   [district.server.web3 :refer [web3]]
-   [district.shared.error-handling :refer [try-catch]]
-   [district0x.shared.utils :refer [prepend-address-zeros]]
-   [mount.core :as mount :refer [defstate]]
-   [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
-   [name-bazaar.server.contracts-api.ens :as ens]
-   [name-bazaar.server.contracts-api.offering :as offering]
-   [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-   [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
-   [name-bazaar.server.contracts-api.registrar :as registrar]
-   [name-bazaar.server.db :as db]
-   [name-bazaar.server.deployer]
-   [name-bazaar.server.generator]
-   [taoensso.timbre :as log]))
+    [bignumber.core :as bn]
+    [cljs-web3.core :as web3]
+    [cljs-web3.eth :as web3-eth]
+    [clojure.string :as string]
+    [district.server.config :refer [config]]
+    [district.server.smart-contracts :refer [replay-past-events]]
+    [district.server.web3 :refer [web3]]
+    [district.shared.error-handling :refer [try-catch]]
+    [district0x.shared.utils :refer [prepend-address-zeros]]
+    [mount.core :as mount :refer [defstate]]
+    [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
+    [name-bazaar.server.contracts-api.ens :as ens]
+    [name-bazaar.server.contracts-api.offering :as offering]
+    [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
+    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
+    [name-bazaar.server.contracts-api.registrar :as registrar]
+    [name-bazaar.server.db :as db]
+    [name-bazaar.server.deployer]
+    [name-bazaar.server.generator]
+    [taoensso.timbre :as log]))
 
 (def info-text "Handling blockchain event")
 (def error-text "Error handling blockchain event")
@@ -39,8 +39,8 @@
                            (auction-offering/get-auction-offering offering-address))
         owner? (node-owner? offering-address offering)
         offering (-> offering
-                   (merge auction-offering)
-                   (assoc :offering/node-owner? owner?))]
+                     (merge auction-offering)
+                     (assoc :offering/node-owner? owner?))]
     offering))
 
 
@@ -60,11 +60,11 @@
     (when-not (db/offering-exists? offering)
       (db/upsert-offering! (get-offering offering)))
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
-      (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
-      (update :bid/value bn/number)
-      (update :bid/datetime bn/number)
-      (assoc :bid/offering offering)
-      (->> (db/insert-bid!)))))
+        (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
+        (update :bid/value bn/number)
+        (update :bid/datetime bn/number)
+        (assoc :bid/offering offering)
+        (->> (db/insert-bid!)))))
 
 
 (defn on-request-added [err {{:keys [:node :round :requesters-count] :as args} :args}]
@@ -113,13 +113,13 @@
    (ens/on-transfer {} "latest" on-ens-transfer)
 
    (-> (offering-registry/on-offering-added {} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-offering-changed {:delay delay}))
+       (replay-past-events on-offering-changed {:delay delay}))
 
    (-> (offering-requests/on-round-changed {} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-round-changed {:delay delay}))
+       (replay-past-events on-round-changed {:delay delay}))
 
    (-> (offering-registry/on-offering-changed {:event-type "bid"} {:from-block 0 :to-block "latest"})
-     (replay-past-events on-offering-bid {:delay delay}))])
+       (replay-past-events on-offering-bid {:delay delay}))])
 
 
 (defn stop [syncer]
@@ -127,6 +127,6 @@
     (web3-eth/stop-watching! filter (fn [err]))))
 
 (defstate ^{:on-reload :noop} syncer
-  :start (start (merge (:syncer @config)
-                       (:syncer (mount/args))))
-  :stop (stop syncer))
+          :start (start (merge (:syncer @config)
+                               (:syncer (mount/args))))
+          :stop (stop syncer))

@@ -13,7 +13,7 @@
   (contract-call :name-bazaar-registrar
                  :register
                  (sha3 label hash)
-                 (merge {:gas   2000000
+                 (merge {:gas 2000000
                          :value (web3/to-wei 0.01 :ether)}
                         opts)))
 

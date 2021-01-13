@@ -15,8 +15,8 @@
 
 (def namehash
   (memoize
-   (fn namehash* [name]
-     (js/EthEnsNamehash.hash name))))
+    (fn namehash* [name]
+      (js/EthEnsNamehash.hash name))))
 
 (defn normalize [name]
   (js/EthEnsNamehash.normalize name))
@@ -120,19 +120,19 @@
   (let [subnames (if top-level-name?
                    ""
                    (-> name
-                     (string/replace (str label ".") "")
-                     (string/replace constants/registrar-root "")))]
+                       (string/replace (str label ".") "")
+                       (string/replace constants/registrar-root "")))]
     (str (subs label 0 3) "%" subnames)))
 
 (defn update-search-results-params [db params-db-path new-params {:keys [:append? :reset-params?]}]
   (let [default-search-params (get-in default-db params-db-path)
         search-params (cond-> default-search-params
-                        (not reset-params?) (merge (get-in db params-db-path))
-                        (not append?) (merge (select-keys default-search-params [:offset :limit]))
-                        true (merge new-params))]
+                              (not reset-params?) (merge (get-in db params-db-path))
+                              (not append?) (merge (select-keys default-search-params [:offset :limit]))
+                              true (merge new-params))]
     {:db (cond-> db
-           (not append?) (assoc-in [:infinite-list :expanded-items] {})
-           true (assoc-in params-db-path search-params))
+                 (not append?) (assoc-in [:infinite-list :expanded-items] {})
+                 true (assoc-in params-db-path search-params))
      :search-params search-params}))
 
 (defn registrar-entry-deed-loaded? [registrar-entry]
@@ -155,8 +155,8 @@
   "if the newly changed params are exactly one of expected ks"
   [old new ks]
   (let [changed-keys (-> (data/diff old new)
-                       second
-                       keys)]
+                         second
+                         keys)]
     (and (= (count changed-keys) 1)
          (contains? (set ks) (first changed-keys)))))
 
@@ -183,6 +183,6 @@
 
 (def reverse-record-node
   (memoize
-   (fn reverse-record-node*
-     [addr] (namehash (str (apply str (drop 2 addr))
-                           ".addr.reverse")))))
+    (fn reverse-record-node*
+      [addr] (namehash (str (apply str (drop 2 addr))
+                            ".addr.reverse")))))
