@@ -122,24 +122,24 @@
       (assoc :offering-request/node node))))
 
 (def registrar-entry-states
-  {0 :registrar.entry.state/open
-   1 :registrar.entry.state/auction
-   2 :registrar.entry.state/owned
-   3 :registrar.entry.state/forbidden
-   4 :registrar.entry.state/reveal
-   5 :registrar.entry.state/not-yet-available})
+  {0 :name-bazaar-registrar.entry.state/open
+   1 :name-bazaar-registrar.entry.state/auction
+   2 :name-bazaar-registrar.entry.state/owned
+   3 :name-bazaar-registrar.entry.state/forbidden
+   4 :name-bazaar-registrar.entry.state/reveal
+   5 :name-bazaar-registrar.entry.state/not-yet-available})
 
-(def registrar-entry-props [:registrar.entry/state :registrar.entry.deed/address :registrar.entry/registration-date
-                            :registrar.entry/value :registrar.entry/highest-bid])
+(def registrar-entry-props [:name-bazaar-registrar.entry/state :name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry/registration-date
+                            :name-bazaar-registrar.entry/value :name-bazaar-registrar.entry/highest-bid])
 
 (defn parse-registrar-entry [entry & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when entry
     (-> (zipmap registrar-entry-props entry)
-      (update :registrar.entry.deed/address #(if (= % "0x") zero-address %))
-      (update :registrar.entry/state (comp registrar-entry-states bn/number))
-      (update :registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
-      (update :registrar.entry/value bn/number)
-      (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
+      (update :name-bazaar-registrar.entry.deed/address #(if (= % "0x") zero-address %))
+      (update :name-bazaar-registrar.entry/state (comp registrar-entry-states bn/number))
+      (update :name-bazaar-registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
+      (update :name-bazaar-registrar.entry/value bn/number)
+      (update :name-bazaar-registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
 
 (defn calculate-min-bid
   ([price min-bid-increase bid-count]

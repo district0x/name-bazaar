@@ -34,7 +34,7 @@
         node (namehash full-name)]
     (dispatch [:ens.records/load [node] {:load-resolver? true}])
     (when (top-level-name? full-name)
-      (dispatch [:registrar.entries/load [(sha3 value)]]))))
+      (dispatch [:name-bazaar-registrar.entries/load [(sha3 value)]]))))
 
 (defn ens-name-input-ownership-validated []
   (fn [{:keys [:on-change :value :warn-only?] :as props}]

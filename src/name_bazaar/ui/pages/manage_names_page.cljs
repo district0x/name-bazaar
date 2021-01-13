@@ -228,7 +228,7 @@
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
             node-hash (sha3 name)
-            registrar-entry @(subscribe [:registrar/entry node-hash])]
+            registrar-entry @(subscribe [:name-bazaar-registrar/entry node-hash])]
         [:div.grid.submit-footer.offering-form
          [:div.name-ownership
           [ens-name-input-ownership-validated
@@ -247,7 +247,7 @@
              (when top-level?
                (str " as well as owner of the locked value "
                     (format-eth-with-code
-                     (:registrar.entry.deed/value registrar-entry))))])]
+                     (:name-bazaar-registrar.entry.deed/value registrar-entry))))])]
          [:div.button
           [transaction-button
            {:primary true

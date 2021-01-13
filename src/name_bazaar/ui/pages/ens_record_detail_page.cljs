@@ -62,13 +62,13 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       (let [{:keys [:ens.record/name]} @route-params
-            {:keys [:registrar.entry/state :registrar.entry.deed/address
-                    :registrar.entry/registration-date :registrar.entry.deed/value
-                    :registrar.entry.deed/address]}
-            @(subscribe [:registrar/entry (name->label-hash name)])
+            {:keys [:name-bazaar-registrar.entry/state :name-bazaar-registrar.entry.deed/address
+                    :name-bazaar-registrar.entry/registration-date :name-bazaar-registrar.entry.deed/value
+                    :name-bazaar-registrar.entry.deed/address]}
+            @(subscribe [:name-bazaar-registrar/entry (name->label-hash name)])
             state-text (registrar-entry-state->text (if (and (top-level-name? name)
                                                          (< (count (name-label name)) 7))
-                                                  :registrar.entry.state/not-yet-available
+                                                  :name-bazaar-registrar.entry.state/not-yet-available
                                                   state))]
         [app-layout {:meta {:title (str name " name details")
                             :description (str "See details about " name ". Status: " state-text)}}
@@ -77,5 +77,5 @@
           [:h1.ui.header.padded name]
           [ens-name-details
            {:ens.record/name name
-            :registrar.entry/state-text state-text}]]
+            :name-bazaar-registrar.entry/state-text state-text}]]
          [ens-record-offerings]]))))

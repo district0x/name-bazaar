@@ -36,8 +36,8 @@
    "Offering Address: " [etherscan-link {:address address} address]])
 
 
-(defn registrar-entry-deed-value-line [{:keys [:registrar-entry]}]
-  (let [{:keys [:registrar.entry.deed/address :registrar.entry.deed/value]} registrar-entry]
+(defn registrar-entry-deed-value-line [{:keys [:name-bazaar-registrar-entry]}]
+  (let [{:keys [:name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry.deed/value]} registrar-entry]
     [:div
      "Locked Value: " [etherscan-link
                        {:address address}
@@ -117,4 +117,4 @@
       {:offering/address address}]
      (when top-level-name?
        [registrar-entry-deed-value-line
-        {:registrar-entry registrar-entry}])]))
+        {:name-bazaar-registrar-entry registrar-entry}])]))

@@ -43,18 +43,18 @@
           (offering-requests/add-request! {:offering-request/name request-name} {:form owner})
 
           (let [tx-hash (if (= offering-type :buy-now-offering)
-                          (buy-now-offering-factory/create-offering! {:offering/name name
+                          (buy-now-offering-factory/create-offering! {:offering/name  name
                                                                       :offering/price price}
                                                                      {:from owner})
                           (auction-offering-factory/create-offering!
-                            {:offering/name name
-                             :offering/price price
-                             :auction-offering/end-time (to-epoch (t/plus (t/now) (t/weeks 2)))
+                            {:offering/name                       name
+                             :offering/price                      price
+                             :auction-offering/end-time           (to-epoch (t/plus (t/now) (t/weeks 2)))
                              :auction-offering/extension-duration (rand-int 10000)
-                             :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                             :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
                             {:from owner}))]
 
-            (let [{{:keys [:offering]} :args} (offering-registry/on-offering-added-in-tx tx-hash {:node node
+            (let [{{:keys [:offering]} :args} (offering-registry/on-offering-added-in-tx tx-hash {:node  node
                                                                                                   :owner owner})]
               (registrar/transfer! {:ens.record/label label :ens.record/owner offering}
                                    {:from owner})

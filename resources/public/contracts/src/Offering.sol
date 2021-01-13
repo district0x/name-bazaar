@@ -5,8 +5,8 @@ pragma solidity ^0.4.18;
  * @dev Contains base logic for an offering and is meant to be extended.
  */
 
-import "ens/ENS.sol";
-import "ens/HashRegistrarSimplified.sol";
+import "ens-repo/contracts/ENS.sol";
+import "ens-repo/contracts/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 
 contract Offering {
