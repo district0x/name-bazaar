@@ -6,7 +6,7 @@ pragma solidity ^0.4.18;
  */
 
 import "ens-repo/contracts/ENSRegistry.sol";
-import "ens-repo/contracts/HashRegistrarSimplified.sol";
+import "ens-repo/contracts/HashRegistrar.sol";
 import "OfferingRegistry.sol";
 
 contract Offering {
@@ -177,7 +177,7 @@ contract Offering {
         private
     {
         if (isNodeTLDOfRegistrar()) {
-            Registrar(ens.owner(rootNode)).transfer(offering.labelHash, _newOwner);
+            HashRegistrar(ens.owner(rootNode)).transfer(offering.labelHash, _newOwner);
         } else {
             ens.setOwner(offering.node, _newOwner);
         }
@@ -207,7 +207,7 @@ contract Offering {
     function isContractNodeOwner() constant returns(bool) {
         if (isNodeTLDOfRegistrar()) {
             address deed;
-            (,deed,,,) = Registrar(ens.owner(rootNode)).entries(offering.labelHash);
+            (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(offering.labelHash);
             return ens.owner(offering.node) == address(this) &&
                 Deed(deed).owner() == address(this);
         } else {

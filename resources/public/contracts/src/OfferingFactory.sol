@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "ens-repo/contracts/ENSRegistry.sol";
-import "ens-repo/contracts/HashRegistrarSimplified.sol";
+import "ens-repo/contracts/HashRegistrar.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
 import "strings-lib-repo/strings.sol";
@@ -45,7 +45,7 @@ contract OfferingFactory {
         require(ens.owner(node) == msg.sender);
         if (node == sha3(rootNode, labelHash)) {
             address deed;
-            (,deed,,,) = Registrar(ens.owner(rootNode)).entries(labelHash);
+            (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(labelHash);
             require(Deed(deed).owner() == msg.sender);
         }
 
