@@ -38,13 +38,13 @@
   {:before
    (fn []
      (-> (mount/with-args
-           {:web3 {:port 8549}
+           {:web3            {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
-                              :auto-mining? true}})
-       (mount/only [#'district.server.web3
-                    #'district.server.smart-contracts/smart-contracts
-                    #'name-bazaar.server.deployer/deployer])
-       (mount/start)))
+                              :auto-mining?  true}})
+         (mount/only [#'district.server.web3
+                      #'district.server.smart-contracts/smart-contracts
+                      #'name-bazaar.server.deployer/deployer])
+         (mount/start)))
    :after
    (fn []
      (mount/stop)
@@ -57,15 +57,15 @@
                                {:from addr1})))
 
     (testing "Making an instant offer"
-      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name "abc.eth"
+      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name  "abc.eth"
                                                                 :offering/price (eth->wei 0.1)}
                                                                {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner addr1})]
+                                                                  :owner      addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
@@ -95,27 +95,27 @@
                              {:from addr1}))
     (is (ens/set-subnode-owner!
           {:ens.record/label "theirsub"
-           :ens.record/node "tld.eth"
+           :ens.record/node  "tld.eth"
            :ens.record/owner addr2}
           {:from addr1}))
     (testing "The name ownership must be transferred to the user"
       (is (= addr2 (ens/owner {:ens.record/node (namehash "theirsub.tld.eth")}))))
     (testing "Making an instant offer"
-      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name "theirsub.tld.eth"
+      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name  "theirsub.tld.eth"
                                                                 :offering/price (eth->wei 0.1)}
                                                                {:from addr2})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "theirsub.tld.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "theirsub.tld.eth")
                                                                   :from-block 0
-                                                                  :owner addr2})]
+                                                                  :owner      addr2})]
 
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
           (testing "Transferrnig ownership to the offering"
-            (is (ens/set-owner! {:ens.record/node (namehash "theirsub.tld.eth")
+            (is (ens/set-owner! {:ens.record/node  (namehash "theirsub.tld.eth")
                                  :ens.record/owner offering}
                                 {:from addr2})))
 
@@ -141,18 +141,18 @@
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name "abc.eth"
-                       :offering/price (eth->wei 0.1)
-                       :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
+                      {:offering/name                       "abc.eth"
+                       :offering/price                      (eth->wei 0.1)
+                       :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
                        :auction-offering/extension-duration 0
-                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner addr1})]
+                                                                  :owner      addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
           (when offering
@@ -182,7 +182,7 @@
 
     (is (ens/set-subnode-owner!
           {:ens.record/label "theirsub"
-           :ens.record/node "tld.eth"
+           :ens.record/node  "tld.eth"
            :ens.record/owner addr2}
           {:from addr1}))
 
@@ -191,25 +191,25 @@
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name "theirsub.tld.eth"
-                       :offering/price (eth->wei 0.1)
-                       :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
+                      {:offering/name                       "theirsub.tld.eth"
+                       :offering/price                      (eth->wei 0.1)
+                       :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
                        :auction-offering/extension-duration 0
-                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
                       {:from addr2})]
 
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "theirsub.tld.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "theirsub.tld.eth")
                                                                   :from-block 0
-                                                                  :owner addr2})]
+                                                                  :owner      addr2})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
           (when offering
             (testing "Transferrnig ownership to the offering"
               (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
-                                           :ens.record/node "tld.eth"
+                                           :ens.record/node  "tld.eth"
                                            :ens.record/owner offering}
                                           {:from addr1})))
 
@@ -232,18 +232,18 @@
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name "abc.eth"
-                       :offering/price (eth->wei 0.1)
-                       :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
+                      {:offering/name                       "abc.eth"
+                       :offering/price                      (eth->wei 0.1)
+                       :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
                        :auction-offering/extension-duration 0
-                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner addr1})]
+                                                                  :owner      addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
@@ -260,7 +260,7 @@
           (testing "Can place a proper bid"
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.1 :ether)
-                                        :from addr4})))
+                                        :from  addr4})))
 
           (let [balance-of-4 (web3-eth/get-balance @web3 addr4)]
             (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
@@ -273,7 +273,7 @@
 
             (testing "User who was overbid, can successfully withdraw funds from auction offering."
               (is (auction-offering/withdraw! {:offering offering
-                                               :address addr4}
+                                               :address  addr4}
                                               {:from addr4}))
               (is (< (- (bn/+ balance-of-4 (web3/to-wei 0.1 :ether))
                         (web3-eth/get-balance @web3 addr4))
@@ -287,15 +287,15 @@
                                {:from addr1})))
 
     (testing "Making an instant offer"
-      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name "abc.eth"
+      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name  "abc.eth"
                                                                 :offering/price (eth->wei 0.1)}
                                                                {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner addr1})]
+                                                                  :owner      addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
@@ -305,11 +305,11 @@
 
           (testing "Offering can be successfully edited by original owner, throws error if different address tries to edit"
             (is (thrown? :default (buy-now-offering/set-settings! {:offering/address offering
-                                                                   :offering/price (eth->wei 0.2)}
+                                                                   :offering/price   (eth->wei 0.2)}
                                                                   {:from addr2}))))
           (testing "Updating price"
             (is (buy-now-offering/set-settings! {:offering/address offering
-                                                 :offering/price (eth->wei 0.2)}
+                                                 :offering/price   (eth->wei 0.2)}
                                                 {:from addr1})))
           (testing "The price is updated"
             (is (= (eth->wei 0.2) (str (:offering/price (offering/get-offering offering)))))))))))
@@ -322,19 +322,19 @@
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name "abc.eth"
-                       :offering/price (eth->wei 0.1)
-                       :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
+                      {:offering/name                       "abc.eth"
+                       :offering/price                      (eth->wei 0.1)
+                       :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
                        :auction-offering/extension-duration 0
-                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
 
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner addr1})]
+                                                                  :owner      addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
@@ -346,18 +346,18 @@
           (let [t0 (to-epoch (t/plus (now) (t/weeks 4)))]
             (testing "Auction offering can be edited"
               (is (auction-offering/set-settings!
-                    {:offering/address offering
-                     :offering/price (eth->wei 0.2)
-                     :auction-offering/end-time t0
+                    {:offering/address                    offering
+                     :offering/price                      (eth->wei 0.2)
+                     :auction-offering/end-time           t0
                      :auction-offering/extension-duration 10000
-                     :auction-offering/min-bid-increase (web3/to-wei 0.2 :ether)}
+                     :auction-offering/min-bid-increase   (web3/to-wei 0.2 :ether)}
                     {:from addr1})))
 
 
             (testing "State of the auction offering is correct"
-              (is (= {:auction-offering/end-time (js/Math.floor t0),
+              (is (= {:auction-offering/end-time           (js/Math.floor t0),
                       :auction-offering/extension-duration 10000,
-                      :auction-offering/min-bid-increase 200000000000000000}
+                      :auction-offering/min-bid-increase   200000000000000000}
                      (select-keys (auction-offering/get-auction-offering offering)
                                   [:auction-offering/end-time
                                    :auction-offering/extension-duration
@@ -369,15 +369,15 @@
           (testing "Can place a proper bid"
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.4 :ether)
-                                        :from addr4})))
+                                        :from  addr4})))
 
           (testing "Auction offering can be edited only when has 0 bids, throws error if otherwise."
             (is (thrown? :default (auction-offering/set-settings!
-                                    {:offering/address offering
-                                     :offering/price (eth->wei 0.8)
-                                     :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 8)))
+                                    {:offering/address                    offering
+                                     :offering/price                      (eth->wei 0.8)
+                                     :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 8)))
                                      :auction-offering/extension-duration 20000
-                                     :auction-offering/min-bid-increase (web3/to-wei 0.3 :ether)}
+                                     :auction-offering/min-bid-increase   (web3/to-wei 0.3 :ether)}
                                     {:from addr1})))))))))
 
 (deftest offering-changing-register-and-requests
@@ -395,7 +395,7 @@
                  (offering-requests/get-request {:offering-request/node (namehash "abc.eth")})))))
 
     (testing "Making an instant offer"
-      (is (buy-now-offering-factory/create-offering! {:offering/name "abc.eth"
+      (is (buy-now-offering-factory/create-offering! {:offering/name  "abc.eth"
                                                       :offering/price (eth->wei 0.1)}
                                                      {:from addr1})))
 

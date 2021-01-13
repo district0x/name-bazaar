@@ -85,35 +85,35 @@
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
-(s/def :registrar.entry/state keyword)
-(s/def :registrar.entry/registration-date (s/nilable date?))
-(s/def :registrar.entry/value not-neg?)
-(s/def :registrar.entry/highest-bid not-neg?)
-(s/def :registrar.entry.deed/address address?)
-(s/def :registrar.entry.deed/value not-neg?)
-(s/def :registrar.entry.deed/owner address?)
+(s/def :name-bazaar-registrar.entry/state keyword)
+(s/def :name-bazaar-registrar.entry/registration-date (s/nilable date?))
+(s/def :name-bazaar-registrar.entry/value not-neg?)
+(s/def :name-bazaar-registrar.entry/highest-bid not-neg?)
+(s/def :name-bazaar-registrar.entry.deed/address address?)
+(s/def :name-bazaar-registrar.entry.deed/value not-neg?)
+(s/def :name-bazaar-registrar.entry.deed/owner address?)
 
-(s/def :registrar/entry (s/keys :opt [:registrar.entry/state
-                                      :registrar.entry/registration-date
-                                      :registrar.entry/value
-                                      :registrar.entry/highest-bid
-                                      :registrar.entry.deed/address
-                                      :registrar.entry.deed/value
-                                      :registrar.entry.deed/owner]))
+(s/def :name-bazaar-registrar/entry (s/keys :opt [:name-bazaar-registrar.entry/state
+                                      :name-bazaar-registrar.entry/registration-date
+                                      :name-bazaar-registrar.entry/value
+                                      :name-bazaar-registrar.entry/highest-bid
+                                      :name-bazaar-registrar.entry.deed/address
+                                      :name-bazaar-registrar.entry.deed/value
+                                      :name-bazaar-registrar.entry.deed/owner]))
 
-(s/def :registrar/entries (s/map-of :ens.record/label-hash :registrar/entry))
+(s/def :name-bazaar-registrar/entries (s/map-of :ens.record/label-hash :name-bazaar-registrar/entry))
 
-(s/def :registrar/label string?)
+(s/def :name-bazaar-registrar/label string?)
 
-(s/def :registrar/bid-salt #(or (nil? %)
+(s/def :name-bazaar-registrar/bid-salt #(or (nil? %)
                                 (string? %)))
 
-(s/def :registrar/bid-value #(or (nil? %)
+(s/def :name-bazaar-registrar/bid-value #(or (nil? %)
                                   (string? %)))
 
-(s/def ::bid (s/merge (s/keys :req [:registrar/label :registrar/bid-salt :registrar/bid-value]
+(s/def ::bid (s/merge (s/keys :req [:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value]
                               :opt [:registration-bids/state :registration-bids/bid-unsealed?])
-                      (s/map-of #{:registrar/label :registrar/bid-salt :registrar/bid-value
+                      (s/map-of #{:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value
                                   :registration-bids/state :registration-bids/bid-unsealed?} any?)))
 
 (s/def ::user-bids (s/map-of :ens.record/label-hash ::bid))
@@ -155,7 +155,7 @@
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
-                                             :registrar/entries
+                                             :name-bazaar-registrar/entries
                                              :public-resolver/records
                                              :public-resolver/reverse-records]
                                        :req-un [::offerings

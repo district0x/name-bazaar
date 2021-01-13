@@ -410,7 +410,7 @@
                          (filter :offering/top-level-name?)
                          (map :offering/label-hash))]
       {:dispatch-n [[:ens.records/load nodes]
-                    [:registrar.entries/load label-hashes]]})))
+                    [:name-bazaar-registrar.entries/load label-hashes]]})))
 
 (reg-event-fx
   :offerings/watch
@@ -654,7 +654,7 @@
   (fn [{:keys [:db]} [name owner]]
     {:dispatch
      (if (top-level-name? name)
-       [:registrar/transfer {:ens.record/label (name-label name)
+       [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
                              :ens.record/owner owner}
         {:result-href (path-for :route.offerings/detail {:offering/address owner})
          :on-tx-receipt-n [[:offerings.ownership/load [owner]]

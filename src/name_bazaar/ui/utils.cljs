@@ -136,20 +136,20 @@
      :search-params search-params}))
 
 (defn registrar-entry-deed-loaded? [registrar-entry]
-  (boolean (or (d0x-shared-utils/zero-address? (:registrar.entry.deed/address registrar-entry))
-               (and (:registrar.entry.deed/value registrar-entry)
-                    (:registrar.entry.deed/owner registrar-entry)))))
+  (boolean (or (d0x-shared-utils/zero-address? (:name-bazaar-registrar.entry.deed/address registrar-entry))
+               (and (:name-bazaar-registrar.entry.deed/value registrar-entry)
+                    (:name-bazaar-registrar.entry.deed/owner registrar-entry)))))
 
 (defn ens-record-loaded? [ens-record]
   (boolean (:ens.record/owner ens-record)))
 
 (def registrar-entry-state->text
-  {:registrar.entry.state/open "Open For Bids"
-   :registrar.entry.state/auction "Initial Auction Ongoing"
-   :registrar.entry.state/owned "Owned"
-   :registrar.entry.state/forbidden "Forbidden"
-   :registrar.entry.state/reveal "Reveal Period"
-   :registrar.entry.state/not-yet-available "Not Yet Available"})
+  {:name-bazaar-registrar.entry.state/open "Open For Bids"
+   :name-bazaar-registrar.entry.state/auction "Initial Auction Ongoing"
+   :name-bazaar-registrar.entry.state/owned "Owned"
+   :name-bazaar-registrar.entry.state/forbidden "Forbidden"
+   :name-bazaar-registrar.entry.state/reveal "Reveal Period"
+   :name-bazaar-registrar.entry.state/not-yet-available "Not Yet Available"})
 
 (defn debounce?
   "if the newly changed params are exactly one of expected ks"

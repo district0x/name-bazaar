@@ -11,43 +11,43 @@
   Drop-in replacement for querying the registrar contract."
   [reveal-period registration-date now highest-bid]
   (if (nil? registration-date)
-    :registrar.entry.state/open
+    :name-bazaar-registrar.entry.state/open
     (match [(t/after? registration-date now) (t/after? (registrar-subs/query-end-bidding-date registration-date reveal-period) now) (= 0 highest-bid)]
-           [false _ true] :registrar.entry.state/open
-           [true true _] :registrar.entry.state/auction
-           [true false _] :registrar.entry.state/reveal
-           [false _ false] :registrar.entry.state/owned)))
+           [false _ true] :name-bazaar-registrar.entry.state/open
+           [true true _] :name-bazaar-registrar.entry.state/auction
+           [true false _] :name-bazaar-registrar.entry.state/reveal
+           [false _ false] :name-bazaar-registrar.entry.state/owned)))
 
 (defn query-registrar-auction-state [db active-address label-hash]
-  (let [{:keys [:registrar.entry/registration-date :registrar.entry/highest-bid
-                :registrar.entry/value :registrar.entry.deed/owner]} (get-in db [:registrar/entries label-hash])
-        {:keys [:registrar/label :registrar/bid-salt :registrar/bid-value
+  (let [{:keys [:name-bazaar-registrar.entry/registration-date :name-bazaar-registrar.entry/highest-bid
+                :name-bazaar-registrar.entry/value :name-bazaar-registrar.entry.deed/owner]} (get-in db [:name-bazaar-registrar/entries label-hash])
+        {:keys [:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value
                 :registration-bids/bid-unsealed?] :as bid} (get-in db [:registration-bids active-address label-hash])
         {:keys [:reveal-period]} (get-in db [:config])
         state (query-state reveal-period registration-date (:now db) highest-bid)
-        loading? (-> (get-in db [:registrar/entries label-hash])
+        loading? (-> (get-in db [:name-bazaar-registrar/entries label-hash])
                      nb-ui-utils/registrar-entry-deed-loaded?
                      not)
         empty? (or (nil? state) (= constants/empty-label-hash label-hash))
-        open? (= :registrar.entry.state/open state)
-        auction? (= :registrar.entry.state/auction state)
-        reveal? (= :registrar.entry.state/reveal state)
-        owned? (= :registrar.entry.state/owned state)
+        open? (= :name-bazaar-registrar.entry.state/open state)
+        auction? (= :name-bazaar-registrar.entry.state/auction state)
+        reveal? (= :name-bazaar-registrar.entry.state/reveal state)
+        owned? (= :name-bazaar-registrar.entry.state/owned state)
         finalized? (not (= 0 value))]
     (vector (match [loading? empty? open? auction? reveal? owned? (nil? bid-value) bid-unsealed? (= active-address owner) finalized?]
-                   [_ true _ _ _ _ _ _ _ _] :registrar.entry.state/empty-name
-                   [true false  _ _ _ _ _ _ _ _] :registrar.entry.state/loading
+                   [_ true _ _ _ _ _ _ _ _] :name-bazaar-registrar.entry.state/empty-name
+                   [true false  _ _ _ _ _ _ _ _] :name-bazaar-registrar.entry.state/loading
                    [false false true _ _ _ _ _ _ _] state
-                   [false false _ true _ _ true _ _ _] :registrar.entry.state/auction-no-user-made-bid
-                   [false false _ true _ _ false _ _ _] :registrar.entry.state/auction-user-made-bid
-                   [false false _ _ true _ true _ _ _] :registrar.entry.state/reveal-phase-no-user-made-bid
-                   [false false _ _ true _ false false false _] :registrar.entry.state/reveal-phase-user-made-bid
-                   [false false _ _ true _ false _ true _] :registrar.entry.state/reveal-phase-user-winning
-                   [false false _ _ true _ false true false _] :registrar.entry.state/reveal-phase-user-outbid
-                   [false false _ _ _ true _ _ true false] :registrar.entry.state/owned-phase-user-owner-not-finalized
-                   [false false _ _ _ true _ _ true true] :registrar.entry.state/owned-phase-user-owner
-                   [false false _ _ _ true _ _ false true] :registrar.entry.state/owned-phase-different-owner
-                   [false false _ _ _ true _ _ false false] :registrar.entry.state/owned-phase-different-owner-not-finalized
+                   [false false _ true _ _ true _ _ _] :name-bazaar-registrar.entry.state/auction-no-user-made-bid
+                   [false false _ true _ _ false _ _ _] :name-bazaar-registrar.entry.state/auction-user-made-bid
+                   [false false _ _ true _ true _ _ _] :name-bazaar-registrar.entry.state/reveal-phase-no-user-made-bid
+                   [false false _ _ true _ false false false _] :name-bazaar-registrar.entry.state/reveal-phase-user-made-bid
+                   [false false _ _ true _ false _ true _] :name-bazaar-registrar.entry.state/reveal-phase-user-winning
+                   [false false _ _ true _ false true false _] :name-bazaar-registrar.entry.state/reveal-phase-user-outbid
+                   [false false _ _ _ true _ _ true false] :name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized
+                   [false false _ _ _ true _ _ true true] :name-bazaar-registrar.entry.state/owned-phase-user-owner
+                   [false false _ _ _ true _ _ false true] :name-bazaar-registrar.entry.state/owned-phase-different-owner
+                   [false false _ _ _ true _ _ false false] :name-bazaar-registrar.entry.state/owned-phase-different-owner-not-finalized
                    :else state)
             state)))
 
@@ -65,14 +65,14 @@
  :registration-bids/bid-unsealed?
  (fn [[_ label-hash]]
    [(re-frame/subscribe [:registration-bid label-hash])])
- (fn [[{:keys [:registrar/bid-unsealed?] :as bid}]]
+ (fn [[{:keys [:name-bazaar-registrar/bid-unsealed?] :as bid}]]
    bid-unsealed?))
 
 (re-frame/reg-sub
  :registration-bids/state-count
  (fn [db [_ state]]
    (let [active-address (:active-address db)]
-     (reduce (fn [m [label-hash {:keys [:registrar/label ] :as bid}]]
+     (reduce (fn [m [label-hash {:keys [:name-bazaar-registrar/label ] :as bid}]]
                (cond
                  (not state)
                  m
@@ -97,6 +97,6 @@
                       user-bids)))))
 
 (re-frame/reg-sub
- :registrar/auction-state
+ :name-bazaar-registrar/auction-state
  (fn [db [_ label-hash]]
    (query-registrar-auction-state db (:active-address db) label-hash)))

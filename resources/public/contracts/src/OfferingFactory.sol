@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
-import "ens/ENS.sol";
-import "ens/HashRegistrarSimplified.sol";
+import "ens-repo/contracts/ENS.sol";
+import "ens-repo/contracts/HashRegistrarSimplified.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
 import "strings.sol";

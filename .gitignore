@@ -19,7 +19,7 @@ start_server.sh
 /test-fig-compiled/
 /resources/public/js/compiled/
 /figwheel_server.log
-/resources/public/contracts/build/*.bin
+/resources/public/contracts/build/
 /dev-backend/
 /dev-server/
 /server/
@@ -28,7 +28,6 @@ start_server.sh
 /server-tests/
 /src/name_bazaar/server/repl.cljs
 /resources/public/css/name-bazaar.main.css.map
-start_server.sh
 start_tests.sh
 /npm-debug.log
 /resources/public/css/

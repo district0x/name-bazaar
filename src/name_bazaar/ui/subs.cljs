@@ -94,7 +94,7 @@
   :transfer-ownership/tx-pending?
   (fn [[ node label top-level-name?]]
     (if top-level-name?
-      [(subscribe [:registrar.transfer/tx-pending? label])]
+      [(subscribe [:name-bazaar-registrar.transfer/tx-pending? label])]
       [(subscribe [:ens.set-owner/tx-pending? node])]))
   first)
 

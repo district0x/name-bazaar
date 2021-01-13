@@ -35,13 +35,13 @@
  :registration-bids.state/load
  [constants/interceptors (interceptors/inject-sub [:active-address] :user)]
  (fn [{:keys [:db :user]} [label-hash]]
-   ^{:doc "Load all registrar information about the user bid with `:registrar.entries/load`.
-This event can terminate with `:registrar.entry/loaded` or `:registrar-entry.deed.owner/loaded`
+   ^{:doc "Load all registrar information about the user bid with `:name-bazaar-registrar.entries/load`.
+This event can terminate with `:name-bazaar-registrar.entry/loaded` or `:name-bazaar-registrar-entry.deed.owner/loaded`
 so we dispatch on both of these events."}
-   {:async-flow {:first-dispatch [:registrar.entries/load [label-hash]]
+   {:async-flow {:first-dispatch [:name-bazaar-registrar.entries/load [label-hash]]
                  :rules [{:when :seen-any-of?
-                          :events [:registrar.entry/loaded
-                                   :registrar-entry.deed.owner/loaded]
+                          :events [:name-bazaar-registrar.entry/loaded
+                                   :name-bazaar-registrar-entry.deed.owner/loaded]
                           :dispatch [:registration-bids.bid-unsealed?/load label-hash]}]}}))
 
 (re-frame/reg-event-fx
@@ -55,10 +55,10 @@ so we dispatch on both of these events."}
  :registration-bids.bid-unsealed?/load
  [constants/interceptors (interceptors/inject-sub [:active-address] :user)]
  (fn [{:keys [:db :user]} [label-hash]]
-   (let [{:keys [:registrar/bid-salt :registrar/bid-value]} (get-in db [:registration-bids user label-hash])
+   (let [{:keys [:name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value]} (get-in db [:registration-bids user label-hash])
          sealed-bid (nb-ui-utils/seal-bid label-hash user (js/parseInt (web3/to-wei bid-value :ether)) (web3/sha3 bid-salt))]
      {:web3-fx.contract/constant-fns
-      {:fns [{:instance (d0x-events/get-instance db :registrar)
+      {:fns [{:instance (d0x-events/get-instance db :name-bazaar-registrar)
               :method :sealed-bids
               :args [user sealed-bid]
               :on-success [:registration-bids.bid-unsealed?/update label-hash]
@@ -88,11 +88,11 @@ so we dispatch on both of these events."}
 (re-frame/reg-event-fx
  :registration-bids/add
  [constants/interceptors]
- (fn [{:keys [:db]} [{:keys [:registrar/label :registrar/label-hash :registrar/bidder
-                             :registrar/bid-salt :registrar/bid-value]}]]
-   {:db (assoc-in db [:registration-bids bidder label-hash] {:registrar/label label
-                                                             :registrar/bid-salt bid-salt
-                                                             :registrar/bid-value bid-value})
+ (fn [{:keys [:db]} [{:keys [:name-bazaar-registrar/label :name-bazaar-registrar/label-hash :name-bazaar-registrar/bidder
+                             :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value]}]]
+   {:db (assoc-in db [:registration-bids bidder label-hash] {:name-bazaar-registrar/label label
+                                                             :name-bazaar-registrar/bid-salt bid-salt
+                                                             :name-bazaar-registrar/bid-value bid-value})
     :dispatch-n [[:registration-bids.localstorage/persist]
                  [:registration-bids.state/load label-hash]]}))
 
@@ -103,7 +103,7 @@ so we dispatch on both of these events."}
   (interceptors/inject-sub [:registration-bids] :bids)]
  (fn [{:keys [:bids :now]} [{:keys [:file/filename]
                              :or {filename (str "namebazaar_bids_" now ".json")}}]]
-   (let [subset #{:registrar/label :registrar/bid-salt :registrar/bid-value}]
+   (let [subset #{:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value}]
      {:file/write [filename (d0x-shared-utils/clj->json (walk/postwalk (fn [el]
                                                                          (if (and (map? el)
                                                                                   (set/subset? subset
@@ -118,11 +118,11 @@ so we dispatch on both of these events."}
  (fn [{:keys [:db :bids]} [content]]
    (let [new-bids (walk/postwalk #(case %
                                     "label"
-                                    :registrar/label
+                                    :name-bazaar-registrar/label
                                     "bid-salt"
-                                    :registrar/bid-salt
+                                    :name-bazaar-registrar/bid-salt
                                     "bid-value"
-                                    :registrar/bid-value
+                                    :name-bazaar-registrar/bid-value
                                     %)
                                  (d0x-shared-utils/json->clj content))]
      (if (s/valid? ::spec/registration-bids new-bids)

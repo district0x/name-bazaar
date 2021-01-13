@@ -5,15 +5,18 @@ function solc-err-only {
     solc "$@" 2>&1 | grep -A 2 -i "Error"
 }
 
+# TODO use script for this
+
 solc-err-only --overwrite --optimize --bin --abi OfferingRegistry.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi BuyNowOfferingFactory.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi AuctionOfferingFactory.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens/ENS.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens/PublicResolver.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens/ReverseRegistrar.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/ENS.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/PublicResolver.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/ReverseRegistrar.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi NameBazaarRegistrar.sol -o ../build/
 
 cd ../build
 wc -c OfferingRegistry.bin | awk '{print "OfferingRegistry: " $1}'
@@ -26,3 +29,4 @@ wc -c DelegateProxy.bin | awk '{print "DelegateProxy: " $1}'
 wc -c Forwarder.bin | awk '{print "Forwarder: " $1}'
 wc -c PublicResolver.bin | awk '{print "PublicResolver: " $1}'
 wc -c ReverseRegistrar.bin | awk '{print "ReverseRegistrar: " $1}'
+wc -c NameBazaarRegistrar.bin | awk '{print "NameBazaarRegistrar: " $1}'

@@ -17,7 +17,7 @@
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
-  :registrar/transfer
+  :name-bazaar-registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
   (fn [{:keys [:db]} [form-data opts]]
     (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))
@@ -25,7 +25,7 @@
       {:dispatch [:district0x/make-transaction
                   (merge
                    {:name (gstring/format "Transfer %s ownership" name)
-                    :contract-key :registrar
+                    :contract-key :name-bazaar-registrar
                     :contract-method :transfer
                     :form-data form-data
                     :args-order [:ens.record/label-hash :ens.record/owner]
@@ -34,7 +34,7 @@
                    opts)]})))
 
 (reg-event-fx
-  :registrar/register
+  :name-bazaar-registrar/register
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
   (fn [{:keys [:db]} [form-data]]
     (let [label (normalize (:ens.record/label form-data))
@@ -42,7 +42,7 @@
           form-data (assoc form-data :ens.record/label-hash (sha3 label))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Register %s" ens-record-name)
-                   :contract-key :registrar
+                   :contract-key :name-bazaar-registrar
                    :contract-method :register
                    :form-data form-data
                    :result-href (path-for :route.ens-record/detail {:ens.record/name ens-record-name})
@@ -51,8 +51,8 @@
                    :on-tx-receipt [:district0x.snackbar/show-message
                                    (gstring/format "%s was successfully registered" ens-record-name)]}]})))
 
-(defn- registrar-transaction [method {:keys [:registrar/label :registrar/bidder :registrar/bid-salt
-                                             :registrar/bid-value :registrar/bid-mask]}]
+(defn- registrar-transaction [method {:keys [:name-bazaar-registrar/label :name-bazaar-registrar/bidder :name-bazaar-registrar/bid-salt
+                                             :name-bazaar-registrar/bid-value :name-bazaar-registrar/bid-mask]}]
   {:pre [(cond
            (contains? #{:start-auction :finalize-auction} method)
            (and label bidder)
@@ -82,38 +82,38 @@
 
              :finalize-auction
              (gstring/format "Finalize auction for %s" ens-record-name))
-     :contract-key :registrar
+     :contract-key :name-bazaar-registrar
      :contract-method method
-     :form-id {:registrar/label label}
+     :form-id {:name-bazaar-registrar/label label}
      :form-data (cond
                   (contains? #{:start-auction :finalize-auction} method)
-                  {:registrar/label-hash label-hash}
+                  {:name-bazaar-registrar/label-hash label-hash}
 
                   (contains? #{:new-bid :start-auctions-and-bid} method)
-                  (merge {:registrar/sealed-bid sealed-bid}
+                  (merge {:name-bazaar-registrar/sealed-bid sealed-bid}
                          (when (= :start-auctions-and-bid method)
-                           {:registrar/label-hashes [label-hash]}))
+                           {:name-bazaar-registrar/label-hashes [label-hash]}))
 
                   (= method :unseal-bid)
-                  {:registrar/label-hash label-hash
-                   :registrar/bid-value (js/parseInt (web3/to-wei bid-value :ether))
-                   :registrar/bid-salt (web3/sha3 bid-salt)})
+                  {:name-bazaar-registrar/label-hash label-hash
+                   :name-bazaar-registrar/bid-value (js/parseInt (web3/to-wei bid-value :ether))
+                   :name-bazaar-registrar/bid-salt (web3/sha3 bid-salt)})
 
      :result-href (d0x-ui-utils/path-with-query (path-for :route.registrar/register)
                                                 {:name ens-record-name})
 
      :args-order (cond
                    (contains? #{:start-auction :finalize-auction} method)
-                   [:registrar/label-hash]
+                   [:name-bazaar-registrar/label-hash]
 
                    (contains? #{:new-bid :start-auctions-and-bid} method)
                    (remove nil? [(when (= :start-auctions-and-bid method)
-                                   :registrar/label-hashes)
-                                 :registrar/sealed-bid])
+                                   :name-bazaar-registrar/label-hashes)
+                                 :name-bazaar-registrar/sealed-bid])
 
                    (= method :unseal-bid)
-                   [:registrar/label-hash :registrar/bid-value
-                    :registrar/bid-salt])
+                   [:name-bazaar-registrar/label-hash :name-bazaar-registrar/bid-value
+                    :name-bazaar-registrar/bid-salt])
      :tx-opts (merge {:gas 700000 :gas-price default-gas-price}
                      (when (contains? #{:new-bid :start-auctions-and-bid} method)
                        {:value (web3/to-wei (+ bid-mask bid-value) :ether)}))
@@ -141,76 +141,76 @@
                             (gstring/format "Bid successfully placed for %s" ens-record-name)])])}))
 
 (reg-event-fx
-  :registrar/transact
+  :name-bazaar-registrar/transact
   [interceptors (validate-first-arg (s/and keyword?
                                       #(contains? #{:start-auction :start-auctions-and-bid :new-bid
                                                     :unseal-bid :finalize-auction} %)))]
   (fn [{:keys [:db]} [method form-data]]
-    (let [{:keys [:registrar/label :registrar/bid-value
-                  :registrar/bidder :registrar/bid-salt :registrar/bid-mask]
+    (let [{:keys [:name-bazaar-registrar/label :name-bazaar-registrar/bid-value
+                  :name-bazaar-registrar/bidder :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-mask]
            :or {bidder (:active-address db) bid-salt (rand-str 10) bid-mask 0}} form-data
           normalized-label (normalize label)
           label-hash (web3/sha3 normalized-label)]
       {:dispatch-n (remove nil? [(when (= :start-auction method)
-                                   [:registration-bids/add {:registrar/label-hash label-hash :registrar/bidder bidder
-                                                            :registrar/label label}])
+                                   [:registration-bids/add {:name-bazaar-registrar/label-hash label-hash :name-bazaar-registrar/bidder bidder
+                                                            :name-bazaar-registrar/label label}])
                                  (when (contains? #{:new-bid :start-auctions-and-bid} method)
-                                   [:registration-bids/add {:registrar/label-hash label-hash :registrar/bidder bidder
-                                                            :registrar/bid-salt bid-salt :registrar/bid-value bid-value
-                                                            :registrar/label label}])
-                                 [:district0x/make-transaction (registrar-transaction method (merge {:registrar/label label :registrar/bidder bidder}
+                                   [:registration-bids/add {:name-bazaar-registrar/label-hash label-hash :name-bazaar-registrar/bidder bidder
+                                                            :name-bazaar-registrar/bid-salt bid-salt :name-bazaar-registrar/bid-value bid-value
+                                                            :name-bazaar-registrar/label label}])
+                                 [:district0x/make-transaction (registrar-transaction method (merge {:name-bazaar-registrar/label label :name-bazaar-registrar/bidder bidder}
                                                                                                (when (contains? #{:new-bid :start-auctions-and-bid :unseal-bid} method)
-                                                                                                 {:registrar/bid-value bid-value
-                                                                                                  :registrar/bid-salt bid-salt})
+                                                                                                 {:name-bazaar-registrar/bid-value bid-value
+                                                                                                  :name-bazaar-registrar/bid-salt bid-salt})
                                                                                                (when (contains? #{:new-bid :start-auctions-and-bid} method)
-                                                                                                 {:registrar/bid-mask bid-mask})))]])})))
+                                                                                                 {:name-bazaar-registrar/bid-mask bid-mask})))]])})))
 
 (reg-event-fx
-  :registrar.entries/load
+  :name-bazaar-registrar.entries/load
   interceptors
   (fn [{:keys [:db]} [label-hashes]]
-    (let [instance (d0x-ui-events/get-instance db :registrar)]
+    (let [instance (d0x-ui-events/get-instance db :name-bazaar-registrar)]
       {:web3-fx.contract/constant-fns
        {:fns (for [label-hash label-hashes]
                {:instance instance
                 :method :entries
                 :args [label-hash]
-                :on-success [:registrar.entry/loaded label-hash]
+                :on-success [:name-bazaar-registrar.entry/loaded label-hash]
                 :on-error [:district0x.log/error]})}})))
 
 (reg-event-fx
-  :registrar.entry/loaded
+  :name-bazaar-registrar.entry/loaded
   interceptors
   (fn [{:keys [:db]} [label-hash registrar-entry]]
     (let [registrar-entry (parse-registrar-entry registrar-entry {:parse-dates? true :convert-to-ether? true})]
-      {:db (update-in db [:registrar/entries label-hash] merge registrar-entry)
-       :dispatch [:registrar.entry.deed/load label-hash]})))
+      {:db (update-in db [:name-bazaar-registrar/entries label-hash] merge registrar-entry)
+       :dispatch [:name-bazaar-registrar.entry.deed/load label-hash]})))
 
 (reg-event-fx
-  :registrar.entry.deed/load
+  :name-bazaar-registrar.entry.deed/load
   interceptors
   (fn [{:keys [:db]} [label-hash]]
-    (let [deed-address (get-in db [:registrar/entries label-hash :registrar.entry.deed/address])]
+    (let [deed-address (get-in db [:name-bazaar-registrar/entries label-hash :name-bazaar-registrar.entry.deed/address])]
       (when-not (empty-address? deed-address)
         {:web3-fx.contract/constant-fns
          {:fns [{:instance (d0x-ui-events/get-instance db :deed deed-address)
                  :method :value
-                 :on-success [:registrar-entry.deed.value/loaded label-hash]
+                 :on-success [:name-bazaar-registrar-entry.deed.value/loaded label-hash]
                  :on-error [:district0x.log/error]}
                 {:instance (d0x-ui-events/get-instance db :deed deed-address)
                  :method :owner
-                 :on-success [:registrar-entry.deed.owner/loaded label-hash]
+                 :on-success [:name-bazaar-registrar-entry.deed.owner/loaded label-hash]
                  :on-error [:district0x.log/error]}]}}))))
 
 (reg-event-fx
-  :registrar-entry.deed.value/loaded
+  :name-bazaar-registrar-entry.deed.value/loaded
   interceptors
   (fn [{:keys [:db]} [label-hash deed-value]]
     {:db (assoc-in db
-                   [:registrar/entries label-hash :registrar.entry.deed/value] (wei->eth->num deed-value))}))
+                   [:name-bazaar-registrar/entries label-hash :name-bazaar-registrar.entry.deed/value] (wei->eth->num deed-value))}))
 
 (reg-event-fx
-  :registrar-entry.deed.owner/loaded
+  :name-bazaar-registrar-entry.deed.owner/loaded
   interceptors
   (fn [{:keys [:db]} [label-hash deed-owner]]
-    {:db (assoc-in db [:registrar/entries label-hash :registrar.entry.deed/owner] deed-owner)}))
+    {:db (assoc-in db [:name-bazaar-registrar/entries label-hash :name-bazaar-registrar.entry.deed/owner] deed-owner)}))
