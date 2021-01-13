@@ -14,9 +14,9 @@
 (declare start)
 (declare stop)
 (defstate ^{:on-reload :noop} name-bazaar-db
-  :start (start (merge (:name-bazaar/db @config)
-                       (:name-bazaar/db (mount/args))))
-  :stop (stop))
+          :start (start (merge (:name-bazaar/db @config)
+                               (:name-bazaar/db (mount/args))))
+          :stop (stop))
 
 (def offering-columns
   [[:offering/address address primary-key not-nil]
@@ -174,39 +174,39 @@
                          :where unregistered-offerings-where-query
                          :offset offset
                          :limit limit}
-                  original-owner (merge-where [:= :offering/original-owner original-owner])
-                  new-owner (merge-where [:= :offering/new-owner new-owner])
-                  min-price (merge-where [:>= :offering/price min-price])
-                  max-price (merge-where [:<= :offering/price max-price])
-                  min-length (merge-where [:>= :offering/label-length min-length])
-                  max-length (merge-where [:<= :offering/label-length max-length])
-                  (and min-end-time-now?
-                       (not sold?)) (merge-where [:or
-                                                  [:>= :auction-offering/end-time (to-epoch (t/now))]
-                                                  [:= :auction-offering/end-time nil]])
-                  sold? (merge-where [:and
-                                      [:<> :offering/new-owner nil]
-                                      [:<> :offering/new-owner emergency-state-new-owner]])
-                  bidder (merge-left-join [:offering/bids :b] [:= :b.bid/offering :offerings.offering/address])
-                  bidder (merge-where [:= :b.bid/bidder bidder])
-                  bidder (update-in [:modifiers] concat [:distinct])
-                  winning-bidder (merge-where [:= :auction-offering/winning-bidder winning-bidder])
-                  exclude-winning-bidder (merge-where [:<> :auction-offering/winning-bidder exclude-winning-bidder])
-                  version (merge-where [:= :offering/version version])
-                  (false? finalized?) (merge-where [:= :offering/finalized-on 0])
-                  (true? finalized?) (merge-where [:<> :offering/finalized-on 0])
-                  (and (boolean? node-owner?) (not sold?)) (merge-where [:= :offering/node-owner? node-owner?])
-                  (and buy-now? (not auction?)) (merge-where [:= :offering/buy-now? true])
-                  (and auction? (not buy-now?)) (merge-where [:= :offering/auction? true])
-                  (and top-level-names? (not sub-level-names?)) (merge-where [:= :offering/top-level-name? true])
-                  (and sub-level-names? (not top-level-names?)) (merge-where [:= :offering/top-level-name? false])
-                  exclude-special-chars? (merge-where [:= :offering/contains-special-char? false])
-                  exclude-numbers? (merge-where [:= :offering/contains-number? false])
-                  exclude-node (merge-where [:<> :offering/node exclude-node])
-                  node (merge-where [:= :offering/node node])
-                  nodes (merge-where [:in :offering/node nodes])
-                  name (merge-where [:like :offering/name (str (name-pattern name name-position) "." root-name)])
-                  order-by (merge-order-by (prepare-order-by order-by order-by-dir {:name name :root-name root-name})))]
+                        original-owner (merge-where [:= :offering/original-owner original-owner])
+                        new-owner (merge-where [:= :offering/new-owner new-owner])
+                        min-price (merge-where [:>= :offering/price min-price])
+                        max-price (merge-where [:<= :offering/price max-price])
+                        min-length (merge-where [:>= :offering/label-length min-length])
+                        max-length (merge-where [:<= :offering/label-length max-length])
+                        (and min-end-time-now?
+                             (not sold?)) (merge-where [:or
+                                                        [:>= :auction-offering/end-time (to-epoch (t/now))]
+                                                        [:= :auction-offering/end-time nil]])
+                        sold? (merge-where [:and
+                                            [:<> :offering/new-owner nil]
+                                            [:<> :offering/new-owner emergency-state-new-owner]])
+                        bidder (merge-left-join [:offering/bids :b] [:= :b.bid/offering :offerings.offering/address])
+                        bidder (merge-where [:= :b.bid/bidder bidder])
+                        bidder (update-in [:modifiers] concat [:distinct])
+                        winning-bidder (merge-where [:= :auction-offering/winning-bidder winning-bidder])
+                        exclude-winning-bidder (merge-where [:<> :auction-offering/winning-bidder exclude-winning-bidder])
+                        version (merge-where [:= :offering/version version])
+                        (false? finalized?) (merge-where [:= :offering/finalized-on 0])
+                        (true? finalized?) (merge-where [:<> :offering/finalized-on 0])
+                        (and (boolean? node-owner?) (not sold?)) (merge-where [:= :offering/node-owner? node-owner?])
+                        (and buy-now? (not auction?)) (merge-where [:= :offering/buy-now? true])
+                        (and auction? (not buy-now?)) (merge-where [:= :offering/auction? true])
+                        (and top-level-names? (not sub-level-names?)) (merge-where [:= :offering/top-level-name? true])
+                        (and sub-level-names? (not top-level-names?)) (merge-where [:= :offering/top-level-name? false])
+                        exclude-special-chars? (merge-where [:= :offering/contains-special-char? false])
+                        exclude-numbers? (merge-where [:= :offering/contains-number? false])
+                        exclude-node (merge-where [:<> :offering/node exclude-node])
+                        node (merge-where [:= :offering/node node])
+                        nodes (merge-where [:in :offering/node nodes])
+                        name (merge-where [:like :offering/name (str (name-pattern name name-position) "." root-name)])
+                        order-by (merge-order-by (prepare-order-by order-by order-by-dir {:name name :root-name root-name})))]
 
     (merge
       {:items (db/all sql-map)}
@@ -225,8 +225,8 @@
                          :where [:< 0 :offering-request/requesters-count]
                          :offset offset
                          :limit limit}
-                  name (merge-where [:like :offering-request/name (str (name-pattern name name-position) "." root-name)])
-                  order-by (merge-order-by [order-by order-by-dir]))]
+                        name (merge-where [:like :offering-request/name (str (name-pattern name name-position) "." root-name)])
+                        order-by (merge-order-by [order-by order-by-dir]))]
 
     (merge
       {:items (db/all sql-map)}

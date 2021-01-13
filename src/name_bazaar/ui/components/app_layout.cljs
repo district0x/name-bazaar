@@ -164,30 +164,30 @@
                  (reset! app-container-ref el)))}
        [meta-tags meta]
        [ui/Sidebar
-           {:as (aget js/semanticUIReact "Menu")
-            :visible (or @drawer-open? @min-computer-screen?)
-            :animation "overlay"
-            :vertical true
-            :inverted true
-            :fixed :left}
-           [:div.menu-content
-            {:style {:overflow-y :scroll}}
-            [side-nav-menu-logo]
-            (doall
-              (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
-                                                                          nav-menu-items-props
-                                                                          nav-menu-items-props-no-instant-registration)]
-                (let [href (or href (path-for route))]
-                  [ui/MenuItem {:key text
-                                :as "a"
-                                :href href
-                                :class class
-                                :on-click #(dispatch [:district0x.window/scroll-to-top])
-                                :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
-                   [:i.icon
-                    {:class icon}]
-                   text])))
-            [district0x-banner]]]
+        {:as (aget js/semanticUIReact "Menu")
+         :visible (or @drawer-open? @min-computer-screen?)
+         :animation "overlay"
+         :vertical true
+         :inverted true
+         :fixed :left}
+        [:div.menu-content
+         {:style {:overflow-y :scroll}}
+         [side-nav-menu-logo]
+         (doall
+           (for [{:keys [:text :route :href :class :icon :on-click]} (if @use-instant-registrar?
+                                                                       nav-menu-items-props
+                                                                       nav-menu-items-props-no-instant-registration)]
+             (let [href (or href (path-for route))]
+               [ui/MenuItem {:key text
+                             :as "a"
+                             :href href
+                             :class class
+                             :on-click #(dispatch [:district0x.window/scroll-to-top])
+                             :active (= (str (when history/hashroutes? "#") (:path @active-page)) href)}
+                [:i.icon
+                 {:class icon}]
+                text])))
+         [district0x-banner]]]
        [:div.app-content
         {:on-click (fn []
                      (when-not @min-computer-screen?

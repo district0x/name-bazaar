@@ -72,15 +72,15 @@
 
 (defn- form-data->transaction-data [{:keys [:offering/type] :as offering}]
   (-> offering
-    (update :offering/name str constants/registrar-root)
-    (update :auction-offering/end-time (comp from-date #(.toDate (js/moment %))))
-    (update :auction-offering/extension-duration hours->seconds)))
+      (update :offering/name str constants/registrar-root)
+      (update :auction-offering/end-time (comp from-date #(.toDate (js/moment %))))
+      (update :auction-offering/extension-duration hours->seconds)))
 
 (defn- transaction-data->form-data [{:keys [:offering/auction?] :as offering}]
   (cond-> offering
-    true (update :offering/name strip-root-registrar-suffix)
-    auction? (update :auction-offering/end-time to-date)
-    auction? (update :auction-offering/extension-duration seconds->hours)))
+          true (update :offering/name strip-root-registrar-suffix)
+          auction? (update :auction-offering/end-time to-date)
+          auction? (update :auction-offering/extension-duration seconds->hours)))
 
 (defn offering-form [{:keys [:offering :default-name]}]
   (let [now (subscribe [:now])
@@ -147,7 +147,7 @@
               {:selected end-time
                :on-change #(swap! form-data assoc :auction-offering/end-time %)}]])
           (when (and (or auction? (not editing?))
-                         (not editing?))
+                     (not editing?))
             [:div.info
              [:p.input-info
               (if auction?

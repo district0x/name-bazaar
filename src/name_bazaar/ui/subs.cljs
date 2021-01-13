@@ -33,9 +33,9 @@
     (:now db)))
 
 (reg-sub
- :root-url
- (fn [db]
-   (:root-url db)))
+  :root-url
+  (fn [db]
+    (:root-url db)))
 
 (reg-sub
   :saved-searches
@@ -68,10 +68,10 @@
           "#" "")))))
 
 (reg-sub
- :reverse-resolved-address
- :<- [:public-resolver/reverse-records]
- (fn [reverse-records [_ address]]
-   (or (reverse-resolve-address reverse-records address) address)))
+  :reverse-resolved-address
+  :<- [:public-resolver/reverse-records]
+  (fn [reverse-records [_ address]]
+    (or (reverse-resolve-address reverse-records address) address)))
 
 (reg-sub
   :resolved-active-address
@@ -86,13 +86,13 @@
   :<- [:public-resolver/reverse-records]
   (fn [[route-params reverse-records]]
     (cond-> route-params
-      (:user/address route-params)
-      (update :user/address #(or (reverse-resolve-address reverse-records (:user/address route-params))
-                                 (:user/address route-params))))))
+            (:user/address route-params)
+            (update :user/address #(or (reverse-resolve-address reverse-records (:user/address route-params))
+                                       (:user/address route-params))))))
 
 (reg-sub
   :transfer-ownership/tx-pending?
-  (fn [[ node label top-level-name?]]
+  (fn [[node label top-level-name?]]
     (if top-level-name?
       [(subscribe [:name-bazaar-registrar.transfer/tx-pending? label])]
       [(subscribe [:ens.set-owner/tx-pending? node])]))

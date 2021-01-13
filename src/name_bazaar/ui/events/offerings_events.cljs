@@ -45,8 +45,8 @@
                                                   :auction-offering/min-bid-increase]))]
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (-> form-data
-                      (update :offering/name normalize)
-                      (update :auction-offering/end-time to-epoch))]
+                        (update :offering/name normalize)
+                        (update :auction-offering/end-time to-epoch))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Create %s auction" (:offering/name form-data))
                    :contract-key :auction-offering-factory
@@ -256,36 +256,36 @@
           (get-offering db offering-address)]
       {:dispatch [:district0x/make-transaction
                   (merge
-                   {:name (gstring/format "Delete %s offering" name)
-                    :tx-opts {:gas 100000 :gas-price default-gas-price}
-                    :contract-key type
-                    :contract-address offering-address
-                    :form-id (select-keys form-data [:offering/address])
-                    :result-href (path-for :route.offerings/detail form-data)
-                    :on-tx-receipt-n [[:district0x.snackbar/show-message
-                                       (gstring/format "Offering for %s was deleted" name)]
-                                      [:offerings/on-offering-changed {:offering offering-address}]]}
-                   (if (offering-supports-unregister? type version)
-                     {:contract-method :unregister
-                      :form-data form-data}
-                     (case type
+                    {:name (gstring/format "Delete %s offering" name)
+                     :tx-opts {:gas 100000 :gas-price default-gas-price}
+                     :contract-key type
+                     :contract-address offering-address
+                     :form-id (select-keys form-data [:offering/address])
+                     :result-href (path-for :route.offerings/detail form-data)
+                     :on-tx-receipt-n [[:district0x.snackbar/show-message
+                                        (gstring/format "Offering for %s was deleted" name)]
+                                       [:offerings/on-offering-changed {:offering offering-address}]]}
+                    (if (offering-supports-unregister? type version)
+                      {:contract-method :unregister
+                       :form-data form-data}
+                      (case type
 
-                       :buy-now-offering
-                       {:contract-method :set-settings
-                        :form-data (assoc form-data :offering/price unregistered-price-wei)
-                        :args-order [:offering/price]}
+                        :buy-now-offering
+                        {:contract-method :set-settings
+                         :form-data (assoc form-data :offering/price unregistered-price-wei)
+                         :args-order [:offering/price]}
 
-                       :auction-offering
-                       {:contract-method :set-settings
-                        :form-data (-> form-data
-                                       (assoc :offering/price unregistered-price-wei)
-                                       (assoc :auction-offering/end-time (to-epoch (.valueOf end-time)))
-                                       (assoc :auction-offering/extension-duration extension-duration)
-                                       (assoc :auction-offering/min-bid-increase (d0x-shared-utils/eth->wei min-bid-increase)))
-                        :args-order [:offering/price
-                                     :auction-offering/end-time
-                                     :auction-offering/extension-duration
-                                     :auction-offering/min-bid-increase]})))]})))
+                        :auction-offering
+                        {:contract-method :set-settings
+                         :form-data (-> form-data
+                                        (assoc :offering/price unregistered-price-wei)
+                                        (assoc :auction-offering/end-time (to-epoch (.valueOf end-time)))
+                                        (assoc :auction-offering/extension-duration extension-duration)
+                                        (assoc :auction-offering/min-bid-increase (d0x-shared-utils/eth->wei min-bid-increase)))
+                         :args-order [:offering/price
+                                      :auction-offering/end-time
+                                      :auction-offering/extension-duration
+                                      :auction-offering/min-bid-increase]})))]})))
 
 (reg-event-fx
   :offerings/search
@@ -317,15 +317,15 @@
     (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
           (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
-                    (update-in [:offerings offering-address] merge offering)
-                    (update-in [:ens/records node] merge {:ens.record/node node
-                                                          :ens.record/name name
-                                                          :ens.record/label-hash label-hash}))}
+                      (update-in [:offerings offering-address] merge offering)
+                      (update-in [:ens/records node] merge {:ens.record/node node
+                                                            :ens.record/name name
+                                                            :ens.record/label-hash label-hash}))}
              {:dispatch-n (concat
-                           (when auction?
-                             [[:offerings.auction/load [offering-address]]])
-                           (when load-ownership?
-                             [[:offerings.ownership/load [offering-address]]]))}))))
+                            (when auction?
+                              [[:offerings.auction/load [offering-address]]])
+                            (when load-ownership?
+                              [[:offerings.ownership/load [offering-address]]]))}))))
 
 (reg-event-fx
   :offerings.auction/load
@@ -407,8 +407,8 @@
     (let [offerings (vals (select-keys (:offerings db) offering-addresses))
           nodes (map :offering/node offerings)
           label-hashes (->> offerings
-                         (filter :offering/top-level-name?)
-                         (map :offering/label-hash))]
+                            (filter :offering/top-level-name?)
+                            (map :offering/label-hash))]
       {:dispatch-n [[:ens.records/load nodes]
                     [:name-bazaar-registrar.entries/load label-hashes]]})))
 
@@ -530,9 +530,9 @@
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
                                      :params (-> search-params
-                                               (assoc :name (get-similar-offering-pattern offering))
-                                               (assoc :exclude-node (:offering/node offering))
-                                               (dissoc :offering/address search-params))}]})))
+                                                 (assoc :name (get-similar-offering-pattern offering))
+                                                 (assoc :exclude-node (:offering/node offering))
+                                                 (dissoc :offering/address search-params))}]})))
 
 (reg-event-fx
   :offerings.user-purchases/set-params-and-search
@@ -563,10 +563,10 @@
           {:keys [:db :search-params]} (update-search-results-params db search-params-path search-params opts)
           {:keys [:open? :finalized?]} search-params
           search-params (cond-> search-params
-                          (and open? finalized?) (dissoc :finalized?)
-                          (and open? (not finalized?)) (assoc :finalized? false)
-                          (and (not open?) finalized?) (assoc :finalized? true)
-                          true (dissoc :open?))]
+                                (and open? finalized?) (dissoc :finalized?)
+                                (and open? (not finalized?)) (assoc :finalized? false)
+                                (and (not open?) finalized?) (assoc :finalized? true)
+                                true (dissoc :open?))]
       {:db db
        :dispatch [:offerings/search {:search-results-path search-results-path
                                      :append? (:append? opts)
@@ -592,14 +592,14 @@
                                      [:district0x/dispatch-n [[:offerings/load]
                                                               [:offerings.auction.active-address-pending-returns/load]]]
                                      :params (cond-> search-params
-                                               (and winning? (not outbid?))
-                                               (assoc :winning-bidder bidder)
+                                                     (and winning? (not outbid?))
+                                                     (assoc :winning-bidder bidder)
 
-                                               (and outbid? (not winning?))
-                                               (assoc :exclude-winning-bidder bidder)
+                                                     (and outbid? (not winning?))
+                                                     (assoc :exclude-winning-bidder bidder)
 
-                                               true
-                                               (dissoc :winning? :outbid?))}]})))
+                                                     true
+                                                     (dissoc :winning? :outbid?))}]})))
 
 (reg-event-fx
   :offerings.home-page-autocomplete/search
@@ -655,7 +655,7 @@
     {:dispatch
      (if (top-level-name? name)
        [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
-                             :ens.record/owner owner}
+                                         :ens.record/owner owner}
         {:result-href (path-for :route.offerings/detail {:offering/address owner})
          :on-tx-receipt-n [[:offerings.ownership/load [owner]]
                            [:district0x.snackbar/show-message

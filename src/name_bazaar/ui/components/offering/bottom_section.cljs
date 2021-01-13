@@ -107,9 +107,9 @@
               :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
               :pending-text "Bidding..."
               :disabled (or
-                         invalid-name?
-                         (not (>= (or @bid-value min-bid) min-bid))
-                         (= offering-status :offering.status/missing-ownership))
+                          invalid-name?
+                          (not (>= (or @bid-value min-bid) min-bid))
+                          (= offering-status :offering.status/missing-ownership))
               :on-click #(dispatch [:auction-offering/bid {:offering/address address
                                                            :offering/price (or @bid-value min-bid)}])}
              "Bid Now"]]])))))

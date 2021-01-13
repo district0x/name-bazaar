@@ -51,7 +51,7 @@
 
     [:div.general-info
      [ens-record-general-info
-                        {:ens.record/name name}]
+      {:ens.record/name name}]
      (when (top-level-name? name)
        [registrar-entry-general-info
         {:ens.record/name name

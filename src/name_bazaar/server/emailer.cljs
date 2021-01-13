@@ -18,9 +18,9 @@
 (declare start)
 (declare stop)
 (defstate emailer
-  :start (start (merge (:emailer @config)
-                       (:emailer (mount/args))))
-  :stop (stop emailer))
+          :start (start (merge (:emailer @config)
+                               (:emailer (mount/args))))
+          :stop (stop emailer))
 
 (def template-id "93c0f083-1fcc-4a47-ae7c-2c8aef50c3ea")
 (def from "district0x@district0x.io")

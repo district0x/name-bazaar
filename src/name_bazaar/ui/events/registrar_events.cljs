@@ -24,14 +24,14 @@
           name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   (merge
-                   {:name (gstring/format "Transfer %s ownership" name)
-                    :contract-key :name-bazaar-registrar
-                    :contract-method :transfer
-                    :form-data form-data
-                    :args-order [:ens.record/label-hash :ens.record/owner]
-                    :form-id (select-keys form-data [:ens.record/label])
-                    :tx-opts {:gas 75000 :gas-price default-gas-price}}
-                   opts)]})))
+                    {:name (gstring/format "Transfer %s ownership" name)
+                     :contract-key :name-bazaar-registrar
+                     :contract-method :transfer
+                     :form-data form-data
+                     :args-order [:ens.record/label-hash :ens.record/owner]
+                     :form-id (select-keys form-data [:ens.record/label])
+                     :tx-opts {:gas 75000 :gas-price default-gas-price}}
+                    opts)]})))
 
 (reg-event-fx
   :name-bazaar-registrar/register
@@ -143,8 +143,8 @@
 (reg-event-fx
   :name-bazaar-registrar/transact
   [interceptors (validate-first-arg (s/and keyword?
-                                      #(contains? #{:start-auction :start-auctions-and-bid :new-bid
-                                                    :unseal-bid :finalize-auction} %)))]
+                                           #(contains? #{:start-auction :start-auctions-and-bid :new-bid
+                                                         :unseal-bid :finalize-auction} %)))]
   (fn [{:keys [:db]} [method form-data]]
     (let [{:keys [:name-bazaar-registrar/label :name-bazaar-registrar/bid-value
                   :name-bazaar-registrar/bidder :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-mask]
@@ -159,11 +159,11 @@
                                                             :name-bazaar-registrar/bid-salt bid-salt :name-bazaar-registrar/bid-value bid-value
                                                             :name-bazaar-registrar/label label}])
                                  [:district0x/make-transaction (registrar-transaction method (merge {:name-bazaar-registrar/label label :name-bazaar-registrar/bidder bidder}
-                                                                                               (when (contains? #{:new-bid :start-auctions-and-bid :unseal-bid} method)
-                                                                                                 {:name-bazaar-registrar/bid-value bid-value
-                                                                                                  :name-bazaar-registrar/bid-salt bid-salt})
-                                                                                               (when (contains? #{:new-bid :start-auctions-and-bid} method)
-                                                                                                 {:name-bazaar-registrar/bid-mask bid-mask})))]])})))
+                                                                                                    (when (contains? #{:new-bid :start-auctions-and-bid :unseal-bid} method)
+                                                                                                      {:name-bazaar-registrar/bid-value bid-value
+                                                                                                       :name-bazaar-registrar/bid-salt bid-salt})
+                                                                                                    (when (contains? #{:new-bid :start-auctions-and-bid} method)
+                                                                                                      {:name-bazaar-registrar/bid-mask bid-mask})))]])})))
 
 (reg-event-fx
   :name-bazaar-registrar.entries/load

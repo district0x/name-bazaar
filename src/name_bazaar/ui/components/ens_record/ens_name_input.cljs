@@ -52,16 +52,16 @@
                  (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
        [ens-name-input
         (r/merge-props
-         {:label "Name"
-          :fluid true
-          :value value
-          :on-change (fn [e data]
-                       (let [value (aget data "value")]
-                         (when (valid-ens-name? value)
-                           (let [value (normalize value)]
-                             (aset data "value" value)
-                             (on-change e data)
-                             (load-name-ownership value)))))
-          :error error?}
-         (dissoc props :ownership-status :on-change :warn-only?))]
+          {:label "Name"
+           :fluid true
+           :value value
+           :on-change (fn [e data]
+                        (let [value (aget data "value")]
+                          (when (valid-ens-name? value)
+                            (let [value (normalize value)]
+                              (aset data "value" value)
+                              (on-change e data)
+                              (load-name-ownership value)))))
+           :error error?}
+          (dissoc props :ownership-status :on-change :warn-only?))]
        [:div.ui.label (ownership-status->text ownership-status)]])))

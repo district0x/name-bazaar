@@ -38,9 +38,9 @@
   {:before
    (fn []
      (-> (mount/with-args
-           {:web3            {:port 8549}
+           {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
-                              :auto-mining?  true}})
+                              :auto-mining? true}})
          (mount/only [#'district.server.web3
                       #'district.server.smart-contracts/smart-contracts
                       #'name-bazaar.server.deployer/deployer])
@@ -57,46 +57,46 @@
                                {:from addr0})))
 
     (let [tx-hash (auction-offering-factory/create-offering!
-                    {:offering/name                       "abc.eth"
-                     :offering/price                      (eth->wei 0.1)
-                     :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
+                    {:offering/name "abc.eth"
+                     :offering/price (eth->wei 0.1)
+                     :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
                      :auction-offering/extension-duration 0
-                     :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
+                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                     {:from addr0})]
 
       (testing "Offering the name for a bid"
         (is tx-hash))
 
       (let [{{:keys [:offering]} :args}
-            (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
+            (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
                                                                 :from-block 0
-                                                                :owner      addr0})]
+                                                                :owner addr0})]
         (testing "on-offering event should fire"
           (is (not (nil? offering))))
 
         (testing "Can't place a bid before ownership transfer"
           (is (thrown? :default (auction-offering/bid! {:offering/address offering}
                                                        {:value (web3/to-wei 0.1 :ether)
-                                                        :from  addr1}))))
+                                                        :from addr1}))))
         (testing "Transferrnig ownership to the offer"
           (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                    {:from addr0})))
         (testing "Can place a proper bid"
           (is (auction-offering/bid! {:offering/address offering}
                                      {:value (web3/to-wei 0.1 :ether)
-                                      :from  addr1})))
+                                      :from addr1})))
         (testing "Correct increase of the bid is accepted"
           (is (auction-offering/bid! {:offering/address offering}
                                      {:value (web3/to-wei 0.2 :ether)
-                                      :from  addr2})))
+                                      :from addr2})))
         (testing "If user has bid before, he needs to send the whole amount again in order to make a new bid"
           (is (auction-offering/bid! {:offering/address offering}
                                      {:value (web3/to-wei 0.3 :ether)
-                                      :from  addr1})))
+                                      :from addr1})))
         (testing "State of the auction offering is correct"
           (is (= {:auction-offering/min-bid-increase 100000000000000000
-                  :auction-offering/winning-bidder   addr1
-                  :auction-offering/bid-count        3}
+                  :auction-offering/winning-bidder addr1
+                  :auction-offering/bid-count 3}
                  (select-keys (auction-offering/get-auction-offering offering)
                               [:auction-offering/min-bid-increase
                                :auction-offering/winning-bidder
@@ -110,42 +110,42 @@
     (is (registrar/register! {:ens.record/label "tld"}
                              {:from addr0}))
     (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
-                                 :ens.record/node  "tld.eth"
+                                 :ens.record/node "tld.eth"
                                  :ens.record/owner addr1}
                                 {:from addr0}))
     #_(is (= addr1 (ens/owner {:ens.record/node (namehash
                                                   "theirsub.tld.eth")})))
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name                       "theirsub.tld.eth"
-                       :offering/price                      (eth->wei 0.1)
-                       :auction-offering/end-time           t0
+                      {:offering/name "theirsub.tld.eth"
+                       :offering/price (eth->wei 0.1)
+                       :auction-offering/end-time t0
                        :auction-offering/extension-duration (t/in-seconds (t/days 4))
-                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "theirsub.tld.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "theirsub.tld.eth")
                                                                   :from-block 0
-                                                                  :owner      addr1})]
+                                                                  :owner addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
           (testing "Can't place a bid before ownership transfer"
             (is (thrown? :default (auction-offering/bid! {:offering/address offering}
                                                          {:value (web3/to-wei 0.1 :ether)
-                                                          :from  addr1}))))
+                                                          :from addr1}))))
 
           (testing "Transferrnig ownership to the offer"
             (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
-                                         :ens.record/node  "tld.eth"
+                                         :ens.record/node "tld.eth"
                                          :ens.record/owner offering}
                                         {:from addr0})))
 
           (testing "Can place a proper bid"
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.1 :ether)
-                                        :from  addr2})))
+                                        :from addr2})))
 
           (web3-evm/increase-time! @web3 [(t/in-seconds (t/days 13))])
 
@@ -153,7 +153,7 @@
             (testing "Can place a bid"
               (is (auction-offering/bid! {:offering/address offering}
                                          {:value (web3/to-wei 0.3 :ether)
-                                          :from  addr3})))
+                                          :from addr3})))
 
             (testing "User who was overbid, should have his funds back from auction offering."
 
@@ -163,7 +163,7 @@
 
             (testing "Nothing to withdraw if return transfer succeeded on overbid."
               (is (auction-offering/withdraw! {:offering offering
-                                               :address  addr2}
+                                               :address addr2}
                                               {:from addr2}))
               (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
                         (web3-eth/get-balance @web3 addr2))
@@ -185,38 +185,38 @@
                              {:from addr0}))
 
     (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
-                                 :ens.record/node  "tld.eth"
+                                 :ens.record/node "tld.eth"
                                  :ens.record/owner addr1}
                                 {:from addr0}))
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name                       "theirsub.tld.eth"
-                       :offering/price                      (eth->wei 0.1)
-                       :auction-offering/end-time           t0
+                      {:offering/name "theirsub.tld.eth"
+                       :offering/price (eth->wei 0.1)
+                       :auction-offering/end-time t0
                        :auction-offering/extension-duration (t/in-seconds (t/days 4))
-                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
 
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "theirsub.tld.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "theirsub.tld.eth")
                                                                   :from-block 0
-                                                                  :owner      addr1})]
+                                                                  :owner addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
           (testing "Transferrnig ownership to the offer"
             (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
-                                         :ens.record/node  "tld.eth"
+                                         :ens.record/node "tld.eth"
                                          :ens.record/owner offering}
                                         {:from addr0})))
 
           (testing "Can place a proper bid"
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.1 :ether)
-                                        :from  addr2})))
+                                        :from addr2})))
 
           (web3-evm/increase-time! @web3 [(t/in-seconds (t/days 13))])
 
@@ -224,11 +224,11 @@
             (testing "Can place a bid"
               (is (auction-offering/bid! {:offering/address offering}
                                          {:value (web3/to-wei 0.3 :ether)
-                                          :from  addr3})))
+                                          :from addr3})))
 
             (testing "Emergency address can withdraw funds to a user's address on his behalf."
               (is (auction-offering/withdraw! {:offering offering
-                                               :address  addr2}
+                                               :address addr2}
                                               {:from addr0}))
 
               (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
@@ -237,7 +237,7 @@
 
             (testing "user can't withdraw twice."
               (is (auction-offering/withdraw! {:offering offering
-                                               :address  addr2}
+                                               :address addr2}
                                               {:from addr2}))
 
               (is (< (- (bn/+ balance-of-2 (web3/to-wei 0.1 :ether))
@@ -259,18 +259,18 @@
 
     (testing "Offering the name for a bid"
       (let [tx-hash (auction-offering-factory/create-offering!
-                      {:offering/name                       "abc.eth"
-                       :offering/price                      (eth->wei 0.1)
-                       :auction-offering/end-time           (to-epoch (t/plus (now) (t/weeks 2)))
+                      {:offering/name "abc.eth"
+                       :offering/price (eth->wei 0.1)
+                       :auction-offering/end-time (to-epoch (t/plus (now) (t/weeks 2)))
                        :auction-offering/extension-duration 0
-                       :auction-offering/min-bid-increase   (web3/to-wei 0.1 :ether)}
+                       :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                       {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner      addr1})]
+                                                                  :owner addr1})]
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
@@ -282,13 +282,13 @@
           (testing "Can't place a bid, while the registry is paused "
             (is (thrown? :default (auction-offering/bid! {:offering/address offering}
                                                          {:value (web3/to-wei 0.1 :ether)
-                                                          :from  addr2}))))
+                                                          :from addr2}))))
           (testing "Emergency multisig can release the registry"
             (is (offering-registry/emergency-release! {:from addr0})))
           (testing "Can place a bid, whe it's resumed "
             (is (auction-offering/bid! {:offering/address offering}
                                        {:value (web3/to-wei 0.1 :ether)
-                                        :from  addr2})))
+                                        :from addr2})))
           (web3-evm/increase-time! @web3 [(t/in-seconds (t/days 15))])
 
           (testing "Emergency multisig can pause the registry"
@@ -307,15 +307,15 @@
                                {:from addr1})))
 
     (testing "Making an instant offer"
-      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name  "abc.eth"
+      (let [tx-hash (buy-now-offering-factory/create-offering! {:offering/name "abc.eth"
                                                                 :offering/price (eth->wei 0.1)}
                                                                {:from addr1})]
         (is tx-hash)
 
         (let [{{:keys [:offering]} :args}
-              (offering-registry/on-offering-added-in-tx tx-hash {:node       (namehash "abc.eth")
+              (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
                                                                   :from-block 0
-                                                                  :owner      addr1})]
+                                                                  :owner addr1})]
           (testing "Transferrnig ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
@@ -326,7 +326,7 @@
           (testing "Offering can't be bought while registry is frozen"
             (is (thrown? :default (buy-now-offering/buy! {:offering/address offering}
                                                          {:value (eth->wei 0.1)
-                                                          :from  addr2}))))
+                                                          :from addr2}))))
 
           (testing "Emergency multisig can release the registry"
             (is (offering-registry/emergency-release! {:from addr0})))
@@ -334,4 +334,4 @@
           (testing "Offering accepts the exact value"
             (is (buy-now-offering/buy! {:offering/address offering}
                                        {:value (eth->wei 0.1)
-                                        :from  addr2}))))))))
+                                        :from addr2}))))))))

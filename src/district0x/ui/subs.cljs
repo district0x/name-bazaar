@@ -179,13 +179,13 @@
     (let [{:keys [:transactions :ids-chronological :settings]} transaction-log
           {:keys [:from-active-address-only? :highlighted-transaction]} settings]
       (cond->> ids-chronological
-        true (map transactions)
-        true (map #(update % :created-on from-long))
-        highlighted-transaction (map (fn [tx]
-                                       (if (= (:hash tx) highlighted-transaction)
-                                         (assoc tx :highlighted? true)
-                                         tx)))
-        from-active-address-only? (filter #(= active-address (get-in % [:tx-opts :from])))))))
+               true (map transactions)
+               true (map #(update % :created-on from-long))
+               highlighted-transaction (map (fn [tx]
+                                              (if (= (:hash tx) highlighted-transaction)
+                                                (assoc tx :highlighted? true)
+                                                tx)))
+               from-active-address-only? (filter #(= active-address (get-in % [:tx-opts :from])))))))
 
 (reg-sub
   :district0x/tx-pending?
