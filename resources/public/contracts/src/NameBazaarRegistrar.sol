@@ -1,15 +1,15 @@
 pragma solidity ^0.4.18;
 
-import "./ens-repo/contracts/HashRegistrarSimplified.sol";
+import "./ens-repo/contracts/HashRegistrar.sol";
 
-contract NameBazaarRegistrar is Registrar {
+contract NameBazaarRegistrar is HashRegistrar {
     /**
      * @dev Constructs a new Registrar, with the provided address as the owner of the root node.
      *
      * @param ens The address of the ENS
      * @param rootNode The hash of the rootnode.
      */
-    function NameBazaarRegistrar(ENS ens, bytes32 rootNode, uint startDate) Registrar(ens, rootNode, startDate) public {}
+    constructor(ENS ens, bytes32 rootNode, uint startDate) HashRegistrar(ens, rootNode, startDate) public {}
 
     /**
      * @dev Convenience function added by NameBazaar for instant registration
@@ -18,7 +18,7 @@ contract NameBazaarRegistrar is Registrar {
      * @param _hash The sha3 hash of the label to register.
      */
     function register(bytes32 _hash) payable {
-        Deed bid = (new Deed).value(msg.value)(msg.sender);
+        Deed bid = (new DeedImplementation).value(msg.value)(msg.sender);
         sealedBids[msg.sender][bytes32(0)] = bid;
         Entry newAuction = _entries[_hash];
         newAuction.registrationDate = now - 6 days;
