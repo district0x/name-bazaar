@@ -1,0 +1,14 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ethlint": "./node_modules/ethlint/bin/solium.js --dir src/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ethlint": "^1.2.5"
+  }
+}
