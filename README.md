@@ -210,3 +210,10 @@ lein build-prod
 # To run prod server
 node server/name-bazaar.js
 ```
+
+## Linting and formatting
+
+The purpose of linting and formatting is such that the code is readable and consistent.
+
+We use [ethlint](https://github.com/duaraghav8/Ethlint) for linting solidity files. You
+can use `lein npm ethlint` and `lein npm ethlint-fix` to run the linter.
