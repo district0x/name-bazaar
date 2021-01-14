@@ -16,6 +16,11 @@ First, clone the project with submodules _([ens](https://github.com/ensdomains/e
 git clone --recurse-submodules https://github.com/district0x/name-bazaar.git
 ```
 
+in case you already downloaded the repo, or forgot to clone the submodules, use
+```bash
+git submodule update --init --recursive
+```
+
 In a terminal, start a ganache blockchain
 
 ```bash
@@ -105,13 +110,30 @@ We use ENS as a submodule to track the dependency on it's contracts. If you are 
 `contracts/ens-repo` directory, you can use
 
 ```bash
-git submodule update --remote
+git checkout master
+git pull origin master
+git checkout -
 git log --pretty=oneline --reverse --ancestry-path HEAD..master
 ```
 
-to first update the the ens repository and then list the commits in ens `master` branch, which are
+to first update the ens repository and then list the commits in ens `master` branch, which are
 not in our version of `ens-repo`. _(You can use this list of commits when updating to the latest
 version of ens contracts)_
+
+Exemplary workflow may look like this:
+1) Running the commands above gives me the commits in ENS I want to update.
+   Let's say: `6141359670af83974340e6492e6830125783ccaa`
+
+2) You can then use `git checkout 6141359670af83974340e6492e6830125783ccaa`.
+   This will checkout the files of that commit.
+
+3) The namebazaar repository will report changes in this submodule when you
+   execute `git status` _(outside the ENS repo)_.
+
+4) These changes **should be** committed together with the update of
+   namebazaar code.
+
+For comprehensive guide on git submodules read: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 ## Start a development UI for client-side development only
 
