@@ -82,7 +82,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     }
 
     function getRequesters(bytes32 node, uint round) constant public returns(address[]) {
-         return requests[node].requesters[round];
+        return requests[node].requesters[round];
     }
 
     function hasRequested(bytes32 node, address[] addresses) constant public returns(bool[] _hasRequested) {

@@ -87,7 +87,7 @@ contract Offering {
         require(!isContractNodeOwner());
         _;
     }
-    
+
     /**
      * @dev Constructor of offering
      * Should be callable just once, by factory
@@ -128,7 +128,7 @@ contract Offering {
         offering.newOwner = 0xdeaddead;
         fireOnChanged("unregister");
     }
-    
+
     /**
     * @dev Transfers ENS name ownership back to original owner
     * Can be run only by original owner or emergency multisig
@@ -209,7 +209,7 @@ contract Offering {
             address deed;
             (,deed,,,) = Registrar(ens.owner(rootNode)).entries(offering.labelHash);
             return ens.owner(offering.node) == address(this) &&
-                   Deed(deed).owner() == address(this);
+                Deed(deed).owner() == address(this);
         } else {
             return ens.owner(offering.node) == address(this);
         }
