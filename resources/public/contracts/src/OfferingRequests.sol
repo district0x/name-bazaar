@@ -9,7 +9,7 @@ pragma solidity ^0.4.18;
 
 import "UsedByFactories.sol";
 import "OfferingRequestsAbstract.sol";
-import "strings.sol";
+import "strings-lib-repo/strings.sol";
 
 contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     using strings for *;
