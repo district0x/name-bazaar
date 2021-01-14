@@ -16,7 +16,6 @@ contract District0xEmails {
     }
 
     function getEmail(address _address) constant public returns(string) {
-       return emails[_address];
+        return emails[_address];
     }
-    
 }

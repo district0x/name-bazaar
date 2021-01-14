@@ -1,0 +1,32 @@
+{
+  "extends": "solium:recommended",
+  "plugins": [
+    "security"
+  ],
+  "rules": {
+    "error-reason":  "off",
+    "no-constant":  "off",
+    "security/enforce-explicit-visibility": "off",
+    "security/no-block-members": "off",
+    "security/no-send": "off",
+    "security/no-sha3": "off",
+    "constructor": "off",
+    "visibility-first": "off",
+    "no-empty-blocks": "off",
+    "emit": "off",
+    "security/no-inline-assembly": "off",
+    "operator-whitespace": "off",
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "indentation": [
+      "error",
+      4
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ]
+  }
+}

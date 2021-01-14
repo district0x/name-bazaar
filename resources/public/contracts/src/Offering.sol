@@ -209,7 +209,7 @@ contract Offering {
             address deed;
             (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(offering.labelHash);
             return ens.owner(offering.node) == address(this) &&
-                   Deed(deed).owner() == address(this);
+                Deed(deed).owner() == address(this);
         } else {
             return ens.owner(offering.node) == address(this);
         }

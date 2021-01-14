@@ -101,16 +101,15 @@ contract AuctionOffering is Offering {
         onlyBeforeEndTime
     {
         if (auctionOffering.winningBidder == 0x0) {
-          require(msg.value >= offering.price);
+            require(msg.value >= offering.price);
         } else {
-          require(msg.value >= offering.price.add(auctionOffering.minBidIncrease));
-          var previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder].add(offering.price);
-          if (auctionOffering.winningBidder.send(previousWinnerRefund)){
-            auctionOffering.pendingReturns[auctionOffering.winningBidder] = 0;
-          }
-          else {
-            auctionOffering.pendingReturns[auctionOffering.winningBidder] = previousWinnerRefund;
-          }
+            require(msg.value >= offering.price.add(auctionOffering.minBidIncrease));
+            var previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder].add(offering.price);
+            if (auctionOffering.winningBidder.send(previousWinnerRefund)) {
+                auctionOffering.pendingReturns[auctionOffering.winningBidder] = 0;
+            } else {
+                auctionOffering.pendingReturns[auctionOffering.winningBidder] = previousWinnerRefund;
+            }
         }
 
         auctionOffering.winningBidder = msg.sender;
@@ -148,7 +147,7 @@ contract AuctionOffering is Offering {
     * @dev Finalizes auction: transfers funds to original ENS owner, transfers ENS name to winning bidder
     * Must be after auction end time
     * Accoring to Withdrawal Pattern we cannot assume transferring funds to original owner will be possible,
-    * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails. 
+    * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails.
     */
     function finalize()
         onlyAfterEndTime
@@ -157,8 +156,8 @@ contract AuctionOffering is Offering {
         transferOwnership(auctionOffering.winningBidder);
 
         if (!offering.originalOwner.send(offering.price)){
-          auctionOffering.pendingReturns[offering.originalOwner] =
-            auctionOffering.pendingReturns[offering.originalOwner].add(offering.price);
+            auctionOffering.pendingReturns[offering.originalOwner] =
+                auctionOffering.pendingReturns[offering.originalOwner].add(offering.price);
         }
     }
 

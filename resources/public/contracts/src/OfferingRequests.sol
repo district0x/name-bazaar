@@ -9,7 +9,7 @@ pragma solidity ^0.4.18;
 
 import "UsedByFactories.sol";
 import "OfferingRequestsAbstract.sol";
-import "strings.sol";
+import "strings-lib-repo/strings.sol";
 
 contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     using strings for *;
@@ -82,7 +82,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     }
 
     function getRequesters(bytes32 node, uint round) constant public returns(address[]) {
-         return requests[node].requesters[round];
+        return requests[node].requesters[round];
     }
 
     function hasRequested(bytes32 node, address[] addresses) constant public returns(bool[] _hasRequested) {
