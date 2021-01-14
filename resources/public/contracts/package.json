@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "ethlint": "./node_modules/ethlint/bin/solium.js --dir src/"
+    "ethlint": "./node_modules/ethlint/bin/solium.js --dir src/",
+    "ethlint-fix": "./node_modules/ethlint/bin/solium.js --dir src/ --fix"
   },
   "author": "",
   "license": "ISC",
