@@ -24,4 +24,4 @@
 (def config
   (condp = environment
     "prod" production-config
-    "dev"  development-config))
+    "dev" development-config))

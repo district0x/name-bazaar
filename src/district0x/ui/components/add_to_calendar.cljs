@@ -17,11 +17,11 @@
                                                                                [:div.dropdown-item
                                                                                 [:i.icon.google]
                                                                                 [:a.label {:href (str "https://calendar.google.com/calendar/render"
-                                                                                                   "?action=TEMPLATE"
-                                                                                                   "&dates=" start-time
-                                                                                                   "/" end-time
-                                                                                                   "&text=" title
-                                                                                                   "&details=" description)
+                                                                                                      "?action=TEMPLATE"
+                                                                                                      "&dates=" start-time
+                                                                                                      "/" end-time
+                                                                                                      "&text=" title
+                                                                                                      "&details=" description)
                                                                                            :target "_blank"}
                                                                                  item]]
 
@@ -35,13 +35,13 @@
                                                                                                             "END:VEVENT" "END:VCALENDAR"])]
                                                                                  [:div.dropdown-item
                                                                                   {:on-click #(d0x-ui-utils/file-write "namebazaar.ics"
-                                                                                                ics
-                                                                                                "text/calendar;charset=utf-8")}
+                                                                                                                       ics
+                                                                                                                       "text/calendar;charset=utf-8")}
                                                                                   [:i.icon.apple]
                                                                                   [:a.label item]])
 
                                                                                :else [:a item]))})
-                                        items)))]
+                                                   items)))]
       [ui/Dropdown {:placeholder "Add to My Calendar"
                     :fluid true
                     :selection true

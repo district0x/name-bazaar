@@ -43,7 +43,7 @@
   :offering/loaded?
   (fn [[_ offering-address]]
     [(subscribe [:offering offering-address])
-     (subscribe [:registrar/entries])
+     (subscribe [:name-bazaar-registrar/entries])
      (subscribe [:ens/records])])
   (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/buy-now?
                 :offering/top-level-name?]}
@@ -124,7 +124,7 @@
 (reg-sub
   :offering/registrar-entry
   :<- [:offerings]
-  :<- [:registrar/entries]
+  :<- [:name-bazaar-registrar/entries]
   (fn [[offerings registrar-entries] [_ offering-address]]
     (get registrar-entries (get-in offerings [offering-address :offering/label-hash]))))
 
@@ -144,12 +144,12 @@
   (fn [[{:keys [:offering/top-level-name?]} ens-record registrar-entry] [_ offering-address]]
     (when (and (:ens.record/owner ens-record)
                (if top-level-name?
-                 (:registrar.entry.deed/owner registrar-entry)
+                 (:name-bazaar-registrar.entry.deed/owner registrar-entry)
                  true))
       (= offering-address
          (:ens.record/owner ens-record)
          (if top-level-name?
-           (:registrar.entry.deed/owner registrar-entry)
+           (:name-bazaar-registrar.entry.deed/owner registrar-entry)
            offering-address)))))
 
 (reg-sub

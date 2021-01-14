@@ -13,7 +13,7 @@
   (let [{:keys [:offering/address :offering/name :offering/top-level-name? :offering/label
                 :offering/label-hash :offering/node]} offering
         active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
-        active-address-deed-owner? @(subscribe [:registrar.entry.deed/active-address-owner? label-hash])]
+        active-address-deed-owner? @(subscribe [:name-bazaar-registrar.entry.deed/active-address-owner? label-hash])]
     [transaction-button
      (r/merge-props
        {:secondary true
@@ -107,9 +107,9 @@
               :pending? @(subscribe [:auction-offering.bid/tx-pending? address])
               :pending-text "Bidding..."
               :disabled (or
-                         invalid-name?
-                         (not (>= (or @bid-value min-bid) min-bid))
-                         (= offering-status :offering.status/missing-ownership))
+                          invalid-name?
+                          (not (>= (or @bid-value min-bid) min-bid))
+                          (= offering-status :offering.status/missing-ownership))
               :on-click #(dispatch [:auction-offering/bid {:offering/address address
                                                            :offering/price (or @bid-value min-bid)}])}
              "Bid Now"]]])))))

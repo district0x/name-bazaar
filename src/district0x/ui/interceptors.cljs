@@ -4,7 +4,7 @@
 (defn inject-sub
   [query k]
   (re-frame/->interceptor
-   :id :inject-sub
-   :before (fn [context]
-             (let [{:keys [:db _]} (:coeffects context)]
-               (assoc-in context [:coeffects k] (get-in db query))))))
+    :id :inject-sub
+    :before (fn [context]
+              (let [{:keys [:db _]} (:coeffects context)]
+                (assoc-in context [:coeffects k] (get-in db query))))))

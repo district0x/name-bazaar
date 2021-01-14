@@ -34,7 +34,7 @@
         node (namehash full-name)]
     (dispatch [:ens.records/load [node] {:load-resolver? true}])
     (when (top-level-name? full-name)
-      (dispatch [:registrar.entries/load [(sha3 value)]]))))
+      (dispatch [:name-bazaar-registrar.entries/load [(sha3 value)]]))))
 
 (defn ens-name-input-ownership-validated []
   (fn [{:keys [:on-change :value :warn-only?] :as props}]
@@ -52,16 +52,16 @@
                  (contains? #{:ens.ownership-status/owner} ownership-status) :success)}
        [ens-name-input
         (r/merge-props
-         {:label "Name"
-          :fluid true
-          :value value
-          :on-change (fn [e data]
-                       (let [value (aget data "value")]
-                         (when (valid-ens-name? value)
-                           (let [value (normalize value)]
-                             (aset data "value" value)
-                             (on-change e data)
-                             (load-name-ownership value)))))
-          :error error?}
-         (dissoc props :ownership-status :on-change :warn-only?))]
+          {:label "Name"
+           :fluid true
+           :value value
+           :on-change (fn [e data]
+                        (let [value (aget data "value")]
+                          (when (valid-ens-name? value)
+                            (let [value (normalize value)]
+                              (aset data "value" value)
+                              (on-change e data)
+                              (load-name-ownership value)))))
+           :error error?}
+          (dissoc props :ownership-status :on-change :warn-only?))]
        [:div.ui.label (ownership-status->text ownership-status)]])))

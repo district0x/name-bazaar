@@ -21,8 +21,8 @@
       (let [name (normalize name)
             node (namehash name)
             new-db (-> db
-                     (update-in [:watched-names :order] conj node)
-                     (assoc-in [:watched-names :ens/records node] {:ens.record/name name}))]
+                       (update-in [:watched-names :order] conj node)
+                       (assoc-in [:watched-names :ens/records node] {:ens.record/name name}))]
         (when-not (get-in db [:watched-names :ens/records node])
           {:db new-db
            :localstorage (merge localstorage (select-keys new-db [:watched-names]))
@@ -33,8 +33,8 @@
   [interceptors (inject-cofx :localstorage)]
   (fn [{:keys [:db :localstorage]} [node]]
     (let [new-db (-> db
-                   (update-in [:watched-names :order] (partial remove #(= node %)))
-                   (update-in [:watched-names :ens/records] dissoc node))]
+                     (update-in [:watched-names :order] (partial remove #(= node %)))
+                     (update-in [:watched-names :ens/records] dissoc node))]
       {:db new-db
        :localstorage (merge localstorage (select-keys new-db [:watched-names]))})))
 

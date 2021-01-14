@@ -1,1 +1,0 @@
-[{"constant":false,"inputs":[{"name":"name","type":"string"}],"name":"addRequest","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"node","type":"bytes32"}],"name":"clearRequests","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]

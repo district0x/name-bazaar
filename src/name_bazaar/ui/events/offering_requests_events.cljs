@@ -81,14 +81,14 @@
   interceptors
   (fn [{:keys [:db]} [node addresses has-requested-vals]]
     (let [{addrs-requested true addrs-not-requested false} (->> (zipmap addresses has-requested-vals)
-                                                             (group-by second)
-                                                             (medley/map-vals keys))]
+                                                                (group-by second)
+                                                                (medley/map-vals keys))]
       {:db (update-in db [:offering-requests node :offering-request/requesters]
                       (fn [requesters]
                         (-> (set requesters)
-                          (set/difference addrs-not-requested)
-                          (set/union addrs-requested)
-                          set)))})))
+                            (set/difference addrs-not-requested)
+                            (set/union addrs-requested)
+                            set)))})))
 
 (reg-event-fx
   :offering-requests.main-search/set-params-and-search

@@ -37,7 +37,7 @@
            :on-click (fn []
                        (when (and (not (empty? @label))
                                   (valid-ens-name? @label))
-                         (dispatch [:registrar/register {:ens.record/label @label}])
+                         (dispatch [:name-bazaar-registrar/register {:ens.record/label @label}])
                          (reset! label "")))}
           "Register"]]]])))
 

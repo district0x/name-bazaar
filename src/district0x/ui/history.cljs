@@ -1,12 +1,12 @@
 (ns district0x.ui.history
   (:require
-   [bidi.bidi :as bidi]
-   [clojure.string :as string]
-   [district0x.ui.utils :refer [match-current-location]]
-   [medley.core :as medley]
-   [name-bazaar.ui.config :refer [config]]
-   [pushy.core :as pushy]
-   [re-frame.core :as re-frame]))
+    [bidi.bidi :as bidi]
+    [clojure.string :as string]
+    [district0x.ui.utils :refer [match-current-location]]
+    [medley.core :as medley]
+    [name-bazaar.ui.config :refer [config]]
+    [pushy.core :as pushy]
+    [re-frame.core :as re-frame]))
 
 (def routes (atom nil))
 

@@ -30,41 +30,41 @@
 
 (defn parse-offerings-params [params]
   (-> params
-    (update :name #(when (seq (str %)) (str %)))
-    (update :min-price #(when (number? %) %))
-    (update :max-price #(when (number? %) %))
-    (update :min-length #(when (number? %) %))
-    (update :max-length #(when (number? %) %))
-    (update :name-position #(when (keyword? %) %))
-    (update :order-by #(when (s/valid? ::offering-order-by %) %))
-    (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))
-    (update :fields #(if (s/valid? ::offering-fields %) % [:offering/address]))
-    (update :original-owner parse-address)
-    (update :bidder parse-address)
-    (update :winning-bidder parse-address)
-    (update :exclude-winning-bidder parse-address)
-    (update :limit #(if % (min 100 %) 100))
-    (update :nodes #(when % (collify %)))))
+      (update :name #(when (seq (str %)) (str %)))
+      (update :min-price #(when (number? %) %))
+      (update :max-price #(when (number? %) %))
+      (update :min-length #(when (number? %) %))
+      (update :max-length #(when (number? %) %))
+      (update :name-position #(when (keyword? %) %))
+      (update :order-by #(when (s/valid? ::offering-order-by %) %))
+      (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))
+      (update :fields #(if (s/valid? ::offering-fields %) % [:offering/address]))
+      (update :original-owner parse-address)
+      (update :bidder parse-address)
+      (update :winning-bidder parse-address)
+      (update :exclude-winning-bidder parse-address)
+      (update :limit #(if % (min 100 %) 100))
+      (update :nodes #(when % (collify %)))))
 
 (defn parse-offering-requests-params [params]
   (-> params
-    (update :name #(when (seq (str %)) (str %)))
-    (update :name-position #(when (keyword? %) %))
-    (update :limit #(if % (min 100 %) 100))
-    (update :order-by #(when (s/valid? ::offering-requests-order-by %) %))
-    (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))))
+      (update :name #(when (seq (str %)) (str %)))
+      (update :name-position #(when (keyword? %) %))
+      (update :limit #(if % (min 100 %) 100))
+      (update :order-by #(when (s/valid? ::offering-requests-order-by %) %))
+      (update :order-by-dir #(if (s/valid? ::order-by-dir %) % :asc))))
 
 (reg-get! "/offerings"
           (fn [req res]
             (try-catch
-             (send res (db/get-offerings (parse-offerings-params (query-params req)))))))
+              (send res (db/get-offerings (parse-offerings-params (query-params req)))))))
 
 (reg-get! "/offering-requests"
           (fn [req res]
             (try-catch
-             (send res (db/get-offering-requests (parse-offering-requests-params (query-params req)))))))
+              (send res (db/get-offering-requests (parse-offering-requests-params (query-params req)))))))
 
 (reg-get! "/config"
           (fn [req res]
             (try-catch
-             (send res (:ui @config)))))
+              (send res (:ui @config)))))

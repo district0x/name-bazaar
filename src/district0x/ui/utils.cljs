@@ -37,11 +37,11 @@
 
 (defn current-location-hash []
   (let [hash (-> js/document
-               .-location
-               .-hash
-               (string/split #"\?")
-               first
-               (string/replace "#" ""))]
+                 .-location
+                 .-hash
+                 (string/split #"\?")
+                 first
+                 (string/replace "#" ""))]
     (if (empty? hash) "/" hash)))
 
 (defn match-current-location
@@ -245,9 +245,9 @@
                                            (not (:limit %)))
                                       units))]
           (-> (/ diff (:in-second unit))
-            js/Math.floor
-            int
-            (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
+              js/Math.floor
+              int
+              (#(str % " " (:name unit) (when (> % 1) "s") " ago"))))))))
 
 
 (defn date+time->local-date-time [date time]

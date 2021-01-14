@@ -1,6 +1,6 @@
 (ns district0x.ui.web3-fx
   (:require
-   [re-frame.core :as re-frame :refer [reg-fx dispatch]]))
+    [re-frame.core :as re-frame :refer [reg-fx dispatch]]))
 
 
 (defn supports-ethereum-provider?
@@ -25,10 +25,10 @@
   (fn [{:keys [:on-accept :on-reject :on-error :on-legacy]}]
     (cond
       (supports-ethereum-provider?)
-      (doto (authorize) ;; js/Promise
+      (doto (authorize)                                     ;; js/Promise
         (.then
-         #(dispatch on-accept)
-         #(dispatch on-reject)))
+          #(dispatch on-accept)
+          #(dispatch on-reject)))
       (web3-legacy?)
       (dispatch on-legacy)
       :else

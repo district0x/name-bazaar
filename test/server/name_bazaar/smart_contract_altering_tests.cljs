@@ -41,10 +41,10 @@
            {:web3 {:port 8549}
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
-       (mount/only [#'district.server.web3
-                    #'district.server.smart-contracts/smart-contracts
-                    #'name-bazaar.server.deployer/deployer])
-       (mount/start)))
+         (mount/only [#'district.server.web3
+                      #'district.server.smart-contracts/smart-contracts
+                      #'name-bazaar.server.deployer/deployer])
+         (mount/start)))
    :after
    (fn []
      (mount/stop)

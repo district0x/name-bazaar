@@ -171,10 +171,10 @@
     (let [active-page (:active-page db)]
       (log/info "Active page changed" active-page ::active-page-changed)
       (merge
-       {:forward-events {:unregister :active-address-changed}}
-       (route->initial-effects active-page db)
-       {:district0x/dispatch [:offerings/stop-watching-all]
-        :db (assoc-in db [:infinite-list :expanded-items] {})}))))
+        {:forward-events {:unregister :active-address-changed}}
+        (route->initial-effects active-page db)
+        {:district0x/dispatch [:offerings/stop-watching-all]
+         :db (assoc-in db [:infinite-list :expanded-items] {})}))))
 
 (reg-event-fx
   :name.ownership/load
@@ -184,7 +184,7 @@
       (let [node (namehash name)]
         (merge {:dispatch-n [[:ens.records/load [node]]]}
                (when (top-level-name? name)
-                 {:dispatch [:registrar.entries/load [(name->label-hash name)]]}))))))
+                 {:dispatch [:name-bazaar-registrar.entries/load [(name->label-hash name)]]}))))))
 
 (reg-event-fx
   :name.all-details/load
@@ -198,7 +198,7 @@
                                     :halt? true
                                     :dispatch [:ens.records.owner/resolve node]}]}}
              (when (top-level-name? name)
-               {:dispatch [:registrar.entries/load [(name->label-hash name)]]})))))
+               {:dispatch [:name-bazaar-registrar.entries/load [(name->label-hash name)]]})))))
 
 (reg-event-fx
   :name/transfer-ownership
@@ -206,8 +206,8 @@
   (fn [{:keys [:db]} [name owner]]
     {:dispatch
      (if (top-level-name? name)
-       [:registrar/transfer {:ens.record/label (name-label name)
-                             :ens.record/owner owner}
+       [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
+                                         :ens.record/owner owner}
         {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
          :on-tx-receipt-n [[:ens.records/load [(namehash name)]
                             {:load-resolver? true}]
@@ -266,8 +266,8 @@
       (log/info "Resolving address" {:address addrs} ::resolve-my-addresses)
       {:db db
        :dispatch-n (conj
-                    (map #(vec [:public-resolver.name/load %]) addrs)
-                    [:ens.records.resolver/load (map reverse-record-node addrs)])})))
+                     (map #(vec [:public-resolver.name/load %]) addrs)
+                     [:ens.records.resolver/load (map reverse-record-node addrs)])})))
 
 (reg-event-fx
   :watch-my-addresses-changed

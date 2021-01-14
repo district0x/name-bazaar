@@ -9,10 +9,10 @@
     (:public-resolver/records db)))
 
 (reg-sub
- :public-resolver/record
- :<- [:public-resolver/records]
- (fn [nodes [_ node]]
-   (get nodes node)))
+  :public-resolver/record
+  :<- [:public-resolver/records]
+  (fn [nodes [_ node]]
+    (get nodes node)))
 
 (reg-sub
   :public-resolver/reverse-records
@@ -20,19 +20,19 @@
     (:public-resolver/reverse-records db)))
 
 (reg-sub
- :public-resolver/reverse-record
- :<- [:public-resolver/reverse-records]
- (fn [nodes [_ addr]]
-   (get nodes addr)))
+  :public-resolver/reverse-record
+  :<- [:public-resolver/reverse-records]
+  (fn [nodes [_ addr]]
+    (get nodes addr)))
 
 (reg-sub
- :public-resolver.set-addr/tx-pending?
- (fn [[_ ens-record-node]]
-   [(subscribe [:district0x/tx-pending? :public-resolver :set-addr {:ens.record/node ens-record-node}])])
- first)
+  :public-resolver.set-addr/tx-pending?
+  (fn [[_ ens-record-node]]
+    [(subscribe [:district0x/tx-pending? :public-resolver :set-addr {:ens.record/node ens-record-node}])])
+  first)
 
 (reg-sub
- :public-resolver.set-name/tx-pending?
- (fn [[_ ens-record-node]]
-   [(subscribe [:district0x/tx-pending? :public-resolver :set-name {:ens.record/node ens-record-node}])])
- first)
+  :public-resolver.set-name/tx-pending?
+  (fn [[_ ens-record-node]]
+    [(subscribe [:district0x/tx-pending? :public-resolver :set-name {:ens.record/node ens-record-node}])])
+  first)

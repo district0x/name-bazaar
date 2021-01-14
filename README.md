@@ -10,6 +10,17 @@ Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tr
 
 ## Starting a dev server with an Ethereum Testnet
 
+First, clone the project with submodules _([ens](https://github.com/ensdomains/ens))_
+
+```bash
+git clone --recurse-submodules https://github.com/district0x/name-bazaar.git
+```
+
+in case you already downloaded the repo, or forgot to clone the submodules, use
+```bash
+git submodule update --init --recursive
+```
+
 In a terminal, start a ganache blockchain
 
 ```bash
@@ -21,6 +32,9 @@ Open another terminal, start autocompiling smart-contracts
 ```bash
 lein auto compile-solidity
 ```
+
+_(You need to have `solc` with compatible version installed. See `contracts` folder to determine the
+correct version)_
 
 Open another terminal, start a repl and build the dev server (with
 figwheel repl)
@@ -48,8 +62,8 @@ node dev-server/name-bazaar.js
 
 Redeployment / Generation can take a long time, please be patient.
 
-
 #### Start server with custom config
+
 Namebazaar uses [district-server-config](https://github.com/district0x/district-server-config) for loading configuration. So you can create `config.edn` somewhat like this:
 
 ```clojure
@@ -90,6 +104,37 @@ or
 
 Depending upon how you'd like to work.
 
+## Updating ens contracts
+
+We use ENS as a submodule to track the dependency on it's contracts. If you are in
+`contracts/ens-repo` directory, you can use
+
+```bash
+git checkout master
+git pull origin master
+git checkout -
+git log --pretty=oneline --reverse --ancestry-path HEAD..master
+```
+
+to first update the ens repository and then list the commits in ens `master` branch, which are
+not in our version of `ens-repo`. _(You can use this list of commits when updating to the latest
+version of ens contracts)_
+
+Exemplary workflow may look like this:
+1) Running the commands above gives me the commits in ENS I want to update.
+   Let's say: `6141359670af83974340e6492e6830125783ccaa`
+
+2) You can then use `git checkout 6141359670af83974340e6492e6830125783ccaa`.
+   This will checkout the files of that commit.
+
+3) The namebazaar repository will report changes in this submodule when you
+   execute `git status` _(outside the ENS repo)_.
+
+4) These changes **should be** committed together with the update of
+   namebazaar code.
+
+For comprehensive guide on git submodules read: https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
 ## Start a development UI for client-side development only
 
 If you're only focusing on working with the UI, you can start a UI
@@ -111,7 +156,6 @@ docker-compose up nginx
 
 **Note: using this client is using the main ethereum network, it is
 ill-advised to carry out transactions unless you know what you are doing!**
-
 
 ## Backend (server) tests:
 
@@ -142,6 +186,7 @@ More info: [https://github.com/bensu/doo](doo).
 docker-compose build nginx
 docker-compose up nginx
 ```
+
 and start (start-ui!), (start-server!) as usual, but open the site on http://localhost:3001
 
 ## Build for production

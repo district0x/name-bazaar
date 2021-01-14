@@ -1,10 +1,10 @@
 (ns name-bazaar.shared.utils
   (:require
-   [bignumber.core :as bn]
-   [cljs-web3.core :as web3]
-   [cljs.core.match :refer-macros [match]]
-   [clojure.string :as string]
-   [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address evm-time->local-date-time]]))
+    [bignumber.core :as bn]
+    [cljs-web3.core :as web3]
+    [cljs.core.match :refer-macros [match]]
+    [clojure.string :as string]
+    [district0x.shared.utils :as d0x-shared-utils :refer [zero-address? zero-address evm-time->local-date-time]]))
 
 (def emergency-state-new-owner "0x000000000000000000000000000000000000dead")
 (def unregistered-new-owner "0x00000000000000000000000000000000deaddead")
@@ -78,26 +78,26 @@
           label (name-label (:offering/name offering))
           supports-unregister? (offering-supports-unregister? offering-type (-> offering :offering/version bn/number))]
       (-> offering
-        (assoc :offering/address offering-address)
-        (update :offering/version bn/number)
-        (assoc :offering/type offering-type)
-        (assoc :offering/auction? (= offering-type :auction-offering))
-        (assoc :offering/buy-now? (= offering-type :buy-now-offering))
-        (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
-        (update :offering/created-on (if parse-dates? evm-time->local-date-time bn/number))
-        (update :offering/finalized-on (if parse-dates? evm-time->local-date-time bn/number))
-        (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
-        (assoc :offering/name-level (name-level (:offering/name offering)))
-        (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
-        (assoc :offering/label label)
-        (assoc :offering/label-length (count label))
-        (assoc :offering/contains-number? (contains-number? (:offering/name offering)))
-        (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
-        (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
-        (assoc :offering/normalized? (normalized? (:offering/name offering)))
-        (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
-        (assoc :offering/supports-unregister? supports-unregister?)
-        (assoc :offering/unregistered? (unregistered? supports-unregister? offering))))))
+          (assoc :offering/address offering-address)
+          (update :offering/version bn/number)
+          (assoc :offering/type offering-type)
+          (assoc :offering/auction? (= offering-type :auction-offering))
+          (assoc :offering/buy-now? (= offering-type :buy-now-offering))
+          (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
+          (update :offering/created-on (if parse-dates? evm-time->local-date-time bn/number))
+          (update :offering/finalized-on (if parse-dates? evm-time->local-date-time bn/number))
+          (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
+          (assoc :offering/name-level (name-level (:offering/name offering)))
+          (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
+          (assoc :offering/label label)
+          (assoc :offering/label-length (count label))
+          (assoc :offering/contains-number? (contains-number? (:offering/name offering)))
+          (assoc :offering/contains-special-char? (contains-special-char? (:offering/name offering)))
+          (assoc :offering/contains-non-ascii? (contains-non-ascii? (:offering/name offering)))
+          (assoc :offering/normalized? (normalized? (:offering/name offering)))
+          (assoc :offering/valid-name? (valid-ens-name? (:offering/name offering)))
+          (assoc :offering/supports-unregister? supports-unregister?)
+          (assoc :offering/unregistered? (unregistered? supports-unregister? offering))))))
 
 (def auction-offering-props [:auction-offering/end-time :auction-offering/extension-duration
                              :auction-offering/bid-count :auction-offering/min-bid-increase
@@ -106,40 +106,40 @@
 (defn parse-auction-offering [auction-offering & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when auction-offering
     (-> (zipmap auction-offering-props auction-offering)
-      (update :auction-offering/end-time (if parse-dates? evm-time->local-date-time bn/number))
-      (update :auction-offering/winning-bidder #(when-not (zero-address? %) %))
-      (update :auction-offering/extension-duration bn/number)
-      (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
-      (update :auction-offering/bid-count bn/number))))
+        (update :auction-offering/end-time (if parse-dates? evm-time->local-date-time bn/number))
+        (update :auction-offering/winning-bidder #(when-not (zero-address? %) %))
+        (update :auction-offering/extension-duration bn/number)
+        (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
+        (update :auction-offering/bid-count bn/number))))
 
 (def offering-request-props [:offering-request/name :offering-request/requesters-count :offering-request/latest-round])
 
 (defn parse-offering-request [node offering-request]
   (when offering-request
     (-> (zipmap offering-request-props offering-request)
-      (update :offering-request/requesters-count bn/number)
-      (update :offering-request/latest-round bn/number)
-      (assoc :offering-request/node node))))
+        (update :offering-request/requesters-count bn/number)
+        (update :offering-request/latest-round bn/number)
+        (assoc :offering-request/node node))))
 
 (def registrar-entry-states
-  {0 :registrar.entry.state/open
-   1 :registrar.entry.state/auction
-   2 :registrar.entry.state/owned
-   3 :registrar.entry.state/forbidden
-   4 :registrar.entry.state/reveal
-   5 :registrar.entry.state/not-yet-available})
+  {0 :name-bazaar-registrar.entry.state/open
+   1 :name-bazaar-registrar.entry.state/auction
+   2 :name-bazaar-registrar.entry.state/owned
+   3 :name-bazaar-registrar.entry.state/forbidden
+   4 :name-bazaar-registrar.entry.state/reveal
+   5 :name-bazaar-registrar.entry.state/not-yet-available})
 
-(def registrar-entry-props [:registrar.entry/state :registrar.entry.deed/address :registrar.entry/registration-date
-                            :registrar.entry/value :registrar.entry/highest-bid])
+(def registrar-entry-props [:name-bazaar-registrar.entry/state :name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry/registration-date
+                            :name-bazaar-registrar.entry/value :name-bazaar-registrar.entry/highest-bid])
 
 (defn parse-registrar-entry [entry & [{:keys [:parse-dates? :convert-to-ether?]}]]
   (when entry
     (-> (zipmap registrar-entry-props entry)
-      (update :registrar.entry.deed/address #(if (= % "0x") zero-address %))
-      (update :registrar.entry/state (comp registrar-entry-states bn/number))
-      (update :registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
-      (update :registrar.entry/value bn/number)
-      (update :registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
+        (update :name-bazaar-registrar.entry.deed/address #(if (= % "0x") zero-address %))
+        (update :name-bazaar-registrar.entry/state (comp registrar-entry-states bn/number))
+        (update :name-bazaar-registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
+        (update :name-bazaar-registrar.entry/value bn/number)
+        (update :name-bazaar-registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
 
 (defn calculate-min-bid
   ([price min-bid-increase bid-count]

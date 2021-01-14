@@ -17,7 +17,7 @@
 
 (defn get-request [{:keys [:offering-request/node]}]
   (->> (contract-call :offering-requests :get-request node)
-    (parse-offering-request node)))
+       (parse-offering-request node)))
 
 (defn get-requesters [{:keys [:offering-request/node :offering-request/round]}]
   (contract-call :offering-requests :get-requesters node round))

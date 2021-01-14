@@ -187,27 +187,27 @@
                                {:from addr0})))
     (testing "Offering the name with overdue endtime fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "abc.eth"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/minus (now) (time/seconds 1)))
-                              :auction-offering/extension-duration 0
-                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                             {:from addr0}))))
+                              {:offering/name "abc.eth"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/minus (now) (time/seconds 1)))
+                               :auction-offering/extension-duration 0
+                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                              {:from addr0}))))
     (testing "Offering the name with 0 bidincrease fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "abc.eth"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 1)))
-                              :auction-offering/extension-duration 0
-                              :auction-offering/min-bid-increase (web3/to-wei 0 :ether)}
-                             {:from addr0}))))
+                              {:offering/name "abc.eth"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 1)))
+                               :auction-offering/extension-duration 0
+                               :auction-offering/min-bid-increase (web3/to-wei 0 :ether)}
+                              {:from addr0}))))
     (let [tx-hash (auction-offering-factory/create-offering!
-                   {:offering/name "abc.eth"
-                    :offering/price (eth->wei 0.1)
-                    :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                    :auction-offering/extension-duration 0
-                    :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                   {:from addr0})]
+                    {:offering/name "abc.eth"
+                     :offering/price (eth->wei 0.1)
+                     :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                     :auction-offering/extension-duration 0
+                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                    {:from addr0})]
       (testing "Offering the name for a bid"
         (is tx-hash))
 
@@ -283,7 +283,7 @@
       (is (registrar/register! {:ens.record/label "notowned"}
                                {:from addr0}))
 
-      (let [deed-addr (:registrar.entry.deed/address (registrar/entry {:ens.record/label "notowned"}))]
+      (let [deed-addr (:name-bazaar-registrar.entry.deed/address (registrar/entry {:ens.record/label "notowned"}))]
         (is (not (empty? deed-addr)))
         (is (not (empty? (deed/owner deed-addr))))))
 
@@ -305,20 +305,20 @@
 
     (testing "Can't offer for bid name I don't manage"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "notowned"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                              :auction-offering/extension-duration 0
-                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                             {:from addr0}))))
+                              {:offering/name "notowned"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                               :auction-offering/extension-duration 0
+                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                              {:from addr0}))))
     (testing "Can't offer for bid name I don't own"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "notowndeed"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                              :auction-offering/extension-duration 0
-                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                             {:from addr0}))))))
+                              {:offering/name "notowndeed"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                               :auction-offering/extension-duration 0
+                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                              {:from addr0}))))))
 
 (deftest offering-subdomain-ownership
   (let [[addr0 addr1 addr2] (web3-eth/accounts @web3)]
@@ -327,17 +327,17 @@
                                {:from addr0}))
 
       (is (ens/set-subnode-owner!
-           {:ens.record/label "mysub"
-            :ens.record/node "tld.eth"
-            :ens.record/owner addr0}
-           {:from addr0}))
+            {:ens.record/label "mysub"
+             :ens.record/node "tld.eth"
+             :ens.record/owner addr0}
+            {:from addr0}))
 
       (is (= addr0 (ens/owner {:ens.record/node (namehash "mysub.tld.eth")})))
       (is (ens/set-subnode-owner!
-           {:ens.record/label "theirsub"
-            :ens.record/node "tld.eth"
-            :ens.record/owner addr1}
-           {:from addr0}))
+            {:ens.record/label "theirsub"
+             :ens.record/node "tld.eth"
+             :ens.record/owner addr1}
+            {:from addr0}))
       (is (= addr0 (ens/owner {:ens.record/node (namehash "tld.eth")})))
       (is (= addr1 (ens/owner {:ens.record/node (namehash "theirsub.tld.eth")}))))
 
@@ -388,12 +388,12 @@
                                {:from addr1})))
 
     (let [tx-hash (auction-offering-factory/create-offering!
-                   {:offering/name "abc.eth"
-                    :offering/price (eth->wei 0.1)
-                    :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
-                    :auction-offering/extension-duration 0
-                    :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                   {:from addr1})]
+                    {:offering/name "abc.eth"
+                     :offering/price (eth->wei 0.1)
+                     :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
+                     :auction-offering/extension-duration 0
+                     :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                    {:from addr1})]
 
       (testing "Offering the name for a bid"
         (is tx-hash))
@@ -409,7 +409,7 @@
               balance-of-1 (web3-eth/get-balance @web3 addr1)
               balance-of-2 (web3-eth/get-balance @web3 addr2)
               balance-of-3 (web3-eth/get-balance @web3 addr3)
-              
+
               ;; bid values
               bid-value-user-2 (web3/to-wei 0.1 :ether)
               bid-value-user-3 (web3/to-wei 0.2 :ether)
@@ -514,19 +514,19 @@
                                {:from addr0})))
     (testing "Offering with the endtime too far in the future fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "abc.eth"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/plus (now)
-                                                                              (time/days (* 4 30))
-                                                                              (time/hours 1)))
-                              :auction-offering/extension-duration 0
-                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                             {:from addr0}))))
+                              {:offering/name "abc.eth"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/plus (now)
+                                                                               (time/days (* 4 30))
+                                                                               (time/hours 1)))
+                               :auction-offering/extension-duration 0
+                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                              {:from addr0}))))
     (testing "Offering with the extension duration longer than auction duration fails"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                             {:offering/name "abc.eth"
-                              :offering/price (eth->wei 0.1)
-                              :auction-offering/end-time (to-epoch (time/plus (now) (time/days (* 2 30))))
-                              :auction-offering/extension-duration (time/in-seconds (time/days 61))
-                              :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                             {:from addr0}))))))
+                              {:offering/name "abc.eth"
+                               :offering/price (eth->wei 0.1)
+                               :auction-offering/end-time (to-epoch (time/plus (now) (time/days (* 2 30))))
+                               :auction-offering/extension-duration (time/in-seconds (time/days 61))
+                               :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
+                              {:from addr0}))))))

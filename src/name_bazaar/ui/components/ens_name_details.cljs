@@ -44,18 +44,18 @@
             "Create Offering"]])))))
 
 (defn ens-name-details [{:keys [:ens.record/name
-                                :registrar.entry/state-text
+                                :name-bazaar-registrar.entry/state-text
                                 :show-name-detail-link?] :as props}]
   [:div
    [:div.grid.layout-grid.submit-footer.ens-name-detail
 
     [:div.general-info
      [ens-record-general-info
-                        {:ens.record/name name}]
+      {:ens.record/name name}]
      (when (top-level-name? name)
        [registrar-entry-general-info
         {:ens.record/name name
-         :registrar.entry/state-text state-text}])]
+         :name-bazaar-registrar.entry/state-text state-text}])]
     [:div.description.links-section
      (when show-name-detail-link?
        [name-detail-link

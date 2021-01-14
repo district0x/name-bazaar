@@ -13,8 +13,8 @@
 
 (declare deploy)
 (defstate ^{:on-reload :noop} deployer
-  :start (deploy (merge (:deployer @config)
-                        (:deployer (mount/args)))))
+          :start (deploy (merge (:deployer @config)
+                                (:deployer (mount/args)))))
 
 (def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
 
@@ -30,11 +30,11 @@
 
 
 (defn deploy-registrar! [default-opts]
-  (deploy-smart-contract! :registrar (merge default-opts
-                                            {:gas 3200000
-                                             :arguments [(contract-address :ens)
-                                                         (namehash "eth")
-                                                         (to-epoch (t/minus (t/now) (t/years 1)))]})))
+  (deploy-smart-contract! :name-bazaar-registrar (merge default-opts
+                                                        {:gas 3200000
+                                                         :arguments [(contract-address :ens)
+                                                                     (namehash "eth")
+                                                                     (to-epoch (t/minus (t/now) (t/years 1)))]})))
 
 
 (defn deploy-offering-registry! [default-opts {:keys [:emergency-multisig]}]
@@ -98,7 +98,7 @@
 
       (ens/set-subnode-owner! {:ens.record/label "eth"
                                :ens.record/node ""
-                               :ens.record/owner (contract-address :registrar)}))
+                               :ens.record/owner (contract-address :name-bazaar-registrar)}))
 
     (deploy-offering-registry! deploy-opts {:emergency-multisig emergency-multisig})
     (deploy-offering-requests! deploy-opts)

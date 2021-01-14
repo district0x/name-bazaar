@@ -51,9 +51,9 @@
     (let [node (namehash name)
           label-hash (sha3 (name-label name))]
       [(subscribe [:ens.record/loaded? node])
-       (subscribe [:registrar.entry.deed/loaded? label-hash])
+       (subscribe [:name-bazaar-registrar.entry.deed/loaded? label-hash])
        (subscribe [:ens.record/active-address-owner? node])
-       (subscribe [:registrar.entry.deed/active-address-owner? label-hash])]))
+       (subscribe [:name-bazaar-registrar.entry.deed/active-address-owner? label-hash])]))
   (fn [[ens-record-loaded? deed-loaded? active-address-ens-owner? active-address-deed-owner?] [_ name]]
     (cond
       (empty? name)
@@ -75,22 +75,22 @@
       :else :ens.ownership-status/owner)))
 
 (reg-sub
- :ens.record/resolver
- :<- [:ens/records]
- (fn [records [_ node]]
-   (get-in records [node :ens.record/resolver])))
+  :ens.record/resolver
+  :<- [:ens/records]
+  (fn [records [_ node]]
+    (get-in records [node :ens.record/resolver])))
 
 (reg-sub
- :ens.record/default-resolver?
- (fn [db [_ node]]
-   (= (normalize (get-in db [:smart-contracts :public-resolver :address]))
-      (normalize @(subscribe [:ens.record/resolver node])))))
+  :ens.record/default-resolver?
+  (fn [db [_ node]]
+    (= (normalize (get-in db [:smart-contracts :public-resolver :address]))
+       (normalize @(subscribe [:ens.record/resolver node])))))
 
 (reg-sub
- :ens.set-resolver/tx-pending?
- (fn [[_ ens-record-node]]
-   [(subscribe [:district0x/tx-pending? :ens :set-resolver {:ens.record/node ens-record-node}])])
- first)
+  :ens.set-resolver/tx-pending?
+  (fn [[_ ens-record-node]]
+    [(subscribe [:district0x/tx-pending? :ens :set-resolver {:ens.record/node ens-record-node}])])
+  first)
 
 (reg-sub
   :ens.set-subnode-owner/tx-pending?

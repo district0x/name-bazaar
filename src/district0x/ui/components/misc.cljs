@@ -16,10 +16,10 @@
       [:span (if children children address)]
       [:a (r/merge-props
             {:href (etherscan-url (or root-url "https://etherscan.io")
-                     address
-                     {:type (if transaction?
-                              :transaction
-                              :address)})
+                                  address
+                                  {:type (if transaction?
+                                           :transaction
+                                           :address)})
              :target :_blank}
             (dissoc props :address :tx-hash :transaction?))
        (if children children address)])))
