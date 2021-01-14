@@ -52,6 +52,8 @@ connect to the figwheel repl.
 ```bash
 node dev-server/name-bazaar.js
 ```
+_(If you have problems re-running this command, try removing `dev-server`
+folder and try to start the server again)_
 
 #### Redeploy smart-contracts and generate mock data
 
@@ -162,6 +164,8 @@ ill-advised to carry out transactions unless you know what you are doing!**
 ```
 lein doo node "server-tests"
 ```
+_(If you have problems running the tests, try to remove `server-tests` directory
+and try re-running the tests again)_
 
 The doo runner will autobuild the test and re-run them as the watched files change.
 Alternatively:
