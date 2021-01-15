@@ -44,7 +44,7 @@ contract OfferingRegistry is UsedByFactories {
     onlyFactory
     {
         isOffering[offering] = true;
-        onOfferingAdded(offering, node, owner, version);
+        emit onOfferingAdded(offering, node, owner, version);
     }
 
 
@@ -57,7 +57,7 @@ contract OfferingRegistry is UsedByFactories {
      */
     function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] extraData) {
         require(isOffering[msg.sender]);
-        onOfferingChanged(msg.sender, version, eventType, extraData);
+        emit onOfferingChanged(msg.sender, version, eventType, extraData);
     }
 
     /**

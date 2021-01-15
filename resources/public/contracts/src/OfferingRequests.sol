@@ -34,14 +34,14 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         require(bytes(name).length > 0);
         bytes32 node = namehash(name);
         if (bytes(requests[node].name).length == 0) {
-            onRoundChanged(node, 0);
+            emit onRoundChanged(node, 0);
         }
         requests[node].name = name;
         uint i = requests[node].latestRound;
         if (!requests[node].hasRequested[i][msg.sender]) {
             requests[node].hasRequested[i][msg.sender] = true;
             requests[node].requesters[i].push(msg.sender);
-            onRequestAdded(node, i, msg.sender, requests[node].requesters[i].length);
+            emit onRequestAdded(node, i, msg.sender, requests[node].requesters[i].length);
         }
     }
 
@@ -55,7 +55,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     {
         if (bytes(requests[node].name).length > 0) {
             requests[node].latestRound += 1;
-            onRoundChanged(node, requests[node].latestRound);
+            emit onRoundChanged(node, requests[node].latestRound);
         }
     }
 
