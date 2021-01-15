@@ -39,7 +39,7 @@ contract BuyNowOffering is Offering {
         fireOnChanged("setSettings");
     }
 
-    function() payable {
+    function() external payable {
         buy();
     }
 }

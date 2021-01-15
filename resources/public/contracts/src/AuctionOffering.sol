@@ -72,7 +72,7 @@ contract AuctionOffering is Offering {
         uint64 _endTime,
         uint64 _extensionDuration,
         uint _minBidIncrease
-    ) {
+    ) public {
         super.construct(
             _node,
             _name,
@@ -133,7 +133,7 @@ contract AuctionOffering is Offering {
     * In each case funds are sent to original bidder only
     * @param _address address The address of withdrawer
     */
-    function withdraw(address payable _address) {
+    function withdraw(address payable _address) public {
         require(msg.sender == _address || isSenderEmergencyMultisig());
         uint pendingReturns = auctionOffering.pendingReturns[_address];
         if (pendingReturns > 0) {
@@ -150,6 +150,7 @@ contract AuctionOffering is Offering {
     * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails.
     */
     function finalize()
+        public
         onlyAfterEndTime
         onlyWithBids
     {
@@ -166,7 +167,7 @@ contract AuctionOffering is Offering {
     * Can be done only if auction has no bids
     * Emergency multisig can do this even for auction with bids and it puts winner bidder funds for withdrawal
     */
-    function reclaimOwnership() {
+    function reclaimOwnership() public {
         if (isSenderEmergencyMultisig()) {
             if (!hasNoBids() && !wasEmergencyCancelled()) {
                 auctionOffering.pendingReturns[auctionOffering.winningBidder] = offering.price;
@@ -226,7 +227,7 @@ contract AuctionOffering is Offering {
     * @dev Returns whether auction already has no bids
     * @return bool true if auction has no bids
     */
-    function hasNoBids() constant returns(bool) {
+    function hasNoBids() public view returns(bool) {
         return auctionOffering.winningBidder == address(0x0);
     }
 
@@ -235,11 +236,11 @@ contract AuctionOffering is Offering {
     * @param bidder address The address with pending returns
     * @return uint The amount of pending returns
     */
-    function pendingReturns(address bidder) public constant returns (uint) {
+    function pendingReturns(address bidder) public view returns (uint) {
         return auctionOffering.pendingReturns[bidder];
     }
 
-    function() payable {
+    function() external payable {
         bid();
     }
 }

@@ -17,6 +17,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
         OfferingRegistry offeringRegistry,
         OfferingRequestsAbstract offeringRequests
     )
+        public
         OfferingFactory(ens, offeringRegistry, offeringRequests)
     {
     }
@@ -30,10 +31,10 @@ contract BuyNowOfferingFactory is OfferingFactory {
         // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string memory name,
         uint price
-    ) {
+    ) public {
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
-        address forwarder = address(new Forwarder());
+        address payable forwarder = address(new Forwarder());
         uint version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
