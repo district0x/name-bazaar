@@ -43,7 +43,7 @@ contract OfferingFactory {
         internal
     {
         require(ens.owner(node) == msg.sender);
-        if (node == sha3(rootNode, labelHash)) {
+        if (node == keccak256(abi.encodePacked(rootNode, labelHash))) {
             address deed;
             (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(labelHash);
             require(Deed(deed).owner() == msg.sender);
@@ -65,8 +65,8 @@ contract OfferingFactory {
             return bytes32(0);
         }
 
-        string memory label = nameSlice.split(".".toSlice()).toString();
-        return sha3(namehash(nameSlice.toString()), sha3(label));
+        bytes memory label = abi.encodePacked(nameSlice.split(".".toSlice()).toString());
+        return keccak256(abi.encodePacked(namehash(nameSlice.toString()), keccak256(label)));
     }
 
     /**
@@ -75,6 +75,6 @@ contract OfferingFactory {
     * @return bytes32 ENS labelHash, hashed label of the name
     */
     function getLabelHash(string memory name) internal returns(bytes32) {
-        return sha3(name.toSlice().split(".".toSlice()).toString());
+        return keccak256(abi.encodePacked(name.toSlice().split(".".toSlice()).toString()));
     }
 }
