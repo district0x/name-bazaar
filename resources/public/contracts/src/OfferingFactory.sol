@@ -59,13 +59,13 @@ contract OfferingFactory {
     * @return bytes32 ENS node hash, aka node
     */
     function namehash(string name) internal returns(bytes32) {
-        var nameSlice = name.toSlice();
+        strings.slice nameSlice = name.toSlice();
 
         if (nameSlice.len() == 0) {
             return bytes32(0);
         }
 
-        var label = nameSlice.split(".".toSlice()).toString();
+        string label = nameSlice.split(".".toSlice()).toString();
         return sha3(namehash(nameSlice.toString()), sha3(label));
     }
 

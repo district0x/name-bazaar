@@ -15,8 +15,8 @@ contract AuctionOffering is Offering {
 
     struct AuctionOffering {
         // Order here is important for gas optimisations. Must be fitting into uint265 slots.
-        uint64  endTime;                              // end time of the auction
-        uint64  extensionDuration;                    // If new highest bid arrives less than extensionDuration before
+        uint64 endTime;                               // end time of the auction
+        uint64 extensionDuration;                     // If new highest bid arrives less than extensionDuration before
                                                       // auction end time, the auction will be extended by another extensionDuration
         uint128 bidCount;                             // Number of bids for this auction
         uint  minBidIncrease;                         // Min. amount new bid must be higher than previous one
@@ -104,7 +104,7 @@ contract AuctionOffering is Offering {
             require(msg.value >= offering.price);
         } else {
             require(msg.value >= offering.price.add(auctionOffering.minBidIncrease));
-            var previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder].add(offering.price);
+            uint previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder].add(offering.price);
             if (auctionOffering.winningBidder.send(previousWinnerRefund)) {
                 auctionOffering.pendingReturns[auctionOffering.winningBidder] = 0;
             } else {
@@ -120,7 +120,7 @@ contract AuctionOffering is Offering {
             auctionOffering.endTime = uint64(now.add(uint(auctionOffering.extensionDuration)));
         }
 
-        var extraEventData = new uint[](3);
+        uint[] extraEventData = new uint[](3);
         extraEventData[0] = uint(msg.sender);
         extraEventData[1] = offering.price;
         extraEventData[2] = now;
@@ -135,7 +135,7 @@ contract AuctionOffering is Offering {
     */
     function withdraw(address _address) public {
         require(msg.sender == _address || isSenderEmergencyMultisig());
-        var pendingReturns = auctionOffering.pendingReturns[_address];
+        uint pendingReturns = auctionOffering.pendingReturns[_address];
         if (pendingReturns > 0) {
             auctionOffering.pendingReturns[_address] = 0;
             _address.transfer(pendingReturns);

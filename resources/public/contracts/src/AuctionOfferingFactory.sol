@@ -37,10 +37,10 @@ contract AuctionOfferingFactory is OfferingFactory {
         uint64 extensionDuration,
         uint minBidIncrease
     ) {
-        var forwarder = address(new Forwarder());
-        var node = namehash(name);
-        var labelHash = getLabelHash(name);
-        var version = 100001;                   // versioning for Auction offerings starts at number 100000
+        address forwarder = address(new Forwarder());
+        bytes32 node = namehash(name);
+        bytes32 labelHash = getLabelHash(name);
+        uint128 version = 100001;                   // versioning for Auction offerings starts at number 100000
 
         AuctionOffering(forwarder).construct(
             node,
