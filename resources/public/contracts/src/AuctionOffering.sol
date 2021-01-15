@@ -19,8 +19,8 @@ contract AuctionOffering is Offering {
         uint64 extensionDuration;                     // If new highest bid arrives less than extensionDuration before
                                                       // auction end time, the auction will be extended by another extensionDuration
         uint128 bidCount;                             // Number of bids for this auction
-        uint  minBidIncrease;                         // Min. amount new bid must be higher than previous one
-        address winningBidder;                        // Address of currently winning bidder
+        uint minBidIncrease;                          // Min. amount new bid must be higher than previous one
+        address payable winningBidder;                // Address of currently winning bidder
         mapping(address => uint) pendingReturns;      // Map of pending returns for overbid bidders
     }
 
@@ -66,7 +66,7 @@ contract AuctionOffering is Offering {
         bytes32 _node,
         string _name,
         bytes32 _labelHash,
-        address _originalOwner,
+        address payable _originalOwner,
         uint128 _version,
         uint _price,
         uint64 _endTime,
@@ -100,7 +100,7 @@ contract AuctionOffering is Offering {
         onlyWhenContractIsNodeOwner
         onlyBeforeEndTime
     {
-        if (auctionOffering.winningBidder == 0x0) {
+        if (auctionOffering.winningBidder == address(0x0)) {
             require(msg.value >= offering.price);
         } else {
             require(msg.value >= offering.price.add(auctionOffering.minBidIncrease));
@@ -133,7 +133,7 @@ contract AuctionOffering is Offering {
     * In each case funds are sent to original bidder only
     * @param _address address The address of withdrawer
     */
-    function withdraw(address _address) public {
+    function withdraw(address payable _address) {
         require(msg.sender == _address || isSenderEmergencyMultisig());
         uint pendingReturns = auctionOffering.pendingReturns[_address];
         if (pendingReturns > 0) {
@@ -227,7 +227,7 @@ contract AuctionOffering is Offering {
     * @return bool true if auction has no bids
     */
     function hasNoBids() constant returns(bool) {
-        return auctionOffering.winningBidder == 0x0;
+        return auctionOffering.winningBidder == address(0x0);
     }
 
     /**
