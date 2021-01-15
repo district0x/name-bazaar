@@ -138,7 +138,7 @@ contract Offering {
         public
         onlyWithoutNewOwner
     {
-        var isEmergency = isSenderEmergencyMultisig();
+        bool isEmergency = isSenderEmergencyMultisig();
         require(isEmergency || isSenderOriginalOwner());
 
         if (isContractNodeOwner()) {

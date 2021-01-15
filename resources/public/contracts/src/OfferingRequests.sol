@@ -32,12 +32,12 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
      */
     function addRequest(string name) {
         require(bytes(name).length > 0);
-        var node = namehash(name);
+        bytes32 node = namehash(name);
         if (bytes(requests[node].name).length == 0) {
             onRoundChanged(node, 0);
         }
         requests[node].name = name;
-        var i = requests[node].latestRound;
+        uint i = requests[node].latestRound;
         if (!requests[node].hasRequested[i][msg.sender]) {
             requests[node].hasRequested[i][msg.sender] = true;
             requests[node].requesters[i].push(msg.sender);
@@ -65,19 +65,19 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     * @return bytes32 ENS node hash, aka node
     */
     function namehash(string name) internal returns(bytes32) {
-        var nameSlice = name.toSlice();
+        strings.slice nameSlice = name.toSlice();
 
         if (nameSlice.len() == 0) {
             return bytes32(0);
         }
 
-        var label = nameSlice.split(".".toSlice()).toString();
+        string label = nameSlice.split(".".toSlice()).toString();
         return sha3(namehash(nameSlice.toString()), sha3(label));
     }
 
     function getRequest(bytes32 node) constant public returns(string, uint, uint) {
-        var request = requests[node];
-        var latestRound = request.latestRound;
+        OfferingRequests.Request request = requests[node];
+        uint latestRound = request.latestRound;
         return (request.name, request.requesters[latestRound].length, latestRound);
     }
 
@@ -87,7 +87,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
 
     function hasRequested(bytes32 node, address[] addresses) constant public returns(bool[] _hasRequested) {
         _hasRequested = new bool[](addresses.length);
-        var latestRound = requests[node].latestRound;
+        uint latestRound = requests[node].latestRound;
 
         for(uint i = 0; i < addresses.length; i++) {
             _hasRequested[i] = requests[node].hasRequested[latestRound][addresses[i]];

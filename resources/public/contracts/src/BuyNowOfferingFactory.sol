@@ -31,10 +31,10 @@ contract BuyNowOfferingFactory is OfferingFactory {
         string name,
         uint price
     ) {
-        var node = namehash(name);
-        var labelHash = getLabelHash(name);
-        var forwarder = address(new Forwarder());
-        var version = 2; // versioning for BuyNow offerings starts at number 1
+        bytes32 node = namehash(name);
+        bytes32 labelHash = getLabelHash(name);
+        address forwarder = address(new Forwarder());
+        uint version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
             node,
