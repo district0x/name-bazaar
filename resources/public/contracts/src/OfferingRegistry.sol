@@ -28,7 +28,7 @@ contract OfferingRegistry is UsedByFactories {
         _;
     }
 
-    constructor(address _emergencyMultisig) {
+    constructor(address _emergencyMultisig) public {
         emergencyMultisig = _emergencyMultisig;
     }
 
@@ -41,7 +41,8 @@ contract OfferingRegistry is UsedByFactories {
      * @param version uint Version of offering contract
      */
     function addOffering(address offering, bytes32 node, address owner, uint version)
-    onlyFactory
+        public
+        onlyFactory
     {
         isOffering[offering] = true;
         emit onOfferingAdded(offering, node, owner, version);
@@ -55,7 +56,7 @@ contract OfferingRegistry is UsedByFactories {
      * @param eventType base32 Short string identifying offering change
      * @param extraData uint[] Arbitrary data associated with event
      */
-    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] memory extraData) {
+    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] memory extraData) public {
         require(isOffering[msg.sender]);
         emit onOfferingChanged(msg.sender, version, eventType, extraData);
     }
@@ -64,7 +65,7 @@ contract OfferingRegistry is UsedByFactories {
      * @dev Function to activate emergency pause. This should stop buying activity on all offerings
      * Only Emergency Multisig wallet should be able to call this
      */
-    function emergencyPause() onlyEmergencyMultisig {
+    function emergencyPause() public onlyEmergencyMultisig {
         isEmergencyPaused = true;
     }
 
@@ -72,7 +73,7 @@ contract OfferingRegistry is UsedByFactories {
      * @dev Function to deactivate emergency pause. This should allow buying activity on all offerings again
      * Only Emergency Multisig wallet should be able to call this
      */
-    function emergencyRelease() onlyEmergencyMultisig {
+    function emergencyRelease() public onlyEmergencyMultisig {
         isEmergencyPaused = false;
     }
 }

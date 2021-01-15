@@ -25,7 +25,7 @@ contract OfferingFactory {
         ENSRegistry _ens,
         OfferingRegistry _offeringRegistry,
         OfferingRequestsAbstract _offeringRequests
-    ) {
+    ) public {
         ens = _ens;
         offeringRegistry = _offeringRegistry;
         offeringRequests = _offeringRequests;

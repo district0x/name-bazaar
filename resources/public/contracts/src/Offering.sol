@@ -204,7 +204,7 @@ contract Offering {
     * For top level names, offering contract must be also owner of registrar deed
     * @return bool true if contract is ENS node owner
     */
-    function isContractNodeOwner() constant returns(bool) {
+    function isContractNodeOwner() public view returns(bool) {
         if (isNodeTLDOfRegistrar()) {
             address deed;
             (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(offering.labelHash);
@@ -219,7 +219,7 @@ contract Offering {
     * @dev Returns whether offering node is top level name of registrar or subname
     * @return bool true if offering node is top level name of registrar
     */
-    function isNodeTLDOfRegistrar() constant returns (bool) {
+    function isNodeTLDOfRegistrar() public view returns (bool) {
         return offering.node == sha3(rootNode, offering.labelHash);
     }
 
@@ -227,7 +227,7 @@ contract Offering {
     * @dev Returns whether msg.sender is original owner of ENS name, offering creator
     * @return bool true if msg.sender is original owner
     */
-    function isSenderOriginalOwner() constant returns(bool) {
+    function isSenderOriginalOwner() public view returns(bool) {
         return msg.sender == offering.originalOwner;
     }
 
@@ -235,7 +235,7 @@ contract Offering {
     * @dev Returns whether msg.sender is emergency multisig address
     * @return bool true if msg.sender is emergency multisig
     */
-    function isSenderEmergencyMultisig() constant returns(bool) {
+    function isSenderEmergencyMultisig() public view returns(bool) {
         return msg.sender == emergencyMultisig;
     }
 
@@ -243,7 +243,7 @@ contract Offering {
     * @dev Returns whether offerring was cancelled in emergency, by emergency multisig
     * @return bool true if offering was cancelled in emergency
     */
-    function wasEmergencyCancelled() constant returns(bool) {
+    function wasEmergencyCancelled() public view returns(bool) {
         return offering.newOwner == address(0xdead);
     }
 }

@@ -17,7 +17,7 @@ contract NameBazaarRegistrar is HashRegistrar {
      *
      * @param _hash The sha3 hash of the label to register.
      */
-    function register(bytes32 _hash) payable {
+    function register(bytes32 _hash) public payable {
         Deed bid = (new DeedImplementation).value(msg.value)(msg.sender);
         sealedBids[msg.sender][bytes32(0)] = bid;
         Entry storage newAuction = _entries[_hash];
