@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.5.0;
 
 /**
  * @title BuyNowOfferingFactory
@@ -35,7 +35,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
         address payable forwarder = address(new Forwarder());
-        uint version = 2; // versioning for BuyNow offerings starts at number 1
+        uint128 version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
             node,

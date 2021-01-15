@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.5.0;
 
 /**
  * @title OfferingRequests
@@ -66,7 +66,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     * @return bytes32 ENS node hash, aka node
     */
     function namehash(string memory name) internal returns(bytes32) {
-        strings.slice nameSlice = name.toSlice();
+        strings.slice memory nameSlice = name.toSlice();
 
         if (nameSlice.len() == 0) {
             return bytes32(0);
@@ -76,8 +76,8 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         return keccak256(abi.encodePacked(namehash(nameSlice.toString()), keccak256(label)));
     }
 
-    function getRequest(bytes32 node) public view returns(string, uint, uint) {
-        OfferingRequests.Request storage request = requests[node];
+    function getRequest(bytes32 node) public view returns(string memory, uint, uint) {
+        OfferingRequests.Requests storage request = requests[node];
         uint latestRound = request.latestRound;
         return (request.name, request.requesters[latestRound].length, latestRound);
     }
