@@ -4,7 +4,7 @@ import "@ensdomains/ens/contracts/ENSRegistry.sol";
 import "@ensdomains/ens/contracts/HashRegistrar.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
-import "strings-lib-repo/strings.sol";
+import "strings.sol";
 
 /**
  * @title OfferingFactory
