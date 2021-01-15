@@ -10,7 +10,7 @@ contract DelegateProxy {
     * @param _dst Destination address to perform the delegatecall
     * @param _calldata Calldata for the delegatecall
     */
-    function delegatedFwd(address _dst, bytes _calldata) internal {
+    function delegatedFwd(address _dst, bytes memory _calldata) internal {
         assembly {
         switch extcodesize(_dst) case 0 { revert(0, 0) }
         let len := 4096

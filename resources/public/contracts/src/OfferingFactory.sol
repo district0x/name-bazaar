@@ -58,14 +58,14 @@ contract OfferingFactory {
     * @param name string Plaintext ENS name
     * @return bytes32 ENS node hash, aka node
     */
-    function namehash(string name) internal returns(bytes32) {
-        strings.slice nameSlice = name.toSlice();
+    function namehash(string memory name) internal returns(bytes32) {
+        strings.slice memory nameSlice = name.toSlice();
 
         if (nameSlice.len() == 0) {
             return bytes32(0);
         }
 
-        string label = nameSlice.split(".".toSlice()).toString();
+        string memory label = nameSlice.split(".".toSlice()).toString();
         return sha3(namehash(nameSlice.toString()), sha3(label));
     }
 
@@ -74,7 +74,7 @@ contract OfferingFactory {
     * @param name string Plaintext ENS name
     * @return bytes32 ENS labelHash, hashed label of the name
     */
-    function getLabelHash(string name) internal returns(bytes32) {
+    function getLabelHash(string memory name) internal returns(bytes32) {
         return sha3(name.toSlice().split(".".toSlice()).toString());
     }
 }

@@ -7,6 +7,6 @@ pragma solidity ^0.4.18;
  */
 
 contract OfferingRequestsAbstract {
-    function addRequest(string name);
+    function addRequest(string memory name);
     function clearRequests(bytes32 node);
 }

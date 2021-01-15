@@ -30,7 +30,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
      * @dev Adds new request for a ENS name to be offered
      * @param name string Plaintext ENS name
      */
-    function addRequest(string name) {
+    function addRequest(string memory name) {
         require(bytes(name).length > 0);
         bytes32 node = namehash(name);
         if (bytes(requests[node].name).length == 0) {
@@ -64,7 +64,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     * @param name string Plaintext ENS name
     * @return bytes32 ENS node hash, aka node
     */
-    function namehash(string name) internal returns(bytes32) {
+    function namehash(string memory name) internal returns(bytes32) {
         strings.slice nameSlice = name.toSlice();
 
         if (nameSlice.len() == 0) {
@@ -76,16 +76,16 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     }
 
     function getRequest(bytes32 node) constant public returns(string, uint, uint) {
-        OfferingRequests.Request request = requests[node];
+        OfferingRequests.Request storage request = requests[node];
         uint latestRound = request.latestRound;
         return (request.name, request.requesters[latestRound].length, latestRound);
     }
 
-    function getRequesters(bytes32 node, uint round) constant public returns(address[]) {
+    function getRequesters(bytes32 node, uint round) constant public returns(address[] storage) {
         return requests[node].requesters[round];
     }
 
-    function hasRequested(bytes32 node, address[] addresses) constant public returns(bool[] _hasRequested) {
+    function hasRequested(bytes32 node, address[] memory addresses) constant public returns(bool[] memory _hasRequested) {
         _hasRequested = new bool[](addresses.length);
         uint latestRound = requests[node].latestRound;
 

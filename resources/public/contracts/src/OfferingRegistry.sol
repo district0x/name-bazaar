@@ -55,7 +55,7 @@ contract OfferingRegistry is UsedByFactories {
      * @param eventType base32 Short string identifying offering change
      * @param extraData uint[] Arbitrary data associated with event
      */
-    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] extraData) {
+    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] memory extraData) {
         require(isOffering[msg.sender]);
         emit onOfferingChanged(msg.sender, version, eventType, extraData);
     }

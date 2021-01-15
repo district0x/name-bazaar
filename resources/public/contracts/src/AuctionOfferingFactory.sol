@@ -31,7 +31,7 @@ contract AuctionOfferingFactory is OfferingFactory {
     */
     function createOffering(
         // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
-        string name,
+        string memory name,
         uint startPrice,
         uint64 endTime,
         uint64 extensionDuration,
