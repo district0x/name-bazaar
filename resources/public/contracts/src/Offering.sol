@@ -17,7 +17,7 @@ contract Offering {
         // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
         string name;                        // full ENS name
         bytes32 labelHash;                  // hash of ENS label
-        address originalOwner;              // owner of ENS name, creator of offering
+        address payable originalOwner;      // owner of ENS name, creator of offering
         address newOwner;                   // Address of a new owner of ENS name, buyer
         uint price;                         // Price of the offering, or the highest bid in auction
         uint128 version;                    // version of offering contract
@@ -59,7 +59,7 @@ contract Offering {
      * @dev Modifier to make a function callable only is called by Namebazaar's Emergency Multisig wallet
      */
     modifier onlyWithoutNewOwner() {
-        require(offering.newOwner == 0x0);
+        require(offering.newOwner == address(0x0));
         _;
     }
 
@@ -96,7 +96,7 @@ contract Offering {
         bytes32 _node,
         string _name,
         bytes32 _labelHash,
-        address _originalOwner,
+        address payable _originalOwner,
         uint128 _version,
         uint _price
     )
@@ -125,7 +125,7 @@ contract Offering {
     {
         // New owner is not really this address, but it's the way to recogize if offering
         // was unregistered without having separate var for it, which is costly
-        offering.newOwner = 0xdeaddead;
+        offering.newOwner = address(0xdeaddead);
         fireOnChanged("unregister");
     }
 
@@ -147,7 +147,7 @@ contract Offering {
         if (isEmergency) {
             // New owner is not really this address, but it's the way to recogize if
             // was disabled in emergency without having separate var for it, which is costly
-            offering.newOwner = 0xdead;
+            offering.newOwner = address(0xdead);
         }
         fireOnChanged("reclaimOwnership");
     }
@@ -157,7 +157,7 @@ contract Offering {
     * Cannot be run if ownership was already transferred to new owner
     * @param _newOwner address New owner of ENS name
     */
-    function transferOwnership(address _newOwner)
+    function transferOwnership(address payable _newOwner)
         internal
         onlyWhenNotEmergencyPaused
         onlyWithoutNewOwner
@@ -173,7 +173,7 @@ contract Offering {
     * Top level names should be transferred via registrar, so deed is transferred too
     * @param _newOwner address New owner of ENS name
     */
-    function doTransferOwnership(address _newOwner)
+    function doTransferOwnership(address payable _newOwner)
         private
     {
         if (isNodeTLDOfRegistrar()) {
@@ -244,6 +244,6 @@ contract Offering {
     * @return bool true if offering was cancelled in emergency
     */
     function wasEmergencyCancelled() constant returns(bool) {
-        return offering.newOwner == 0xdead;
+        return offering.newOwner == address(0xdead);
     }
 }
