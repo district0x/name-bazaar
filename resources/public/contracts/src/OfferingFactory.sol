@@ -21,7 +21,7 @@ contract OfferingFactory {
     // Hardcoded namehash of "eth"
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
-    function OfferingFactory (
+    constructor(
         ENSRegistry _ens,
         OfferingRegistry _offeringRegistry,
         OfferingRequestsAbstract _offeringRequests

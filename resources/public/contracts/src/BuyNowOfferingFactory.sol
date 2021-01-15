@@ -12,7 +12,7 @@ import "Forwarder.sol";
 
 contract BuyNowOfferingFactory is OfferingFactory {
 
-    function BuyNowOfferingFactory(
+    constructor(
         ENSRegistry ens,
         OfferingRegistry offeringRegistry,
         OfferingRequestsAbstract offeringRequests

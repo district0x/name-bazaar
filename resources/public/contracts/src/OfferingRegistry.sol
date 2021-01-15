@@ -28,7 +28,7 @@ contract OfferingRegistry is UsedByFactories {
         _;
     }
 
-    function OfferingRegistry(address _emergencyMultisig) {
+    constructor(address _emergencyMultisig) {
         emergencyMultisig = _emergencyMultisig;
     }
 
