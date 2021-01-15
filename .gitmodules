@@ -1,3 +1,0 @@
-[submodule "resources/public/contracts/src/strings-lib-repo"]
-	path = resources/public/contracts/src/strings-lib-repo
-	url = git@github.com:Arachnid/solidity-stringutils.git
