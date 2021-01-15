@@ -220,7 +220,7 @@ contract Offering {
     * @return bool true if offering node is top level name of registrar
     */
     function isNodeTLDOfRegistrar() public view returns (bool) {
-        return offering.node == sha3(rootNode, offering.labelHash);
+        return offering.node == keccak256(abi.encodePacked(rootNode, offering.labelHash));
     }
 
     /**

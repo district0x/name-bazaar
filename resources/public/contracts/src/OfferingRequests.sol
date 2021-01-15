@@ -72,8 +72,8 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
             return bytes32(0);
         }
 
-        string label = nameSlice.split(".".toSlice()).toString();
-        return sha3(namehash(nameSlice.toString()), sha3(label));
+        bytes memory label = abi.encodePacked(nameSlice.split(".".toSlice()).toString());
+        return keccak256(abi.encodePacked(namehash(nameSlice.toString()), keccak256(label)));
     }
 
     function getRequest(bytes32 node) public view returns(string, uint, uint) {
