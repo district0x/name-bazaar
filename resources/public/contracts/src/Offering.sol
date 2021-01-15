@@ -94,7 +94,7 @@ contract Offering {
      */
     function construct(
         bytes32 _node,
-        string _name,
+        string memory _name,
         bytes32 _labelHash,
         address payable _originalOwner,
         uint128 _version,
@@ -189,7 +189,7 @@ contract Offering {
         offering.price = _price;
     }
 
-    function fireOnChanged(bytes32 eventType, uint[] extraData)
+    function fireOnChanged(bytes32 eventType, uint[] memory extraData)
         internal
     {
         offeringRegistry.fireOnOfferingChanged(offering.version, eventType, extraData);

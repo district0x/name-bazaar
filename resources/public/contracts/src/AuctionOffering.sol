@@ -64,7 +64,7 @@ contract AuctionOffering is Offering {
      */
     function construct(
         bytes32 _node,
-        string _name,
+        string memory _name,
         bytes32 _labelHash,
         address payable _originalOwner,
         uint128 _version,
@@ -120,7 +120,7 @@ contract AuctionOffering is Offering {
             auctionOffering.endTime = uint64(now.add(uint(auctionOffering.extensionDuration)));
         }
 
-        uint[] extraEventData = new uint[](3);
+        uint[] memory extraEventData = new uint[](3);
         extraEventData[0] = uint(msg.sender);
         extraEventData[1] = offering.price;
         extraEventData[2] = now;

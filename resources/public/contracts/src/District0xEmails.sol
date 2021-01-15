@@ -11,11 +11,11 @@ contract District0xEmails {
 
     mapping(address => string) public emails;
 
-    function setEmail(string _encryptedEmail) {
+    function setEmail(string memory _encryptedEmail) {
         emails[msg.sender] = _encryptedEmail;
     }
 
-    function getEmail(address _address) constant public returns(string) {
+    function getEmail(address _address) constant public returns(string memory) {
         return emails[_address];
     }
 }

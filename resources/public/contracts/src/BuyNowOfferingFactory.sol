@@ -28,7 +28,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
     */
     function createOffering(
         // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
-        string name,
+        string memory name,
         uint price
     ) {
         bytes32 node = namehash(name);

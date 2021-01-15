@@ -20,7 +20,7 @@ contract NameBazaarRegistrar is HashRegistrar {
     function register(bytes32 _hash) payable {
         Deed bid = (new DeedImplementation).value(msg.value)(msg.sender);
         sealedBids[msg.sender][bytes32(0)] = bid;
-        Entry newAuction = _entries[_hash];
+        Entry storage newAuction = _entries[_hash];
         newAuction.registrationDate = now - 6 days;
         newAuction.value = msg.value;
         newAuction.highestBid = msg.value;
