@@ -11,11 +11,11 @@ contract District0xEmails {
 
     mapping(address => string) public emails;
 
-    function setEmail(string memory _encryptedEmail) public {
+    function setEmail(string calldata _encryptedEmail) external {
         emails[msg.sender] = _encryptedEmail;
     }
 
-    function getEmail(address _address) public view returns(string memory) {
+    function getEmail(address _address) external view returns(string memory) {
         return emails[_address];
     }
 }

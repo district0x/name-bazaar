@@ -30,7 +30,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
      * @dev Adds new request for a ENS name to be offered
      * @param name string Plaintext ENS name
      */
-    function addRequest(string memory name) public {
+    function addRequest(string calldata name) external {
         require(bytes(name).length > 0);
         bytes32 node = namehash(name);
         if (bytes(requests[node].name).length == 0) {
@@ -51,7 +51,7 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
      * @param node bytes32 ENS node
      */
     function clearRequests(bytes32 node)
-        public
+        external
         onlyFactory
     {
         if (bytes(requests[node].name).length > 0) {

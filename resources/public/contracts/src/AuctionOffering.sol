@@ -94,8 +94,8 @@ contract AuctionOffering is Offering {
     * Not executable when there's emergency pause
     */
     function bid()
-        payable
         public
+        payable
         onlyWhenNotEmergencyPaused
         onlyWhenContractIsNodeOwner
         onlyBeforeEndTime
@@ -133,7 +133,7 @@ contract AuctionOffering is Offering {
     * In each case funds are sent to original bidder only
     * @param _address address The address of withdrawer
     */
-    function withdraw(address payable _address) public {
+    function withdraw(address payable _address) external {
         require(msg.sender == _address || isSenderEmergencyMultisig());
         uint pendingReturns = auctionOffering.pendingReturns[_address];
         if (pendingReturns > 0) {
@@ -150,7 +150,7 @@ contract AuctionOffering is Offering {
     * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails.
     */
     function finalize()
-        public
+        external
         onlyAfterEndTime
         onlyWithBids
     {
