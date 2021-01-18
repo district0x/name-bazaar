@@ -21,6 +21,14 @@ in case you already downloaded the repo, or forgot to clone the submodules, use
 git submodule update --init --recursive
 ```
 
+By default, working with submodules is tedious, and the defaults are not great
+either. Git doesn't checkout the submodules to the correct version (e.g. on pull,
+checkout) by default. You can override the git settings by:
+
+```bash
+git config --global submodule.recurse true
+```
+
 In a terminal, start a ganache blockchain
 
 ```bash
