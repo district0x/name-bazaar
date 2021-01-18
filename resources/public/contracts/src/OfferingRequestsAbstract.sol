@@ -7,6 +7,6 @@ pragma solidity ^0.5.0;
  */
 
 contract OfferingRequestsAbstract {
-    function addRequest(string memory name) public;
-    function clearRequests(bytes32 node) public;
+    function addRequest(string calldata name) external;
+    function clearRequests(bytes32 node) external;
 }

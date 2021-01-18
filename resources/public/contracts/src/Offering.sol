@@ -118,7 +118,7 @@ contract Offering {
      * Cannot be run if contract has ownership or it was already transferred to new owner
      */
     function unregister()
-        public
+        external
         onlyOriginalOwner
         onlyWithoutNewOwner
         onlyWhenContractIsNotNodeOwner

@@ -32,12 +32,12 @@ contract AuctionOfferingFactory is OfferingFactory {
     */
     function createOffering(
         // WARNING: The contract DOES NOT perform ENS name normalisation, which is up to responsibility of each offchain UI!
-        string memory name,
+        string calldata name,
         uint startPrice,
         uint64 endTime,
         uint64 extensionDuration,
         uint minBidIncrease
-    ) public {
+    ) external {
         address payable forwarder = address(new Forwarder());
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);

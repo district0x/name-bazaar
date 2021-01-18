@@ -65,7 +65,7 @@ contract OfferingRegistry is UsedByFactories {
      * @dev Function to activate emergency pause. This should stop buying activity on all offerings
      * Only Emergency Multisig wallet should be able to call this
      */
-    function emergencyPause() public onlyEmergencyMultisig {
+    function emergencyPause() external onlyEmergencyMultisig {
         isEmergencyPaused = true;
     }
 
@@ -73,7 +73,7 @@ contract OfferingRegistry is UsedByFactories {
      * @dev Function to deactivate emergency pause. This should allow buying activity on all offerings again
      * Only Emergency Multisig wallet should be able to call this
      */
-    function emergencyRelease() public onlyEmergencyMultisig {
+    function emergencyRelease() external onlyEmergencyMultisig {
         isEmergencyPaused = false;
     }
 }
