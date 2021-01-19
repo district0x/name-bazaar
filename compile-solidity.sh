@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+ENS=$(readlink -f ./node_modules/@ensdomains)
+
 cd resources/public/contracts/src
 
 function solc-err-only {
-    solc "$@" 2>&1 | grep -A 2 -i "Error"
+    solc @ensdomains=$ENS "$@" 2>&1 | grep -A 2 -i "Error"
 }
 
 # TODO use script for this
@@ -12,9 +14,9 @@ solc-err-only --overwrite --optimize --bin --abi BuyNowOfferingFactory.sol -o ..
 solc-err-only --overwrite --optimize --bin --abi AuctionOfferingFactory.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/ENS.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/PublicResolver.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi ens-repo/contracts/ReverseRegistrar.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ENS.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/PublicResolver.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ReverseRegistrar.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi NameBazaarRegistrar.sol -o ../build/
 

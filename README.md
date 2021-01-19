@@ -10,25 +10,6 @@ Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tr
 
 ## Starting a dev server with an Ethereum Testnet
 
-First, clone the project with submodules _([ens](https://github.com/ensdomains/ens))_
-
-```bash
-git clone --recurse-submodules https://github.com/district0x/name-bazaar.git
-```
-
-in case you already downloaded the repo, or forgot to clone the submodules, use
-```bash
-git submodule update --init --recursive
-```
-
-By default, working with submodules is tedious, and the defaults are not great
-either. Git doesn't checkout the submodules to the correct version (e.g. on pull,
-checkout) by default. You can override the git settings by:
-
-```bash
-git config --global submodule.recurse true
-```
-
 In a terminal, start a ganache blockchain
 
 ```bash
@@ -115,37 +96,6 @@ or
 `./semantic.sh watch`
 
 Depending upon how you'd like to work.
-
-## Updating ens contracts
-
-We use ENS as a submodule to track the dependency on it's contracts. If you are in
-`contracts/ens-repo` directory, you can use
-
-```bash
-git checkout master
-git pull origin master
-git checkout -
-git log --pretty=oneline --reverse --ancestry-path HEAD..master
-```
-
-to first update the ens repository and then list the commits in ens `master` branch, which are
-not in our version of `ens-repo`. _(You can use this list of commits when updating to the latest
-version of ens contracts)_
-
-Exemplary workflow may look like this:
-1) Running the commands above gives me the commits in ENS I want to update.
-   Let's say: `6141359670af83974340e6492e6830125783ccaa`
-
-2) You can then use `git checkout 6141359670af83974340e6492e6830125783ccaa`.
-   This will checkout the files of that commit.
-
-3) The namebazaar repository will report changes in this submodule when you
-   execute `git status` _(outside the ENS repo)_.
-
-4) These changes **should be** committed together with the update of
-   namebazaar code.
-
-For comprehensive guide on git submodules read: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 ## Start a development UI for client-side development only
 
