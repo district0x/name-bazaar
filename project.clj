@@ -26,13 +26,15 @@
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
 
-                 [district0x/bignumber "1.0.1"]
-                 [district0x/district-encryption "1.0.0"]
-                 [district0x/district-sendgrid "1.0.0"]
+                 [district0x/bignumber "1.0.3"]
+                 [district0x/district-encryption "1.0.1"]
+                 [district0x/district-sendgrid "1.0.1"]
                  [district0x/district-server-config "1.0.1"]
-                 [district0x/district-server-db "1.0.1"]
+                 [district0x/district-server-db "1.0.4"]
+                 ;; TODO(not important): Update to latest version.
+                 ;; Version 1.0.2 splits the package into two separate modules.
                  [district0x/district-server-endpoints "1.0.1"]
-                 [district0x/district-server-logging "1.0.4"]
+                 [district0x/district-server-logging "1.0.6"]
                  ;; Version 1.0.11, containing changes from the following PR
                  ;; https://github.com/district0x/district-server-smart-contracts/pull/9
                  ;; removes the :auto-mining? option in :smart-contracts, which is used
@@ -40,11 +42,12 @@
                  ;; function in favor of truffle migrations.
                  ;; TODO(not important): update to latest version
                  [district0x/district-server-smart-contracts "1.0.10"]
+                 ;; TODO: update to newer version. Updating to 1.1.0 breaks the tests
                  [district0x/district-server-web3 "1.0.1"]
-                 [district0x/district-server-web3-watcher "1.0.2"]
-                 [district0x/district-ui-logging "1.0.4"]
+                 [district0x/district-server-web3-watcher "1.0.3"]
+                 [district0x/district-ui-logging "1.1.0"]
                  [district0x/district-ui-mobile "1.0.0"]
-                 [district0x/error-handling "1.0.1-SNAPSHOT"]
+                 [district0x/error-handling "1.0.4"]
 
                  ;; d0xINFRA temporary here
                  [akiroz.re-frame/storage "0.1.2"]
