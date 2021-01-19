@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.17;
 
 /**
  * @dev This file is stripped version of Aragon's ForwarderFactory.sol (https://github.com/aragon/apm-contracts/blob/master/contracts/ForwarderFactory.sol)
