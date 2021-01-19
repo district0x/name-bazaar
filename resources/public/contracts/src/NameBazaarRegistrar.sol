@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./ens-repo/contracts/HashRegistrar.sol";
+import "@ensdomains/ens/contracts/HashRegistrar.sol";
 
 contract NameBazaarRegistrar is HashRegistrar {
     /**

@@ -73,7 +73,8 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@sentry/node" "4.2.1"]
+  :npm {:dependencies [["@ensdomains/ens" "0.1.2"]
+                       ["@sentry/node" "4.2.1"]
                        [chalk "2.3.0"]
                        [eth-ens-namehash "2.0.0"]
                        [semantic-ui "2.4.1"]
