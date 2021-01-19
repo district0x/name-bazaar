@@ -15,7 +15,7 @@ solc-err-only --overwrite --optimize --bin --abi AuctionOfferingFactory.sol -o .
 solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ENS.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/PublicResolver.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi $ENS/resolver/contracts/PublicResolver.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ReverseRegistrar.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi NameBazaarRegistrar.sol -o ../build/

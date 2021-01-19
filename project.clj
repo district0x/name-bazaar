@@ -73,7 +73,10 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@ensdomains/ens" "0.2.2"]
+  :npm {:dependencies [["@ensdomains/buffer" "0.0.10"]
+                       ["@ensdomains/dnssec-oracle" "0.1.2"]
+                       ["@ensdomains/ens" "0.4.5"]
+                       ["@ensdomains/resolver" "0.2.4"]
                        ["@sentry/node" "4.2.1"]
                        [chalk "2.3.0"]
                        [eth-ens-namehash "2.0.0"]
