@@ -33,7 +33,13 @@
                  [district0x/district-server-db "1.0.1"]
                  [district0x/district-server-endpoints "1.0.1"]
                  [district0x/district-server-logging "1.0.4"]
-                 [district0x/district-server-smart-contracts "1.0.1"]
+                 ;; Version 1.0.11, containing changes from the following PR
+                 ;; https://github.com/district0x/district-server-smart-contracts/pull/9
+                 ;; removes the :auto-mining? option in :smart-contracts, which is used
+                 ;; in dev mode and tests. Later version removes deploy-smart-contract!
+                 ;; function in favor of truffle migrations.
+                 ;; TODO(not important): update to latest version
+                 [district0x/district-server-smart-contracts "1.0.10"]
                  [district0x/district-server-web3 "1.0.1"]
                  [district0x/district-server-web3-watcher "1.0.2"]
                  [district0x/district-ui-logging "1.0.4"]

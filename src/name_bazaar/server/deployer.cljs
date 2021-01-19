@@ -9,7 +9,8 @@
     [district.server.web3 :refer [web3]]
     [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.ens :as ens]
-    [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]))
+    [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
+    [clojure.string :as string]))
 
 (declare deploy)
 (defstate ^{:on-reload :noop} deployer
@@ -19,10 +20,10 @@
 (def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
 
 
-(def emergency-multisig-placeholder "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed")
-(def offering-placeholder "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef")
-(def ens-placeholder "314159265dD8dbb310642f98f50C066173C1259b")
-(def offering-registry-placeholder "fEEDFEEDfeEDFEedFEEdFEEDFeEdfEEdFeEdFEEd")
+(def emergency-multisig-placeholder (string/lower-case "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed") )
+(def offering-placeholder (string/lower-case "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef") )
+(def ens-placeholder (string/lower-case "314159265dD8dbb310642f98f50C066173C1259b") )
+(def offering-registry-placeholder (string/lower-case "fEEDFEEDfeEDFEedFEEdFEEDFeEdfEEdFeEdFEEd") )
 
 
 (defn deploy-ens! [default-opts]
