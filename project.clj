@@ -3,8 +3,8 @@
   :url "https://github.com/district0x/name-bazaar"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[cljs-http "0.1.43"]
-                 [cljs-web3 "0.19.0-0-8"]
+  :dependencies [[cljs-http "0.1.46"]
+                 [cljs-web3 "0.19.0-0-11"]
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "16.4.1-0"]
@@ -68,7 +68,7 @@
                  [kibu/pushy "0.3.8"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 [madvas.re-frame/web3-fx "0.2.1"]]
+                 [madvas.re-frame/web3-fx "0.2.3"]]
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
