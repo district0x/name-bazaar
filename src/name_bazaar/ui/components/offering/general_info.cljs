@@ -37,7 +37,7 @@
 
 
 (defn registrar-entry-deed-value-line [{:keys [:name-bazaar-registrar-entry]}]
-  (let [{:keys [:name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry.deed/value]} registrar-entry]
+  (let [{:keys [:name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry.deed/value]} name-bazaar-registrar-entry]
     [:div
      "Locked Value: " [etherscan-link
                        {:address address}

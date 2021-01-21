@@ -153,9 +153,9 @@
 
 
 (defn event-callback [f]
-  (fn [error res]
-    (if error
-      (error "Emailer got error from blockchain event" {:error error} ::event-callback)
+  (fn [err res]
+    (if err
+      (error "Emailer got error from blockchain event" {:error err} ::event-callback)
       (f (:args res)))))
 
 
