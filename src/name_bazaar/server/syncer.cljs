@@ -34,6 +34,8 @@
 
 
 (defn get-offering [offering-address]
+  ;; TODO: Why is this nil?
+  (assert (not= offering-address nil) "Offering address shouldn't be nil")
   (let [offering (offering/get-offering offering-address)
         auction-offering (when (:offering/auction? offering)
                            (auction-offering/get-auction-offering offering-address))

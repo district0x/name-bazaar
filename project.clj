@@ -41,7 +41,13 @@
                  ;; in dev mode and tests. Later version removes deploy-smart-contract!
                  ;; function in favor of truffle migrations.
                  ;; TODO(not important): update to latest version
-                 [district0x/district-server-smart-contracts "1.0.10"]
+                 ;;
+                 ;; Versions up to 1.0.8 do not trigger errors in BE, but starting from
+                 ;; 1.0.9 function `get-offering` is being called with `nil` and there is
+                 ;; an web3 error + db error. However, until 1.0.9 it seems that contract
+                 ;; callbacks do not work at all. So there is a bug either way.
+                 ;; TODO: update to version 1.0.9
+                 [district0x/district-server-smart-contracts "1.0.8"]
                  ;; TODO: update to newer version. Updating to 1.1.0 breaks the tests
                  [district0x/district-server-web3 "1.0.1"]
                  [district0x/district-server-web3-watcher "1.0.3"]
