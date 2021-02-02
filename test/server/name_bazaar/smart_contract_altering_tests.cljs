@@ -16,7 +16,6 @@
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
-    [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
@@ -69,7 +68,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 
@@ -77,15 +76,15 @@
             (is (= offering (ens/owner {:ens.record/node (namehash
                                                            "abc.eth")}))))
 
-          (testing "Ensuring offering gets the deed"
-            (is (= offering (registrar/entry-deed-owner {:ens.record/label "abc"}))))
-          (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
+          (testing "Ensuring offering gets the registration"
+            (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))
+          (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also registration ownership)"
             (is (buy-now-offering/reclaim-ownership! offering {:from addr1})))
 
           (testing "The name ownership must be transferred back to owner"
             (is (= addr1 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-          (testing "Ensuring the new owner gets back his deed"
-            (is (= addr1 (registrar/entry-deed-owner {:ens.record/label "abc"})))))))))
+          (testing "Ensuring the new owner gets back his registration"
+            (is (= addr1 (registrar/registration-owner {:ens.record/label "abc"})))))))))
 
 
 (deftest offering-reclaiming-buy-now-subdomain
@@ -114,7 +113,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (ens/set-owner! {:ens.record/node (namehash "theirsub.tld.eth")
                                  :ens.record/owner offering}
                                 {:from addr2})))
@@ -156,22 +155,22 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
           (when offering
-            (testing "Transferrnig ownership to the offering"
+            (testing "Transferring ownership to the offering"
               (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                        {:from addr1})))
 
             (testing "The name ownership must be transferred to the offering"
               (is (= offering (ens/owner {:ens.record/node (namehash "abc.eth")}))))
 
-            (testing "Ensuring offering gets the deed"
-              (is (= offering (registrar/entry-deed-owner {:ens.record/label "abc"}))))
-            (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
+            (testing "Ensuring offering gets the registration"
+              (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))
+            (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also registration ownership)"
               (is (buy-now-offering/reclaim-ownership! offering {:from addr1})))
 
             (testing "The name ownership must be transferred back to owner"
               (is (= addr1 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-            (testing "Ensuring the new owner gets back his deed"
-              (is (= addr1 (registrar/entry-deed-owner {:ens.record/label "abc"}))))))))))
+            (testing "Ensuring the new owner gets back his registration"
+              (is (= addr1 (registrar/registration-owner {:ens.record/label "abc"}))))))))))
 
 
 (deftest offering-reclaiming-auction-subdomain
@@ -207,7 +206,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
           (when offering
-            (testing "Transferrnig ownership to the offering"
+            (testing "Transferring ownership to the offering"
               (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
                                            :ens.record/node "tld.eth"
                                            :ens.record/owner offering}
@@ -247,15 +246,15 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 
           (testing "The name ownership must be transferred to the offering"
             (is (= offering (ens/owner {:ens.record/node (namehash "abc.eth")}))))
 
-          (testing "Ensuring offering gets the deed"
-            (is (= offering (registrar/entry-deed-owner {:ens.record/label "abc"}))))
+          (testing "Ensuring offering gets the registration"
+            (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))
 
           (testing "Can place a proper bid"
             (is (auction-offering/bid! {:offering/address offering}
@@ -263,13 +262,13 @@
                                         :from addr4})))
 
           (let [balance-of-4 (web3-eth/get-balance @web3 addr4)]
-            (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also deed ownership)"
+            (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also registration ownership)"
               (is (buy-now-offering/reclaim-ownership! offering {:from addr0})))
 
             (testing "The name ownership must be transferred back to owner"
               (is (= addr1 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-            (testing "Ensuring the new owner gets back his deed"
-              (is (= addr1 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
+            (testing "Ensuring the new owner gets back his registration"
+              (is (= addr1 (registrar/registration-owner {:ens.record/label "abc"}))))
 
             (testing "User who was overbid, can successfully withdraw funds from auction offering."
               (is (auction-offering/withdraw! {:offering offering
@@ -299,7 +298,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 
@@ -338,7 +337,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 

@@ -16,7 +16,6 @@
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
-    [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
@@ -78,7 +77,7 @@
           (is (thrown? :default (auction-offering/bid! {:offering/address offering}
                                                        {:value (web3/to-wei 0.1 :ether)
                                                         :from addr1}))))
-        (testing "Transferrnig ownership to the offer"
+        (testing "Transferring ownership to the offer"
           (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                    {:from addr0})))
         (testing "Can place a proper bid"
@@ -136,7 +135,7 @@
                                                          {:value (web3/to-wei 0.1 :ether)
                                                           :from addr1}))))
 
-          (testing "Transferrnig ownership to the offer"
+          (testing "Transferring ownership to the offer"
             (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
                                          :ens.record/node "tld.eth"
                                          :ens.record/owner offering}
@@ -207,7 +206,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offer"
+          (testing "Transferring ownership to the offer"
             (is (ens/set-subnode-owner! {:ens.record/label "theirsub"
                                          :ens.record/node "tld.eth"
                                          :ens.record/owner offering}
@@ -274,7 +273,7 @@
           (testing "on-offering event should fire"
             (is (not (nil? offering))))
 
-          (testing "Transferrnig ownership to the offer"
+          (testing "Transferring ownership to the offer"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
           (testing "Emergency multisig can pause the registry"
@@ -316,7 +315,7 @@
               (offering-registry/on-offering-added-in-tx tx-hash {:node (namehash "abc.eth")
                                                                   :from-block 0
                                                                   :owner addr1})]
-          (testing "Transferrnig ownership to the offering"
+          (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 

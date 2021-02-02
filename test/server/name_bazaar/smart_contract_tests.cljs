@@ -16,7 +16,6 @@
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
-    [name-bazaar.server.contracts-api.deed :as deed]
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
@@ -150,11 +149,11 @@
                         :offering/supports-unregister? true})
                      (offering-status-keys (offering/get-offering offering)))))
 
-            (testing "Can't buy TLD if offering owns no deed"
+            (testing "Can't buy TLD if offering owns no registration"
               (is (thrown? :default (buy-now-offering/buy! {:offering/address offering} {:value (eth->wei 0.1)
                                                                                          :from addr1}))))
 
-            (testing "Transferrnig ownership to the offering"
+            (testing "Transferring ownership to the offering"
               (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                        {:from addr0})))
 
@@ -174,8 +173,8 @@
 
             (testing "The name ownership must be transferred to the new owner"
               (is (= addr1 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-            (testing "Ensuring the new owner gets his deed"
-              (is (= addr1 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
+            (testing "Ensuring the new owner gets his registration"
+              (is (= addr1 (registrar/registration-owner {:ens.record/label "abc"}))))
             (testing "New-owner of the offering is set"
               (is (= addr1 (:offering/new-owner (offering/get-offering offering)))))))))))
 
@@ -267,8 +266,8 @@
               (is (auction-offering/finalize! offering {:from addr0})))
             (testing "Ensuring the new owner gets his name"
               (is (= addr3 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-            (testing "Ensuring the new owner gets his deed"
-              (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
+            (testing "Ensuring the new owner gets his registration"
+              (is (= addr3 (registrar/registration-owner {:ens.record/label "abc"}))))
 
             (testing "User who was overbid, getting his funds back from auction offering."
               ;; Note: transaction costs don't apply, `balance-of-2` is tracked after the bid
@@ -279,41 +278,39 @@
 
 (deftest offering-tld-ownership
   (let [[addr0 addr1] (web3-eth/accounts @web3)]
-    (testing "Registering name to transfer onwnership"
-      (is (registrar/register! {:ens.record/label "notowned"}
+    (testing "Register tld, then transfer registration ownership, but retain registry ownership"
+      (is (registrar/register! {:ens.record/label "tld"}
                                {:from addr0}))
-
-      (let [deed-addr (:name-bazaar-registrar.entry.deed/address (registrar/entry {:ens.record/label "notowned"}))]
-        (is (not (empty? deed-addr)))
-        (is (not (empty? (deed/owner deed-addr))))))
-
-    (testing "Registering name to transfer deed"
-      (is (registrar/register! {:ens.record/label "notowndeed"}
+      (is (= addr0 (registrar/registration-owner {:ens.record/label "tld"})))
+      (is (registrar/transfer! {:ens.record/label "tld"
+                                :ens.record/owner addr1}
                                {:from addr0}))
-      (is (registrar/transfer! {:ens.record/label "notowndeed"
-                                :ens.record/owner addr0}
-                               {:from addr0})))
+      (is (ens/set-owner! {:ens.record/name "tld.eth"
+                           :ens.record/owner addr0}
+                          {:from addr1}))
+      (is (= addr1 (registrar/registration-owner {:ens.record/label "tld"})))
+      (is (= addr0 (ens/owner {:ens.record/name "tld.eth"}))))
 
     (testing "Can't make an instant offer on not owned domain"
-      (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "notowned"
+      (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "tld"
                                                                         :offering/price (eth->wei 0.1)}
                                                                        {:from addr1}))))
-    (testing "Can't make an instant offer on not owned domain"
-      (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "notowndeed"
+    (testing "Can't make an instant offer on owned domain, but not owned registration"
+      (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "tld"
                                                                         :offering/price (eth->wei 0.1)}
-                                                                       {:from addr1}))))
+                                                                       {:from addr0}))))
 
-    (testing "Can't offer for bid name I don't manage"
+    (testing "Can't make auction offer on not owned domain"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "notowned"
+                              {:offering/name "tld"
                                :offering/price (eth->wei 0.1)
                                :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
                                :auction-offering/extension-duration 0
                                :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
-                              {:from addr0}))))
-    (testing "Can't offer for bid name I don't own"
+                              {:from addr1}))))
+    (testing "Can't make auction offer on owned domain, but not owned registration"
       (is (thrown? :default (auction-offering-factory/create-offering!
-                              {:offering/name "notowndeed"
+                              {:offering/name "tld"
                                :offering/price (eth->wei 0.1)
                                :auction-offering/end-time (to-epoch (time/plus (now) (time/weeks 2)))
                                :auction-offering/extension-duration 0
@@ -341,7 +338,7 @@
       (is (= addr0 (ens/owner {:ens.record/node (namehash "tld.eth")})))
       (is (= addr1 (ens/owner {:ens.record/node (namehash "theirsub.tld.eth")}))))
 
-    (testing "Can't make an instant offer if only deed-owner"
+    (testing "Can't make an instant offer if only parent domain owner"
       (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "theirsub.tld.eth"
                                                                         :offering/price (eth->wei 0.1)}
                                                                        {:from addr0}))))
@@ -359,7 +356,7 @@
         (testing "Can't buy it yet, as subdomain ownership not transferred"
           (is (thrown? :default (buy-now-offering/buy! {:offering/address offering} {:value (eth->wei 0.1)
                                                                                      :from addr2}))))
-        (testing "Transferrnig ownership to the offering"
+        (testing "Transferring ownership to the offering"
           (is (ens/set-owner! {:ens.record/node (namehash "theirsub.tld.eth")
                                :ens.record/owner offering}
                               {:from addr1})))
@@ -420,9 +417,12 @@
               log-tx! (fn [id result] (swap! transaction-log assoc id result) result)]
 
           (testing "Transferring ownership to the offer"
-            (is (log-tx! :t1-register
-                         (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
-                                              {:from addr1}))))
+            (let
+              [{tx1 :set-owner-tx tx2 :transfer-tx}
+               (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
+                                    {:from addr1})]
+              (is (log-tx! :t1-transfer-tx1 tx1))
+              (is (log-tx! :t1-transfer-tx2 tx2))))
 
           (testing "User 2 can place a proper bid"
             (is (log-tx! :t2-user2-place-bid
@@ -496,12 +496,14 @@
                          (auction-offering/finalize! offering {:from addr0}))))
           (testing "Ensuring the new owner gets his name"
             (is (= addr3 (ens/owner {:ens.record/node (namehash "abc.eth")}))))
-          (testing "Ensuring the new owner gets his deed"
-            (is (= addr3 (registrar/entry-deed-owner {:ens.record/label "abc"}))))
+          (testing "Ensuring the new owner gets his registration"
+            (is (= addr3 (registrar/registration-owner {:ens.record/label "abc"}))))
 
           (testing "Ensuring the previous owner gets the funds"
-            (let [bid-tx-1 (:t1-register @transaction-log)
-                  tx-total-cost (get-transaction-cost bid-tx-1)
+            (let [bid-1-tx-1 (:t1-transfer-tx1 @transaction-log)
+                  bid-1-tx-2 (:t1-transfer-tx2 @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-1-tx-1)
+                  tx-total-cost (bn/+ tx-total-cost (get-transaction-cost bid-1-tx-2))
                   expected-balance (bn/+ balance-of-1 bid-value-user-3-overbid)
                   expected-balance (bn/- expected-balance tx-total-cost)
                   actual-balance (web3-eth/get-balance @web3 addr1)]
