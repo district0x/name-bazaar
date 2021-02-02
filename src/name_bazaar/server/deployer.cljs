@@ -34,8 +34,7 @@
   (deploy-smart-contract! :name-bazaar-registrar (merge default-opts
                                                         {:gas 3200000
                                                          :arguments [(contract-address :ens)
-                                                                     (namehash "eth")
-                                                                     (to-epoch (t/minus (t/now) (t/years 1)))]})))
+                                                                     (namehash "eth")]})))
 
 
 (defn deploy-offering-registry! [default-opts {:keys [:emergency-multisig]}]

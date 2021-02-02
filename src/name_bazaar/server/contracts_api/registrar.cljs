@@ -3,8 +3,7 @@
     [cljs-web3.core :as web3]
     [cljs.nodejs :as nodejs]
     [district.server.smart-contracts :refer [contract-call]]
-    [name-bazaar.server.contracts-api.deed :as deed]
-    [name-bazaar.shared.utils :refer [parse-registrar-entry]]))
+    [name-bazaar.server.contracts-api.ens :as ens]))
 
 (def root-node "eth")
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
@@ -17,19 +16,22 @@
                          :value (web3/to-wei 0.01 :ether)}
                         opts)))
 
-(defn transfer! [{:keys [:ens.record/hash :ens.record/label :ens.record/owner]} & [opts]]
-  (contract-call :name-bazaar-registrar
-                 :transfer
-                 (sha3 label hash)
-                 owner
-                 (merge {:gas 2000000}
-                        opts)))
+(defn transfer! [{:keys [:ens.record/label :ens.record/owner]} & [opts]]
+  {:set-owner-tx
+     (ens/set-owner! {:ens.record/name (str label ".eth")
+                      :ens.record/owner owner}
+                     opts)
+   :transfer-tx
+     (contract-call :name-bazaar-registrar
+                    :transferFrom
+                    (:from opts)
+                    owner
+                    (sha3 label hash)
+                    (merge {:gas 2000000}
+                           opts))})
 
-(defn entry [{:keys [:ens.record/hash :ens.record/label]}]
-  (parse-registrar-entry (contract-call :name-bazaar-registrar :entries (sha3 label hash))))
-
-(defn entry-deed-owner [args & [opts]]
-  (deed/owner (:name-bazaar-registrar.entry.deed/address (entry args))))
+(defn registration-owner [{:keys [:ens.record/hash :ens.record/label]}]
+  (contract-call :name-bazaar-registrar :ownerOf (sha3 label hash)))
 
 (defn ens []
   (contract-call :name-bazaar-registrar :ens))

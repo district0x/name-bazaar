@@ -28,7 +28,7 @@
   (let [ens-owner (ens/owner {:ens.record/node node})]
     (and (= ens-owner offering-address)
          (if top-level-name?
-           (= (registrar/entry-deed-owner {:ens.record/label label})
+           (= (registrar/registration-owner {:ens.record/label label})
               offering-address)
            true))))
 
