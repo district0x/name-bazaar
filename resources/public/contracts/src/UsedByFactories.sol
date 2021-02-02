@@ -5,7 +5,7 @@ pragma solidity ^0.5.17;
  * @dev Provides modifiers to allow only offering factory contracts to execute method
  */
 
-import "Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract UsedByFactories is Ownable {
 

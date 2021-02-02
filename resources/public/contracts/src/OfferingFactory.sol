@@ -1,7 +1,7 @@
 pragma solidity ^0.5.17;
 
 import "@ensdomains/ens/contracts/ENSRegistry.sol";
-import "@ensdomains/ens/contracts/HashRegistrar.sol";
+import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
 import "OfferingRegistry.sol";
 import "OfferingRequestsAbstract.sol";
 import "strings.sol";
@@ -33,7 +33,7 @@ contract OfferingFactory {
 
     /**
     * @dev Registers new offering to OfferingRegistry, clears offering requests for this ENS node
-    * Must check if creator of offering is actual owner of ENS name and for top level names also deed owner
+    * Must check if creator of offering is actual owner of ENS name and for top level names also registration owner
     * @param node bytes32 ENS node
     * @param labelHash bytes32 ENS labelhash
     * @param newOffering address The address of new offering
@@ -44,9 +44,8 @@ contract OfferingFactory {
     {
         require(ens.owner(node) == msg.sender);
         if (node == keccak256(abi.encodePacked(rootNode, labelHash))) {
-            address deed;
-            (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(labelHash);
-            require(Deed(deed).owner() == msg.sender);
+            address owner = BaseRegistrar(ens.owner(rootNode)).ownerOf(uint256(labelHash));
+            require(owner == msg.sender);
         }
 
         offeringRegistry.addOffering(newOffering, node, msg.sender, version);
