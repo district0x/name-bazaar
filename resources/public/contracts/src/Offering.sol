@@ -6,7 +6,7 @@ pragma solidity ^0.5.17;
  */
 
 import "@ensdomains/ens/contracts/ENSRegistry.sol";
-import "@ensdomains/ens/contracts/HashRegistrar.sol";
+import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
 import "OfferingRegistry.sol";
 
 contract Offering {
@@ -170,16 +170,17 @@ contract Offering {
 
     /**
     * @dev Function to actually do ENS transfer
-    * Top level names should be transferred via registrar, so deed is transferred too
+    * Top level names should be transferred via registrar, so that registration is transferred too
     * @param _newOwner address New owner of ENS name
     */
     function doTransferOwnership(address payable _newOwner)
         private
     {
+        ens.setOwner(offering.node, _newOwner);
         if (isNodeTLDOfRegistrar()) {
-            HashRegistrar(ens.owner(rootNode)).transfer(offering.labelHash, _newOwner);
-        } else {
-            ens.setOwner(offering.node, _newOwner);
+            uint256 tokenId = uint256(offering.labelHash);
+            BaseRegistrar registrar = BaseRegistrar(ens.owner(rootNode));
+            registrar.transferFrom(registrar.ownerOf(tokenId), _newOwner, tokenId);
         }
     }
 
@@ -201,15 +202,14 @@ contract Offering {
 
     /**
     * @dev Returns whether offering contract is owner of ENS name
-    * For top level names, offering contract must be also owner of registrar deed
+    * For top level names, offering contract must be also owner of registration
     * @return bool true if contract is ENS node owner
     */
     function isContractNodeOwner() public view returns(bool) {
         if (isNodeTLDOfRegistrar()) {
-            address deed;
-            (,deed,,,) = HashRegistrar(ens.owner(rootNode)).entries(offering.labelHash);
-            return ens.owner(offering.node) == address(this) &&
-                Deed(deed).owner() == address(this);
+            uint256 tokenId = uint256(offering.labelHash);
+            address registrationOwner = BaseRegistrar(ens.owner(rootNode)).ownerOf(tokenId);
+            return ens.owner(offering.node) == address(this) && registrationOwner == address(this);
         } else {
             return ens.owner(offering.node) == address(this);
         }

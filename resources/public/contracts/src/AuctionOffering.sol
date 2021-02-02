@@ -146,7 +146,7 @@ contract AuctionOffering is Offering {
     /**
     * @dev Finalizes auction: transfers funds to original ENS owner, transfers ENS name to winning bidder
     * Must be after auction end time
-    * Accoring to Withdrawal Pattern we cannot assume transferring funds to original owner will be possible,
+    * According to Withdrawal Pattern we cannot assume transferring funds to original owner will be possible,
     * therefore we try to transfer his funds, and we make them available for withdrawal later, if this transfer fails.
     */
     function finalize()
