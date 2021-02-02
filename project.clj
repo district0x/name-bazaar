@@ -91,6 +91,7 @@
   :npm {:dependencies [["@ensdomains/buffer" "0.0.10"]
                        ["@ensdomains/dnssec-oracle" "0.1.2"]
                        ["@ensdomains/ens" "0.4.5"]
+                       ["@ensdomains/ethregistrar" "2.0.4"]
                        ["@ensdomains/resolver" "0.2.4"]
                        ["@sentry/node" "4.2.1"]
                        ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
@@ -107,16 +108,17 @@
                        ;; TODO: remove, they should be installed automatically
                        [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
+                       [openzeppelin-solidity "2.3.0"]
                        [semantic-ui "2.4.1"]
                        [source-map-support "0.4.0"]
                        [ws "2.0.1"]
                        [xhr2 "0.1.4"]]
-        :devDependencies [[karma "1.5.0"]
+        :devDependencies [[ethlint "1.2.5"]
+                          [karma "1.5.0"]
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
                           [karma-cljs-test "0.1.0"]
-                          [karma-safari-launcher "1.0.0"]
-                          [ethlint "1.2.5"]]
+                          [karma-safari-launcher "1.0.0"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             }}}

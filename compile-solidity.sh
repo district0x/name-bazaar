@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
+
+# TODO find a way to specify node_modules as an additional source root for solc
+# TODO or migrate to truffle and the entire compilation workflow will be changed
 ENS=$(readlink -f ./node_modules/@ensdomains)
+OZS=$(readlink -f ./node_modules/openzeppelin-solidity)
 
 cd resources/public/contracts/src
 
 function solc-err-only {
-    solc @ensdomains=$ENS "$@" 2>&1 | grep -A 2 -i "Error"
+    solc @ensdomains=$ENS "openzeppelin-solidity"=$OZS "$@" 2>&1 | grep -A 2 -i "Error"
 }
-
-# TODO use script for this
 
 solc-err-only --overwrite --optimize --bin --abi OfferingRegistry.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi BuyNowOfferingFactory.sol -o ../build/
