@@ -295,7 +295,7 @@
       (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "tld"
                                                                         :offering/price (eth->wei 0.1)}
                                                                        {:from addr1}))))
-    (testing "Can't make an instant offer on owned domain, but not owned registration"
+    (testing "Can't make an instant offer on domain we own in registry, but not in registrar"
       (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "tld"
                                                                         :offering/price (eth->wei 0.1)}
                                                                        {:from addr0}))))
@@ -308,7 +308,7 @@
                                :auction-offering/extension-duration 0
                                :auction-offering/min-bid-increase (web3/to-wei 0.1 :ether)}
                               {:from addr1}))))
-    (testing "Can't make auction offer on owned domain, but not owned registration"
+    (testing "Can't make auction offer on domain we own in registry, but not in registrar"
       (is (thrown? :default (auction-offering-factory/create-offering!
                               {:offering/name "tld"
                                :offering/price (eth->wei 0.1)
@@ -338,7 +338,7 @@
       (is (= addr0 (ens/owner {:ens.record/node (namehash "tld.eth")})))
       (is (= addr1 (ens/owner {:ens.record/node (namehash "theirsub.tld.eth")}))))
 
-    (testing "Can't make an instant offer if only parent domain owner"
+    (testing "Can't make an instant offer if we own parent domain, but not domain itself"
       (is (thrown? :default (buy-now-offering-factory/create-offering! {:offering/name "theirsub.tld.eth"
                                                                         :offering/price (eth->wei 0.1)}
                                                                        {:from addr0}))))

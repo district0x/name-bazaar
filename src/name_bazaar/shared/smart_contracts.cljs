@@ -1,38 +1,36 @@
-(ns name-bazaar.shared.smart-contracts)
+(ns name-bazaar.shared.smart-contracts) 
 
-(def smart-contracts
+(def smart-contracts 
 {:auction-offering-factory
  {:name "AuctionOfferingFactory",
-  :address "0xf6562dccfd2a135bf7eb8fe1a3279001ba33e84f"},
+  :address "0x98a220dcd296355bc63da5753a62f6baf11a1b6e"},
  :buy-now-offering-factory
  {:name "BuyNowOfferingFactory",
-  :address "0x3525181bf2ef29f0f86d6e049c2b5e331aa86754"},
+  :address "0x27892c87e769b4edb10c3319bc4fc59ddee73385"},
  :name-bazaar-registrar
  {:name "NameBazaarRegistrar",
-  :address "0x02a4859792ff18bc611b7e34ef2eb8276070d544"},
+  :address "0x1263d914ee2393ace43828ed5fd9b9a950aab1d9"},
  :buy-now-offering
  {:name "BuyNowOffering",
-  :address "0x8fc046ec87ee3fdc84836e98983561172b129416"},
+  :address "0x84d3e0f27c0eccaa49b8ae51f8e4653f64abde62"},
  :reverse-registrar
  {:name "ReverseRegistrar",
   :address "0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069"},
- :deed
- {:name "Deed", :address "0x0000000000000000000000000000000000000000"},
  :public-resolver
  {:name "PublicResolver",
   :address "0x5FfC014343cd971B7eb70732021E26C35B744cc4"},
  :ens
  {:name "ENSRegistry",
-  :address "0x468edc874e1fead4611b276608392dfb06f3f1c1"},
+  :address "0xd4ae96cb146d20d85f998f0f24ce562801f50084"},
  :offering-registry
  {:name "OfferingRegistry",
-  :address "0x2f3b45084c8ca68b9ce175950f65ec2e67daa0cb"},
+  :address "0xbeb20ec478bbab325eadc9790cc24362c8b6e9b0"},
  :district0x-emails
  {:name "District0xEmails",
-  :address "0xeeb8c09e789ce3e63c7367af239bd8a17da058c4"},
+  :address "0xdd95175cad07f1a25bce5e54bfda4d02290302bf"},
  :offering-requests
  {:name "OfferingRequests",
-  :address "0x1a3bc2f94657a9dd364e8a01945e1c1c6db895aa"},
+  :address "0x2cfd99770f16cce3463fd376eab978632a501a58"},
  :auction-offering
  {:name "AuctionOffering",
-  :address "0x450778e29c1cd2df801598d1e26cd77c1725af55"}})
+  :address "0xb02c63815fd3a90def33a4611070b2dd417a04f8"}})
