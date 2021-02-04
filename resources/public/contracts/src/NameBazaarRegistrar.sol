@@ -24,6 +24,7 @@ contract NameBazaarRegistrar is BaseRegistrarImplementation {
      */
     function register(bytes32 _hash) public payable {
         controllers[msg.sender] = true;
+        emit ControllerAdded(msg.sender);
         _register(uint256(_hash), msg.sender, 365 days, true);
     }
 }
