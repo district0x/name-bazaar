@@ -1,12 +1,11 @@
 (ns name-bazaar.ui.utils
   (:require
-    [cemerick.url :as url]
     [clojure.data :as data]
     [clojure.string :as string]
     [cljs-web3.core :as web3]
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
-    [district0x.ui.utils :as d0x-ui-utils :refer [truncate path-with-query solidity-sha3]]
+    [district0x.ui.utils :refer [truncate path-with-query solidity-sha3]]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label]]
@@ -39,6 +38,9 @@
     true
     (catch js/Error e
       false)))
+
+(defn valid-ens-subname? [subname]
+  (and subname (valid-ens-name? subname) (not (string/includes? subname "."))))
 
 (defn ensure-registrar-root [name]
   (if-not (string/ends-with? name constants/registrar-root)
