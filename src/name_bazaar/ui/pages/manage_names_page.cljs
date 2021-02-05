@@ -9,7 +9,7 @@
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? valid-ens-subname? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [cljs-web3.core :as web3]
@@ -65,7 +65,7 @@
          :value value
          :on-change (fn [e data]
                       (let [value (aget data "value")]
-                        (when (valid-ens-name? value)
+                        (when (valid-ens-subname? value)
                           (aset data "value" value)
                           (on-change e data)
                           (load-resolver value))))}
@@ -182,7 +182,8 @@
 
             full-subname (str subname "." full-name)
             correct-subname? (and (not (empty? subname))
-                                  (valid-ens-name? full-name))
+                                  (valid-ens-subname? subname)
+                                  (valid-ens-name? full-subname))
             submit-disabled? (or
                                (not correct-subname?)
                                (not= ownership-status :ens.ownership-status/owner))]
