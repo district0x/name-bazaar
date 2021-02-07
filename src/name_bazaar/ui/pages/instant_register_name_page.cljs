@@ -4,7 +4,7 @@
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
-    [name-bazaar.ui.utils :refer [valid-ens-name? path-for]]
+    [name-bazaar.ui.utils :refer [valid-ens-subname? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
@@ -25,7 +25,7 @@
            :value @label
            :on-change (fn [_ data]
                         (let [value (aget data "value")]
-                          (when (valid-ens-name? value)
+                          (when (valid-ens-subname? value)
                             (reset! label value))))}]]]
        [ui/GridRow
         {:centered true}
@@ -36,7 +36,7 @@
            :pending-text "Registering..."
            :on-click (fn []
                        (when (and (not (empty? @label))
-                                  (valid-ens-name? @label))
+                                  (valid-ens-subname? @label))
                          (dispatch [:name-bazaar-registrar/register {:ens.record/label @label}])
                          (reset! label "")))}
           "Register"]]]])))
