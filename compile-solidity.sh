@@ -11,6 +11,7 @@ function solc-err-only {
     solc @ensdomains=$ENS "openzeppelin-solidity"=$OZS "$@" 2>&1 | grep -A 2 -i "Error"
 }
 
+mkdir -p ../build
 solc-err-only --overwrite --optimize --bin --abi OfferingRegistry.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi BuyNowOfferingFactory.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi AuctionOfferingFactory.sol -o ../build/
