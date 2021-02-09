@@ -3,8 +3,22 @@
    [com.rpl.specter :as s]
    [figwheel-sidecar.repl-api :as fw-repl]
    [figwheel-sidecar.config :as fw-config]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [compojure.core :refer [defroutes]]
+   [compojure.route :as route]
+   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
+(defn- wrap-default-index [next-handler]
+  (fn [request]
+    (next-handler (assoc request :uri "/index.html"))))
+
+(defroutes routes (route/resources "/"))
+
+;; Inspired by https://github.com/bhauman/lein-figwheel/issues/344#issuecomment-243918040
+(def route-handler
+  "This function is responsible to serve index.html on every web route.
+  See :ring-handler in project.clj."
+  (wrap-defaults (wrap-default-index routes) site-defaults))
 
 (defn- set-closure-define
   "Sets the :closure-defines for the given `build-id` in the given

@@ -13,15 +13,16 @@
                  [cljsjs/react-infinite "0.13.0-0"]
                  [cljsjs/react-meta-tags "0.3.0-1"]
                  [com.rpl/specter "1.1.1"]
+                 [compojure "1.6.2"]
                  [day8.re-frame/async-flow-fx "0.0.8"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.3"]
                  [medley "1.0.0"]
-                 ;; [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/clojurescript "1.10.439"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [print-foo-cljs "2.0.3"]
                  [re-frame "0.10.6"]
+                 [ring/ring-defaults "0.3.2"]
                  ;; Can be removed when re-frame vbump includes reagent 8.0.1+
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
@@ -137,7 +138,8 @@
 
   :figwheel {:server-port 4544
              :css-dirs ["resources/public/css"]
-             :repl-eval-timeout 30000} ;; 30 seconds
+             :repl-eval-timeout 30000 ;; 30 seconds
+             :ring-handler user/route-handler}
 
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
