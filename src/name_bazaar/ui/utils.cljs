@@ -8,7 +8,7 @@
     [district0x.ui.utils :refer [truncate path-with-query solidity-sha3]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [name-label]]
+    [name-bazaar.shared.utils :refer [name-label valid-ens-name?]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.db :refer [default-db]]))
 
@@ -31,13 +31,6 @@
                  bid-hash))
 
 (def name->label-hash (comp sha3 name-label))
-
-(defn valid-ens-name? [name]
-  (try
-    (normalize name)
-    true
-    (catch js/Error e
-      false)))
 
 (defn valid-ens-subname? [subname]
   (and subname (valid-ens-name? subname) (not (string/includes? subname "."))))
