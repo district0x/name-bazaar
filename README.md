@@ -48,9 +48,11 @@ folder and try to start the server again)_
 
 #### Redeploy smart-contracts and generate mock data
 
-```bash
+```clojure
 # In the figwheel server REPL run:
 (redeploy)
+;; and optionally generate sample dev data
+(generate-data)
 ```
 
 Redeployment / Generation can take a long time, please be patient.
