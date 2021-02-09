@@ -3,8 +3,10 @@
     [cljs-time.coerce :refer [to-epoch]]
     [cljs.nodejs :as nodejs]
     [cljs.pprint :as pprint]
+    [cljs-web3.core :as web3]
     [district.server.config :refer [config]]
     [district.server.db :refer [db]]
+    [district.server.endpoints]
     [district.server.endpoints.middleware.logging :refer [logging-middlewares]]
     [district.server.logging]
     [district.server.smart-contracts]
@@ -36,6 +38,23 @@
       (mount/start)
       pprint/pprint))
 
+(defn on-jsload []
+  (mount/stop #'district.server.endpoints/endpoints)
+  (mount/start #'district.server.endpoints/endpoints))
+
+(defn deploy-to-mainnet []
+  (mount/stop #'district.server.web3/web3
+              #'district.server.smart-contracts/smart-contracts)
+  (mount/start-with-args (merge
+                           (mount/args)
+                           {:web3 {:port 8545}
+                            :deployer {:write? true
+                                       :from "0x2a2A57a98a07D3CA5a46A0e1d51dEFffBeF54E4F"
+                                       :emergency-multisig "0x52f3f521c5f573686a78912995e9dedc5aae9928"
+                                       :skip-ens-registrar? true
+                                       :gas-price (web3/to-wei 4 :gwei)}})
+                         #'district.server.web3/web3
+                         #'district.server.smart-contracts/smart-contracts))
 
 (defn generate-data
   "Generate dev data"
