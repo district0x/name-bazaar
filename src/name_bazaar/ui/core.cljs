@@ -20,7 +20,8 @@
     [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
     [reagent.core :as r]
-    [taoensso.timbre :as logging :refer-macros [info warn error]]))
+    [taoensso.timbre :as logging :refer-macros [info warn error]]
+    [name-bazaar.ui.utils :refer [run-ignoring-errors]]))
 
 (def debug? ^boolean (:debug? config))
 
@@ -29,7 +30,7 @@
     (enable-console-print!)))
 
 (defn mount-root []
-  (google-analytics-fx/set-enabled! (not debug?))
+  (run-ignoring-errors (fn [] (google-analytics-fx/set-enabled! (not debug?))))
   (clear-subscription-cache!)
   (-> (mount/with-args config)
       (mount/start #'district.ui.mobile/mobile
@@ -39,7 +40,7 @@
 (defn ^:export init []
   (s/check-asserts goog.DEBUG)
   (dev-setup)
-  (google-analytics-fx/set-enabled! (not debug?))
+  (run-ignoring-errors (fn [] (google-analytics-fx/set-enabled! (not debug?))))
   (dispatch-sync [:district0x/initialize
                   {:default-db name-bazaar.ui.db/default-db
                    :effects

@@ -12,6 +12,9 @@
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.db :refer [default-db]]))
 
+(defn run-ignoring-errors [fn]
+  (try (fn) (catch js/Error _ false)))
+
 (def namehash
   (memoize
     (fn namehash* [name]
