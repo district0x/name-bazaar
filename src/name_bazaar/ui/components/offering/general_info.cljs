@@ -36,12 +36,11 @@
    "Offering Address: " [etherscan-link {:address address} address]])
 
 
-(defn registrar-entry-deed-value-line [{:keys [:name-bazaar-registrar-entry]}]
-  (let [{:keys [:name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry.deed/value]} name-bazaar-registrar-entry]
+(defn registrar-registration-owner [{:keys [:name-bazaar-registrar-registration]}]
+  (let [{:keys [:name-bazaar-registrar.registration/owner]} name-bazaar-registrar-registration]
     [:div
-     "Locked Value: " [etherscan-link
-                       {:address address}
-                       (format-eth-with-code value)]]))
+     "Registration Owner: " [etherscan-link
+                             {:address owner}]]))
 
 (defn auction-offering-winning-bidder-line [{:keys [:auction-offering/winning-bidder]}]
   (let [resolved-address @(subscribe [:reverse-resolved-address winning-bidder])]
@@ -85,7 +84,7 @@
                 :offering/new-owner :offering/finalized-on :offering/auction? :auction-offering/end-time
                 :auction-offering/min-bid-increase :auction-offering/extension-duration
                 :auction-offering/winning-bidder :offering/top-level-name?]} offering
-        registrar-entry @(subscribe [:offering/registrar-entry address])]
+        registrar-registration @(subscribe [:offering/registrar-registration address])]
     [:div.description.ellipsis
      (dissoc props :offering)
      [offering-name-line
@@ -116,5 +115,5 @@
      [offering-address-line
       {:offering/address address}]
      (when top-level-name?
-       [registrar-entry-deed-value-line
-        {:name-bazaar-registrar-entry registrar-entry}])]))
+       [registrar-registration-owner
+        {:name-bazaar-registrar-registration registrar-registration}])]))

@@ -34,7 +34,7 @@
     [name-bazaar.ui.events.offerings-events]
     [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.events.registrar-events]
-    [name-bazaar.ui.events.registration-bids-events]
+    ;[name-bazaar.ui.events.registration-bids-events]
     [name-bazaar.ui.events.reverse-registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
@@ -88,14 +88,14 @@
     :route.offerings/create
     {:dispatch [:name.ownership/load (:name query-params)]}
 
-    :route.registrar/register
-    (cond
-      (not (nil? (:name query-params)))
-      {:dispatch-n [[:registration-bids.states/load]
-                    [:registration-bids.state/load (sha3 (-> query-params
-                                                             :name
-                                                             nb-ui-utils/strip-root-registrar-suffix))]]}
-      :else {:dispatch [:registration-bids.states/load]})
+    ;:route.registrar/register
+    ;(cond
+    ;  (not (nil? (:name query-params)))
+    ;  {:dispatch-n [[:registration-bids.states/load]
+    ;                [:registration-bids.state/load (sha3 (-> query-params
+    ;                                                         :name
+    ;                                                         nb-ui-utils/strip-root-registrar-suffix))]]}
+    ;  :else {:dispatch [:registration-bids.states/load]})
 
     :route.ens-record/detail
     {:dispatch-n [[:name.all-details/load (:ens.record/name route-params)]
@@ -184,7 +184,7 @@
       (let [node (namehash name)]
         (merge {:dispatch-n [[:ens.records/load [node]]]}
                (when (top-level-name? name)
-                 {:dispatch [:name-bazaar-registrar.entries/load [(name->label-hash name)]]}))))))
+                 {:dispatch [:name-bazaar-registrar.registrations/load [(name->label-hash name)]]}))))))
 
 (reg-event-fx
   :name.all-details/load
@@ -198,7 +198,7 @@
                                     :halt? true
                                     :dispatch [:ens.records.owner/resolve node]}]}}
              (when (top-level-name? name)
-               {:dispatch [:name-bazaar-registrar.entries/load [(name->label-hash name)]]})))))
+               {:dispatch [:name-bazaar-registrar.registrations/load [(name->label-hash name)]]})))))
 
 (reg-event-fx
   :name/transfer-ownership

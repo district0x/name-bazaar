@@ -8,7 +8,7 @@
     [medley.core :as medley]
     [name-bazaar.shared.utils :refer [emergency-state-new-owner]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [registrar-entry-deed-loaded? ens-record-loaded?]]
+    [name-bazaar.ui.utils :refer [registrar-registration-loaded? ens-record-loaded?]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
@@ -43,18 +43,18 @@
   :offering/loaded?
   (fn [[_ offering-address]]
     [(subscribe [:offering offering-address])
-     (subscribe [:name-bazaar-registrar/entries])
+     (subscribe [:name-bazaar-registrar/registrations])
      (subscribe [:ens/records])])
   (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/buy-now?
                 :offering/top-level-name?]}
-        registrar-entries ens-records]]
-    (let [registrar-entry (get registrar-entries label-hash)
+        registrar-registrations ens-records]]
+    (let [registrar-registration (get registrar-registrations label-hash)
           ens-record (get ens-records node)]
       (and (seq name)
            (or buy-now?
                end-time)
            (or (and top-level-name?
-                    (registrar-entry-deed-loaded? registrar-entry)
+                    (registrar-registration-loaded? registrar-registration)
                     (ens-record-loaded? ens-record))
                (and (not top-level-name?)
                     (ens-record-loaded? ens-record)))))))
@@ -122,11 +122,11 @@
     (and active-address (= active-address (get-in offerings [offering-address :offering/new-owner])))))
 
 (reg-sub
-  :offering/registrar-entry
+  :offering/registrar-registration
   :<- [:offerings]
-  :<- [:name-bazaar-registrar/entries]
-  (fn [[offerings registrar-entries] [_ offering-address]]
-    (get registrar-entries (get-in offerings [offering-address :offering/label-hash]))))
+  :<- [:name-bazaar-registrar/registrations]
+  (fn [[offerings registrar-registrations] [_ offering-address]]
+    (get registrar-registrations (get-in offerings [offering-address :offering/label-hash]))))
 
 (reg-sub
   :offering/ens-record
@@ -140,16 +140,16 @@
   (fn [[_ offering-address]]
     [(subscribe [:offering offering-address])
      (subscribe [:offering/ens-record offering-address])
-     (subscribe [:offering/registrar-entry offering-address])])
-  (fn [[{:keys [:offering/top-level-name?]} ens-record registrar-entry] [_ offering-address]]
+     (subscribe [:offering/registrar-registration offering-address])])
+  (fn [[{:keys [:offering/top-level-name?]} ens-record registrar-registration] [_ offering-address]]
     (when (and (:ens.record/owner ens-record)
                (if top-level-name?
-                 (:name-bazaar-registrar.entry.deed/owner registrar-entry)
+                 (:name-bazaar-registrar.registration/owner registrar-registration)
                  true))
       (= offering-address
          (:ens.record/owner ens-record)
          (if top-level-name?
-           (:name-bazaar-registrar.entry.deed/owner registrar-entry)
+           (:name-bazaar-registrar.registration/owner registrar-registration)
            offering-address)))))
 
 (reg-sub

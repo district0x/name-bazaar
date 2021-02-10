@@ -85,23 +85,16 @@
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
-(s/def :name-bazaar-registrar.entry/state keyword)
-(s/def :name-bazaar-registrar.entry/registration-date (s/nilable date?))
-(s/def :name-bazaar-registrar.entry/value not-neg?)
-(s/def :name-bazaar-registrar.entry/highest-bid not-neg?)
-(s/def :name-bazaar-registrar.entry.deed/address address?)
-(s/def :name-bazaar-registrar.entry.deed/value not-neg?)
-(s/def :name-bazaar-registrar.entry.deed/owner address?)
+(s/def :name-bazaar-registrar.registration/available boolean?)
+(s/def :name-bazaar-registrar.registration/expiration-date (s/nilable date?))
+(s/def :name-bazaar-registrar.registration/owner address?)
 
-(s/def :name-bazaar-registrar/entry (s/keys :opt [:name-bazaar-registrar.entry/state
-                                                  :name-bazaar-registrar.entry/registration-date
-                                                  :name-bazaar-registrar.entry/value
-                                                  :name-bazaar-registrar.entry/highest-bid
-                                                  :name-bazaar-registrar.entry.deed/address
-                                                  :name-bazaar-registrar.entry.deed/value
-                                                  :name-bazaar-registrar.entry.deed/owner]))
+(s/def :name-bazaar-registrar/registration
+  (s/keys :opt [:name-bazaar-registrar.registration/available
+                :name-bazaar-registrar.registration/expiration-date
+                :name-bazaar-registrar.registration/owner]))
 
-(s/def :name-bazaar-registrar/entries (s/map-of :ens.record/label-hash :name-bazaar-registrar/entry))
+(s/def :name-bazaar-registrar/registrations (s/map-of :ens.record/label-hash :name-bazaar-registrar/registration))
 
 (s/def :name-bazaar-registrar/label string?)
 
@@ -155,7 +148,7 @@
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
-                                             :name-bazaar-registrar/entries
+                                             :name-bazaar-registrar/registrations
                                              :public-resolver/records
                                              :public-resolver/reverse-records]
                                        :req-un [::offerings

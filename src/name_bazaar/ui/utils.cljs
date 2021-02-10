@@ -133,21 +133,13 @@
                  true (assoc-in params-db-path search-params))
      :search-params search-params}))
 
-(defn registrar-entry-deed-loaded? [registrar-entry]
-  (boolean (or (d0x-shared-utils/zero-address? (:name-bazaar-registrar.entry.deed/address registrar-entry))
-               (and (:name-bazaar-registrar.entry.deed/value registrar-entry)
-                    (:name-bazaar-registrar.entry.deed/owner registrar-entry)))))
+(defn registrar-registration-loaded? [registrar-registration]
+  (boolean (or (d0x-shared-utils/zero-address? (:name-bazaar-registrar.registration/owner registrar-registration))
+               (and (:name-bazaar-registrar.registration/available registrar-registration)
+                    (:name-bazaar-registrar.registration/expiration-date registrar-registration)))))
 
 (defn ens-record-loaded? [ens-record]
   (boolean (:ens.record/owner ens-record)))
-
-(def registrar-entry-state->text
-  {:name-bazaar-registrar.entry.state/open "Open For Bids"
-   :name-bazaar-registrar.entry.state/auction "Initial Auction Ongoing"
-   :name-bazaar-registrar.entry.state/owned "Owned"
-   :name-bazaar-registrar.entry.state/forbidden "Forbidden"
-   :name-bazaar-registrar.entry.state/reveal "Reveal Period"
-   :name-bazaar-registrar.entry.state/not-yet-available "Not Yet Available"})
 
 (defn debounce?
   "if the newly changed params are exactly one of expected ks"

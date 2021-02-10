@@ -4,7 +4,7 @@
     [district0x.ui.components.input :refer [input]]
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
-    [district0x.ui.utils :refer [format-eth-with-code truncate]]
+    [district0x.ui.utils :refer [format-date truncate]]
     [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input-ownership-validated]]
@@ -230,7 +230,7 @@
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
             node-hash (sha3 name)
-            registrar-entry @(subscribe [:name-bazaar-registrar/entry node-hash])]
+            registrar-registration @(subscribe [:name-bazaar-registrar/registration node-hash])]
         [:div.grid.submit-footer.offering-form
          [:div.name-ownership
           [ens-name-input-ownership-validated
@@ -242,14 +242,14 @@
             :on-change #(swap! form-data assoc :ens.record/owner (aget %2 "value"))}]]
          [:div.info
           [:p.input-info
-           "By transferring ownership you're giving full control over ENS name as well as its locked funds to a new owner."]
+           "By transferring ownership you're giving full control over ENS name to a new owner."]
           (when-not submit-disabled?
             [:p.input-info
              owner " will become owner of the " full-name ","
              (when top-level?
-               (str " as well as owner of the locked value "
-                    (format-eth-with-code
-                      (:name-bazaar-registrar.entry.deed/value registrar-entry))))])]
+               (str " as well as owner of the registration (i.e. registrant) expiring at "
+                    (format-date
+                      (:name-bazaar-registrar.registration/expiration-date registrar-registration))))])]
          [:div.button
           [transaction-button
            {:primary true

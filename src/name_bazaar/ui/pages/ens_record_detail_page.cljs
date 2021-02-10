@@ -7,7 +7,6 @@
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
-    [name-bazaar.ui.utils :refer [name->label-hash registrar-entry-state->text]]
     [name-bazaar.shared.utils :refer [name-label top-level-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
@@ -62,20 +61,15 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       (let [{:keys [:ens.record/name]} @route-params
-            {:keys [:name-bazaar-registrar.entry/state :name-bazaar-registrar.entry.deed/address
-                    :name-bazaar-registrar.entry/registration-date :name-bazaar-registrar.entry.deed/value
-                    :name-bazaar-registrar.entry.deed/address]}
-            @(subscribe [:name-bazaar-registrar/entry (name->label-hash name)])
-            state-text (registrar-entry-state->text (if (and (top-level-name? name)
-                                                             (< (count (name-label name)) 7))
-                                                      :name-bazaar-registrar.entry.state/not-yet-available
-                                                      state))]
+            {:keys [:name-bazaar-registrar.registration/available
+                    :name-bazaar-registrar.registration/expiration-date
+                    :name-bazaar-registrar.registration/owner]}
+            @(subscribe [:name-bazaar-registrar/registration (name->label-hash name)])]
         [app-layout {:meta {:title (str name " name details")
-                            :description (str "See details about " name ". Status: " state-text)}}
+                            :description (str "See details about " name ". Available:" available)}}
          [ui/Segment
           {:class "ens-record-details"}
           [:h1.ui.header.padded name]
           [ens-name-details
-           {:ens.record/name name
-            :name-bazaar-registrar.entry/state-text state-text}]]
+           {:ens.record/name name}]]
          [ens-record-offerings]]))))

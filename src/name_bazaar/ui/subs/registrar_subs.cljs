@@ -5,41 +5,41 @@
     [district0x.ui.utils :as d0x-ui-utils]
     [medley.core :as medley]
     [name-bazaar.shared.constants :as constants]
-    [name-bazaar.ui.utils :refer [registrar-entry-deed-loaded? seal-bid]]
+    [name-bazaar.ui.utils :refer [registrar-registration-loaded? seal-bid]]
     [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
-  :name-bazaar-registrar/entries
+  :name-bazaar-registrar/registrations
   (fn [db]
-    (:name-bazaar-registrar/entries db)))
+    (:name-bazaar-registrar/registrations db)))
 
 (reg-sub
-  :name-bazaar-registrar/entry
-  :<- [:name-bazaar-registrar/entries]
-  (fn [entries [_ label-hash]]
-    (get entries label-hash)))
+  :name-bazaar-registrar/registration
+  :<- [:name-bazaar-registrar/registrations]
+  (fn [registrations [_ label-hash]]
+    (get registrations label-hash)))
 
 (reg-sub
-  :name-bazaar-registrar.entry.deed/loaded?
+  :name-bazaar-registrar.registration/loaded?
   (fn [[_ label-hash]]
-    (subscribe [:name-bazaar-registrar/entry label-hash]))
-  registrar-entry-deed-loaded?)
+    (subscribe [:name-bazaar-registrar/registration label-hash]))
+  registrar-registration-loaded?)
 
 (reg-sub
-  :name-bazaar-registrar.entry.deed/active-address-owner?
+  :name-bazaar-registrar.registration/active-address-owner?
   (fn [[_ label-hash]]
     [(subscribe [:district0x/active-address])
-     (subscribe [:name-bazaar-registrar/entry label-hash])])
-  (fn [[active-address registrar-entry]]
-    (and active-address (= active-address (:name-bazaar-registrar.entry.deed/owner registrar-entry)))))
+     (subscribe [:name-bazaar-registrar/registration label-hash])])
+  (fn [[active-address registrar-registration]]
+    (and active-address (= active-address (:name-bazaar-registrar.registration/owner registrar-registration)))))
 
 (reg-sub
-  :name-bazaar-registrar.entry.deed/my-addresses-contain-owner?
+  :name-bazaar-registrar.registration/my-addresses-contain-owner?
   (fn [[_ label-hash]]
     [(subscribe [:district0x/my-addresses])
-     (subscribe [:name-bazaar-registrar/entry label-hash])])
-  (fn [[my-addresses registrar-entry]]
-    (contains? (set my-addresses) (:name-bazaar-registrar.entry.deed/address registrar-entry))))
+     (subscribe [:name-bazaar-registrar/registration label-hash])])
+  (fn [[my-addresses registrar-registration]]
+    (contains? (set my-addresses) (:name-bazaar-registrar.registration/owner registrar-registration))))
 
 (reg-sub
   :name-bazaar-registrar.transfer/tx-pending?
@@ -47,52 +47,52 @@
     [(subscribe [:district0x/tx-pending? :name-bazaar-registrar :transfer {:ens.record/label ens-record-label}])])
   first)
 
-(defn query-end-bidding-date
-  [registration-date {:keys [:minutes :hours] :as reveal-period}]
-  (t/minus registration-date
-           (cond
-             minutes
-             (t/minutes minutes)
-             hours
-             (t/hours hours))))
+;(defn query-end-bidding-date
+;  [registration-date {:keys [:minutes :hours] :as reveal-period}]
+;  (t/minus registration-date
+;           (cond
+;             minutes
+;             (t/minutes minutes)
+;             hours
+;             (t/hours hours))))
+;
+;(reg-sub
+;  :name-bazaar-registrar/end-bidding-date
+;  (fn [[_ label-hash]]
+;    [(subscribe [:name-bazaar-registrar/entry label-hash])
+;     (subscribe [:district0x/config :reveal-period])])
+;  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]}
+;        reveal-period]]
+;    (when registration-date
+;      (query-end-bidding-date registration-date reveal-period))))
+;
+;(reg-sub
+;  :name-bazaar-registrar/bidding-time-remaining
+;  (fn [[_ label-hash]]
+;    [(subscribe [:name-bazaar-registrar/end-bidding-date label-hash])
+;     (subscribe [:now])])
+;  (fn [[end-bidding-date now]]
+;    (d0x-ui-utils/time-remaining now end-bidding-date)))
+;
+;(reg-sub
+;  :name-bazaar-registrar/reveal-time-remaining
+;  (fn [[_ label-hash]]
+;    [(subscribe [:name-bazaar-registrar/entry label-hash])
+;     (subscribe [:now])])
+;  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]} now]]
+;    (d0x-ui-utils/time-remaining now registration-date)))
 
 (reg-sub
-  :name-bazaar-registrar/end-bidding-date
+  :name-bazaar-registrar/expiration-date
   (fn [[_ label-hash]]
-    [(subscribe [:name-bazaar-registrar/entry label-hash])
-     (subscribe [:district0x/config :reveal-period])])
-  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]}
-        reveal-period]]
-    (when registration-date
-      (query-end-bidding-date registration-date reveal-period))))
-
-(reg-sub
-  :name-bazaar-registrar/bidding-time-remaining
-  (fn [[_ label-hash]]
-    [(subscribe [:name-bazaar-registrar/end-bidding-date label-hash])
-     (subscribe [:now])])
-  (fn [[end-bidding-date now]]
-    (d0x-ui-utils/time-remaining now end-bidding-date)))
-
-(reg-sub
-  :name-bazaar-registrar/reveal-time-remaining
-  (fn [[_ label-hash]]
-    [(subscribe [:name-bazaar-registrar/entry label-hash])
-     (subscribe [:now])])
-  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]} now]]
-    (d0x-ui-utils/time-remaining now registration-date)))
-
-(reg-sub
-  :name-bazaar-registrar/end-ownership-date
-  (fn [[_ label-hash]]
-    [(subscribe [:name-bazaar-registrar/entry label-hash])])
-  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]}]]
-    (t/plus registration-date (t/years (:years constants/ownership-period)))))
+    [(subscribe [:name-bazaar-registrar/registration label-hash])])
+  (fn [[{:keys [:name-bazaar-registrar.registration/expiration-date]}]]
+    expiration-date))
 
 (reg-sub
   :name-bazaar-registrar/ownership-time-remaining
   (fn [[_ label-hash]]
-    [(subscribe [:name-bazaar-registrar/end-ownership-date label-hash])
+    [(subscribe [:name-bazaar-registrar/expiration-date label-hash])
      (subscribe [:now])])
   (fn [[end-ownership-date now]]
     (d0x-ui-utils/time-remaining now end-ownership-date)))
