@@ -32,7 +32,7 @@
         [:div
          [transaction-button
           {:primary true
-           :disabled (empty? @label)
+           :disabled (empty? @label) ;; TODO: check if the @label is available
            :pending-text "Registering..."
            :on-click (fn []
                        (when (and (not (empty? @label))
