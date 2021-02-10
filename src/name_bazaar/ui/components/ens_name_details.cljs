@@ -7,7 +7,7 @@
     [name-bazaar.ui.components.add-to-watched-names-button :refer [add-to-watched-names-button]]
     [name-bazaar.ui.components.ens-record.etherscan-link :refer [ens-record-etherscan-link]]
     [name-bazaar.ui.components.ens-record.general-info :refer [ens-record-general-info]]
-    [name-bazaar.ui.components.registrar-entry.general-info :refer [registrar-entry-general-info]]
+    [name-bazaar.ui.components.registrar-registration.general-info :refer [registrar-registration-general-info]]
     [name-bazaar.ui.utils :refer [namehash path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
@@ -44,7 +44,6 @@
             "Create Offering"]])))))
 
 (defn ens-name-details [{:keys [:ens.record/name
-                                :name-bazaar-registrar.entry/state-text
                                 :show-name-detail-link?] :as props}]
   [:div
    [:div.grid.layout-grid.submit-footer.ens-name-detail
@@ -53,9 +52,8 @@
      [ens-record-general-info
       {:ens.record/name name}]
      (when (top-level-name? name)
-       [registrar-entry-general-info
-        {:ens.record/name name
-         :name-bazaar-registrar.entry/state-text state-text}])]
+       [registrar-registration-general-info
+        {:ens.record/name name}])]
     [:div.description.links-section
      (when show-name-detail-link?
        [name-detail-link

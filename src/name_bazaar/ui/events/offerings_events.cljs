@@ -410,7 +410,7 @@
                             (filter :offering/top-level-name?)
                             (map :offering/label-hash))]
       {:dispatch-n [[:ens.records/load nodes]
-                    [:name-bazaar-registrar.entries/load label-hashes]]})))
+                    [:name-bazaar-registrar.registrations/load label-hashes]]})))
 
 (reg-event-fx
   :offerings/watch

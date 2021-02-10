@@ -13,7 +13,7 @@
   (let [{:keys [:offering/address :offering/name :offering/top-level-name? :offering/label
                 :offering/label-hash :offering/node]} offering
         active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
-        active-address-deed-owner? @(subscribe [:name-bazaar-registrar.entry.deed/active-address-owner? label-hash])]
+        active-address-registration-owner? @(subscribe [:name-bazaar-registrar.registration/active-address-owner? label-hash])]
     [transaction-button
      (r/merge-props
        {:secondary true
@@ -21,7 +21,7 @@
         :pending? @(subscribe [:transfer-ownership/tx-pending? node label top-level-name?])
         :disabled (or (and top-level-name?
                            (or (not active-address-ens-owner?)
-                               (not active-address-deed-owner?)))
+                               (not active-address-registration-owner?)))
                       (and (not top-level-name?)
                            (not active-address-ens-owner?)))
         :on-click #(dispatch [:offerings/transfer-ownership name address])}

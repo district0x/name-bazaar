@@ -121,25 +121,16 @@
         (update :offering-request/latest-round bn/number)
         (assoc :offering-request/node node))))
 
-(def registrar-entry-states
-  {0 :name-bazaar-registrar.entry.state/open
-   1 :name-bazaar-registrar.entry.state/auction
-   2 :name-bazaar-registrar.entry.state/owned
-   3 :name-bazaar-registrar.entry.state/forbidden
-   4 :name-bazaar-registrar.entry.state/reveal
-   5 :name-bazaar-registrar.entry.state/not-yet-available})
+(def registrar-registration-props [:name-bazaar-registrar.registration/available
+                                   :name-bazaar-registrar.registration/expiration-date
+                                   :name-bazaar-registrar.registration/owner])
 
-(def registrar-entry-props [:name-bazaar-registrar.entry/state :name-bazaar-registrar.entry.deed/address :name-bazaar-registrar.entry/registration-date
-                            :name-bazaar-registrar.entry/value :name-bazaar-registrar.entry/highest-bid])
-
-(defn parse-registrar-entry [entry & [{:keys [:parse-dates? :convert-to-ether?]}]]
-  (when entry
-    (-> (zipmap registrar-entry-props entry)
-        (update :name-bazaar-registrar.entry.deed/address #(if (= % "0x") zero-address %))
-        (update :name-bazaar-registrar.entry/state (comp registrar-entry-states bn/number))
-        (update :name-bazaar-registrar.entry/registration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
-        (update :name-bazaar-registrar.entry/value bn/number)
-        (update :name-bazaar-registrar.entry/highest-bid (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number)))))
+(defn parse-registrar-registration [registration & [{:keys [:parse-dates?]}]]
+  (when registration
+    (-> (zipmap registrar-registration-props registration)
+        (update :name-bazaar-registrar.registration/available boolean)
+        (update :name-bazaar-registrar.registration/expiration-date (if parse-dates? d0x-shared-utils/evm-time->date-time bn/number))
+        (update :name-bazaar-registrar.registration/owner #(if (= % "0x") zero-address %)))))
 
 (defn calculate-min-bid
   ([price min-bid-increase bid-count]
