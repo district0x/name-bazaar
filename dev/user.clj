@@ -6,15 +6,24 @@
    [taoensso.timbre :as log]
    [compojure.core :refer [defroutes]]
    [compojure.route :as route]
-   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
+   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+   [clojure.string :refer [starts-with?]]))
 
 (defn- wrap-default-index [next-handler]
   (fn [request]
-    (next-handler (assoc request :uri "/index.html"))))
+    (next-handler
+      ;; whenever there is a request for asset, try to serve the asset
+      ;; otherwise fallback to index.html
+      (if (or (starts-with? (:uri request) "/css/")
+              (starts-with? (:uri request) "/js/")
+              (starts-with? (:uri request) "/images/"))
+        request
+        (assoc request :uri "/index.html")))))
 
 (defroutes routes (route/resources "/"))
 
-;; Inspired by https://github.com/bhauman/lein-figwheel/issues/344#issuecomment-243918040
+;; Inspired by https://github.com/bhauman/lein-figwheel/issues/344#issuecomment-374774199
+;; and also https://github.com/quangv/re-frame-html5-routing/pull/1
 (def route-handler
   "This function is responsible to serve index.html on every web route.
   See :ring-handler in project.clj."
