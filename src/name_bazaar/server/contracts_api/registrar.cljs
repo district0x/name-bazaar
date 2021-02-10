@@ -26,7 +26,7 @@
                     :transferFrom
                     (:from opts)
                     owner
-                    (sha3 label hash)
+                    (sha3 label)
                     (merge {:gas 2000000}
                            opts))})
 
