@@ -9,7 +9,8 @@
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.db :refer [default-db]]
-    [name-bazaar.ui.utils :refer [namehash sha3 valid-ens-name? normalize get-ens-record-active-offering]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize get-ens-record-active-offering]]
+    [name-bazaar.shared.utils :refer [valid-ens-name?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
 
 (reg-event-fx

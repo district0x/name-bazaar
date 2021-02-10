@@ -9,7 +9,8 @@
     [name-bazaar.ui.components.offering.list-header :refer [offering-list-header]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [valid-ens-name? normalize]]
+    [name-bazaar.ui.utils :refer [normalize]]
+    [name-bazaar.shared.utils :refer [valid-ens-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
