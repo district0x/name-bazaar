@@ -3,8 +3,8 @@
     [clojure.string :as string]
     [district0x.ui.components.input :refer [input]]
     [name-bazaar.ui.constants :as constants]
-    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix valid-ens-name? path-for]]
-    [name-bazaar.shared.utils :refer [top-level-name?]]
+    [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix path-for]]
+    [name-bazaar.shared.utils :refer [top-level-name? valid-ens-name?]]
     [reagent.core :as r]
     [re-frame.core :refer [subscribe dispatch]]
     [soda-ash.core :as ui]))
