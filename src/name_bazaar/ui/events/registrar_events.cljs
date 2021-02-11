@@ -12,22 +12,24 @@
     [goog.string.format]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [sha3 seal-bid normalize path-for]]
-    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path after dispatch trim-v console]]
+    [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path after dispatch trim-v console subscribe]]
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
   :name-bazaar-registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
   (fn [{:keys [:db]} [form-data opts]]
-    (let [form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data)))
+    (let [active-address (subscribe [:district0x/active-address])
+          form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data))
+                                     :name-bazaar-registrar.registration/owner @active-address)
           name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   (merge
                     {:name (gstring/format "Transfer %s ownership" name)
                      :contract-key :name-bazaar-registrar
-                     :contract-method :transferFrom
+                     :contract-method :transfer-from
                      :form-data form-data
-                     :args-order [(:from opts) :ens.record/owner :ens.record/label-hash]
+                     :args-order [:name-bazaar-registrar.registration/owner :ens.record/owner :ens.record/label-hash]
                      :form-id (select-keys form-data [:ens.record/label])
                      :tx-opts {:gas 75000 :gas-price default-gas-price}}
                     opts)]})))
@@ -205,7 +207,6 @@
   :name-bazaar-registrar.registration/expiry-loaded
   interceptors
   (fn [_ [label-hash value]]
-    (println "expiry " label-hash value)
     {:dispatch [:name-bazaar-registrar.registration/loaded
                 label-hash
                 :name-bazaar-registrar.registration/expiration-date
