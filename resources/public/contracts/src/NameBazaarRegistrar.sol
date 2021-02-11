@@ -12,7 +12,7 @@ contract NameBazaarRegistrar is BaseRegistrarImplementation {
      * @dev Constructs a new Registrar, with the provided address as the owner of the root node.
      *
      * @param ens The address of the ENS
-     * @param rootNode The hash of the rootnode.
+     * @param rootNode The hash of the root node.
      */
     constructor(ENS ens, bytes32 rootNode) BaseRegistrarImplementation(ens, rootNode) public {}
 

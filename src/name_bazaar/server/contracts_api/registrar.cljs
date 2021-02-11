@@ -31,7 +31,7 @@
                            opts))})
 
 (defn registration-owner [{:keys [:ens.record/hash :ens.record/label]}]
-  (contract-call :name-bazaar-registrar :ownerOf (sha3 label hash)))
+  (contract-call :name-bazaar-registrar :owner-of (sha3 label hash)))
 
 (defn ens []
   (contract-call :name-bazaar-registrar :ens))

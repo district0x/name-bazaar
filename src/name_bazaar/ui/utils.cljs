@@ -135,8 +135,7 @@
 
 (defn registrar-registration-loaded? [registrar-registration]
   (boolean (or (d0x-shared-utils/zero-address? (:name-bazaar-registrar.registration/owner registrar-registration))
-               (and (:name-bazaar-registrar.registration/available registrar-registration)
-                    (:name-bazaar-registrar.registration/expiration-date registrar-registration)))))
+               (:name-bazaar-registrar.registration/expiration-date registrar-registration))))
 
 (defn ens-record-loaded? [ens-record]
   (boolean (:ens.record/owner ens-record)))

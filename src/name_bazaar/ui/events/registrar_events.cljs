@@ -4,13 +4,12 @@
     [cljs.spec.alpha :as s]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
-    [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address? rand-str zero-address]]
+    [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address? rand-str zero-address zero-address evm-time->date-time]]
     [district0x.ui.events :as d0x-ui-events]
     [district0x.ui.spec-interceptors :refer [validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-registrar-registration]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [sha3 seal-bid normalize path-for]]
     [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -171,19 +170,61 @@
   (fn [{:keys [:db]} [label-hashes]]
     (let [instance (d0x-ui-events/get-instance db :name-bazaar-registrar)]
       {:web3-fx.contract/constant-fns
-       {:fns (for [label-hash label-hashes]
-               {:instance instance
-                :method :ownerOf
-                :args [label-hash]
-                :on-success [:name-bazaar-registrar.registration/loaded label-hash]
-                :on-error [:district0x.log/error]})}})))
+       {:fns (flatten (for [label-hash label-hashes]
+                                [{:instance instance
+                                  :method :available
+                                  :args [label-hash]
+                                  :on-success [:name-bazaar-registrar.registration/available-loaded label-hash]
+                                  :on-error [:district0x.log/error]}
+                                 {:instance instance
+                                  :method :name-expires
+                                  :args [label-hash]
+                                  :on-success [:name-bazaar-registrar.registration/expiry-loaded label-hash]
+                                  :on-error [:district0x.log/error]}
+                                 {:instance instance
+                                  :method :owner-of
+                                  :args [label-hash]
+                                  :on-success [:name-bazaar-registrar.registration/owner-loaded label-hash]
+                                  ;; ownerOf contract call can fail if the name is not owned
+                                  ;; in that case, we want to set zero address to the db.
+                                  :on-error [:name-bazaar-registrar.registration/owner-loaded
+                                             label-hash
+                                             zero-address]}
+                                 ]))}})))
+
+(reg-event-fx
+  :name-bazaar-registrar.registration/available-loaded
+  interceptors
+  (fn [_ [label-hash value]]
+    {:dispatch [:name-bazaar-registrar.registration/loaded
+                label-hash
+                :name-bazaar-registrar.registration/available
+                value]}))
+
+(reg-event-fx
+  :name-bazaar-registrar.registration/expiry-loaded
+  interceptors
+  (fn [_ [label-hash value]]
+    (println "expiry " label-hash value)
+    {:dispatch [:name-bazaar-registrar.registration/loaded
+                label-hash
+                :name-bazaar-registrar.registration/expiration-date
+                (evm-time->date-time (bn/number value))]}))
+
+(reg-event-fx
+  :name-bazaar-registrar.registration/owner-loaded
+  interceptors
+  (fn [_ [label-hash value]]
+    {:dispatch [:name-bazaar-registrar.registration/loaded
+                label-hash
+                :name-bazaar-registrar.registration/owner
+                value]}))
 
 (reg-event-fx
   :name-bazaar-registrar.registration/loaded
   interceptors
-  (fn [{:keys [:db]} [label-hash registrar-registration]]
-    (let [registrar-registration (parse-registrar-registration registrar-registration {:parse-dates? true})]
-      {:db (update-in db [:name-bazaar-registrar/registrations label-hash] merge registrar-registration)})))
+  (fn [{:keys [:db]} [label-hash db-keyword value]]
+    {:db (assoc-in db [:name-bazaar-registrar/registrations label-hash db-keyword] value)}))
 
 ;(reg-event-fx
 ;  :name-bazaar-registrar.entry.deed/load
