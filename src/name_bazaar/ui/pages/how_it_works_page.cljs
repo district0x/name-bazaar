@@ -24,14 +24,14 @@
       [youtube
        {:src "https://www.youtube.com/embed/pmtVMaqk_eg"}]]
      [:p "There’s a persistent search bar at the top of the website, no matter what page you’re on. Simply type in a name you’re looking for and you’re off to the races! By clicking the “Offerings” button at the top of the left-hand menu, a more " [:a {:href (path-for :route.offerings/search)} "detailed offering search page"] " is available, where you can filter by a number of intuitive parameters like price, buy now vs. auction, and so on. "]
-     [:p.centered [:div.flow-image.buy]]
+     [:p.centered [:span.flow-image.buy]]
      [:p "Once you’ve found a name you’d like to buy or bid on, click on it for more information. If the offering is a “buy now” type, you can immediately pay the listed price to acquire the name. If it’s an “auction” type, you can enter a winning bid, and watch the name to be notified if you get out bid, or if the auction closes."]
      [:h1.ui.header "Selling Names"]
      [:p.centered
       [youtube
        {:src "https://www.youtube.com/embed/xyB4q1i51xI"}]]
      [:p "Any names already registered and owned by a MetaMask or Parity address can be listed for sale on the site through a simple " [:a {:href (path-for :route.offerings/create)} "Create Offering"] " page. When creating an auction, type the name you’d like to sell, the starting price, the “Minimum Bid Increase”, and the time you’d like the auction to end. You can also adjust the “Time Extension” slider, to allow the auction to continue in case any new bids roll in at the last minute."]
-     [:p.centered [:div.flow-image.sell]]
+     [:p.centered [:span.flow-image.sell]]
      [:p "In addition to the auction feature, sellers can also utilize the “Buy Now” listing type, which is a firm set price to immediately buy the name."]
      [:h1.ui.header "Watching and Requesting Names"]
      [:p.centered
