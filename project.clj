@@ -118,7 +118,9 @@
                           [karma-chrome-launcher "2.0.0"]
                           [karma-cli "1.0.1"]
                           [karma-cljs-test "0.1.0"]
-                          [karma-safari-launcher "1.0.0"]]
+                          [karma-safari-launcher "1.0.0"]
+                          [cypress "6.4.0"]
+                          ["@testing-library/cypress" "7.0.3"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             }}}
