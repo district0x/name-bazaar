@@ -80,10 +80,11 @@
                             :route :route.registrar/instant-registration
                             :class :register-name
                             :icon "pencil"}
-                           {:text "Register Name"
-                            :route :route.registrar/register
-                            :class :register-name
-                            :icon "pencil"}
+                           ;; TODO registrations support over new eth registrar not yet available
+                           ;{:text "Register Name"
+                           ; :route :route.registrar/register
+                           ; :class :register-name
+                           ; :icon "pencil"}
                            {:text "How it works"
                             :route :route/how-it-works
                             :class :how-it-works
