@@ -52,19 +52,19 @@
             instance (get-instance db :public-resolver)
             args [node]]
 
-        ;; (prn instance)
-
         {:web3-fx.contract/constant-fns
          {:fns
           [{:instance instance
             :method :name
             :args args
             :on-success [:public-resolver.name/loaded addr]
-            :on-error [::logging/error "Failed to load name from public resolver" {:address addr
+            ;; If there is no mapping for the name in public resolver, an error will be triggered in web3
+            ;; https://ethereum.stackexchange.com/questions/1741/what-does-the-web3-bignumber-not-a-base-16-number-error-mean
+            ;; which is probably due to an old version of web3.
+            :on-error [::logging/warn "Failed to load name from public resolver. There is probably no mapping defined for this address." {:address addr
                                                                                    :contract {:name :public-resolver
                                                                                               :method :name
-                                                                                              :args args}}
-                       :public-resolver.name/load]}]}}))))
+                                                                                              :args args}}]}]}}))))
 
 (reg-event-fx
   :public-resolver.name/loaded
