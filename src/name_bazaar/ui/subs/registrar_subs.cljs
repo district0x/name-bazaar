@@ -47,41 +47,6 @@
     [(subscribe [:district0x/tx-pending? :name-bazaar-registrar :transfer {:ens.record/label ens-record-label}])])
   first)
 
-;(defn query-end-bidding-date
-;  [registration-date {:keys [:minutes :hours] :as reveal-period}]
-;  (t/minus registration-date
-;           (cond
-;             minutes
-;             (t/minutes minutes)
-;             hours
-;             (t/hours hours))))
-;
-;(reg-sub
-;  :name-bazaar-registrar/end-bidding-date
-;  (fn [[_ label-hash]]
-;    [(subscribe [:name-bazaar-registrar/entry label-hash])
-;     (subscribe [:district0x/config :reveal-period])])
-;  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]}
-;        reveal-period]]
-;    (when registration-date
-;      (query-end-bidding-date registration-date reveal-period))))
-;
-;(reg-sub
-;  :name-bazaar-registrar/bidding-time-remaining
-;  (fn [[_ label-hash]]
-;    [(subscribe [:name-bazaar-registrar/end-bidding-date label-hash])
-;     (subscribe [:now])])
-;  (fn [[end-bidding-date now]]
-;    (d0x-ui-utils/time-remaining now end-bidding-date)))
-;
-;(reg-sub
-;  :name-bazaar-registrar/reveal-time-remaining
-;  (fn [[_ label-hash]]
-;    [(subscribe [:name-bazaar-registrar/entry label-hash])
-;     (subscribe [:now])])
-;  (fn [[{:keys [:name-bazaar-registrar.entry/registration-date]} now]]
-;    (d0x-ui-utils/time-remaining now registration-date)))
-
 (reg-sub
   :name-bazaar-registrar/expiration-date
   (fn [[_ label-hash]]

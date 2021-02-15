@@ -8,7 +8,8 @@
 
 (def routes
   ["/" [[["name/" :ens.record/name] :route.ens-record/detail]
-        ["register" :route.registrar/register]
+        ;; TODO registrations support over new eth registrar not yet available
+        ;["register" :route.registrar/register]
         ["instant-registration" :route.registrar/instant-registration]
         ["watched-names" :route/watched-names]
         [["user/" :user/address "/offerings"] :route.user/offerings]
