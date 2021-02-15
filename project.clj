@@ -109,7 +109,6 @@
                        ;; TODO: remove, they should be installed automatically
                        [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
-                       [openzeppelin-solidity "2.3.0"]
                        [semantic-ui "2.4.1"]
                        [source-map-support "0.4.0"]
                        [ws "2.0.1"]
