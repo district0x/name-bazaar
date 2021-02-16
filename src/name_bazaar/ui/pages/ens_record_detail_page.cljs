@@ -7,6 +7,7 @@
     [name-bazaar.ui.components.offering.infinite-list :refer [offering-infinite-list]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.components.offering.offerings-order-by-select :refer [offerings-order-by-select]]
+    [name-bazaar.ui.utils :refer [name->label-hash]]
     [name-bazaar.shared.utils :refer [name-label top-level-name?]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
