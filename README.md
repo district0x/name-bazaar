@@ -139,14 +139,13 @@ node server-tests/server-tests.js
 
 ## Frontend (browser) tests:
 
-To run tests run one of the two command below. The former is more suitable for debugging,
-the latter should be faster as it runs in a headless mode.
-
+To run browser tests use the following command:
 ```
 lein npm run cypress-open
-# or
-lein npm run cypress-run
 ```
+
+Tests connect to a running app on `http://localhost:4541`. It is recommended to run the
+tests with clear ganache network, otherwise the tests will be slower or fail.
 
 ## Development env through nginx:
 
