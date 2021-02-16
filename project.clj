@@ -114,18 +114,13 @@
                        [ws "2.3.1"]
                        [xhr2 "0.1.4"]]
         :devDependencies [[ethlint "1.2.5"]
-                          [karma "1.5.0"]
-                          [karma-chrome-launcher "2.0.0"]
-                          [karma-cli "1.0.1"]
-                          [karma-cljs-test "0.1.0"]
-                          [karma-safari-launcher "1.0.0"]
                           [cypress "6.4.0"]
                           ["@testing-library/cypress" "7.0.3"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
+                            :cypress-open " ./node_modules/cypress/bin/cypress open"
+                            :cypress-run " ./node_modules/cypress/bin/cypress run"
                             }}}
-
-  :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
 
   :min-lein-version "2.5.3"
 
