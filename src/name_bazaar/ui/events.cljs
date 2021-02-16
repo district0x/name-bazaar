@@ -194,19 +194,19 @@
   :name/transfer-ownership
   interceptors
   (fn [{:keys [:db]} [name owner]]
-    {:dispatch
-     (if (top-level-name? name)
-       [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
-                                         :ens.record/owner owner}
-        {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
-         :on-tx-receipt-n [[:ens.records/load [(namehash name)]
-                            {:load-resolver? true}]
-                           [:district0x.snackbar/show-message
-                            (gstring/format "Ownership of %s was transferred to %s"
-                                            name
-                                            (truncate owner 10))]]}]
-       [:ens/set-owner {:ens.record/name name
-                        :ens.record/owner owner}])}))
+    {:dispatch-n
+      [[:ens/set-owner {:ens.record/name name
+                        :ens.record/owner owner}]
+       (if (top-level-name? name)
+         [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
+                                           :ens.record/owner owner}
+          {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
+           :on-tx-receipt-n [[:ens.records/load [(namehash name)]
+                             {:load-resolver? true}]
+                             [:district0x.snackbar/show-message
+                              (gstring/format "Ownership of %s was transferred to %s"
+                                              name
+                                              (truncate owner 10))]]}])]}))
 
 (reg-event-fx
   :saved-searches/add
