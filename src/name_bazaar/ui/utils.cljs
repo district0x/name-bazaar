@@ -38,6 +38,9 @@
 (defn valid-ens-subname? [subname]
   (and subname (valid-ens-name? subname) (not (string/includes? subname "."))))
 
+(defn valid-ens-subname? [subname]
+  (and subname (valid-ens-name? subname) (not (string/includes? subname "."))))
+
 (defn ensure-registrar-root [name]
   (if-not (string/ends-with? name constants/registrar-root)
     (str name constants/registrar-root)
