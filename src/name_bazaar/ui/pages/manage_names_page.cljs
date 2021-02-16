@@ -257,7 +257,7 @@
             :pending? @(subscribe [:transfer-ownership/tx-pending? (namehash full-name) name top-level?])
             :pending-text "Transferring ownership..."
             :on-click #(dispatch [:name/transfer-ownership full-name owner])}
-           "Transfer ownership"]]]))))
+           "Transfer Ownership"]]]))))
 
 (defmethod page :route.user/manage-names []
   (fn []
@@ -283,7 +283,7 @@
                   (strip-root-registrar-suffix (normalize name)))
           :address address}]]
        [ui/Segment
-        [:h1.ui.header.padded "Transfer ownership"]
+        [:h1.ui.header.padded "Transfer Ownership"]
         [transfer-ownership-form
          {:name (when (and name (valid-ens-name? name))
                   (strip-root-registrar-suffix (normalize name)))
