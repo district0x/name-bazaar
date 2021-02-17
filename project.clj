@@ -218,12 +218,5 @@
                                    :target :nodejs,
                                    :optimizations :none,
                                    :verbose false
-                                   :source-map true}}
+                                   :source-map true}}]})
 
-                       ;; Testing on client-side
-                       {:id "browser-tests"
-                        :source-paths ["src" "test"]
-                        :compiler {:output-to "browser-tests/browser-tests.js",
-                                   :output-dir "browser-tests",
-                                   :main browser.run-tests
-                                   :optimizations :none}}]})
