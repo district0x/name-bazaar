@@ -1,7 +1,10 @@
 /// <reference types="cypress" />
 
 function findListItemByText(text) {
-  return cy.get('.expandable-list-item').filter(`:contains("${text}")`)
+  return cy
+    .get('.expandable-list-item')
+    .filter(`:contains("${text}")`)
+    .should('be.visible')
 }
 
 describe('Auction offering', () => {
@@ -54,10 +57,7 @@ describe('Auction offering', () => {
       before(() => {
         cy.switchAccount(1)
         cy.findByText('Offerings').click()
-        cy.get('.expandable-list-item')
-          .filter(`:contains("${url}")`)
-          .should('be.visible')
-          .click()
+        findListItemByText(url).click()
         cy.findByRole('button', { name: 'Bid Now' })
           .should('be.visible')
           .click({ force: true })
@@ -80,22 +80,18 @@ describe('Auction offering', () => {
 
       it('correctly displays My Bids section', () => {
         cy.switchAccount(0)
-        cy.get('.expandable-list-item')
-          .filter(`:contains("${url}")`)
-          .within(() => {
-            cy.get(':nth-child(3)').contains('2') // total bids
-            cy.get(':nth-child(5)').contains('1.7') // highest bid
-          })
+        findListItemByText(url).within(() => {
+          cy.get(':nth-child(3)').contains('2') // total bids
+          cy.get(':nth-child(5)').contains('1.7') // highest bid
+        })
 
         cy.switchAccount(1)
-        cy.get('.expandable-list-item')
-          .filter(`:contains("${url}")`)
+        findListItemByText(url)
           .contains('Your bid is winning this auction!')
           .should('not.exist')
 
         cy.switchAccount(2)
-        cy.get('.expandable-list-item')
-          .filter(`:contains("${url}")`)
+        findListItemByText(url)
           .contains('Your bid is winning this auction!')
           .should('exist')
       })

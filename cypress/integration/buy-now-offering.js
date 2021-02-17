@@ -1,7 +1,10 @@
 /// <reference types="cypress" />
 
 function findListItemByText(text) {
-  return cy.get('.expandable-list-item').filter(`:contains("${text}")`)
+  return cy
+    .get('.expandable-list-item')
+    .filter(`:contains("${text}")`)
+    .should('be.visible')
 }
 
 describe('Buy now offering', () => {
@@ -75,9 +78,7 @@ describe('Buy now offering', () => {
       it('will be listed as "Sold" for the previous owner', () => {
         cy.switchAccount(0)
         cy.findByText('My Offerings').click()
-        cy.get('.expandable-list-item')
-          .filter(`:contains("${url}")`)
-          .contains('Sold')
+        findListItemByText(url).contains('Sold')
       })
     })
   })
