@@ -66,7 +66,7 @@ describe('Buy now offering', () => {
         cy.switchAccount(1)
         cy.findByText('Offerings').click()
         cy.findByText(url).click({ force: true })
-        cy.findByRole('button', { name: 'Buy' }).click()
+        cy.findByRole('button', { name: 'Buy' }).click({ force: true })
         cy.closeTransactionLog()
       })
 

@@ -73,9 +73,14 @@ Cypress.Commands.add('registerDomain', () => {
   cy.visit('http://localhost:4544/instant-registration')
   cy.hideDevtools()
 
+  // TODO: make this deterministic (e.g. use fixture of english nouns)
   const domain = Math.random().toString(36).substr(2, 10)
 
-  cy.getInputByLabel('Name').type(domain)
+  // sometimes letters are skipped when typing shortly after page loads
+  cy.getInputByLabel('Name').type(domain, { delay: 100 })
+  // fail early in such that case
+  cy.getInputByLabel('Name').should('have.value', domain)
+
   cy.findByRole('button', { name: 'Register' }).click()
   cy.closeTransactionLog()
 
