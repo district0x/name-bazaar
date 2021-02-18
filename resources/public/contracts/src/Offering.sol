@@ -176,11 +176,13 @@ contract Offering {
     function doTransferOwnership(address payable _newOwner)
         private
     {
-        ens.setOwner(offering.node, _newOwner);
         if (isNodeTLDOfRegistrar()) {
             uint256 tokenId = uint256(offering.labelHash);
             BaseRegistrar registrar = BaseRegistrar(ens.owner(rootNode));
+            registrar.reclaim(tokenId, _newOwner);
             registrar.transferFrom(registrar.ownerOf(tokenId), _newOwner, tokenId);
+        } else {
+            ens.setOwner(offering.node, _newOwner);
         }
     }
 
@@ -209,7 +211,7 @@ contract Offering {
         if (isNodeTLDOfRegistrar()) {
             uint256 tokenId = uint256(offering.labelHash);
             address registrationOwner = BaseRegistrar(ens.owner(rootNode)).ownerOf(tokenId);
-            return ens.owner(offering.node) == address(this) && registrationOwner == address(this);
+            return registrationOwner == address(this);
         } else {
             return ens.owner(offering.node) == address(this);
         }

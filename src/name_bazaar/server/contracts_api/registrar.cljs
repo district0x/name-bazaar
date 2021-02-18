@@ -36,3 +36,5 @@
 (defn ens []
   (contract-call :name-bazaar-registrar :ens))
 
+(defn on-transfer [& args]
+  (apply contract-call :name-bazaar-registrar :Transfer args))

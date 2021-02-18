@@ -3,7 +3,7 @@
 # TODO find a way to specify node_modules as an additional source root for solc
 # TODO or migrate to truffle and the entire compilation workflow will be changed
 ENS=$(readlink -f ./node_modules/@ensdomains)
-OZS=$(readlink -f ./node_modules/@ensdomains/ethregistrar/node_modules/openzeppelin-solidity)
+OZS=$(readlink -f ./node_modules/openzeppelin-solidity)
 
 cd resources/public/contracts/src
 

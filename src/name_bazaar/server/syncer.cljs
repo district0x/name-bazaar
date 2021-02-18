@@ -26,11 +26,9 @@
 
 (defn node-owner? [offering-address {:keys [:offering/node :offering/top-level-name? :offering/label]}]
   (let [ens-owner (ens/owner {:ens.record/node node})]
-    (and (= ens-owner offering-address)
-         (if top-level-name?
-           (= (registrar/registration-owner {:ens.record/label label})
-              offering-address)
-           true))))
+    (if top-level-name?
+      (= (registrar/registration-owner {:ens.record/label label}) offering-address)
+      (= ens-owner offering-address))))
 
 
 (defn get-offering [offering-address]
@@ -101,6 +99,15 @@
                                        :offering/node-owner? (node-owner? owner offering)})))))
 
 
+(defn on-registrar-transfer [err {{:keys [:from :to :id] :as args} :args}]
+  (try-catch
+    (when (db/offering-exists? to)
+      (let [offering (offering/get-offering to)]
+        (log/info info-text {:args args} ::on-registrar-new-owner)
+        (db/set-offering-node-owner?! {:offering/address to
+                                       :offering/node-owner? (node-owner? to offering)})))))
+
+
 (defn start [{:keys [:delay]
               :or {delay 0}
               :as args}]
@@ -113,6 +120,7 @@
    (offering-registry/on-offering-changed {:event-type "bid"} "latest" on-offering-bid)
    (ens/on-new-owner {} "latest" on-ens-transfer)
    (ens/on-transfer {} "latest" on-ens-transfer)
+   (registrar/on-transfer {} "latest" on-registrar-transfer)
 
    (-> (offering-registry/on-offering-added {} {:from-block 0 :to-block "latest"})
        (replay-past-events on-offering-changed {:delay delay}))
