@@ -73,6 +73,7 @@
                             :endpoints {:port 6200
                                         :middlewares [logging-middlewares]}
                             :web3 {:port 8549}
+                            :db {:opts {:memory true}}
                             :emailer {:print-mode? true
                                       :private-key "25677d268904ea651f84e37cfd580696c5c793dcd9730c415bf03b96003c09e9ef8"}
                             :ui {:public-key "2564e15aaf9593acfdc633bd08f1fc5c089aa43972dd7e8a36d67825cd0154602da47d02f30e1f74e7e72c81ba5f0b3dd20d4d4f0cc6652a2e719a0e9d4c7f10943"
