@@ -652,16 +652,17 @@
   :offerings/transfer-ownership
   interceptors
   (fn [{:keys [:db]} [name owner]]
-    {:dispatch-n
-      [[:ens/set-owner {:ens.record/name name
-                        :ens.record/owner owner}]
-       (if (top-level-name? name)
-         [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
-                                           :ens.record/owner owner}
-          {:result-href (path-for :route.offerings/detail {:offering/address owner})
-           :on-tx-receipt-n [[:offerings.ownership/load [owner]]
-                             [:district0x.snackbar/show-message
-                              (gstring/format "Ownership of %s was transferred" name)]]}])]}))
+    {:dispatch
+      (conj
+        (if (top-level-name? name)
+          [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
+                                            :ens.record/owner owner}]
+          [:ens/set-owner {:ens.record/name name
+                           :ens.record/owner owner}])
+        {:result-href (path-for :route.offerings/detail {:offering/address owner})
+         :on-tx-receipt-n [[:offerings.ownership/load [owner]]
+                           [:district0x.snackbar/show-message
+                            (gstring/format "Ownership of %s was transferred" name)]]})}))
 
 (reg-event-fx
   :offerings.total-count/loaded
