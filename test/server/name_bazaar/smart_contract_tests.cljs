@@ -285,9 +285,6 @@
       (is (registrar/transfer! {:ens.record/label "tld"
                                 :ens.record/owner addr1}
                                {:from addr0}))
-      (is (ens/set-owner! {:ens.record/name "tld.eth"
-                           :ens.record/owner addr0}
-                          {:from addr1}))
       (is (= addr1 (registrar/registration-owner {:ens.record/label "tld"})))
       (is (= addr0 (ens/owner {:ens.record/name "tld.eth"}))))
 
@@ -417,12 +414,9 @@
               log-tx! (fn [id result] (swap! transaction-log assoc id result) result)]
 
           (testing "Transferring ownership to the offer"
-            (let
-              [{tx1 :set-owner-tx tx2 :transfer-tx}
-               (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
-                                    {:from addr1})]
-              (is (log-tx! :t1-transfer-tx1 tx1))
-              (is (log-tx! :t1-transfer-tx2 tx2))))
+            (is (log-tx! :t1-transfer
+                         (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
+                                              {:from addr1}))))
 
           (testing "User 2 can place a proper bid"
             (is (log-tx! :t2-user2-place-bid
@@ -500,10 +494,8 @@
             (is (= addr3 (registrar/registration-owner {:ens.record/label "abc"}))))
 
           (testing "Ensuring the previous owner gets the funds"
-            (let [bid-1-tx-1 (:t1-transfer-tx1 @transaction-log)
-                  bid-1-tx-2 (:t1-transfer-tx2 @transaction-log)
-                  tx-total-cost (get-transaction-cost bid-1-tx-1)
-                  tx-total-cost (bn/+ tx-total-cost (get-transaction-cost bid-1-tx-2))
+            (let [bid-tx-1 (:t1-transfer @transaction-log)
+                  tx-total-cost (get-transaction-cost bid-tx-1)
                   expected-balance (bn/+ balance-of-1 bid-value-user-3-overbid)
                   expected-balance (bn/- expected-balance tx-total-cost)
                   actual-balance (web3-eth/get-balance @web3 addr1)]

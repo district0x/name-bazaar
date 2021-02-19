@@ -72,10 +72,6 @@
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
 
-          (testing "The name ownership must be transferred to the offering"
-            (is (= offering (ens/owner {:ens.record/node (namehash
-                                                           "abc.eth")}))))
-
           (testing "Ensuring offering gets the registration"
             (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))
           (testing "For Buy Now offering, original owner can reclaim ENS name ownership (for TLD also registration ownership)"
@@ -158,9 +154,6 @@
             (testing "Transferring ownership to the offering"
               (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                        {:from addr1})))
-
-            (testing "The name ownership must be transferred to the offering"
-              (is (= offering (ens/owner {:ens.record/node (namehash "abc.eth")}))))
 
             (testing "Ensuring offering gets the registration"
               (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))
@@ -249,9 +242,6 @@
           (testing "Transferring ownership to the offering"
             (is (registrar/transfer! {:ens.record/label "abc" :ens.record/owner offering}
                                      {:from addr1})))
-
-          (testing "The name ownership must be transferred to the offering"
-            (is (= offering (ens/owner {:ens.record/node (namehash "abc.eth")}))))
 
           (testing "Ensuring offering gets the registration"
             (is (= offering (registrar/registration-owner {:ens.record/label "abc"}))))

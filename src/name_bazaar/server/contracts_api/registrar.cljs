@@ -17,18 +17,21 @@
                         opts)))
 
 (defn transfer! [{:keys [:ens.record/label :ens.record/owner]} & [opts]]
-  {:set-owner-tx
-     (ens/set-owner! {:ens.record/name (str label ".eth")
-                      :ens.record/owner owner}
-                     opts)
-   :transfer-tx
-     (contract-call :name-bazaar-registrar
-                    :transferFrom
-                    (:from opts)
-                    owner
-                    (sha3 label)
-                    (merge {:gas 2000000}
-                           opts))})
+  (contract-call :name-bazaar-registrar
+                 :transfer-from
+                 (:from opts)
+                 owner
+                 (sha3 label)
+                 (merge {:gas 2000000}
+                        opts)))
+
+(defn reclaim! [{:keys [:ens.record/label :ens.record/owner]} & [opts]]
+  (contract-call :name-bazaar-registrar
+                 :reclaim
+                 (sha3 label)
+                 owner
+                 (merge {:gas 2000000}
+                        opts)))
 
 (defn registration-owner [{:keys [:ens.record/hash :ens.record/label]}]
   (contract-call :name-bazaar-registrar :owner-of (sha3 label hash)))
