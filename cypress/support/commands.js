@@ -25,7 +25,6 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
 import '@testing-library/cypress/add-commands'
-import 'cypress-wait-until'
 
 // There are some non breaking errors in the app which make cypress test fail
 // TODO: fix those errors and remove this handler
