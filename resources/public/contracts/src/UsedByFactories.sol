@@ -16,8 +16,8 @@ contract UsedByFactories is Ownable {
         _;
     }
 
-    function setFactories(address[] memory factories, bool _isFactory)
-        public
+    function setFactories(address[] calldata factories, bool _isFactory)
+        external
         onlyOwner
     {
         for(uint i = 0; i < factories.length; i++) {

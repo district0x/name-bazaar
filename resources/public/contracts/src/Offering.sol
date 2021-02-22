@@ -242,7 +242,7 @@ contract Offering {
     }
 
     /**
-    * @dev Returns whether offerring was cancelled in emergency, by emergency multisig
+    * @dev Returns whether offering was cancelled in emergency, by emergency multisig
     * @return bool true if offering was cancelled in emergency
     */
     function wasEmergencyCancelled() public view returns(bool) {

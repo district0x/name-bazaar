@@ -41,7 +41,7 @@ contract OfferingRegistry is UsedByFactories {
      * @param version uint Version of offering contract
      */
     function addOffering(address offering, bytes32 node, address owner, uint version)
-        public
+        external
         onlyFactory
     {
         isOffering[offering] = true;
@@ -56,7 +56,7 @@ contract OfferingRegistry is UsedByFactories {
      * @param eventType base32 Short string identifying offering change
      * @param extraData uint[] Arbitrary data associated with event
      */
-    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] memory extraData) public {
+    function fireOnOfferingChanged(uint version, bytes32 eventType, uint[] calldata extraData) external {
         require(isOffering[msg.sender]);
         emit onOfferingChanged(msg.sender, version, eventType, extraData);
     }
