@@ -64,7 +64,7 @@ contract AuctionOffering is Offering {
      */
     function construct(
         bytes32 _node,
-        string memory _name,
+        string calldata _name,
         bytes32 _labelHash,
         address payable _originalOwner,
         uint128 _version,
@@ -72,7 +72,7 @@ contract AuctionOffering is Offering {
         uint64 _endTime,
         uint64 _extensionDuration,
         uint _minBidIncrease
-    ) public {
+    ) external {
         super.construct(
             _node,
             _name,
@@ -194,7 +194,7 @@ contract AuctionOffering is Offering {
         uint64 _extensionDuration,
         uint _minBidIncrease
     )
-        public
+        external
         onlyOriginalOwner
         onlyWithoutBids
     {
@@ -236,7 +236,7 @@ contract AuctionOffering is Offering {
     * @param bidder address The address with pending returns
     * @return uint The amount of pending returns
     */
-    function pendingReturns(address bidder) public view returns (uint) {
+    function pendingReturns(address bidder) external view returns (uint) {
         return auctionOffering.pendingReturns[bidder];
     }
 

@@ -22,7 +22,7 @@ contract NameBazaarRegistrar is BaseRegistrarImplementation {
      *
      * @param _hash The sha3 hash of the label to register.
      */
-    function register(bytes32 _hash) public payable {
+    function register(bytes32 _hash) external payable {
         controllers[msg.sender] = true;
         emit ControllerAdded(msg.sender);
         _register(uint256(_hash), msg.sender, 365 days, true);

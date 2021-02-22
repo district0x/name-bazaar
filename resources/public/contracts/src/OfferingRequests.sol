@@ -76,17 +76,17 @@ contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
         return keccak256(abi.encodePacked(namehash(nameSlice.toString()), keccak256(label)));
     }
 
-    function getRequest(bytes32 node) public view returns(string memory, uint, uint) {
+    function getRequest(bytes32 node) external view returns(string memory, uint, uint) {
         OfferingRequests.Requests storage request = requests[node];
         uint latestRound = request.latestRound;
         return (request.name, request.requesters[latestRound].length, latestRound);
     }
 
-    function getRequesters(bytes32 node, uint round) public view returns(address[] memory) {
+    function getRequesters(bytes32 node, uint round) external view returns(address[] memory) {
         return requests[node].requesters[round];
     }
 
-    function hasRequested(bytes32 node, address[] memory addresses) public view returns(bool[] memory _hasRequested) {
+    function hasRequested(bytes32 node, address[] calldata addresses) external view returns(bool[] memory _hasRequested) {
         _hasRequested = new bool[](addresses.length);
         uint latestRound = requests[node].latestRound;
 
