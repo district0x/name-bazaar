@@ -129,8 +129,7 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                     "target"
                                     "dev-server"
-                                    "server-tests"
-                                    "browser-tests"]
+                                    "server-tests"]
 
   :figwheel {:server-port 4544
              :css-dirs ["resources/public/css"]
