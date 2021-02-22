@@ -12,7 +12,7 @@
             [district0x.ui.components.transaction-button :as transaction-button]
             [district0x.ui.utils :as d0x-ui-utils]
             [goog.string :as gstring]
-            [name-bazaar.shared.constants :as shared-constants]
+            [name-bazaar.shared.constants :refer [supported-tld-length?]]
             [name-bazaar.shared.utils :as nb-shared-utils]
             [name-bazaar.ui.components.app-layout :as app-layout]
             [name-bazaar.ui.components.ens-record.ens-name-input :as ens-name-input]
@@ -56,14 +56,11 @@
                                       :auction-no-user-made-bid {:text "names are waiting for a bid"}
                                       :reveal-phase-user-winning {:text "bids are winning"}})
 
-(defn- supported-length? [name]
-  (>= (count name) shared-constants/min-name-length))
-
 (defn- top-level? [name]
   (nb-shared-utils/top-level-name? (str name constants/registrar-root)))
 
 (defn load-bid-state [name]
-  (when (and (supported-length? name)
+  (when (and (supported-tld-length? name)
              (top-level? name))
     (re-frame/dispatch [:registration-bids.state.ens-record/load name])))
 
@@ -389,7 +386,7 @@
                                           (and (not (empty? @label)) (not (top-level? @label)))
                                           [::subname nil]
 
-                                          (and (not (empty? @label)) (not (supported-length? @label)))
+                                          (and (not (empty? @label)) (not (supported-tld-length? @label)))
                                           [::invalid-length nil]
                                           :else @(re-frame/subscribe [:name-bazaar-registrar/auction-state label-hash]))
             {:keys [:name-bazaar-registrar.entry/registration-date :name-bazaar-registrar.entry/highest-bid :name-bazaar-registrar.entry.deed/owner]} @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash])
