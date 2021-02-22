@@ -17,7 +17,7 @@
      (-> props (dissoc :ens.record/name)
          (dissoc :name-bazaar-registrar.registration/owner))
      [:div [:b "Registrar Information"]]
-     [:div "Registration Available: " available]
+     [:div "Registration Available: " (case available true "Yes" false "No" "No Information")]
      [:div.ellipsis
       "Expiration Date: " (if expiration-date
                               (format-local-datetime expiration-date)
