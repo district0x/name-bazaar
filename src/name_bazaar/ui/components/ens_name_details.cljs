@@ -3,6 +3,7 @@
     [clojure.string :as string]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
     [district0x.ui.utils :as d0x-ui-utils :refer [path-with-query]]
+    [name-bazaar.shared.constants :refer [supported-tld-length?]]
     [name-bazaar.shared.utils :refer [top-level-name? name-label]]
     [name-bazaar.ui.components.add-to-watched-names-button :refer [add-to-watched-names-button]]
     [name-bazaar.ui.components.ens-record.etherscan-link :refer [ens-record-etherscan-link]]
@@ -22,7 +23,7 @@
       :pending-text "Requesting..."
       :disabled (or has-requested?
                     (and (top-level-name? name)
-                         (< (count (name-label name)) 7)))
+                         (not (supported-tld-length? name))))
       :on-click #(dispatch [:offering-requests/add-request {:ens.record/name name}])}
      (if has-requested? "Requested" "Request")]))
 

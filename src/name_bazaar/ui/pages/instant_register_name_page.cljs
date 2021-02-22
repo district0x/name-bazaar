@@ -2,12 +2,18 @@
   (:require
     [district0x.ui.components.misc :refer [page]]
     [district0x.ui.components.transaction-button :refer [transaction-button]]
+    [name-bazaar.shared.constants :refer [supported-tld-length?]]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
     [name-bazaar.ui.utils :refer [valid-ens-subname? path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
+
+(defn- valid-tld? [tld-name]
+  (and (not (empty? tld-name))
+       (supported-tld-length? tld-name)
+       (valid-ens-subname? tld-name))) ;; TODO: check if the tld-name is available
 
 (defn register-name-form []
   (let [label (r/atom "")]
@@ -32,11 +38,10 @@
         [:div
          [transaction-button
           {:primary true
-           :disabled (empty? @label) ;; TODO: check if the @label is available
+           :disabled (not (valid-tld? @label))
            :pending-text "Registering..."
            :on-click (fn []
-                       (when (and (not (empty? @label))
-                                  (valid-ens-subname? @label))
+                       (when (valid-tld? @label)
                          (dispatch [:name-bazaar-registrar/register {:ens.record/label @label}])
                          (reset! label "")))}
           "Register"]]]])))

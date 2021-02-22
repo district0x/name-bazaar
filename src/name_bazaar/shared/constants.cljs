@@ -1,8 +1,9 @@
 (ns name-bazaar.shared.constants)
 
-(def min-name-length 7)
+(def min-name-length 3)
 
-(def ownership-period {:years 2})
+(defn supported-tld-length? [name]
+  (>= (count name) min-name-length))
 
 (def empty-label-hash "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470")
 
