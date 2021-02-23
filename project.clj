@@ -113,9 +113,9 @@
                        [source-map-support "0.4.0"]
                        [ws "2.3.1"]
                        [xhr2 "0.1.4"]]
-        :devDependencies [[ethlint "1.2.5"]
-                          [cypress "6.4.0"]
-                          ["@testing-library/cypress" "7.0.3"]]
+        :devDependencies [["@testing-library/cypress" "7.0.3"]
+                          [ethlint "1.2.5"]
+                          [cypress "6.4.0"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             :cypress-open " ./node_modules/cypress/bin/cypress open"
