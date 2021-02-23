@@ -85,7 +85,7 @@
   (let [{:keys [:offering/name]} offering
         parent-name (subs (string/replace name (name-label name) "") 1)]
     [:div.description.warning
-     [:b "WARNING:"] " This is" [:b " not top level name"] ". Beware, owner of " parent-name " will be always able to take this "
+     [:b "WARNING:"] " This is" [:b " not a top level name"] ". Beware, owner of " parent-name " will be always able to take this "
      "name back. Buy only when you trust the owner of " parent-name "."]))
 
 (defn emergency-cancel-info []

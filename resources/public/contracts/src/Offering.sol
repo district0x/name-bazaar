@@ -123,7 +123,7 @@ contract Offering {
         onlyWithoutNewOwner
         onlyWhenContractIsNotNodeOwner
     {
-        // New owner is not really this address, but it's the way to recogize if offering
+        // New owner is not really this address, but it's the way to recognize if offering
         // was unregistered without having separate var for it, which is costly
         offering.newOwner = address(0xdeaddead);
         fireOnChanged("unregister");
@@ -145,7 +145,7 @@ contract Offering {
             doTransferOwnership(offering.originalOwner);
         }
         if (isEmergency) {
-            // New owner is not really this address, but it's the way to recogize if
+            // New owner is not really this address, but it's the way to recognize if
             // was disabled in emergency without having separate var for it, which is costly
             offering.newOwner = address(0xdead);
         }

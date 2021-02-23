@@ -204,7 +204,7 @@ contract AuctionOffering is Offering {
     }
 
     /**
-    * @dev Performs actuall settings change with input validation
+    * @dev Performs actual settings change with input validation
     * Must be callable only internally
     */
     function doSetSettings(
