@@ -85,3 +85,15 @@ Cypress.Commands.add('registerDomain', () => {
 
   return cy.wrap(domain)
 })
+
+Cypress.Commands.add('advanceGanacheTime', (seconds) => {
+  cy.request('POST', 'http://localhost:8549', { method: "evm_increaseTime", params: [seconds] })
+})
+
+Cypress.Commands.add('snapshotGanache', () => {
+  cy.request('POST', 'http://localhost:8549', { method: "evm_snapshot", params: [] }).then(response => response.body.result)
+})
+
+Cypress.Commands.add('restoreGanache', (id) => {
+  cy.request('POST', 'http://localhost:8549', { method: "evm_revert", params: [id] }).then(response => expect(response.body.result).to.eq(true))
+})
