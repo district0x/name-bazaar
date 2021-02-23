@@ -172,9 +172,10 @@ lein build-prod
 node server/name-bazaar.js
 ```
 
-## Linting and formatting
-
-The purpose of linting and formatting is such that the code is readable and consistent.
+## Linting and formatting smart contracts
 
 We use [ethlint](https://github.com/duaraghav8/Ethlint) for linting solidity files. You
 can use `lein npm run ethlint` and `lein npm run ethlint-fix` to run the linter.
+
+You can use `lein run-slither` to run [slither](https://github.com/crytic/slither) to
+statically analyze the smart contracts. _However, this tool reports many false positives_.

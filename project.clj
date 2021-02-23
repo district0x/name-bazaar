@@ -145,7 +145,8 @@
             "build-css" ["shell" "./semantic.sh" "build-css"]
             "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
-            "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]}
+            "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]
+            "run-slither" ["shell" "./run-slither.sh"]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [binaryage/devtools "0.9.10"]
