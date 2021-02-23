@@ -39,7 +39,10 @@
 (defn- seconds->hours [seconds]
   (/ seconds 3600))
 
-(defn offering-extension-duration-slider [{:keys [:value] :as props}]
+(defn- max-extension-duration-hours [now end-time]
+  (min 24 (/ (quot (t/in-minutes (t/interval now (from-date (.toDate (js/moment end-time))))) 15) 4)))
+
+(defn offering-extension-duration-slider [max-value {:keys [:value] :as props}]
   (let [duration-formatted (format-time-duration-units (hours->milis value))]
     [:div
      [:h5.sub.heading "Time Extension"]
@@ -47,7 +50,7 @@
       (r/merge-props
         {:type "range"
          :min 0
-         :max 24
+         :max max-value
          :step 0.25}
         props)]
      [:div.input-info
@@ -100,7 +103,8 @@
                                  (not (or (not auction?)
                                           valid-min-bid-increase?))
                                  (and auction?
-                                      (t/after? @now (from-date (.toDate (js/moment end-time))))))]
+                                      (t/after? (t/plus- @now (t/seconds (hours->seconds extension-duration)))
+                                                (from-date (.toDate (js/moment end-time))))))]
         [:div
          [:div.grid.offering-form.submit-footer
           [:div.name
@@ -138,6 +142,7 @@
           (when auction?
             [:div.duration-slider
              [offering-extension-duration-slider
+              (max-extension-duration-hours @now end-time)
               {:value extension-duration
                :on-change #(swap! form-data assoc :auction-offering/extension-duration (aget % "target" "value"))}]])
           (when (and (or auction? (not editing?))
@@ -145,7 +150,11 @@
             [:div.auction-end-time
              [auction-end-time-date-picker
               {:selected end-time
-               :on-change #(swap! form-data assoc :auction-offering/end-time %)}]])
+               :on-change #(swap! form-data assoc
+                             :auction-offering/end-time %
+                             :auction-offering/extension-duration
+                               (min extension-duration
+                                    (max-extension-duration-hours @now %)))}]])
           (when (and (or auction? (not editing?))
                      (not editing?))
             [:div.info
