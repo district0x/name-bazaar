@@ -29,7 +29,7 @@ see namebazaar.io.conf
 ## Logging
 
 NameBazaar uses [AWS ElasticSearchService](https://aws.amazon.com/elasticsearch-service/) (EK) stack for logging:
-  - Elasticsearch: Stores all of the logs.
+  - Elasticsearch: Stores all the logs.
   - Kibana: Web interface for searching and visualizing logs.
   - Filebeat: Log shipping agent (runs on the client server).
 
