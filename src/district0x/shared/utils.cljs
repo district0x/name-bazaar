@@ -1,16 +1,13 @@
 (ns district0x.shared.utils
   (:require
     [bignumber.core :as bn]
-    [cemerick.url :as url]
     [cljs-time.coerce :refer [from-long to-local-date-time]]
     [cljs-time.core :refer [date-time to-default-time-zone]]
     [cljs-web3.core :as web3]
     [cljs.core.async :refer [<! >! chan]]
-    [clojure.set :as set]
     [clojure.string :as string]
     [cognitect.transit :as transit]
-    [goog.string :as gstring]
-    [goog.string.format]
+    [goog.functions :as goog-functions]
     [medley.core :as medley])
   (:import [goog.async Debouncer]))
 
@@ -230,9 +227,5 @@
   (when-let [dt (evm-time->date-time x)]
     (to-default-time-zone dt)))
 
-(defn debounce [f interval]
-  "Used for debouncing individual functions, not just effects. Ruthelessly stolen from:
-  https://www.martinklepsch.org/posts/simple-debouncing-in-clojurescript.html"
-  (let [dbnc (Debouncer. f interval)]
-    ;; We use apply here to support functions of various arities
-    (fn [& args] (.apply (.-fire dbnc) dbnc (to-array args)))))
+;; https://martinklepsch.org/posts/simple-debouncing-in-clojurescript.html
+(def debounce goog-functions/debounce)

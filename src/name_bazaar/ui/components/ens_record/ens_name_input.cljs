@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as string]
     [district0x.ui.components.input :refer [input]]
+    [district0x.shared.utils :refer [debounce]]
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.utils :refer [reverse-record-node namehash sha3 normalize strip-root-registrar-suffix path-for]]
     [name-bazaar.shared.utils :refer [top-level-name? valid-ens-name?]]
@@ -36,6 +37,8 @@
     (when (top-level-name? full-name)
       (dispatch [:name-bazaar-registrar.registrations/load [(sha3 value)]]))))
 
+(def debounced-load-name-ownership (debounce load-name-ownership 300))
+
 (defn ens-name-input-ownership-validated []
   (fn [{:keys [:on-change :value :warn-only?] :as props}]
     (let [full-name (when (seq value)
@@ -61,7 +64,7 @@
                             (let [value (normalize value)]
                               (aset data "value" value)
                               (on-change e data)
-                              (load-name-ownership value)))))
+                              (debounced-load-name-ownership value)))))
            :error error?}
           (dissoc props :ownership-status :on-change :warn-only?))]
        [:div.ui.label (ownership-status->text ownership-status)]])))
