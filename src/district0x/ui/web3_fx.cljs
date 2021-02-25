@@ -18,18 +18,3 @@
 
 (defn web3-legacy? []
   (not (some-> js/window (aget "ethereum"))))
-
-
-(reg-fx
-  ::authorize-ethereum-provider
-  (fn [{:keys [:on-accept :on-reject :on-error :on-legacy]}]
-    (cond
-      (supports-ethereum-provider?)
-      (doto (authorize)                                     ;; js/Promise
-        (.then
-          #(dispatch on-accept)
-          #(dispatch on-reject)))
-      (web3-legacy?)
-      (dispatch on-legacy)
-      :else
-      (dispatch on-error))))
