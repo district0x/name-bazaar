@@ -191,9 +191,6 @@
        string
        (str (subs string 0 (- length suffix-len)) suffix)))))
 
-(defn provides-web3? []
-  (boolean (aget js/window "web3")))
-
 (defn left-pad
   ([s len] (left-pad s len " "))
   ([s len ch]

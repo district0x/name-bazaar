@@ -4,7 +4,7 @@
     [district0x.shared.utils :as d0x-shared-utils :refer [address? not-neg? sha3? date?]]))
 
 (s/def :db/load-node-addresses? boolean?)
-(s/def :db/web3 (complement nil?))
+(s/def :db/web3 (constantly true)) ;; web3 is loaded asynchronously and is nil initially
 (s/def :db/node-url string?)
 (s/def :db/server-url string?)
 (s/def :db/contracts-not-found? boolean?)

@@ -35,8 +35,7 @@
 (reg-sub
   :district0x/can-make-transaction?
   (fn [db _]
-    (boolean (and (or (d0x-ui-utils/provides-web3?) (:load-node-addresses? db))
-                  (:active-address db)))))
+    (boolean (and (:load-node-addresses? db) (:active-address db)))))
 
 (reg-sub
   :district0x/active-page
