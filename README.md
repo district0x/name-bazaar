@@ -172,6 +172,38 @@ lein build-prod
 node server/name-bazaar.js
 ```
 
+## Deploy
+
+To run server in docker container do something like
+
+```bash
+docker run --name=namebazaar-server \
+    --net=host \
+    -v /path/to/config.edn:/configs/namebazaar.config.edn \
+    district0x/namebazaar-server:latest
+```
+
+For UI use the `district0x/namebazaar-ui` image instead.
+
+You can find example for `config.edn` file in `docker-builds/config.example.edn`. Of particular interest is providing correct addresses of smart contracts on the blockchain you'll link the app to.
+
+### Updating the docker images
+
+If you want to build new docker images, and push them to district0x dockerhub (if authorised), run:
+
+```bash
+./docker-push.sh env sshkey
+```
+
+where
+
+* `env` is `qa` or `prod` (the only difference is in how the images will be tagged)
+* `sshkey` is path to your private github ssh key, which will be used to download dependencies in a secure manner, not persisting in any build layer
+
+### Deploying Name Bazaar smart contracts
+
+TODO
+
 ## Linting and formatting smart contracts
 
 We use [ethlint](https://github.com/duaraghav8/Ethlint) for linting solidity files. You

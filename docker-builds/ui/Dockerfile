@@ -1,4 +1,26 @@
-FROM debian:stretch-slim
+# syntax=docker/dockerfile:1.0.0-experimental
+FROM clojure:openjdk-11-lein-2.9.5 AS builder
+COPY . /namebazaar/
+WORKDIR /namebazaar
+
+# https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
+RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+# install dependencies and build contracts
+RUN curl -fsSL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y --no-install-recommends \
+        build-essential \
+        nodejs \
+        python3.7 \
+        python3-pip
+RUN --mount=type=ssh,id=github lein deps
+RUN lein npm install
+
+# build
+RUN lein build-css && lein build-prod-ui
+
+
+FROM debian:buster-slim
 MAINTAINER "Filip Bielejec" <filip@district0x.io>
 
 RUN apt-get update -y \
@@ -6,13 +28,13 @@ RUN apt-get update -y \
     -q wget unzip nginx
 
 # replace nginx config
-COPY docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder /namebazaar/docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
 
 # replace default server
-COPY docker-builds/ui/default /etc/nginx/sites-available/default
+COPY --from=builder /namebazaar/docker-builds/ui/default /etc/nginx/sites-available/default
 
 # nginx config
-COPY docker-builds/ui/namebazaar.io /etc/nginx/sites-available/namebazaar.io
+COPY --from=builder /namebazaar/docker-builds/ui/namebazaar.io /etc/nginx/sites-available/namebazaar.io
 
 # setup error page
 RUN wget --no-check-certificate -O X0X.html https://raw.githubusercontent.com/district0x/X0X/master/X0X.html \
@@ -22,14 +44,14 @@ RUN wget --no-check-certificate -O X0X.html https://raw.githubusercontent.com/di
 RUN ln -s -f /etc/nginx/sites-available/namebazaar.io /etc/nginx/sites-enabled/namebazaar.io
 
 # get compiled JS
-# COPY resources/public /memefactory/resources/public/
+COPY --from=builder /namebazaar/resources/public /namebazaar/resources/public/
 
-# get MAINTENANCE page content
-RUN wget --no-check-certificate -O master.zip https://github.com/district0x/name-bazaar-coming-soon/archive/master.zip \
-        && unzip master.zip \
-        && rm master.zip \
-        && mkdir -p /namebazaar/resources/public/ \
-        && mv -v name-bazaar-coming-soon-master/* /namebazaar/resources/public/
+## get MAINTENANCE page content
+#RUN wget --no-check-certificate -O master.zip https://github.com/district0x/name-bazaar-coming-soon/archive/master.zip \
+#        && unzip master.zip \
+#        && rm master.zip \
+#        && mkdir -p /namebazaar/resources/public/ \
+#        && mv -v name-bazaar-coming-soon-master/* /namebazaar/resources/public/
 
 RUN ls /namebazaar/resources/public/
 
