@@ -1,0 +1,12 @@
+{:web3      {:url "http://localhost:8545"}
+ :deployer  {:write? true
+             :from "0x57a24ed73146Ac6cAd897900292802226B921247"
+             :emergency-multisig "0x57a24ed73146Ac6cAd897900292802226B921247"
+             :skip-ens-registrar? true
+             :gas-price 4000000000}
+ ;; TODO fix the reader issue so that we can have the config below here
+ ;; TODO instead of in name-bazaar.server.dev/deploy-contracts
+ ;:smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
+ ;                  :print-gas-usage? true
+ ;                  :auto-mining? false}
+ }

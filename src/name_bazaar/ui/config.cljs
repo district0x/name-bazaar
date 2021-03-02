@@ -1,5 +1,9 @@
 (ns name-bazaar.ui.config)
 
+;; TODO currently this is configuration in source code
+;; you need to rebuild UI for each new configuration
+;; (e.g. change this file then build new docker UI image)
+;; we should make UI configurable on the fly
 (goog-define environment "prod")
 
 (def development-config

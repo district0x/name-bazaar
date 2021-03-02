@@ -56,6 +56,20 @@
                          #'district.server.web3/web3
                          #'district.server.smart-contracts/smart-contracts))
 
+(defn deploy-contracts []
+  "Deploy smart contracts anywhere, specified by provided config.edn."
+  (mount/stop #'district.server.web3/web3
+              #'district.server.smart-contracts/smart-contracts
+              #'name-bazaar.server.deployer/deployer)
+  (mount/start-with-args (merge (mount/args)
+                                ;; TODO this would ideally be in config.edn too, but it causes an error - fix
+                                {:smart-contracts {:contracts-var    #'name-bazaar.shared.smart-contracts/smart-contracts
+                                                   :print-gas-usage? true
+                                                   :auto-mining?     false}})
+                         #'district.server.web3/web3
+                         #'district.server.smart-contracts/smart-contracts
+                         #'name-bazaar.server.deployer/deployer))
+
 (defn generate-data
   "Generate dev data"
   []

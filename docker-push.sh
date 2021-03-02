@@ -2,7 +2,7 @@
 
 #--- ARGS
 
-BUILD_ENV=$1  # qa or prod
+BUILD_ENV=$1  # dev / qa / prod
 GITHUB=$2  # your github ssh private key filepath to download git+ssh deps
 
 #--- FUNCTIONS
@@ -23,6 +23,10 @@ function build {
     DOCKER_BUILDKIT=1 docker build -t $IMG -f docker-builds/$SERVICE/Dockerfile . --ssh github=$GITHUB
 
     case $BUILD_ENV in
+      "dev")
+        # dev images are tagged as `dev`
+        docker tag $IMG $NAME:dev
+        ;;
       "qa")
         # qa images are tagged as `latest`
         docker tag $IMG $NAME:latest

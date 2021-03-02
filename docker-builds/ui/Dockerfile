@@ -15,6 +15,9 @@ RUN apt-get install -y --no-install-recommends \
         python3-pip
 RUN --mount=type=ssh,id=github lein deps
 RUN lein npm install
+RUN pip3 install solc-select
+RUN solc-select install 0.5.17 && solc-select use 0.5.17
+RUN lein compile-solidity
 
 # build
 RUN lein build-css && lein build-prod-ui
