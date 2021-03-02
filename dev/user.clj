@@ -41,8 +41,11 @@
 
 (defn start-server! []
   (fw-repl/start-figwheel!
-   (assoc-in (fw-config/fetch-config)
-             [:data :figwheel-options :server-port] 4541)
+   (-> (fw-config/fetch-config)
+       (assoc-in [:data :figwheel-options :server-port] 4541)
+       ;; the next option is for contract deployment to real networks
+       ;; it can take time and we don't want the eval to timeout and break deployment
+       (assoc-in [:data :figwheel-options :repl-eval-timeout] 1800000)) ;; 30 min
    "dev-server")
   (fw-repl/cljs-repl "dev-server"))
 
