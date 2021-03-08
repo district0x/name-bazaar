@@ -7,9 +7,9 @@ pragma solidity ^0.5.17;
  * This contract doesn't have any critical functionality for names trading, nor does store any funds
  */
 
-import "UsedByFactories.sol";
-import "OfferingRequestsAbstract.sol";
-import "strings.sol";
+import "./UsedByFactories.sol";
+import "./OfferingRequestsAbstract.sol";
+import "./strings.sol";
 
 contract OfferingRequests is OfferingRequestsAbstract, UsedByFactories {
     using strings for *;

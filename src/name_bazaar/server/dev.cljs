@@ -86,7 +86,7 @@
                                       :console? true}
                             :endpoints {:port 6200
                                         :middlewares [logging-middlewares]}
-                            :web3 {:port 8549}
+                            :web3 {:url "https://ropsten.infura.io/"}
                             :db {:opts {:memory true}}
                             :emailer {:print-mode? true
                                       :private-key "25677d268904ea651f84e37cfd580696c5c793dcd9730c415bf03b96003c09e9ef8"}
@@ -94,8 +94,8 @@
                                  :use-instant-registrar? true
                                  :reveal-period {:hours 48}}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
-                           :print-gas-usage? true
-                           :auto-mining? true}
+                           :print-gas-usage? false
+                           :auto-mining? false}
          :deployer {:write? true}})
       (mount/except [#'name-bazaar.server.deployer/deployer])
       (mount/start)

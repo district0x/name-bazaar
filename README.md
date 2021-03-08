@@ -50,6 +50,10 @@ folder and try to start the server again)_
 
 #### Redeploy smart-contracts and generate mock data
 
+TODO: update this section to use truffle and remove redeploy function from clojure
+
+TODO: to run deploy on testnet: `truffle migrate --network ropsten`
+
 ```clojure
 # In the figwheel server REPL run:
 (redeploy)
