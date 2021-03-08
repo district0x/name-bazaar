@@ -35,5 +35,4 @@ node_modules/
 /cypress/screenshots
 /cypress/videos
 .gradle
-
-
+/resources/public/contracts-build

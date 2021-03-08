@@ -7,8 +7,8 @@ pragma solidity ^0.5.17;
  * This way code logic for this offering won't be duplicated on blockchain.
  */
 
-import "SafeMath.sol";
-import "Offering.sol";
+import "./SafeMath.sol";
+import "./Offering.sol";
 
 contract AuctionOffering is Offering {
     using SafeMath for uint;

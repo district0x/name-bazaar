@@ -5,10 +5,10 @@ pragma solidity ^0.5.17;
  * @dev Factory for creating new BuyNow offerings
  */
 
-import "OfferingRegistry.sol";
-import "OfferingFactory.sol";
-import "BuyNowOffering.sol";
-import "Forwarder.sol";
+import "./OfferingRegistry.sol";
+import "./OfferingFactory.sol";
+import "./BuyNowOffering.sol";
+import "./Forwarder.sol";
 
 contract BuyNowOfferingFactory is OfferingFactory {
 

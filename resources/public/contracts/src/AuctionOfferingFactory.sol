@@ -5,10 +5,10 @@ pragma solidity ^0.5.17;
  * @dev Factory for creating new Auction offerings
  */
 
-import "OfferingRegistry.sol";
-import "OfferingFactory.sol";
-import "AuctionOffering.sol";
-import "Forwarder.sol";
+import "./OfferingRegistry.sol";
+import "./OfferingFactory.sol";
+import "./AuctionOffering.sol";
+import "./Forwarder.sol";
 
 contract AuctionOfferingFactory is OfferingFactory {
 

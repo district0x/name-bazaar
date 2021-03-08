@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO: get rid of this file in favor of truffle compile
+
 # TODO find a way to specify node_modules as an additional source root for solc
 # TODO or migrate to truffle and the entire compilation workflow will be changed
 ENS=$(readlink -f ./node_modules/@ensdomains)
@@ -18,8 +20,7 @@ solc-err-only --overwrite --optimize --bin --abi AuctionOfferingFactory.sol -o .
 solc-err-only --overwrite --optimize --bin --abi District0xEmails.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ENS.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi $ENS/resolver/contracts/PublicResolver.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ReverseRegistrar.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi NamebazaarDevPublicResolver.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi NameBazaarRegistrar.sol -o ../build/
 

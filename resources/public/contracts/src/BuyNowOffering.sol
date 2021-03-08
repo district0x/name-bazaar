@@ -7,7 +7,7 @@ pragma solidity ^0.5.17;
  * This way code logic for this offering won't be duplicated on blockchain.
  */
 
-import "Offering.sol";
+import "./Offering.sol";
 
 contract BuyNowOffering is Offering {
 
