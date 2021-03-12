@@ -87,15 +87,15 @@
   The result of the web3 modal will be web3 provider which is used
   to create new web3 instance (which is later saved into DB). This
   handling is asynchronous and the function returns a promise."
-  []
+  [infura-id]
   ;; Clear the wallet connect local storage, which persists previous connection
-  ;; I've found the persisted connection to be extremely unreliable (transactions didn't work)
+  ;; I've found the persisted connection to be extremely unreliable
   (.removeItem (.-localStorage js/window) "walletconnect")
   ;; https://lwhorton.github.io/2018/10/20/clojurescript-interop-with-javascript.html
   (let [web3-modal-class (.. js/window -Web3Modal -default)
         wallet-connect-provider (.. js/window -WalletConnectProvider -default)
         ;; Inspired by https://github.com/Web3Modal/web3modal-vanilla-js-example/blob/master/example.js#L52
-        provider-options (clj->js {:walletconnect {:package wallet-connect-provider :options {:infuraId "0ff2cb560e864d078290597a29e2505d"}}})
+        provider-options (clj->js {:walletconnect {:package wallet-connect-provider :options {:infuraId infura-id }}})
         web3-modal-options (clj->js {:cacheProvider false :providerOptions provider-options :disableInjectedProvider false})
         web3-modal (new web3-modal-class web3-modal-options)]
     (->
@@ -163,9 +163,10 @@
   :district0x/initialize
   [interceptors (inject-cofx :localstorage) (inject-cofx :current-url)]
   (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
-    {:db (initialize-db default-db localstorage current-url)
-     :promise {:call #(create-wallet-connect-web3)
-               :on-success [:district0x/db-and-web3-initialized conversion-rates effects]}}))
+    (let [db (initialize-db default-db localstorage current-url)]
+      {:db db
+       :promise {:call #(create-wallet-connect-web3 (:infura-id db))
+                 :on-success [:district0x/db-and-web3-initialized conversion-rates effects]}})))
 
 (reg-event-fx
   :district0x/set-current-location-as-active-page
