@@ -11,7 +11,7 @@
    :logging {:level :debug
              :console? true}
    :pushroute-hosts "localhost"
-   :infura-id "0ff2cb560e864d078290597a29e2505d"
+   :infura-id "0ff2cb560e864d078290597a29e2505d" ;; this is for wallet-connect only, which will not work when running with ganache
    :load-node-addresses? true
    :root-url "http://0.0.0.0:4544"
    :server-url "http://localhost:6200"})

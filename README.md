@@ -8,7 +8,7 @@ See at [https://namebazaar.io](https://namebazaar.io)
 
 Smart-contracts can be found [here](https://github.com/district0x/name-bazaar/tree/master/resources/public/contracts/src).
 
-## Starting a dev server with an Ethereum Testnet
+## Starting a dev server
 
 In a terminal, start a ganache blockchain
 
@@ -17,6 +17,8 @@ In a terminal, start a ganache blockchain
 ```
 
 _(note that this uses docker and will try to pull `trufflesuite/ganache-cli:v6.12.1` image if you don't have it)_
+
+_(Alternatively, you can connect directly to one of ethereum testnet networks - e.g. ropsten. In order to do this, specify correct smart contract addresses and `web3` property in the config file. Example config file can be found in `docker-builds/deployer-config.example.edn`)_
 
 Open another terminal, start autocompiling smart-contracts
 
