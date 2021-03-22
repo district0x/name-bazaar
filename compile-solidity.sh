@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-# TODO: get rid of this file in favor of truffle compile
+# This script is used for deployment, because it generates the ABI of the contracts
+# which truffle compile doesn't do. However, the ABI can be extracted from the
+# generated JSON files by truffle with simple script.
+# TODO: migrate deployment to `truffle compile`
 
-# TODO find a way to specify node_modules as an additional source root for solc
-# TODO or migrate to truffle and the entire compilation workflow will be changed
 ENS=$(readlink -f ./node_modules/@ensdomains)
 OZS=$(readlink -f ./node_modules/openzeppelin-solidity)
 
@@ -22,7 +23,7 @@ solc-err-only --overwrite --optimize --bin --abi OfferingRequests.sol -o ../buil
 solc-err-only --overwrite --optimize --bin --abi $ENS/ens/contracts/ENS.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi NamebazaarDevPublicResolver.sol -o ../build/
 solc-err-only --overwrite --optimize --bin --abi Forwarder.sol -o ../build/
-solc-err-only --overwrite --optimize --bin --abi NameBazaarRegistrar.sol -o ../build/
+solc-err-only --overwrite --optimize --bin --abi NameBazaarDevContracts.sol -o ../build/
 
 cd ../build
 wc -c OfferingRegistry.bin | awk '{print "OfferingRegistry: " $1}'
@@ -35,4 +36,7 @@ wc -c DelegateProxy.bin | awk '{print "DelegateProxy: " $1}'
 wc -c Forwarder.bin | awk '{print "Forwarder: " $1}'
 wc -c PublicResolver.bin | awk '{print "PublicResolver: " $1}'
 wc -c ReverseRegistrar.bin | awk '{print "ReverseRegistrar: " $1}'
-wc -c NameBazaarRegistrar.bin | awk '{print "NameBazaarRegistrar: " $1}'
+wc -c NamebazaarDevPublicResolver.bin | awk '{print "NamebazaarDevPublicResolver: " $1}'
+wc -c NamebazaarDevNameResolver.bin | awk '{print "NamebazaarDevNameResolver: " $1}'
+wc -c NamebazaarDevReverseRegistrar.bin | awk '{print "NamebazaarDevReverseRegistrar: " $1}'
+wc -c NameBazaarDevRegistrar.bin | awk '{print "NameBazaarDevRegistrar: " $1}'

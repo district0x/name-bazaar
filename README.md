@@ -24,6 +24,8 @@ Open another terminal, start autocompiling smart-contracts
 
 ```bash
 lein auto compile-solidity
+# or alternatively use (note: truffle is currently experimental)
+truffle compile
 ```
 
 _(You need to have `solc` with compatible version installed. See `contracts` folder to determine the
@@ -50,15 +52,20 @@ folder and try to start the server again)_
 
 #### Redeploy smart-contracts and generate mock data
 
-TODO: update this section to use truffle and remove redeploy function from clojure
-
-TODO: to run deploy on testnet: `truffle migrate --network ropsten`
+You can re-deploy contracts from the clojurescript REPL by running the following command:
 
 ```clojure
-# In the figwheel server REPL run:
+;; make sure you have compiled the contracts before running this command
 (redeploy)
 ;; and optionally generate sample dev data
 (generate-data)
+```
+
+or you can use `truffle` by running in bash:
+
+```bash
+# note: truffle is currently experimental
+truffle migrate --reset
 ```
 
 Redeployment / Generation can take a long time, please be patient.
@@ -216,11 +223,33 @@ where
 
 ### Deploying Name Bazaar smart contracts
 
-#### Deployment via ClojureScript deployer
+#### Experimental truffle deploy
+
+First, you need to specify deployments secrets in `config.edn`. For example:
+
+```clojure
+{:truffle {:ropsten {:infuraKey "0ff2cb560e864d078290597a29e2505d"
+                     :privateKeys ["0508d5f96e139a0c18ee97a92d890c55707c77b90916395ff7849efafffbd810"]
+                     :ensAddress "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
+                     :registrarAddress "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"
+                     :publicResolverAddress "0x42D63ae25990889E35F215bC95884039Ba354115"
+                     :reverseRegistrarAddress "0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c"}}}
+```
+
+Then, you can use `truffle` to deploy the contracts just by running the following command in bash:
+```bash
+# you can also use `--network mainnet` - see truffle-config.js for deployment details for more information.
+truffle migrate --network ropsten
+```
+
+_(This deployment is currently experimental and might break in the future when used together with infura.
+See the details in the following issue - https://github.com/trufflesuite/truffle/issues/3913)_
+
+#### Deploy via clojurescript deployer using own ethereum node
 
 _Currently you need to be using Node 8 and a temporary downgrade of better-sqlite3 to `[better-sqlite3 "4.0.0"]` in `project.clj`!_ This is because the old version of `district-server-smart-contracts` we use (newer versions of this dependency will require a major overhaul that should wipe this issue) depends on `[deasync "0.1.11"]`, which has an issue with Node 9+ (https://github.com/abbr/deasync/issues/89). It's used however only in smart contract deploys with `:auto-mining false`. That means in normal app operation we can use Node 10 and better-sqlite3 5.4.0 (and we do, because using the very old Node 8 for app as a whole causes issues elsewhere).
 
-After you have built the contracts with `lein compile-solidity`, provide correct `config.edn` file in project root. An example file can be found in `docker-builds/deployer-config.example.edn`. When choosing `:web3` note that you can't use Infura currently, because the node needs to be able to sign your transactions. So you need to use your own node.
+After you have built the contracts, provide correct `config.edn` file in project root. An example file can be found in `docker-builds/deployer-config.example.edn`. When choosing `:web3` note that you can't use Infura currently, because the node needs to be able to sign your transactions. So you need to use your own node.
 
 Now start the figwheel console over dev build:
 

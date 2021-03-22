@@ -30,11 +30,22 @@
   (deploy-smart-contract! :ens (merge default-opts {:gas 700000})))
 
 
-(defn deploy-registrar! [default-opts]
+(defn deploy-resolvers! [default-opts]
+  (deploy-smart-contract! :reverse-name-resolver (merge default-opts {:gas 3200000}))
+  (deploy-smart-contract! :public-resolver (merge default-opts
+                                                    {:gas 3200000
+                                                     :arguments [(contract-address :ens)]})))
+
+
+(defn deploy-registrars! [default-opts]
   (deploy-smart-contract! :name-bazaar-registrar (merge default-opts
                                                         {:gas 3200000
                                                          :arguments [(contract-address :ens)
-                                                                     (namehash "eth")]})))
+                                                                     (namehash "eth")]}))
+  (deploy-smart-contract! :reverse-registrar (merge default-opts
+                                                        {:gas 3200000
+                                                         :arguments [(contract-address :ens)
+                                                                     (contract-address :reverse-name-resolver)]})))
 
 
 (defn deploy-offering-registry! [default-opts {:keys [:emergency-multisig]}]
@@ -94,7 +105,8 @@
 
     (when-not skip-ens-registrar?
       (deploy-ens! deploy-opts)
-      (deploy-registrar! deploy-opts)
+      (deploy-resolvers! deploy-opts)
+      (deploy-registrars! deploy-opts)
 
       (ens/set-subnode-owner! {:ens.record/label "eth"
                                :ens.record/node ""

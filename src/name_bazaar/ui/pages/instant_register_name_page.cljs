@@ -13,7 +13,7 @@
 (defn- valid-tld? [tld-name]
   (and (not (empty? tld-name))
        (supported-tld-length? tld-name)
-       (valid-ens-subname? tld-name))) ;; TODO: check if the tld-name is available
+       (valid-ens-subname? tld-name)))
 
 (defn register-name-form []
   (let [label (r/atom "")]

@@ -18,14 +18,59 @@
  *
  */
 
-const HDWalletProvider = require("@truffle/hdwallet-provider");
-// TODO: use secrets for this
-const infuraKey = "0ff2cb560e864d078290597a29e2505d";
-const privateKeys = ['0508d5f96e139a0c18ee97a92d890c55707c77b90916395ff7849efafffbd810']
+const HDWalletProvider = require("@truffle/hdwallet-provider")
+const edn = require("jsedn")
+const fs = require('fs')
+const path = require('path')
+
+const CONTRACTS_BUILD_DIR = './resources/public/contracts-build'
+const ednConfig = edn.parse(fs.readFileSync('config.edn').toString())
+
+const fromConfig = (path) => {
+  try {
+    return edn.toJS(edn.atPath(ednConfig, path))
+  } catch {
+    return undefined
+  }
+}
+
+const removeColonFromConfigKeys = (value) => {
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const res = {}
+    Object.keys(value).forEach(key => {
+      res[key.replace(':', '')] = removeColonFromConfigKeys(value[key])
+    })
+
+    return res
+  }
+
+  return value
+}
+
+const deleteFolder = function (directoryPath) {
+  if (fs.existsSync(directoryPath)) {
+    fs.readdirSync(directoryPath).forEach((file) => {
+      const curPath = path.join(directoryPath, file)
+      if (fs.lstatSync(curPath).isDirectory()) {
+        deleteFolder(curPath)
+      } else {
+        fs.unlinkSync(curPath)
+      }
+    })
+    fs.rmdirSync(directoryPath)
+  }
+}
+
+// This hack will make sure contracts are always recompiled!
+// It is necessary because in migrations we are changing the
+// contracts bytecode (which is persisted by truffle later).
+// Without doing this, the subsequent deployment would not work
+// correctly.
+deleteFolder(CONTRACTS_BUILD_DIR)
 
 module.exports = {
   contracts_directory: './resources/public/contracts',
-  contracts_build_directory: './resources/public/contracts-build',
+  contracts_build_directory: CONTRACTS_BUILD_DIR,
   migrations_directory: './resources/public/contracts-migration',
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -51,12 +96,28 @@ module.exports = {
       // must be a thunk, otherwise truffle commands may hang in CI
       provider: () =>
         new HDWalletProvider({
-          privateKeys,
-          providerOrUrl: `https://ropsten.infura.io/v3/${infuraKey}`,
+          privateKeys: fromConfig(":truffle :ropsten :privateKeys"),
+          providerOrUrl: `wss://ropsten.infura.io/ws/v3/${fromConfig(":truffle :ropsten :infuraKey")}`,
         }),
       network_id: '3',
+      networkCheckTimeout: 10000, // https://github.com/trufflesuite/truffle/issues/3356
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true,
+      deploymentConfig: removeColonFromConfigKeys(fromConfig(":truffle :ropsten"))
+    },
+    mainnet: {
+      provider: () =>
+        new HDWalletProvider({
+          privateKeys: fromConfig(":truffle :mainnet :privateKeys"),
+          providerOrUrl: `wss://mainnet.infura.io/ws/v3/${fromConfig(":truffle :mainnet :infuraKey")}`
+        }),
+      network_id: '1',
+      networkCheckTimeout: 10000, // https://github.com/trufflesuite/truffle/issues/3356
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true,
+      deploymentConfig: removeColonFromConfigKeys(fromConfig(":truffle :mainnet"))
     }
   },
   compilers: {
@@ -64,4 +125,4 @@ module.exports = {
       version: "0.5.17",
     }
   },
-};
+}
