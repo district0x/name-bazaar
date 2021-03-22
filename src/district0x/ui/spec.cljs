@@ -6,6 +6,7 @@
 (s/def :db/load-node-addresses? boolean?)
 (s/def :db/web3 (constantly true)) ;; web3 is loaded asynchronously and is nil initially
 (s/def :db/infura-id string?)
+(s/def :db/:fallback-web3-url string?)
 (s/def :db/server-url string?)
 (s/def :db/contracts-not-found? boolean?)
 (s/def :route/handler keyword?)
@@ -141,6 +142,7 @@
                                           :db/load-node-addresses?
                                           :db/my-addresses
                                           :db/infura-id
+                                          :db/fallback-web3-url
                                           :db/server-url
                                           :db/smart-contracts
                                           :db/snackbar

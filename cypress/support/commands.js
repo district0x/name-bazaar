@@ -47,7 +47,8 @@ Cypress.Commands.add('getInputByLabel', (label) =>
   cy.get(`div.ui.label:contains("${label}") + input`),
 )
 
-Cypress.Commands.add('hideDevtools', () => {
+Cypress.Commands.add('hideDevtoolsAndWalletConnectModal', () => {
+  cy.get('.walletconnect-modal__close__wrapper').click()
   cy.get('.panel')
     .invoke('css', 'display', 'none')
     .should('have.css', 'display', 'none')
@@ -70,7 +71,7 @@ Cypress.Commands.add('switchAccount', (n) => {
 
 Cypress.Commands.add('registerDomain', () => {
   cy.visit('http://localhost:4544/instant-registration')
-  cy.hideDevtools()
+  cy.hideDevtoolsAndWalletConnectModal()
 
   // TODO: make this deterministic (e.g. use fixture of english nouns)
   const domain = Math.random().toString(36).substr(2, 10)

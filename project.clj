@@ -33,7 +33,7 @@
                  [district0x/district-sendgrid "1.0.1"]
                  [district0x/district-server-config "1.0.1"]
                  [district0x/district-server-db "1.0.4"]
-                 ;; TODO(not important): Update to latest version.
+                 ;; TODO: Update to latest version.
                  ;; Version 1.0.2 splits the package into two separate modules.
                  [district0x/district-server-endpoints "1.0.1"]
                  [district0x/district-server-logging "1.0.6"]
@@ -42,12 +42,11 @@
                  ;; removes the :auto-mining? option in :smart-contracts, which is used
                  ;; in dev mode and tests. Later version removes deploy-smart-contract!
                  ;; function in favor of truffle migrations.
-                 ;; TODO(not important): update to latest version
+                 ;; TODO: update to latest version
                  ;;
                  ;; Versions up to 1.0.8 do not trigger errors in BE, but starting from
                  ;; 1.0.9 function `get-offering` is being called with `nil` and there is
-                 ;; an web3 error + db error. However, until 1.0.9 it seems that contract
-                 ;; callbacks do not work at all. So there is a bug either way.
+                 ;; an web3 error + db error.
                  ;; TODO: update to version 1.0.9
                  [district0x/district-server-smart-contracts "1.0.1"]
                  ;; TODO: update to newer version. Updating to 1.1.0 breaks the tests
@@ -96,19 +95,7 @@
                        ["@ensdomains/ethregistrar" "2.0.4"]
                        ["@ensdomains/resolver" "0.2.4"]
                        ["@sentry/node" "4.2.1"]
-                       ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [better-sqlite3 "5.4.0"]
                        [chalk "2.3.0"]
-                       ;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [deasync "0.1.11"]
-                       ;; https://github.com/district0x/district-encryption/blob/d8ff0f/project.clj#L9
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
                        [semantic-ui "2.4.1"]
                        [source-map-support "0.4.0"]

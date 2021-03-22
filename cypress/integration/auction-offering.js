@@ -99,7 +99,7 @@ describe('Auction offering', () => {
             cy.advanceGanacheTime(5 * 24 * 60 * 60)
 
             cy.visit('http://localhost:4544/my-offerings')
-            cy.hideDevtools()
+            cy.hideDevtoolsAndWalletConnectModal()
             cy.switchAccount(0)
             findListItemByText(url).click()
             cy.findByRole('button', {name: 'Finalize'}).click({force: true})
