@@ -82,12 +82,13 @@
 
 (defn create-wallet-connect-web3
   "Initiate web3 modal popup and allow user to choose a way how to
-  connect to Namebazaar.
+  connect to Namebazaar. If the modal is closed or there is an
+  unexpected error it tries to create web3 from fallback url.
 
   The result of the web3 modal will be web3 provider which is used
   to create new web3 instance (which is later saved into DB). This
   handling is asynchronous and the function returns a promise."
-  [infura-id]
+  [infura-id fallback-web3-url]
   ;; Clear the wallet connect local storage, which persists previous connection
   ;; I've found the persisted connection to be extremely unreliable
   (.removeItem (.-localStorage js/window) "walletconnect")
@@ -101,7 +102,9 @@
     (->
       (js-invoke web3-modal "connect")
       (.then (fn [provider] (new (aget js/window "Web3") provider)))
-      (.catch (fn [err] (log/error "Unable to retrieve web3 provider. Reason:" err))))))
+      (.catch (fn [err]
+                (log/error "Unable to retrieve web3 provider via wallet connect. Creating fallback web3. Reason:" err)
+                (web3/create-web3 fallback-web3-url))))))
 
 (defn initialize-db
   "Update re-frame `db` with `localstorage` and `current-url` co-effects.
@@ -165,7 +168,7 @@
   (fn [{:keys [:localstorage :current-url]} [{:keys [:default-db :conversion-rates :effects]}]]
     (let [db (initialize-db default-db localstorage current-url)]
       {:db db
-       :promise {:call #(create-wallet-connect-web3 (:infura-id db))
+       :promise {:call #(create-wallet-connect-web3 (:infura-id db) (:fallback-web3-url db))
                  :on-success [:district0x/db-and-web3-initialized conversion-rates effects]}})))
 
 (reg-event-fx
