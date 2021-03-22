@@ -62,10 +62,10 @@ const deleteFolder = function (directoryPath) {
 }
 
 // This hack will make sure contracts are always recompiled!
+//
 // It is necessary because in migrations we are changing the
-// contracts bytecode (which is persisted by truffle later).
-// Without doing this, the subsequent deployment would not work
-// correctly.
+// contracts bytecode (which is persisted to file system by truffle)
+// and will not be recompiled until the source file change.
 deleteFolder(CONTRACTS_BUILD_DIR)
 
 module.exports = {

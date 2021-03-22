@@ -27,13 +27,11 @@ const smartContractsTemplate = (contracts) => {
 }
 
 const linkBytecode = (Contract, placeholder, replacement) => {
-  // if (Contract.bytecode.split(placeholder).length <= 1) {
-  //   console.log('wtf', Contract.bytecode, placeholder, replacement, Contract.bytecode.split(placeholder).length, Contract.contractName)
-  //   throw new Error('stop')
-  // }
   placeholder = placeholder.replace('0x', '');
   replacement = replacement.replace('0x', '');
-  Contract.bytecode = Contract.bytecode.split(placeholder).join(replacement);
+  const parts = Contract.bytecode.split(placeholder)
+  if (parts.length <= 1) throw new Error('Placeholder was not found in bytecode!')
+  Contract.bytecode = parts.join(replacement);
 }
 
 const loadArtifacts = (entries) => entries.reduce(
