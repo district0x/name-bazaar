@@ -94,8 +94,8 @@
                                  :use-instant-registrar? true
                                  :reveal-period {:hours 48}}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
-                           :print-gas-usage? false
-                           :auto-mining? false}
+                           :print-gas-usage? true
+                           :auto-mining? true}
          :deployer {:write? true}})
       (mount/except [#'name-bazaar.server.deployer/deployer])
       (mount/start)

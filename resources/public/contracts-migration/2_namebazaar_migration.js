@@ -2,6 +2,7 @@ const namehash = require('eth-ens-namehash').hash
 const keccak256 = require('js-sha3').keccak_256
 const edn = require("jsedn")
 const fs = require('fs')
+const { Promise } = require('@ungap/global-this')
 
 // flatMap polyfill in nodejs
 if (!Array.prototype.flatMap) {
@@ -17,10 +18,22 @@ if (!Array.prototype.flatMap) {
 
 const ensLabel = (label) => '0x' + keccak256(label)
 
+const parallel = (...promises) => Promise.all(promises)
+
 const smartContractsTemplate = (contracts) => {
   return `(ns name-bazaar.shared.smart-contracts)
     (def smart-contracts
       ${contracts})`;
+}
+
+const linkBytecode = (Contract, placeholder, replacement) => {
+  // if (Contract.bytecode.split(placeholder).length <= 1) {
+  //   console.log('wtf', Contract.bytecode, placeholder, replacement, Contract.bytecode.split(placeholder).length, Contract.contractName)
+  //   throw new Error('stop')
+  // }
+  placeholder = placeholder.replace('0x', '');
+  replacement = replacement.replace('0x', '');
+  Contract.bytecode = Contract.bytecode.split(placeholder).join(replacement);
 }
 
 const loadArtifacts = (entries) => entries.reduce(
@@ -38,7 +51,9 @@ const loadArtifacts = (entries) => entries.reduce(
 const writeSmartContracts = (artifacts) => {
   // verify that every artifact has been deployed
   Object.values(artifacts).forEach((artifact) => {
-    if (!artifact.isDeployed()) throw new Error(`Artifact ${artifact.contractName} has not been deployed!`)
+    if (!artifact.isDeployed() && !artifact.skippedDeploy) {
+      throw new Error(`Artifact ${artifact.contractName} has not been deployed! If this is intended, call 'skipDeploy' on the contract.`)
+    }
   })
 
   const smartContracts = smartContractsTemplate(
@@ -62,9 +77,28 @@ const writeSmartContracts = (artifacts) => {
   console.log(`Successfully modified deployment file on path: ${path}`)
 }
 
+const validateDeploymentConfig = (config = {}) => {
+  const errorDetails = 'Properties must me specified in config.edn! (See: truffle-config.js)'
+  const configJSON = JSON.stringify(config)
+
+  const {privateKeys, infuraKey} = config
+  if (typeof infuraKey !== 'string' || !Array.isArray(privateKeys) || privateKeys.length <= 0) {
+    throw new Error(`Invalid deployment secrets. Configuration: ${configJSON}. ` + errorDetails)
+  }
+
+  const {ensAddress, registrarAddress, publicResolverAddress, reverseRegistrarAddress} = config
+  if (typeof ensAddress !== 'string' ||
+    typeof registrarAddress !== 'string' ||
+    typeof publicResolverAddress !== 'string' ||
+    typeof reverseRegistrarAddress !== 'string'
+  ) {
+    throw new Error(`Missing (at least) one of required smart contract addresses. Config: ${configJSON}.` + errorDetails)
+  }
+}
+
 const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
-  {kw: ':name-bazaar-registrar', name: 'NameBazaarRegistrar'},
+  {kw: ':name-bazaar-registrar', name: 'NameBazaarDevRegistrar'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
   {kw: ':offering-requests', name: 'OfferingRequests'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},
@@ -74,12 +108,12 @@ const loadedArtifacts = loadArtifacts([
   {kw: ':district0x-emails', name: 'District0xEmails'},
   {kw: ':reverse-name-resolver', name: 'NamebazaarDevNameResolver'},
   {kw: ':public-resolver', name: 'NamebazaarDevPublicResolver'},
-  {kw: ':reverse-registrar', name: 'NamebazaarDevReverseResolver'},
+  {kw: ':reverse-registrar', name: 'NamebazaarDevReverseRegistrar'},
 ])
 
 const {
   ENSRegistry,
-  NameBazaarRegistrar,
+  NameBazaarDevRegistrar,
   OfferingRegistry,
   OfferingRequests,
   BuyNowOffering,
@@ -89,46 +123,84 @@ const {
   District0xEmails,
   NamebazaarDevNameResolver,
   NamebazaarDevPublicResolver,
-  NamebazaarDevReverseResolver
+  NamebazaarDevReverseRegistrar
 } = loadedArtifacts
 
-module.exports = async function (deployer, network, accounts) {
-  await deployer.deploy(ENSRegistry);
-  await deployer.deploy(NameBazaarRegistrar, ENSRegistry.address, namehash('eth'))
+const emergencyMultisigPlaceholder = "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed".toLowerCase()
+const offeringPlaceholder = "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef".toLowerCase()
+const ensPlaceholder = "314159265dD8dbb310642f98f50C066173C1259b".toLowerCase()
+const offeringRegistryPlaceholder = "fEEDFEEDfeEDFEedFEEdFEEDFeEdfEEdFeEdFEEd".toLowerCase()
 
-  const ens = await ENSRegistry.deployed()
-  await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), NameBazaarRegistrar.address)
+module.exports = async function (deployer, network, accounts) {
+  const deploy = async (Contract, ...args) => {
+    await deployer.deploy(Contract, ...args)
+    return await Contract.deployed()
+  }
+
+  const skipDeploy = (Contract, address) => {
+    Contract.address = address
+    Contract.skippedDeploy = true
+  }
+
+  if (network === 'development') {
+    const [ens, namebazaarDevNameResolver] = await parallel(
+      deploy(ENSRegistry),
+      deploy(NamebazaarDevNameResolver)
+    )
+
+    const [nameBazaarDevRegistrar] = await parallel(
+      deploy(NameBazaarDevRegistrar, ens.address, namehash('eth')),
+      deploy(NamebazaarDevPublicResolver, ens.address),
+      deploy(NamebazaarDevReverseRegistrar, ens.address, namebazaarDevNameResolver.address)
+    )
+    await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), nameBazaarDevRegistrar.address)
+  } else {
+    const config = deployer.networks[network].deploymentConfig
+    validateDeploymentConfig(config)
+
+    skipDeploy(ENSRegistry, config.ensAddress)
+    skipDeploy(NamebazaarDevNameResolver, "0x0000000000000000000000000000000000000000") // this address is not important
+    skipDeploy(NameBazaarDevRegistrar, config.registrarAddress)
+    skipDeploy(NamebazaarDevPublicResolver, config.publicResolverAddress)
+    skipDeploy(NamebazaarDevReverseRegistrar, config.reverseRegistrarAddress)
+  }
 
   const emergencyMultisigAccount = accounts[0]
-  await deployer.deploy(OfferingRegistry, emergencyMultisigAccount)
-  await deployer.deploy(OfferingRequests)
-
-  await deployer.deploy(BuyNowOffering, emergencyMultisigAccount)
-  await deployer.deploy(
-    BuyNowOfferingFactory,
-    ENSRegistry.address,
-    OfferingRegistry.address,
-    OfferingRequests.address
+  const offeringRegistry = await deploy(OfferingRegistry, emergencyMultisigAccount)
+  linkBytecode(BuyNowOffering, emergencyMultisigPlaceholder, emergencyMultisigAccount)
+  linkBytecode(BuyNowOffering, ensPlaceholder, ENSRegistry.address)
+  linkBytecode(BuyNowOffering, offeringRegistryPlaceholder, offeringRegistry.address)
+  linkBytecode(AuctionOffering, emergencyMultisigPlaceholder, emergencyMultisigAccount)
+  linkBytecode(AuctionOffering, ensPlaceholder, ENSRegistry.address)
+  linkBytecode(AuctionOffering, offeringRegistryPlaceholder, offeringRegistry.address)
+  const [offeringRequests, buyNowOffering, auctionOffering] = await parallel(
+    deploy(OfferingRequests),
+    deploy(BuyNowOffering, emergencyMultisigAccount),
+    deploy(AuctionOffering, emergencyMultisigAccount),
+    deploy(District0xEmails)
   )
 
-  await deployer.deploy(AuctionOffering, emergencyMultisigAccount)
-  await deployer.deploy(
-    AuctionOfferingFactory,
-    ENSRegistry.address,
-    OfferingRegistry.address,
-    OfferingRequests.address
+  linkBytecode(BuyNowOfferingFactory, offeringPlaceholder, buyNowOffering.address)
+  linkBytecode(AuctionOfferingFactory, offeringPlaceholder, auctionOffering.address)
+  const [buyNowOfferingFactory, auctionOfferingFactory] = await parallel(
+    deploy(
+      BuyNowOfferingFactory,
+      ENSRegistry.address,
+      offeringRegistry.address,
+      offeringRequests.address
+    ),
+    deploy(
+      AuctionOfferingFactory,
+      ENSRegistry.address,
+      offeringRegistry.address,
+      offeringRequests.address
+    )
   )
 
-  await deployer.deploy(District0xEmails)
-
-  const offeringRegistry = await OfferingRegistry.deployed()
-  await offeringRegistry.setFactories([BuyNowOfferingFactory.address, AuctionOfferingFactory.address], true)
-  const offeringRequests = await OfferingRequests.deployed()
-  await offeringRequests.setFactories([BuyNowOfferingFactory.address, AuctionOfferingFactory.address], true)
-
-  await deployer.deploy(NamebazaarDevNameResolver)
-  await deployer.deploy(NamebazaarDevPublicResolver, ENSRegistry.address)
-  await deployer.deploy(NamebazaarDevReverseResolver, ENSRegistry.address, NamebazaarDevNameResolver.address)
+  await parallel(
+    offeringRegistry.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true),
+    offeringRequests.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true)
+  )
 
   writeSmartContracts(loadedArtifacts)
 };

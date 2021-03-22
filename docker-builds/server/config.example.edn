@@ -17,7 +17,7 @@
      {:name "BuyNowOfferingFactory",
       :address "0xcaf0523f1ca2985b5cbba8a42a8cc413ff7512d0"},
      :name-bazaar-registrar
-     {:name "NameBazaarRegistrar",
+     {:name "NameBazaarDevRegistrar",
       ;; Ropsten BaseRegistrarImplementation
       ;; https://ropsten.etherscan.io/address/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
       :address "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"},

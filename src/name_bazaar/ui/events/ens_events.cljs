@@ -66,7 +66,7 @@
                                                         :fields [:offering/node :offering/address]
                                                         :node-owner? true}
                                                :on-success [:ens.records.active-offerings/loaded nodes]
-                                               :on-failure [::logging/error "Failed to load END record active offerings"
+                                               :on-failure [::logging/error "Failed to load ENS record active offerings"
                                                             {:nodes nodes}
                                                             :ens.records.active-offerings/load]}]})))
 
