@@ -9,7 +9,7 @@
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
 
 (defn register! [{:keys [:ens.record/hash :ens.record/label]} & [opts]]
-  (contract-call :name-bazaar-registrar
+  (contract-call :eth-registrar
                  :register
                  (sha3 label hash)
                  (merge {:gas 2000000
@@ -17,7 +17,7 @@
                         opts)))
 
 (defn transfer! [{:keys [:ens.record/label :ens.record/owner]} & [opts]]
-  (contract-call :name-bazaar-registrar
+  (contract-call :eth-registrar
                  :transfer-from
                  (:from opts)
                  owner
@@ -26,7 +26,7 @@
                         opts)))
 
 (defn reclaim! [{:keys [:ens.record/label :ens.record/owner]} & [opts]]
-  (contract-call :name-bazaar-registrar
+  (contract-call :eth-registrar
                  :reclaim
                  (sha3 label)
                  owner
@@ -34,10 +34,10 @@
                         opts)))
 
 (defn registration-owner [{:keys [:ens.record/hash :ens.record/label]}]
-  (contract-call :name-bazaar-registrar :owner-of (sha3 label hash)))
+  (contract-call :eth-registrar :owner-of (sha3 label hash)))
 
 (defn ens []
-  (contract-call :name-bazaar-registrar :ens))
+  (contract-call :eth-registrar :ens))
 
 (defn on-transfer [& args]
-  (apply contract-call :name-bazaar-registrar :Transfer args))
+  (apply contract-call :eth-registrar :Transfer args))

@@ -62,10 +62,10 @@
   (let [route-params (subscribe [:district0x/route-params])]
     (fn []
       (let [{:keys [:ens.record/name]} @route-params
-            {:keys [:name-bazaar-registrar.registration/available
-                    :name-bazaar-registrar.registration/expiration-date
-                    :name-bazaar-registrar.registration/owner]}
-            @(subscribe [:name-bazaar-registrar/registration (name->label-hash name)])]
+            {:keys [:eth-registrar.registration/available
+                    :eth-registrar.registration/expiration-date
+                    :eth-registrar.registration/owner]}
+            @(subscribe [:eth-registrar/registration (name->label-hash name)])]
         [app-layout {:meta {:title (str name " name details")
                             :description (str "See details about " name ". Available:" available)}}
          [ui/Segment

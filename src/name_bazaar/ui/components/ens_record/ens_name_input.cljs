@@ -35,7 +35,7 @@
         node (namehash full-name)]
     (dispatch [:ens.records/load [node] {:load-resolver? true}])
     (when (top-level-name? full-name)
-      (dispatch [:name-bazaar-registrar.registrations/load [(sha3 value)]]))))
+      (dispatch [:eth-registrar.registrations/load [(sha3 value)]]))))
 
 (def debounced-load-name-ownership (debounce load-name-ownership 300))
 

@@ -38,7 +38,7 @@
 
 
 (defn deploy-registrars! [default-opts]
-  (deploy-smart-contract! :name-bazaar-registrar (merge default-opts
+  (deploy-smart-contract! :eth-registrar (merge default-opts
                                                         {:gas 3200000
                                                          :arguments [(contract-address :ens)
                                                                      (namehash "eth")]}))
@@ -110,7 +110,7 @@
 
       (ens/set-subnode-owner! {:ens.record/label "eth"
                                :ens.record/node ""
-                               :ens.record/owner (contract-address :name-bazaar-registrar)}))
+                               :ens.record/owner (contract-address :eth-registrar)}))
 
     (deploy-offering-registry! deploy-opts {:emergency-multisig emergency-multisig})
     (deploy-offering-requests! deploy-opts)

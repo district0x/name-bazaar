@@ -29,7 +29,7 @@
      :offerings {}
      :offering-requests {}
      :ens/records {}
-     :name-bazaar-registrar/registrations {}
+     :eth-registrar/registrations {}
      :registration-bids {}
      :public-resolver/reverse-records {}
      :public-resolver/records {}

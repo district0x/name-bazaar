@@ -96,7 +96,7 @@ const validateDeploymentConfig = (config = {}) => {
 
 const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
-  {kw: ':name-bazaar-registrar', name: 'NameBazaarDevRegistrar'},
+  {kw: ':eth-registrar', name: 'NameBazaarDevRegistrar'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
   {kw: ':offering-requests', name: 'OfferingRequests'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},

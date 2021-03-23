@@ -16,26 +16,26 @@
     [taoensso.timbre :as logging :refer-macros [info warn error]]))
 
 (reg-event-fx
-  :name-bazaar-registrar/transfer
+  :eth-registrar/transfer
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label :ens.record/owner]))]
   (fn [{:keys [:db]} [form-data opts]]
     (let [active-address (subscribe [:district0x/active-address])
           form-data (assoc form-data :ens.record/label-hash (sha3 (:ens.record/label form-data))
-                                     :name-bazaar-registrar.registration/owner @active-address)
+                                     :eth-registrar.registration/owner @active-address)
           name (str (:ens.record/label form-data) constants/registrar-root)]
       {:dispatch [:district0x/make-transaction
                   (merge
                     {:name (gstring/format "Transfer %s ownership" name)
-                     :contract-key :name-bazaar-registrar
+                     :contract-key :eth-registrar
                      :contract-method :transfer-from
                      :form-data form-data
-                     :args-order [:name-bazaar-registrar.registration/owner :ens.record/owner :ens.record/label-hash]
+                     :args-order [:eth-registrar.registration/owner :ens.record/owner :ens.record/label-hash]
                      :form-id (select-keys form-data [:ens.record/label])
                      :tx-opts {:gas 75000 :gas-price default-gas-price}}
                     opts)]})))
 
 (reg-event-fx
-  :name-bazaar-registrar/register
+  :eth-registrar/register
   [interceptors (validate-first-arg (s/keys :req [:ens.record/label]))]
   (fn [{:keys [:db]} [form-data]]
     (let [label (normalize (:ens.record/label form-data))
@@ -43,7 +43,7 @@
           form-data (assoc form-data :ens.record/label-hash (sha3 label))]
       {:dispatch [:district0x/make-transaction
                   {:name (gstring/format "Register %s" ens-record-name)
-                   :contract-key :name-bazaar-registrar
+                   :contract-key :eth-registrar
                    :contract-method :register
                    :form-data form-data
                    :result-href (path-for :route.ens-record/detail {:ens.record/name ens-record-name})
@@ -53,62 +53,62 @@
                                    (gstring/format "%s was successfully registered" ens-record-name)]}]})))
 
 (reg-event-fx
-  :name-bazaar-registrar.registrations/load
+  :eth-registrar.registrations/load
   interceptors
   (fn [{:keys [:db]} [label-hashes]]
-    (let [instance (d0x-ui-events/get-instance db :name-bazaar-registrar)]
+    (let [instance (d0x-ui-events/get-instance db :eth-registrar)]
       {:web3-fx.contract/constant-fns
        {:fns (flatten (for [label-hash label-hashes]
                                 [{:instance instance
                                   :method :available
                                   :args [label-hash]
-                                  :on-success [:name-bazaar-registrar.registration/available-loaded label-hash]
+                                  :on-success [:eth-registrar.registration/available-loaded label-hash]
                                   :on-error [:district0x.log/error]}
                                  {:instance instance
                                   :method :name-expires
                                   :args [label-hash]
-                                  :on-success [:name-bazaar-registrar.registration/expiry-loaded label-hash]
+                                  :on-success [:eth-registrar.registration/expiry-loaded label-hash]
                                   :on-error [:district0x.log/error]}
                                  {:instance instance
                                   :method :owner-of
                                   :args [label-hash]
-                                  :on-success [:name-bazaar-registrar.registration/owner-loaded label-hash]
+                                  :on-success [:eth-registrar.registration/owner-loaded label-hash]
                                   ;; ownerOf contract call can fail if the name is not owned
                                   ;; in that case, we want to set zero address to the db.
-                                  :on-error [:name-bazaar-registrar.registration/owner-loaded
+                                  :on-error [:eth-registrar.registration/owner-loaded
                                              label-hash
                                              zero-address]}
                                  ]))}})))
 
 (reg-event-fx
-  :name-bazaar-registrar.registration/available-loaded
+  :eth-registrar.registration/available-loaded
   interceptors
   (fn [_ [label-hash value]]
-    {:dispatch [:name-bazaar-registrar.registration/loaded
+    {:dispatch [:eth-registrar.registration/loaded
                 label-hash
-                :name-bazaar-registrar.registration/available
+                :eth-registrar.registration/available
                 value]}))
 
 (reg-event-fx
-  :name-bazaar-registrar.registration/expiry-loaded
+  :eth-registrar.registration/expiry-loaded
   interceptors
   (fn [_ [label-hash value]]
-    {:dispatch [:name-bazaar-registrar.registration/loaded
+    {:dispatch [:eth-registrar.registration/loaded
                 label-hash
-                :name-bazaar-registrar.registration/expiration-date
+                :eth-registrar.registration/expiration-date
                 (evm-time->date-time (bn/number value))]}))
 
 (reg-event-fx
-  :name-bazaar-registrar.registration/owner-loaded
+  :eth-registrar.registration/owner-loaded
   interceptors
   (fn [_ [label-hash value]]
-    {:dispatch [:name-bazaar-registrar.registration/loaded
+    {:dispatch [:eth-registrar.registration/loaded
                 label-hash
-                :name-bazaar-registrar.registration/owner
+                :eth-registrar.registration/owner
                 value]}))
 
 (reg-event-fx
-  :name-bazaar-registrar.registration/loaded
+  :eth-registrar.registration/loaded
   interceptors
   (fn [{:keys [:db]} [label-hash db-keyword value]]
-    {:db (assoc-in db [:name-bazaar-registrar/registrations label-hash db-keyword] value)}))
+    {:db (assoc-in db [:eth-registrar/registrations label-hash db-keyword] value)}))

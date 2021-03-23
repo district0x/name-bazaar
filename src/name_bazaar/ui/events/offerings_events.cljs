@@ -410,7 +410,7 @@
                             (filter :offering/top-level-name?)
                             (map :offering/label-hash))]
       {:dispatch-n [[:ens.records/load nodes]
-                    [:name-bazaar-registrar.registrations/load label-hashes]]})))
+                    [:eth-registrar.registrations/load label-hashes]]})))
 
 (reg-event-fx
   :offerings/watch
@@ -655,7 +655,7 @@
     {:dispatch
       (conj
         (if (top-level-name? name)
-          [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
+          [:eth-registrar/transfer {:ens.record/label (name-label name)
                                             :ens.record/owner owner}]
           [:ens/set-owner {:ens.record/name name
                            :ens.record/owner owner}])

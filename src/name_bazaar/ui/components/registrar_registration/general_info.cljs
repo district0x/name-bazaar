@@ -9,13 +9,13 @@
     [reagent.core :as r]))
 
 (defn registrar-registration-general-info [{:keys [:ens.record/name] :as props}]
-  (let [{:keys [:name-bazaar-registrar.registration/available
-                :name-bazaar-registrar.registration/expiration-date
-                :name-bazaar-registrar.registration/owner]}
-        @(subscribe [:name-bazaar-registrar/registration (name->label-hash name)])]
+  (let [{:keys [:eth-registrar.registration/available
+                :eth-registrar.registration/expiration-date
+                :eth-registrar.registration/owner]}
+        @(subscribe [:eth-registrar/registration (name->label-hash name)])]
     [:div.description
      (-> props (dissoc :ens.record/name)
-         (dissoc :name-bazaar-registrar.registration/owner))
+         (dissoc :eth-registrar.registration/owner))
      [:div [:b "Registrar Information"]]
      [:div "Registration Available: " (case available true "Yes" false "No" "No Information")]
      [:div.ellipsis

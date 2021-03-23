@@ -51,9 +51,9 @@
     (let [node (namehash name)
           label-hash (sha3 (name-label name))]
       [(subscribe [:ens.record/loaded? node])
-       (subscribe [:name-bazaar-registrar.registration/loaded? label-hash])
+       (subscribe [:eth-registrar.registration/loaded? label-hash])
        (subscribe [:ens.record/active-address-owner? node])
-       (subscribe [:name-bazaar-registrar.registration/active-address-owner? label-hash])]))
+       (subscribe [:eth-registrar.registration/active-address-owner? label-hash])]))
   (fn [[ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?] [_ name]]
     (cond
       (empty? name)

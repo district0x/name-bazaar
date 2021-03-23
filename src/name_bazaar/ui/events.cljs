@@ -174,7 +174,7 @@
       (let [node (namehash name)]
         (merge {:dispatch-n [[:ens.records/load [node]]]}
                (when (top-level-name? name)
-                 {:dispatch [:name-bazaar-registrar.registrations/load [(name->label-hash name)]]}))))))
+                 {:dispatch [:eth-registrar.registrations/load [(name->label-hash name)]]}))))))
 
 (reg-event-fx
   :name.all-details/load
@@ -188,7 +188,7 @@
                                     :halt? true
                                     :dispatch [:ens.records.owner/resolve node]}]}}
              (when (top-level-name? name)
-               {:dispatch [:name-bazaar-registrar.registrations/load [(name->label-hash name)]]})))))
+               {:dispatch [:eth-registrar.registrations/load [(name->label-hash name)]]})))))
 
 (reg-event-fx
   :name/transfer-ownership
@@ -198,7 +198,7 @@
       [[:ens/set-owner {:ens.record/name name
                         :ens.record/owner owner}]
        (if (top-level-name? name)
-         [:name-bazaar-registrar/transfer {:ens.record/label (name-label name)
+         [:eth-registrar/transfer {:ens.record/label (name-label name)
                                            :ens.record/owner owner}
           {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
            :on-tx-receipt-n [[:ens.records/load [(namehash name)]
