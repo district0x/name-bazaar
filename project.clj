@@ -95,6 +95,19 @@
                        ["@ensdomains/ethregistrar" "2.0.4"]
                        ["@ensdomains/resolver" "0.2.4"]
                        ["@sentry/node" "4.2.1"]
+                       ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
+                       ;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;; TODO: remove, they should be installed automatically
+                       [better-sqlite3 "5.4.0"]
+                       [chalk "2.3.0"]
+                       ;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
+                       ;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;; TODO: remove, they should be installed automatically
+                       [deasync "0.1.11"]
+                       ;; https://github.com/district0x/district-encryption/blob/d8ff0f/project.clj#L9
+                       ;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;; TODO: remove, they should be installed automatically
+                       [eccjs "0.3.1"]
                        [chalk "2.3.0"]
                        [eth-ens-namehash "2.0.0"]
                        [semantic-ui "2.4.1"]

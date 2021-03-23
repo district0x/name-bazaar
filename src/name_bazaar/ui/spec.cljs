@@ -85,28 +85,28 @@
 
 (s/def :ens/records (s/map-of :ens.record/node :ens/record))
 
-(s/def :name-bazaar-registrar.registration/available boolean?)
-(s/def :name-bazaar-registrar.registration/expiration-date (s/nilable date?))
-(s/def :name-bazaar-registrar.registration/owner address?)
+(s/def :eth-registrar.registration/available boolean?)
+(s/def :eth-registrar.registration/expiration-date (s/nilable date?))
+(s/def :eth-registrar.registration/owner address?)
 
-(s/def :name-bazaar-registrar/registration
-  (s/keys :opt [:name-bazaar-registrar.registration/available
-                :name-bazaar-registrar.registration/expiration-date
-                :name-bazaar-registrar.registration/owner]))
+(s/def :eth-registrar/registration
+  (s/keys :opt [:eth-registrar.registration/available
+                :eth-registrar.registration/expiration-date
+                :eth-registrar.registration/owner]))
 
-(s/def :name-bazaar-registrar/registrations (s/map-of :ens.record/label-hash :name-bazaar-registrar/registration))
+(s/def :eth-registrar/registrations (s/map-of :ens.record/label-hash :eth-registrar/registration))
 
-(s/def :name-bazaar-registrar/label string?)
+(s/def :eth-registrar/label string?)
 
-(s/def :name-bazaar-registrar/bid-salt #(or (nil? %)
+(s/def :eth-registrar/bid-salt #(or (nil? %)
                                             (string? %)))
 
-(s/def :name-bazaar-registrar/bid-value #(or (nil? %)
+(s/def :eth-registrar/bid-value #(or (nil? %)
                                              (string? %)))
 
-(s/def ::bid (s/merge (s/keys :req [:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value]
+(s/def ::bid (s/merge (s/keys :req [:eth-registrar/label :eth-registrar/bid-salt :eth-registrar/bid-value]
                               :opt [:registration-bids/state :registration-bids/bid-unsealed?])
-                      (s/map-of #{:name-bazaar-registrar/label :name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value
+                      (s/map-of #{:eth-registrar/label :eth-registrar/bid-salt :eth-registrar/bid-value
                                   :registration-bids/state :registration-bids/bid-unsealed?} any?)))
 
 (s/def ::user-bids (s/map-of :ens.record/label-hash ::bid))
@@ -148,7 +148,7 @@
 (s/def :name-bazaar.ui.db/db (s/merge
                                :district0x.ui/db
                                (s/keys :req [:ens/records
-                                             :name-bazaar-registrar/registrations
+                                             :eth-registrar/registrations
                                              :public-resolver/records
                                              :public-resolver/reverse-records]
                                        :req-un [::offerings

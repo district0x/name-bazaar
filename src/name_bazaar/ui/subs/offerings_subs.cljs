@@ -43,7 +43,7 @@
   :offering/loaded?
   (fn [[_ offering-address]]
     [(subscribe [:offering offering-address])
-     (subscribe [:name-bazaar-registrar/registrations])
+     (subscribe [:eth-registrar/registrations])
      (subscribe [:ens/records])])
   (fn [[{:keys [:offering/label-hash :offering/node :offering/name :auction-offering/end-time :offering/buy-now?
                 :offering/top-level-name?]}
@@ -124,7 +124,7 @@
 (reg-sub
   :offering/registrar-registration
   :<- [:offerings]
-  :<- [:name-bazaar-registrar/registrations]
+  :<- [:eth-registrar/registrations]
   (fn [[offerings registrar-registrations] [_ offering-address]]
     (get registrar-registrations (get-in offerings [offering-address :offering/label-hash]))))
 
@@ -143,7 +143,7 @@
      (subscribe [:offering/registrar-registration offering-address])])
   (fn [[{:keys [:offering/top-level-name?]} ens-record registrar-registration] [_ offering-address]]
     (let [node-owner (if top-level-name?
-                       (:name-bazaar-registrar.registration/owner registrar-registration)
+                       (:eth-registrar.registration/owner registrar-registration)
                        (:ens.record/owner ens-record))]
       (and node-owner (= offering-address node-owner)))))
 

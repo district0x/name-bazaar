@@ -24,8 +24,6 @@ Open another terminal, start autocompiling smart-contracts
 
 ```bash
 lein auto compile-solidity
-# or alternatively use (note: truffle is currently experimental)
-truffle compile
 ```
 
 _(You need to have `solc` with compatible version installed. See `contracts` folder to determine the

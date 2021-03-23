@@ -13,7 +13,7 @@
   (let [{:keys [:offering/address :offering/name :offering/top-level-name? :offering/label
                 :offering/label-hash :offering/node]} offering
         active-address-ens-owner? @(subscribe [:ens.record/active-address-owner? node])
-        active-address-registration-owner? @(subscribe [:name-bazaar-registrar.registration/active-address-owner? label-hash])]
+        active-address-registration-owner? @(subscribe [:eth-registrar.registration/active-address-owner? label-hash])]
     [transaction-button
      (r/merge-props
        {:secondary true

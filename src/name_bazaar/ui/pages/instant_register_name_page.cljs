@@ -42,7 +42,7 @@
            :pending-text "Registering..."
            :on-click (fn []
                        (when (valid-tld? @label)
-                         (dispatch [:name-bazaar-registrar/register {:ens.record/label @label}])
+                         (dispatch [:eth-registrar/register {:ens.record/label @label}])
                          (reset! label "")))}
           "Register"]]]])))
 

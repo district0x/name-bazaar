@@ -36,8 +36,8 @@
    "Offering Address: " [etherscan-link {:address address} address]])
 
 
-(defn registrar-registration-owner [{:keys [:name-bazaar-registrar-registration]}]
-  (let [{:keys [:name-bazaar-registrar.registration/owner]} name-bazaar-registrar-registration]
+(defn registrar-registration-owner [{:keys [:eth-registrar-registration]}]
+  (let [{:keys [:eth-registrar.registration/owner]} name-bazaar-registrar-registration]
     [:div
      "Registration Owner: " [etherscan-link
                              {:address owner}]]))
@@ -116,4 +116,4 @@
       {:offering/address address}]
      (when top-level-name?
        [registrar-registration-owner
-        {:name-bazaar-registrar-registration registrar-registration}])]))
+        {:eth-registrar-registration registrar-registration}])]))

@@ -230,7 +230,7 @@
                                  (not (web3/address? owner)))
             top-level? (top-level-name? full-name)
             node-hash (sha3 name)
-            registrar-registration @(subscribe [:name-bazaar-registrar/registration node-hash])]
+            registrar-registration @(subscribe [:eth-registrar/registration node-hash])]
         [:div.grid.submit-footer.offering-form
          [:div.name-ownership
           [ens-name-input-ownership-validated
@@ -249,7 +249,7 @@
              (when top-level?
                (str " as well as owner of the registration (i.e. registrant) expiring at "
                     (format-date
-                      (:name-bazaar-registrar.registration/expiration-date registrar-registration))))])]
+                      (:eth-registrar.registration/expiration-date registrar-registration))))])]
          [:div.button
           [transaction-button
            {:primary true

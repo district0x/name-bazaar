@@ -121,9 +121,9 @@
         (update :offering-request/latest-round bn/number)
         (assoc :offering-request/node node))))
 
-(def registrar-registration-props [:name-bazaar-registrar.registration/available
-                                   :name-bazaar-registrar.registration/expiration-date
-                                   :name-bazaar-registrar.registration/owner])
+(def registrar-registration-props [:eth-registrar.registration/available
+                                   :eth-registrar.registration/expiration-date
+                                   :eth-registrar.registration/owner])
 
 (defn calculate-min-bid
   ([price min-bid-increase bid-count]

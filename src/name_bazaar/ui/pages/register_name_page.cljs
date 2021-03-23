@@ -30,7 +30,7 @@
 
 (def registrar-auction-states
   ^{:doc "Higher weights are given higher priority in autosuggestions"}
-  (merge #:name-bazaar-registrar.entry.state{:loading {:text "Checking ownership..." :icon :loader :color :grey :status :grey :weight 1}
+  (merge #:eth-registrar.entry.state{:loading {:text "Checking ownership..." :icon :loader :color :grey :status :grey :weight 1}
                                              :owned-phase-different-owner {:text "This name is owned" :icon :user2 :color :dark-blue :status :dark-blue :weight 2}
                                              :owned-phase-user-owner {:text "You are now the owner of this name" :icon :user2 :color :green :status :success :weight 3}
                                              :auction-user-made-bid {:text "You placed a bid for this name" :icon :hammer2 :color :yellow :status :warning :weight 4}
@@ -51,7 +51,7 @@
           ::unseal-bid-pending {:text "Revealing..." :icon :loader :color :grey :status :grey :weight 1}}))
 
 (def registration-bid-state->text
-  #:name-bazaar-registrar.entry.state{:reveal-phase-user-made-bid {:text "bids are waiting to be revealed"}
+  #:eth-registrar.entry.state{:reveal-phase-user-made-bid {:text "bids are waiting to be revealed"}
                                       :owned-phase-user-owner-not-finalized {:text "bids are waiting for finalization"}
                                       :auction-no-user-made-bid {:text "names are waiting for a bid"}
                                       :reveal-phase-user-winning {:text "bids are winning"}})
@@ -69,8 +69,8 @@
     [:div
      [:div.description "Highest revealed-bid: " highest-bid " ETH"]
      [:div.description.ellipsis "Winning bidder"
-      (when (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-winning
-                         :name-bazaar-registrar.entry.state/owned-phase-user-owner} state) " (You)")
+      (when (contains? #{:eth-registrar.entry.state/reveal-phase-user-winning
+                         :eth-registrar.entry.state/owned-phase-user-owner} state) " (You)")
       ": "
       (if (nil? owner)
         "none"
@@ -79,8 +79,8 @@
 
 (defn- description [state]
   (fn [state]
-    (cond (contains? #{:name-bazaar-registrar.entry.state/open
-                       :name-bazaar-registrar.entry.state/empty-name
+    (cond (contains? #{:eth-registrar.entry.state/open
+                       :eth-registrar.entry.state/empty-name
                        ::invalid-length
                        ::subname
                        ::start-auction-pending
@@ -95,10 +95,10 @@
            [:p "To get started, type a name you’re looking for into the search above and open the auction with or without a bid below."]
            [:p [:b "Note:"] " By opening an auction with the “Bid Now” button, you can combine step one and two above into a single transaction." [:b " This will allow others to see your bid early"] " and is not recommended if you’d like to keep your first bid a secret."]]
 
-          (= :name-bazaar-registrar.entry.state/auction-no-user-made-bid state)
+          (= :eth-registrar.entry.state/auction-no-user-made-bid state)
           [:div.description "An auction has already started on this name. Place your bid below before the auction ends in order to claim this name. Don’t forget to return for the reveal phase in order to reveal your bid!"]
 
-          (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
+          (contains? #{:eth-registrar.entry.state/auction-user-made-bid
                        ::unseal-bid-pending}
                      state)
           [:div.description "Your bid has been placed, but still needs to be revealed. Return when the timer at the right reaches zero and the 48 hour reveal period begins in order to reveal your bids." [:font {:color :red} [:b " *Bids that are not revealed in this period cannot be refunded*!"]]])))
@@ -117,7 +117,7 @@
 (defn- backup-bids [state]
   (fn [state]
     [:label.description
-     {:class (if-not (= :name-bazaar-registrar.entry.state/empty-name state)
+     {:class (if-not (= :eth-registrar.entry.state/empty-name state)
                :side-dark-shadowed
                :dark-shadowed)
       :on-click (fn [evt]
@@ -128,7 +128,7 @@
 (defn- remove-name [state]
   (fn [state]
     [:label.description
-     {:class [(if (= :name-bazaar-registrar.entry.state/empty-name state)
+     {:class [(if (= :eth-registrar.entry.state/empty-name state)
                 :concealed
                 :dark-shadowed)]
       :on-click (fn [evt]
@@ -149,25 +149,25 @@
 (defn auction-clock [label-hash state]
   (fn [label-hash state]
     (let [[time-remaining header] (cond
-                                    (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
-                                                 :name-bazaar-registrar.entry.state/auction-no-user-made-bid} state)
-                                    [@(re-frame/subscribe [:name-bazaar-registrar/bidding-time-remaining label-hash])
+                                    (contains? #{:eth-registrar.entry.state/auction-user-made-bid
+                                                 :eth-registrar.entry.state/auction-no-user-made-bid} state)
+                                    [@(re-frame/subscribe [:eth-registrar/bidding-time-remaining label-hash])
                                      "TIME REMAINING TO REVEAL PHASE"]
 
-                                    (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-made-bid
-                                                 :name-bazaar-registrar.entry.state/reveal-phase-no-user-made-bid
-                                                 :name-bazaar-registrar.entry.state/reveal-phase-user-winning
-                                                 :name-bazaar-registrar.entry.state/reveal-phase-user-outbid
+                                    (contains? #{:eth-registrar.entry.state/reveal-phase-user-made-bid
+                                                 :eth-registrar.entry.state/reveal-phase-no-user-made-bid
+                                                 :eth-registrar.entry.state/reveal-phase-user-winning
+                                                 :eth-registrar.entry.state/reveal-phase-user-outbid
                                                  ::unseal-bid-pending} state)
-                                    [@(re-frame/subscribe [:name-bazaar-registrar/reveal-time-remaining label-hash])
+                                    [@(re-frame/subscribe [:eth-registrar/reveal-time-remaining label-hash])
                                      "TIME REMAINING TO THE END OF REVEAL PHASE"]
 
-                                    (contains? #{:name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized
-                                                 :name-bazaar-registrar.entry.state/owned-phase-user-owner
-                                                 :name-bazaar-registrar.entry.state/owned-phase-different-owner
-                                                 :name-bazaar-registrar.entry.state/owned-phase-different-owner-not-finalized
+                                    (contains? #{:eth-registrar.entry.state/owned-phase-user-owner-not-finalized
+                                                 :eth-registrar.entry.state/owned-phase-user-owner
+                                                 :eth-registrar.entry.state/owned-phase-different-owner
+                                                 :eth-registrar.entry.state/owned-phase-different-owner-not-finalized
                                                  ::finalize-auction-pending} state)
-                                    [@(re-frame/subscribe [:name-bazaar-registrar/ownership-time-remaining label-hash])
+                                    [@(re-frame/subscribe [:eth-registrar/ownership-time-remaining label-hash])
                                      "TIME REMAINING TO RENEWAL"])]
       [:div.auction-clock.shadowed
        [:div.ui.segment
@@ -191,41 +191,41 @@
                                 s
                                 (str s "Z")))
           [start-time end-time title description] (cond
-                                                    (contains? #{:name-bazaar-registrar.entry.state/auction-no-user-made-bid} state)
+                                                    (contains? #{:eth-registrar.entry.state/auction-no-user-made-bid} state)
                                                     [@(re-frame/subscribe [:now])
-                                                     @(re-frame/subscribe [:name-bazaar-registrar/end-bidding-date label-hash])
+                                                     @(re-frame/subscribe [:eth-registrar/end-bidding-date label-hash])
                                                      (str "Make your bid - " @label)
                                                      "Don't let others win this name, make your bid before the auction ends"]
 
-                                                    (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid} state)
-                                                    [@(re-frame/subscribe [:name-bazaar-registrar/end-bidding-date label-hash])
-                                                     (:name-bazaar-registrar.entry/registration-date @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash]))
+                                                    (contains? #{:eth-registrar.entry.state/auction-user-made-bid} state)
+                                                    [@(re-frame/subscribe [:eth-registrar/end-bidding-date label-hash])
+                                                     (:eth-registrar.entry/registration-date @(re-frame/subscribe [:eth-registrar/entry label-hash]))
                                                      (str "Reveal your ENS bid - " @label)
                                                      "Revealing your bid is necessary, otherwise you'll lose your funds"]
 
-                                                    (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-made-bid
-                                                                 :name-bazaar-registrar.entry.state/reveal-phase-no-user-made-bid
-                                                                 :name-bazaar-registrar.entry.state/reveal-phase-user-outbid
+                                                    (contains? #{:eth-registrar.entry.state/reveal-phase-user-made-bid
+                                                                 :eth-registrar.entry.state/reveal-phase-no-user-made-bid
+                                                                 :eth-registrar.entry.state/reveal-phase-user-outbid
                                                                  ::unseal-bid-pending} state)
                                                     [@(re-frame/subscribe [:now])
-                                                     (:name-bazaar-registrar.entry/registration-date @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash]))
+                                                     (:eth-registrar.entry/registration-date @(re-frame/subscribe [:eth-registrar/entry label-hash]))
                                                      (str "Reveal your ENS bid - " @label)
                                                      "Revealing your bid is necessary, otherwise you'll lose your funds"]
 
-                                                    (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-winning} state)
-                                                    (let [registration-date (:name-bazaar-registrar.entry/registration-date @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash]))
-                                                          end-ownership-date @(re-frame/subscribe [:name-bazaar-registrar/end-ownership-date label-hash])]
+                                                    (contains? #{:eth-registrar.entry.state/reveal-phase-user-winning} state)
+                                                    (let [registration-date (:eth-registrar.entry/registration-date @(re-frame/subscribe [:eth-registrar/entry label-hash]))
+                                                          end-ownership-date @(re-frame/subscribe [:eth-registrar/end-ownership-date label-hash])]
                                                       [registration-date
                                                        end-ownership-date
                                                        (str "Finalize your ENS bid - " @label)
                                                        "You are currently winning the auction, come back later to finalize it"])
 
-                                                    (contains? #{:name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized
-                                                                 :name-bazaar-registrar.entry.state/owned-phase-user-owner
-                                                                 :name-bazaar-registrar.entry.state/owned-phase-different-owner
-                                                                 :name-bazaar-registrar.entry.state/owned-phase-different-owner-not-finalized
+                                                    (contains? #{:eth-registrar.entry.state/owned-phase-user-owner-not-finalized
+                                                                 :eth-registrar.entry.state/owned-phase-user-owner
+                                                                 :eth-registrar.entry.state/owned-phase-different-owner
+                                                                 :eth-registrar.entry.state/owned-phase-different-owner-not-finalized
                                                                  ::finalize-auction-pending} state)
-                                                    (let [end-ownership-date @(re-frame/subscribe [:name-bazaar-registrar/end-ownership-date label-hash])]
+                                                    (let [end-ownership-date @(re-frame/subscribe [:eth-registrar/end-ownership-date label-hash])]
                                                       [end-ownership-date
                                                        end-ownership-date
                                                        (str "Renew name ownership - " @label)
@@ -289,12 +289,12 @@
 (defn middle-section [state & [opts]]
   (let [last-state (atom state)
         last-opts (atom opts)
-        render (fn [state & [{:keys [:label-hash :name-bazaar-registrar-state :highest-bid :owner] :as opts}]]
+        render (fn [state & [{:keys [:label-hash :eth-registrar-state :highest-bid :owner] :as opts}]]
                  (cond
-                   (contains? #{:name-bazaar-registrar.entry.state/empty-name
-                                :name-bazaar-registrar.entry.state/open
-                                :name-bazaar-registrar.entry.state/subname
-                                :name-bazaar-registrar.entry.state/invalid-length
+                   (contains? #{:eth-registrar.entry.state/empty-name
+                                :eth-registrar.entry.state/open
+                                :eth-registrar.entry.state/subname
+                                :eth-registrar.entry.state/invalid-length
                                 ::subname
                                 ::invalid-length
                                 ::start-auction-pending
@@ -303,8 +303,8 @@
                    [:div.grid.midsect.empty
                     [:div.info [description state]]]
 
-                   (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
-                                :name-bazaar-registrar.entry.state/auction-no-user-made-bid
+                   (contains? #{:eth-registrar.entry.state/auction-user-made-bid
+                                :eth-registrar.entry.state/auction-no-user-made-bid
                                 ::unseal-bid-pending}
                               state)
                    [:div.grid.midsect.made-bid
@@ -316,24 +316,24 @@
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
-                   (contains? #{:name-bazaar-registrar.entry.state/owned-phase-user-owner
-                                :name-bazaar-registrar.entry.state/owned-phase-different-owner
-                                :name-bazaar-registrar.entry.state/owned-phase-different-owner-not-finalized} state)
+                   (contains? #{:eth-registrar.entry.state/owned-phase-user-owner
+                                :eth-registrar.entry.state/owned-phase-different-owner
+                                :eth-registrar.entry.state/owned-phase-different-owner-not-finalized} state)
                    [:div.grid.midsect.dif-owner
                     [:div.description
                      [ens-record-general-info/ens-record-general-info {:ens.record/name (str @label constants/registrar-root)}]
                      [registrar-registration-general-info/registrar-registration-general-info
                        {:ens.record/name @label
-                        :name-bazaar-registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
+                        :eth-registrar.entry/state-text (get nb-ui-utils/registrar-entry-state->text registrar-state)}]]
                     [:div.clock
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
-                   (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-made-bid
-                                :name-bazaar-registrar.entry.state/reveal-phase-no-user-made-bid
-                                :name-bazaar-registrar.entry.state/reveal-phase-user-winning
-                                :name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized
-                                :name-bazaar-registrar.entry.state/owned-phase-user-owner
+                   (contains? #{:eth-registrar.entry.state/reveal-phase-user-made-bid
+                                :eth-registrar.entry.state/reveal-phase-no-user-made-bid
+                                :eth-registrar.entry.state/reveal-phase-user-winning
+                                :eth-registrar.entry.state/owned-phase-user-owner-not-finalized
+                                :eth-registrar.entry.state/owned-phase-user-owner
                                 ::finalize-auction-pending} state)
                    [:div.grid.midsect.reveal
                     [:div.bid-info
@@ -342,7 +342,7 @@
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]
 
-                   (= :name-bazaar-registrar.entry.state/reveal-phase-user-outbid state)
+                   (= :eth-registrar.entry.state/reveal-phase-user-outbid state)
                    [:div.grid.midsect.reveal-outbid
                     [:b.description.underlined
                      [ens-record-etherscan-link/ens-record-etherscan-link
@@ -356,21 +356,21 @@
                      [auction-clock label-hash state]
                      [auction-calendar label-hash state]]]))]
     (fn [state & [opts]]
-      (if (= :name-bazaar-registrar.entry.state/loading state)
+      (if (= :eth-registrar.entry.state/loading state)
         (render @last-state @last-opts)
         (do (reset! last-state state)
             (reset! last-opts opts)
             (render state opts))))))
 
 (defn register-name-form []
-  (let [last-state (atom :name-bazaar-registrar.entry.state/empty-name)
+  (let [last-state (atom :eth-registrar.entry.state/empty-name)
         bid-value-input (r/atom "0.01")]
     (fn []
       (let [label-hash (nb-ui-utils/sha3 @label)
-            start-auction-pending? @(re-frame/subscribe [:name-bazaar-registrar.transact/tx-pending? :start-auction @label])
-            start-auctions-and-bid-pending? @(re-frame/subscribe [:name-bazaar-registrar.transact/tx-pending? :start-auctions-and-bid @label])
-            finalize-auction-pending? @(re-frame/subscribe [:name-bazaar-registrar.transact/tx-pending? :finalize-auction @label])
-            unseal-bid-pending? @(re-frame/subscribe [:name-bazaar-registrar.transact/tx-pending? :unseal-bid @label])
+            start-auction-pending? @(re-frame/subscribe [:eth-registrar.transact/tx-pending? :start-auction @label])
+            start-auctions-and-bid-pending? @(re-frame/subscribe [:eth-registrar.transact/tx-pending? :start-auctions-and-bid @label])
+            finalize-auction-pending? @(re-frame/subscribe [:eth-registrar.transact/tx-pending? :finalize-auction @label])
+            unseal-bid-pending? @(re-frame/subscribe [:eth-registrar.transact/tx-pending? :unseal-bid @label])
             [state registrar-state] (cond start-auction-pending?
                                           [::start-auction-pending nil]
 
@@ -388,13 +388,13 @@
 
                                           (and (not (empty? @label)) (not (supported-tld-length? @label)))
                                           [::invalid-length nil]
-                                          :else @(re-frame/subscribe [:name-bazaar-registrar/auction-state label-hash]))
-            {:keys [:name-bazaar-registrar.entry/registration-date :name-bazaar-registrar.entry/highest-bid :name-bazaar-registrar.entry.deed/owner]} @(re-frame/subscribe [:name-bazaar-registrar/entry label-hash])
-            {:keys [:name-bazaar-registrar/bid-salt :name-bazaar-registrar/bid-value] :as bid} @(re-frame/subscribe [:registration-bid label-hash])
+                                          :else @(re-frame/subscribe [:eth-registrar/auction-state label-hash]))
+            {:keys [:eth-registrar.entry/registration-date :eth-registrar.entry/highest-bid :eth-registrar.entry.deed/owner]} @(re-frame/subscribe [:eth-registrar/entry label-hash])
+            {:keys [:eth-registrar/bid-salt :eth-registrar/bid-value] :as bid} @(re-frame/subscribe [:registration-bid label-hash])
             bids-by-importance @(re-frame/subscribe [:registration-bids/user-bids-by-importance registrar-auction-states])
             most-important-state (-> bids-by-importance first :registration-bids/state)
             {:keys [:count]} @(re-frame/subscribe [:registration-bids/state-count most-important-state])
-            fsm (cond (= :name-bazaar-registrar.entry.state/empty-name state)
+            fsm (cond (= :eth-registrar.entry.state/empty-name state)
                       (when (and count (contains? (-> registration-bid-state->text keys set) most-important-state))
                         {:count count
                          :text (str count " " (get-in registration-bid-state->text [most-important-state :text]))
@@ -405,17 +405,17 @@
             status (:status fsm)
             icon (:icon fsm)
             text (:text fsm)
-            show-bid-section? (contains? #{:name-bazaar-registrar.entry.state/loading
-                                           :name-bazaar-registrar.entry.state/empty-name
-                                           :name-bazaar-registrar.entry.state/open
-                                           :name-bazaar-registrar.entry.state/auction-no-user-made-bid
+            show-bid-section? (contains? #{:eth-registrar.entry.state/loading
+                                           :eth-registrar.entry.state/empty-name
+                                           :eth-registrar.entry.state/open
+                                           :eth-registrar.entry.state/auction-no-user-made-bid
                                            ::invalid-length
                                            ::subname
                                            ::start-auction-pending
                                            ::start-auctions-and-bid-pending} state)
             bid-disabled? #(or (empty? @label)
-                               (contains? #{:name-bazaar-registrar.entry.state/empty-name
-                                            :name-bazaar-registrar.entry.state/loading
+                               (contains? #{:eth-registrar.entry.state/empty-name
+                                            :eth-registrar.entry.state/loading
                                             ::invalid-length
                                             ::subname
                                             ::start-auction-pending
@@ -428,12 +428,12 @@
           [:div.user-bids-button [user-bids-buttons state]]
           [:div.middle-section
            [middle-section state {:label-hash label-hash
-                                  :name-bazaar-registrar-state registrar-state
+                                  :eth-registrar-state registrar-state
                                   :highest-bid highest-bid
                                   :owner owner}]]
-          (when (not (contains? #{:name-bazaar-registrar.entry.state/owned-phase-different-owner
-                                  :name-bazaar-registrar.entry.state/owned-phase-different-owner-not-finalized
-                                  :name-bazaar-registrar.entry.state/reveal-phase-user-outbid} state))
+          (when (not (contains? #{:eth-registrar.entry.state/owned-phase-different-owner
+                                  :eth-registrar.entry.state/owned-phase-different-owner-not-finalized
+                                  :eth-registrar.entry.state/reveal-phase-user-outbid} state))
             [:div.bid-section.button
              (when show-bid-section?
                [:div.header "Your Bid"])
@@ -445,43 +445,43 @@
                   :on-change #(reset! bid-value-input (aget %2 "value"))
                   :fluid true}
                  "Your bid"])
-              (when (contains? #{:name-bazaar-registrar.entry.state/auction-user-made-bid
-                                 :name-bazaar-registrar.entry.state/reveal-phase-user-made-bid
-                                 :name-bazaar-registrar.entry.state/reveal-phase-no-user-made-bid
+              (when (contains? #{:eth-registrar.entry.state/auction-user-made-bid
+                                 :eth-registrar.entry.state/reveal-phase-user-made-bid
+                                 :eth-registrar.entry.state/reveal-phase-no-user-made-bid
                                  ::unseal-bid-pending} state)
                 [transaction-button/transaction-button {:primary true
-                                                        :disabled (not (= :name-bazaar-registrar.entry.state/reveal-phase-user-made-bid state))
+                                                        :disabled (not (= :eth-registrar.entry.state/reveal-phase-user-made-bid state))
                                                         :pending? unseal-bid-pending?
                                                         :pending-text text
                                                         :on-click (fn []
-                                                                    (re-frame/dispatch [:name-bazaar-registrar/transact :unseal-bid {:name-bazaar-registrar/label @label
-                                                                                                                                     :name-bazaar-registrar/bid-value bid-value
-                                                                                                                                     :name-bazaar-registrar/bid-salt bid-salt}])
+                                                                    (re-frame/dispatch [:eth-registrar/transact :unseal-bid {:eth-registrar/label @label
+                                                                                                                                     :eth-registrar/bid-value bid-value
+                                                                                                                                     :eth-registrar/bid-salt bid-salt}])
                                                                     (load-bid-state @label))}
                  "Reveal Bid"])
-              (when (contains? #{:name-bazaar-registrar.entry.state/reveal-phase-user-winning
-                                 :name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized
+              (when (contains? #{:eth-registrar.entry.state/reveal-phase-user-winning
+                                 :eth-registrar.entry.state/owned-phase-user-owner-not-finalized
                                  ::finalize-auction-pending} state)
                 [transaction-button/transaction-button {:primary true
-                                                        :disabled (not (= :name-bazaar-registrar.entry.state/owned-phase-user-owner-not-finalized state))
+                                                        :disabled (not (= :eth-registrar.entry.state/owned-phase-user-owner-not-finalized state))
                                                         :pending? finalize-auction-pending?
                                                         :pending-text text
                                                         :on-click (fn []
-                                                                    (re-frame/dispatch [:name-bazaar-registrar/transact :finalize-auction {:name-bazaar-registrar/label @label}])
+                                                                    (re-frame/dispatch [:eth-registrar/transact :finalize-auction {:eth-registrar/label @label}])
                                                                     (load-bid-state @label))}
                  "Finalize Bid"])
-              (when (= :name-bazaar-registrar.entry.state/owned-phase-user-owner state)
+              (when (= :eth-registrar.entry.state/owned-phase-user-owner state)
                 [transaction-button/transaction-button {:primary true
-                                                        :disabled (not (= :name-bazaar-registrar.entry.state/owned-phase-user-owner state))
+                                                        :disabled (not (= :eth-registrar.entry.state/owned-phase-user-owner state))
                                                         :on-click (fn []
                                                                     (re-frame/dispatch [:district0x.location/set-query-and-nav-to :route.offerings/create
                                                                                         {:ens.record/name (str @label constants/registrar-root)}
                                                                                         constants/routes]))}
                  "Create Offering"])
-              (when (contains? #{:name-bazaar-registrar.entry.state/loading
-                                 :name-bazaar-registrar.entry.state/empty-name
-                                 :name-bazaar-registrar.entry.state/open
-                                 :name-bazaar-registrar.entry.state/auction-no-user-made-bid
+              (when (contains? #{:eth-registrar.entry.state/loading
+                                 :eth-registrar.entry.state/empty-name
+                                 :eth-registrar.entry.state/open
+                                 :eth-registrar.entry.state/auction-no-user-made-bid
                                  ::invalid-length
                                  ::subname
                                  ::start-auctions-and-bid-pending} state)
@@ -492,20 +492,20 @@
                   :pending-text text
                   :on-click (fn []
                               (cond
-                                (= state :name-bazaar-registrar.entry.state/open)
-                                (re-frame/dispatch [:name-bazaar-registrar/transact :start-auctions-and-bid {:name-bazaar-registrar/label @label
-                                                                                                             :name-bazaar-registrar/bid-value @bid-value-input}])
+                                (= state :eth-registrar.entry.state/open)
+                                (re-frame/dispatch [:eth-registrar/transact :start-auctions-and-bid {:eth-registrar/label @label
+                                                                                                             :eth-registrar/bid-value @bid-value-input}])
 
-                                (= state :name-bazaar-registrar.entry.state/auction-no-user-made-bid)
-                                (re-frame/dispatch [:name-bazaar-registrar/transact :new-bid {:name-bazaar-registrar/label @label
-                                                                                              :name-bazaar-registrar/bid-value @bid-value-input}])
+                                (= state :eth-registrar.entry.state/auction-no-user-made-bid)
+                                (re-frame/dispatch [:eth-registrar/transact :new-bid {:eth-registrar/label @label
+                                                                                              :eth-registrar/bid-value @bid-value-input}])
 
                                 :else (logging/error "Unknown state" {:state state} ::transaction-button))
                               (load-bid-state @label))}
                  "Bid Now"])
-              (when (contains? #{:name-bazaar-registrar.entry.state/loading
-                                 :name-bazaar-registrar.entry.state/open
-                                 :name-bazaar-registrar.entry.state/empty-name
+              (when (contains? #{:eth-registrar.entry.state/loading
+                                 :eth-registrar.entry.state/open
+                                 :eth-registrar.entry.state/empty-name
                                  ::invalid-length
                                  ::subname
                                  ::start-auction-pending
@@ -515,7 +515,7 @@
                                                         :pending? start-auction-pending?
                                                         :pending-text text
                                                         :on-click (fn []
-                                                                    (re-frame/dispatch [:name-bazaar-registrar/transact :start-auction {:name-bazaar-registrar/label @label}])
+                                                                    (re-frame/dispatch [:eth-registrar/transact :start-auction {:eth-registrar/label @label}])
                                                                     (load-bid-state @label))}
                  "Open Without Bid"])]])]]))))
 
