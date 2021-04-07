@@ -37,7 +37,7 @@
 
 
 (defn registrar-registration-owner [{:keys [:eth-registrar-registration]}]
-  (let [{:keys [:eth-registrar.registration/owner]} name-bazaar-registrar-registration]
+  (let [{:keys [:eth-registrar.registration/owner]} eth-registrar-registration]
     [:div
      "Registration Owner: " [etherscan-link
                              {:address owner}]]))
