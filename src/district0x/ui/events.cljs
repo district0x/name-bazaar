@@ -31,6 +31,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [get-window-size to-locale-string current-location-hash namehash file-write]]
     [district0x.ui.web3-fx :as web3-fx.ethereum]
     [district0x.ui.window-fx]
+    [goog.object]
     [goog.string :as gstring]
     [goog.string.format]
     [madvas.re-frame.google-analytics-fx]
@@ -93,8 +94,8 @@
   ;; I've found the persisted connection to be extremely unreliable
   (.removeItem (.-localStorage js/window) "walletconnect")
   ;; https://lwhorton.github.io/2018/10/20/clojurescript-interop-with-javascript.html
-  (let [web3-modal-class (.. js/window -Web3Modal -default)
-        wallet-connect-provider (.. js/window -WalletConnectProvider -default)
+  (let [web3-modal-class (goog.object/get (goog.object/get js/window "Web3Modal") "default")
+        wallet-connect-provider (goog.object/get (goog.object/get js/window "WalletConnectProvider") "default")
         ;; Inspired by https://github.com/Web3Modal/web3modal-vanilla-js-example/blob/master/example.js#L52
         provider-options (clj->js {:walletconnect {:package wallet-connect-provider :options {:infuraId infura-id }}})
         web3-modal-options (clj->js {:cacheProvider false :providerOptions provider-options :disableInjectedProvider false})
