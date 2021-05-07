@@ -12,8 +12,7 @@
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
-    [name-bazaar.server.contracts-api.registrar :as registrar]
-    [name-bazaar.server.deployer]))
+    [name-bazaar.server.contracts-api.registrar :as registrar]))
 
 
 (def namehash (aget (js/require "eth-ens-namehash") "hash"))

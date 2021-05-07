@@ -16,18 +16,9 @@ In a terminal, start a ganache blockchain
 ./run-ganache.sh
 ```
 
-_(note that this uses docker and will try to pull `trufflesuite/ganache-cli:v6.12.1` image if you don't have it)_
+Note that this uses docker and will try to pull `trufflesuite/ganache-cli:v6.12.1` image if you don't have it.
 
-_(Alternatively, you can connect directly to one of ethereum testnet networks - e.g. ropsten. In order to do this, specify correct smart contract addresses and `web3` property in the config file. Example config file can be found in `docker-builds/deployer-config.example.edn`)_
-
-Open another terminal, start autocompiling smart-contracts
-
-```bash
-lein auto compile-solidity
-```
-
-_(You need to have `solc` with compatible version installed. See `contracts` folder to determine the
-correct version)_
+Alternatively, you can connect directly to one of ethereum testnet networks - e.g. ropsten. In order to do this, specify correct smart contract addresses and `:web3` properties in the `./config.edn` file. Example config file can be found in `docker-builds/server/config.example.edn`.
 
 Open another terminal, start a repl and build the dev server (with
 figwheel repl)
@@ -50,38 +41,19 @@ folder and try to start the server again)_
 
 #### Redeploy smart-contracts and generate mock data
 
-You can re-deploy contracts from the clojurescript REPL by running the following command:
-
-```clojure
-;; make sure you have compiled the contracts before running this command
-(redeploy)
-;; and optionally generate sample dev data
-(generate-data)
-```
-
-or you can use `truffle` by running in bash:
+You can (re)deploy contracts with
 
 ```bash
-# note: truffle is currently experimental
 truffle migrate --reset
 ```
 
-Redeployment / Generation can take a long time, please be patient.
-
-#### Start server with custom config
-
-Namebazaar uses [district-server-config](https://github.com/district0x/district-server-config) for loading configuration. So you can create `config.edn` somewhat like this:
+and (optionally) generate some samle dev data from the clojurescript REPL by running the following command:
 
 ```clojure
-{:emailer {:private-key "25677d268904ea651f84e37cfd580696c5c793dcd9730c415bf03b96003c09e9ef8"
-           :print-mode? true}
- :ui {:public-key "2564e15aaf9593acfdc633bd08f1fc5c089aa43972dd7e8a36d67825cd0154602da47d02f30e1f74e7e72c81ba5f0b3dd20d4d4f0cc6652a2e719a0e9d4c7f10943"
-      :use-instant-registrar? true}
- :logging {:level :info
-           :console? true}
- :web3 {:port 8549}
- :endpoints {:port 6200}}
+(generate-data)
 ```
+
+Redeployment / generation can take a long time, please be patient.
 
 ## Start dev UI
 
@@ -221,8 +193,6 @@ where
 
 ### Deploying Name Bazaar smart contracts
 
-#### Experimental truffle deploy
-
 First, you need to specify deployments secrets in `config.edn`. For example:
 
 ```clojure
@@ -239,36 +209,6 @@ Then, you can use `truffle` to deploy the contracts just by running the followin
 # you can also use `--network mainnet` - see truffle-config.js for deployment details for more information.
 truffle migrate --network ropsten
 ```
-
-_(This deployment is currently experimental and might break in the future when used together with infura.
-See the details in the following issue - https://github.com/trufflesuite/truffle/issues/3913)_
-
-#### Deploy via clojurescript deployer using own ethereum node
-
-_Currently you need to be using Node 8 and a temporary downgrade of better-sqlite3 to `[better-sqlite3 "4.0.0"]` in `project.clj`!_ This is because the old version of `district-server-smart-contracts` we use (newer versions of this dependency will require a major overhaul that should wipe this issue) depends on `[deasync "0.1.11"]`, which has an issue with Node 9+ (https://github.com/abbr/deasync/issues/89). It's used however only in smart contract deploys with `:auto-mining false`. That means in normal app operation we can use Node 10 and better-sqlite3 5.4.0 (and we do, because using the very old Node 8 for app as a whole causes issues elsewhere).
-
-After you have built the contracts, provide correct `config.edn` file in project root. An example file can be found in `docker-builds/deployer-config.example.edn`. When choosing `:web3` note that you can't use Infura currently, because the node needs to be able to sign your transactions. So you need to use your own node.
-
-Now start the figwheel console over dev build:
-
-```bash
-lein repl
-(start-server!)
-```
-
-and
-
-```bash
-node dev-server/name-bazaar.js
-```
-
-in a separate terminal. In figwheel repl
-
-```bash
-(deploy-contracts)
-```
-
-and don't forget to store the addresses in case of success.
 
 ## Linting and formatting smart contracts
 

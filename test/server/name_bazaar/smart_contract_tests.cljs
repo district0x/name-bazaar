@@ -22,7 +22,6 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
-    [name-bazaar.server.deployer]
     [name-bazaar.shared.smart-contracts]
     [print.foo :include-macros true]))
 
@@ -54,8 +53,7 @@
             :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                               :auto-mining? true}})
          (mount/only [#'district.server.web3
-                      #'district.server.smart-contracts/smart-contracts
-                      #'name-bazaar.server.deployer/deployer])
+                      #'district.server.smart-contracts/smart-contracts])
          (mount/start)))
    :after
    (fn []

@@ -16,7 +16,6 @@
     [mount.core :as mount]
     [name-bazaar.server.api]
     [name-bazaar.server.db]
-    [name-bazaar.server.deployer]
     [name-bazaar.server.emailer]
     [name-bazaar.server.generator :as generator]
     [name-bazaar.server.syncer]
@@ -29,46 +28,9 @@
 (def namehash (aget (nodejs/require "eth-ens-namehash") "hash"))
 (def sha3 (comp (partial str "0x") (aget (nodejs/require "js-sha3") "keccak_256")))
 
-(defn redeploy []
-  (mount/stop)
-  (-> (mount/with-args
-        (merge
-          (mount/args)
-          {:deployer {:write? true}}))
-      (mount/start)
-      pprint/pprint))
-
 (defn on-jsload []
   (mount/stop #'district.server.endpoints/endpoints)
   (mount/start #'district.server.endpoints/endpoints))
-
-(defn deploy-to-mainnet []
-  (mount/stop #'district.server.web3/web3
-              #'district.server.smart-contracts/smart-contracts)
-  (mount/start-with-args (merge
-                           (mount/args)
-                           {:web3 {:port 8545}
-                            :deployer {:write? true
-                                       :from "0x2a2A57a98a07D3CA5a46A0e1d51dEFffBeF54E4F"
-                                       :emergency-multisig "0x52f3f521c5f573686a78912995e9dedc5aae9928"
-                                       :skip-ens-registrar? true
-                                       :gas-price (web3/to-wei 4 :gwei)}})
-                         #'district.server.web3/web3
-                         #'district.server.smart-contracts/smart-contracts))
-
-(defn deploy-contracts []
-  "Deploy smart contracts anywhere, specified by provided config.edn."
-  (mount/stop #'district.server.web3/web3
-              #'district.server.smart-contracts/smart-contracts
-              #'name-bazaar.server.deployer/deployer)
-  (mount/start-with-args (merge (mount/args)
-                                ;; TODO this would ideally be in config.edn too, but it causes an error - fix
-                                {:smart-contracts {:contracts-var    #'name-bazaar.shared.smart-contracts/smart-contracts
-                                                   :print-gas-usage? true
-                                                   :auto-mining?     false}})
-                         #'district.server.web3/web3
-                         #'district.server.smart-contracts/smart-contracts
-                         #'name-bazaar.server.deployer/deployer))
 
 (defn generate-data
   "Generate dev data"
@@ -95,8 +57,6 @@
                                  :reveal-period {:hours 48}}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
-                           :auto-mining? true}
-         :deployer {:write? true}})
-      (mount/except [#'name-bazaar.server.deployer/deployer])
+                           :auto-mining? true}})
       (mount/start)
       pprint/pprint))

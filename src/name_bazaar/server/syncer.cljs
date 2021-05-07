@@ -17,7 +17,6 @@
     [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.db :as db]
-    [name-bazaar.server.deployer]
     [name-bazaar.server.generator]
     [taoensso.timbre :as log]))
 
