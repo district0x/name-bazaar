@@ -10,7 +10,6 @@
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
     [name-bazaar.server.contracts-api.offering-requests :refer [get-request get-requesters]]
-    [name-bazaar.server.deployer]
     [name-bazaar.server.emailer.templates :as templates]
     [name-bazaar.server.generator]
     [taoensso.timbre :refer [info warn error]]))

@@ -95,6 +95,7 @@
                        ["@ensdomains/ethregistrar" "2.0.4"]
                        ["@ensdomains/resolver" "0.2.4"]
                        ["@sentry/node" "4.2.1"]
+                       ["@ungap/global-this" "0.4.4"]
                        ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
                        ;; TODO: remove, they should be installed automatically
