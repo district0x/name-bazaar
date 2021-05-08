@@ -1,20 +1,18 @@
 (ns name-bazaar.server.contracts-api.auction-offering-factory
   (:require
-    [district.server.smart-contracts :refer [contract-call]]))
+    [district.server.smart-contracts :refer [contract-call contract-send]]))
 
 (defn create-offering! [args opts]
-  (apply contract-call :auction-offering-factory
-         :create-offering
-         (concat
-           ((juxt :offering/name
-                  :offering/price
-                  :auction-offering/end-time
-                  :auction-offering/extension-duration
-                  :auction-offering/min-bid-increase)
-            args)
-           [(merge {:gas 1000000}
-                   opts)])))
-
+  (contract-send :auction-offering-factory
+                 :create-offering
+                 ((juxt :offering/name
+                        :offering/price
+                        :auction-offering/end-time
+                        :auction-offering/extension-duration
+                        :auction-offering/min-bid-increase)
+                  args)
+                 (merge {:gas 1000000}
+                        opts)))
 
 (defn ens []
   (contract-call :auction-offering-factory :ens))

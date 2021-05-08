@@ -1,31 +1,35 @@
 (ns name-bazaar.server.contracts-api.auction-offering
   (:require
-    [district.server.smart-contracts :refer [contract-call]]
+    [district.server.smart-contracts :refer [contract-call contract-send]]
+    [district.shared.async-helpers :refer [promise->]]
     [name-bazaar.shared.utils :refer [parse-auction-offering]]))
 
 (defn bid! [{:keys [:offering/address]} opts]
-  (contract-call [:auction-offering address]
+  (contract-send [:auction-offering address]
                  :bid
+                 []
                  (merge {:gas 300000} opts)))
 
 (defn get-auction-offering [contract-address]
-  (parse-auction-offering
-    (contract-call [:auction-offering contract-address] :auction-offering)))
+  (promise-> (contract-call [:auction-offering contract-address] :auction-offering)
+             #(parse-auction-offering %)))
 
 (defn finalize! [contract-address opts]
-  (contract-call [:auction-offering contract-address]
+  (contract-send [:auction-offering contract-address]
                  :finalize
+                 []
                  (merge {:gas 300000} opts)))
 
 (defn withdraw! [{:keys [:offering :address]} {:keys [:from] :as opts}]
-  (contract-call [:auction-offering offering]
+  (contract-send [:auction-offering offering]
                  :withdraw
-                 address
+                 [address]
                  (merge {:gas 300000})))
 
 (defn reclaim-ownership! [contract-address opts]
-  (contract-call [:auction-offering contract-address]
+  (contract-send [:auction-offering contract-address]
                  :reclaim-ownership
+                 []
                  (merge {:gas 300000}
                         opts)))
 
@@ -35,11 +39,8 @@
                              :auction-offering/extension-duration
                              :auction-offering/min-bid-increase]} opts]
 
-  (contract-call [:auction-offering address]
+  (contract-send [:auction-offering address]
                  :set-settings
-                 price
-                 end-time
-                 extension-duration
-                 min-bid-increase
+                 [price end-time extension-duration min-bid-increase]
                  (merge {:gas 300000}
                         opts)))
