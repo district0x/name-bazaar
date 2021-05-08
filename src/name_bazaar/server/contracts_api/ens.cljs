@@ -22,15 +22,3 @@
 
 (defn owner [{:keys [:ens.record/node :ens.record/name]}]
   (contract-call :ens :owner [(if name (namehash name) node)]))
-
-(defn on-transfer-once [tx-hash & args]
-  (apply contract-event-in-tx :ens :Transfer args))
-
-(defn on-transfer [& args]
-  (apply contract-call :ens :Transfer args))
-
-(defn on-new-owner [& args]
-  (apply contract-call :ens :NewOwner args))
-
-(defn on-new-owner-once [tx-hash & args]
-  (apply contract-event-in-tx :ens :NewOwner args))

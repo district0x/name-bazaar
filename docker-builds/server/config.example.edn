@@ -2,7 +2,7 @@
            :print-mode? true}
  :logging {:level :debug
            :console? true}
- :web3 {:url "https://ropsten.infura.io/v3/874e0519ba33487f89ef854b0179906c"}
+ :web3 {:url "wss://ropsten.infura.io/ws/v3/874e0519ba33487f89ef854b0179906c"}
  :endpoints {:port 6200}
 
  :smart-contracts

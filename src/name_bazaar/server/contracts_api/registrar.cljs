@@ -35,6 +35,3 @@
 
 (defn ens []
   (contract-call :eth-registrar :ens))
-
-(defn on-transfer [& args]
-  (apply contract-call :eth-registrar :Transfer args))

@@ -5,15 +5,6 @@
 (defn on-offering-added-in-tx [tx-hash & args]
   (apply contract-event-in-tx tx-hash :offering-registry :on-offering-added args))
 
-(defn on-offering-added [& args]
-  (apply contract-call :offering-registry :on-offering-added args))
-
-(defn on-offering-changed [& args]
-  (apply contract-call :offering-registry :on-offering-changed args))
-
-(defn on-offering-bid [& args]
-  (apply contract-call :offering-registry :on-offering-bid args))
-
 (defn emergency-pause! [opts]
   (contract-send :offering-registry
                  :emergency-pause

@@ -43,7 +43,7 @@
                  [district0x/district-server-logging "1.0.6"]
                  [district0x/district-server-smart-contracts "1.2.6"]
                  [district0x/district-server-web3 "1.2.6"]
-                 [district0x/district-server-web3-watcher "1.0.3"]
+                 [district0x/district-server-web3-events "1.1.10"]
                  [district0x/district-ui-logging "1.1.0"]
                  [district0x/district-ui-mobile "1.0.0"]
                  [district0x/error-handling "1.0.4"]
