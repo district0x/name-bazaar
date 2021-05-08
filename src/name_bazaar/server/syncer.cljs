@@ -1,12 +1,16 @@
 (ns name-bazaar.server.syncer
   (:require
     [bignumber.core :as bn]
-    [cljs-web3.core :as web3]
-    [cljs-web3.eth :as web3-eth]
+    [cljs.core.async :refer [<! go]]
+    [cljs-web3-next.core :as web3-core]
+    [cljs-web3-next.eth :as web3-eth]
+    [cljs-web3-next.utils :as web3-utils]
     [clojure.string :as string]
     [district.server.config :refer [config]]
-    [district.server.smart-contracts :refer [replay-past-events]]
-    [district.server.web3 :refer [web3]]
+    [district.server.smart-contracts :as smart-contracts]
+    [district.server.web3-events :as web3-events]
+    [district.server.web3 :refer [ping-start ping-stop web3]]
+    [district.shared.async-helpers :refer [promise-> safe-go extend-promises-as-channels!]]
     [district.shared.error-handling :refer [try-catch]]
     [district0x.shared.utils :refer [prepend-address-zeros]]
     [mount.core :as mount :refer [defstate]]
@@ -20,44 +24,38 @@
     [name-bazaar.server.generator]
     [taoensso.timbre :as log]))
 
+(extend-promises-as-channels!)
+
 (def info-text "Handling blockchain event")
 (def error-text "Error handling blockchain event")
 
 (defn node-owner? [offering-address {:keys [:offering/node :offering/top-level-name? :offering/label]}]
-  (let [ens-owner (ens/owner {:ens.record/node node})]
-    (if top-level-name?
-      (= (registrar/registration-owner {:ens.record/label label}) offering-address)
-      (= ens-owner offering-address))))
+  (promise-> (if top-level-name?
+               (registrar/registration-owner {:ens.record/label label})
+               (ens/owner {:ens.record/node node}))
+             (fn [owner]
+               (= owner offering-address))))
 
 
 (defn get-offering [offering-address]
   ;; TODO: Why is this nil?
   (assert (not= offering-address nil) "Offering address shouldn't be nil")
-  (let [offering (offering/get-offering offering-address)
-        auction-offering (when (:offering/auction? offering)
-                           (auction-offering/get-auction-offering offering-address))
-        owner? (node-owner? offering-address offering)
-        offering (-> offering
-                     (merge auction-offering)
-                     (assoc :offering/node-owner? owner?))]
-    offering))
-
-
-(defn on-offering-changed [err {:keys [:args]}]
-  (log/info info-text {:args args} ::on-offering-changed)
-  (try-catch
-    (let [offering (get-offering (:offering args))]
-      (if (and (:offering/valid-name? offering)
-               (:offering/normalized? offering))
-        (db/upsert-offering! offering)
-        (log/warn "Malformed name offering" offering ::on-offering-changed)))))
+  (promise-> (offering/get-offering offering-address)
+             (fn [offering]
+               (if (:offering/auction? offering)
+                 (.then (auction-offering/get-auction-offering offering-address)
+                        #(merge offering %))
+                 offering))
+             (fn [offering]
+               (.then (node-owner? offering-address offering)
+                      #(assoc offering :offering/node-owner? %)))))
 
 
 (defn on-offering-bid [err {{:keys [:offering :version :extra-data] :as args} :args}]
   (log/info info-text {:args args} ::on-offering-bid)
-  (try-catch
+  (safe-go
     (when-not (db/offering-exists? offering)
-      (db/upsert-offering! (get-offering offering)))
+      (db/upsert-offering! (<! (get-offering offering))))
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
         (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
         (update :bid/value bn/number)
@@ -68,7 +66,7 @@
 
 (defn on-request-added [err {{:keys [:node :round :requesters-count] :as args} :args}]
   (log/info info-text {:args args} ::on-request-added)
-  (try-catch
+  (safe-go
     (db/upsert-offering-requests-rounds!
       {:offering-request/node node
        :offering-request/round (bn/number round)
@@ -77,9 +75,9 @@
 
 (defn on-round-changed [err {{:keys [:node :latest-round] :as args} :args}]
   (log/info info-text {:args args} ::on-round-changed)
-  (try-catch
+  (safe-go
     (let [latest-round (bn/number latest-round)
-          request (offering-requests/get-request {:offering-request/node node})]
+          request (<! (offering-requests/get-request {:offering-request/node node}))]
       (db/upsert-offering-requests! (assoc request :offering-request/latest-round latest-round))
       (when (= latest-round (:offering-request/latest-round request))
         ;; This is optimisation so we don't have to go through all on-request-added from block 0
@@ -90,50 +88,46 @@
 
 
 (defn on-ens-transfer [err {{:keys [:node :owner] :as args} :args}]
-  (try-catch
+  (safe-go
     (when (db/offering-exists? owner)
-      (let [offering (offering/get-offering owner)]
+      (let [offering (<! (offering/get-offering owner))]
         (log/info info-text {:args args} ::on-ens-new-owner)
         (db/set-offering-node-owner?! {:offering/address owner
-                                       :offering/node-owner? (node-owner? owner offering)})))))
+                                       :offering/node-owner? (<! (node-owner? owner offering))})))))
 
 
 (defn on-registrar-transfer [err {{:keys [:from :to :id] :as args} :args}]
-  (try-catch
+  (safe-go
     (when (db/offering-exists? to)
-      (let [offering (offering/get-offering to)]
+      (let [offering (<! (offering/get-offering to))
+            node-owner? (<! (node-owner? to offering))]
         (log/info info-text {:args args} ::on-registrar-new-owner)
         (db/set-offering-node-owner?! {:offering/address to
-                                       :offering/node-owner? (node-owner? to offering)})))))
+                                       :offering/node-owner? node-owner?})))))
 
-
-(defn start [{:keys [:delay]
-              :or {delay 0}
-              :as args}]
-  (when-not (web3/connected? @web3)
-    (throw (js/Error. "Can't connect to Ethereum node")))
-  [(offering-registry/on-offering-added {} "latest" on-offering-changed)
-   (offering-registry/on-offering-changed {} "latest" on-offering-changed)
-   (offering-requests/on-request-added {} "latest" on-request-added)
-   (offering-requests/on-round-changed {} "latest" on-round-changed)
-   (offering-registry/on-offering-changed {:event-type "bid"} "latest" on-offering-bid)
-   (ens/on-new-owner {} "latest" on-ens-transfer)
-   (ens/on-transfer {} "latest" on-ens-transfer)
-   (registrar/on-transfer {} "latest" on-registrar-transfer)
-
-   (-> (offering-registry/on-offering-added {} {:from-block 0 :to-block "latest"})
-       (replay-past-events on-offering-changed {:delay delay}))
-
-   (-> (offering-requests/on-round-changed {} {:from-block 0 :to-block "latest"})
-       (replay-past-events on-round-changed {:delay delay}))
-
-   (-> (offering-registry/on-offering-changed {:event-type "bid"} {:from-block 0 :to-block "latest"})
-       (replay-past-events on-offering-bid {:delay delay}))])
+(defn start [opts]
+  (safe-go
+    (when-not (web3-eth/is-listening? @web3)
+      (throw (js/Error. "Can't connect to Ethereum node")))
+    (let [event-callbacks {:ens/new-owner on-ens-transfer
+                           :ens/transfer on-ens-transfer
+                           :offering-registry/offering-added on-offering-changed
+                           :offering-registry/offering-changed on-offering-changed
+                           :offering-requests/request-added on-request-added
+                           :offering-requests/round-changed on-round-changed
+                           :registrar/transfer on-registrar-transfer}
+          callback-ids (doall (for [[event-key callback] event-callbacks]
+                                (web3-events/register-callback! event-key callback)))]
+      (web3-events/register-after-past-events-dispatched-callback! (fn []
+                                                                     (log/warn "Syncing past events finished")
+                                                                     (ping-start {:ping-interval 10000})))
+      (assoc opts :callback-ids callback-ids))))
 
 
 (defn stop [syncer]
-  (doseq [filter (remove nil? @syncer)]
-    (web3-eth/stop-watching! filter (fn [err]))))
+  (ping-stop)
+  (web3-events/unregister-callbacks! (:callback-ids @syncer)))
+
 
 (defstate ^{:on-reload :noop} syncer
           :start (start (merge (:syncer @config)

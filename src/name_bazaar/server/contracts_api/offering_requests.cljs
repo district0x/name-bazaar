@@ -4,12 +4,6 @@
     [district.shared.async-helpers :refer [promise->]]
     [name-bazaar.shared.utils :refer [parse-offering-request]]))
 
-(defn on-request-added [& args]
-  (apply contract-call :offering-requests :on-request-added args))
-
-(defn on-round-changed [& args]
-  (apply contract-call :offering-requests :on-round-changed args))
-
 (defn add-request! [{:keys [:offering-request/name]} opts]
   (contract-send :offering-requests
                  :add-request
