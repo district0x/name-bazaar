@@ -4,7 +4,7 @@
     [cljs.spec.alpha :as s]
     [cljs-web3.core :as web3]
     [clojure.set :as set]
-    [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address? rand-str zero-address zero-address evm-time->date-time]]
+    [district0x.shared.utils :refer [wei->eth->num eth->wei empty-address? rand-str zero-address evm-time->date-time]]
     [district0x.ui.events :as d0x-ui-events]
     [district0x.ui.spec-interceptors :refer [validate-first-arg]]
     [district0x.ui.utils :as d0x-ui-utils]
@@ -105,7 +105,7 @@
     {:dispatch [:eth-registrar.registration/loaded
                 label-hash
                 :eth-registrar.registration/owner
-                value]}))
+                (if (empty-address? value) zero-address value)]}))
 
 (reg-event-fx
   :eth-registrar.registration/loaded

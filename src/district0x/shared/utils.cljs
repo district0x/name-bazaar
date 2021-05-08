@@ -4,6 +4,7 @@
     [cljs-time.coerce :refer [from-long to-local-date-time]]
     [cljs-time.core :refer [date-time to-default-time-zone]]
     [cljs-web3.core :as web3]
+    [cljs-web3-next.helpers :refer [kebab-case]]
     [cljs.core.async :refer [<! >! chan]]
     [clojure.string :as string]
     [cognitect.transit :as transit]
@@ -47,6 +48,10 @@
 
 (defn epoch->long [x]
   (* x 1000))
+
+(defn hex-to-utf8 [provider arg]
+  "TODO this should be migrated to district0x/cljs-web3-next.utils"
+  (js-invoke (aget provider "utils") "hexToUtf8" arg))
 
 (def zero-address "0x0000000000000000000000000000000000000000")
 
@@ -96,16 +101,15 @@
 (def non-neg-or-empty-ether-value? #(non-neg-ether-value? % {:allow-empty? true}))
 
 (defn jsobj->clj
-  [obj]
-  (if (object? obj)
-    (reduce
-      (fn [coll k]
-        (assoc coll
-          (keyword k)
-          (aget obj k)))
-      {}
-      (js-keys obj))
-    obj))
+  "TODO this could be integrated in district0x/cljs-web3-next.helpers"
+  [obj & {:keys [namespace]}]
+  (reduce
+    (fn [coll k]
+      (assoc coll
+        (keyword namespace (kebab-case k))
+        (aget obj k)))
+    {}
+    (js-keys obj)))
 
 (defn json->clj
   [json]

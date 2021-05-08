@@ -12,7 +12,7 @@
     [district.server.web3 :refer [ping-start ping-stop web3]]
     [district.shared.async-helpers :refer [promise-> safe-go extend-promises-as-channels!]]
     [district.shared.error-handling :refer [try-catch]]
-    [district0x.shared.utils :refer [prepend-address-zeros]]
+    [district0x.shared.utils :refer [prepend-address-zeros hex-to-utf8]]
     [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
@@ -57,11 +57,23 @@
     (when-not (db/offering-exists? offering)
       (db/upsert-offering! (<! (get-offering offering))))
     (-> (zipmap [:bid/bidder :bid/value :bid/datetime] extra-data)
-        (update :bid/bidder (comp prepend-address-zeros web3/from-decimal))
+        (update :bid/bidder (comp prepend-address-zeros (partial web3-utils/number-to-hex @web3)))
         (update :bid/value bn/number)
         (update :bid/datetime bn/number)
-        (assoc :bid/offering offering)
+        (assoc :bid/offering (string/lower-case offering))
         (->> (db/insert-bid!)))))
+
+
+(defn on-offering-changed [err {{:keys [:event-type] :or {event-type "0x"} :as args} :args :as event}]
+  (log/info info-text {:args args} ::on-offering-changed)
+  (if (= "bid" (hex-to-utf8 @web3 event-type))
+    (on-offering-bid err event)
+    (safe-go
+      (let [offering (<! (get-offering (:offering args)))]
+        (if (and (:offering/valid-name? offering)
+                 (:offering/normalized? offering))
+          (db/upsert-offering! offering)
+          (log/warn "Malformed name offering" offering ::on-offering-changed))))))
 
 
 (defn on-request-added [err {{:keys [:node :round :requesters-count] :as args} :args}]
