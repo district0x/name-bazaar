@@ -8,7 +8,7 @@
     [goog.string :as gstring]
     [goog.string.format]
     [medley.core :as medley]
-    [name-bazaar.shared.utils :refer [parse-offering-request top-level-name?]]
+    [name-bazaar.shared.utils :refer [parse-offering-request-ui top-level-name?]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash normalize path-for update-search-results-params debounce?]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]))
@@ -62,7 +62,7 @@
   :offering-requests/loaded
   interceptors
   (fn [{:keys [:db]} [node offering-request]]
-    (let [offering-request (parse-offering-request node offering-request)]
+    (let [offering-request (parse-offering-request-ui node offering-request)]
       {:db (update-in db [:offering-requests node] merge offering-request)})))
 
 (reg-event-fx

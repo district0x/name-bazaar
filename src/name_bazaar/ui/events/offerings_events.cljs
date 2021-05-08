@@ -13,7 +13,7 @@
     [district0x.ui.utils :as d0x-ui-utils :refer [format-eth]]
     [goog.string :as gstring]
     [goog.string.format]
-    [name-bazaar.shared.utils :refer [parse-auction-offering parse-offering offering-supports-unregister? unregistered-price-wei top-level-name? name-label]]
+    [name-bazaar.shared.utils :refer [parse-auction-offering-ui parse-offering-ui offering-supports-unregister? unregistered-price-wei top-level-name? name-label]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
     [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
@@ -315,7 +315,7 @@
   interceptors
   (fn [{:keys [:db]} [offering-address {:keys [:load-ownership?]} offering]]
     (let [{:keys [:offering/node :offering/name :offering/label-hash :offering/auction?] :as offering}
-          (parse-offering offering-address offering {:parse-dates? true :convert-to-ether? true})]
+          (parse-offering-ui offering-address offering {:parse-dates? true :convert-to-ether? true})]
       (merge {:db (-> db
                       (update-in [:offerings offering-address] merge offering)
                       (update-in [:ens/records node] merge {:ens.record/node node
@@ -355,7 +355,7 @@
   :offerings.auction/loaded
   interceptors
   (fn [{:keys [:db]} [offering-address auction-offering]]
-    (let [offering (parse-auction-offering auction-offering {:parse-dates? true :convert-to-ether? true})]
+    (let [offering (parse-auction-offering-ui auction-offering {:parse-dates? true :convert-to-ether? true})]
       {:db (update-in db [:offerings offering-address] merge offering)})))
 
 (reg-event-fx
