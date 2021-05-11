@@ -86,7 +86,8 @@
           (update :offering/price (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
           (update :offering/created-on (if parse-dates? evm-time->local-date-time bn/number))
           (update :offering/finalized-on (if parse-dates? evm-time->local-date-time bn/number))
-          (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) %))
+          (update :offering/original-owner string/lower-case)
+          (update :offering/new-owner #(when-not (d0x-shared-utils/zero-address? %) (string/lower-case %)))
           (assoc :offering/name-level (name-level (:offering/name offering)))
           (assoc :offering/top-level-name? (top-level-name? (:offering/name offering)))
           (assoc :offering/label label)
@@ -136,7 +137,7 @@
   (when auction-offering
     (-> (select-keys (jsobj->clj auction-offering :namespace "auction-offering") auction-offering-props)
         (update :auction-offering/end-time (if parse-dates? evm-time->local-date-time bn/number))
-        (update :auction-offering/winning-bidder #(when-not (zero-address? %) %))
+        (update :auction-offering/winning-bidder #(when-not (zero-address? %) (string/lower-case %)))
         (update :auction-offering/extension-duration bn/number)
         (update :auction-offering/min-bid-increase (if convert-to-ether? d0x-shared-utils/wei->eth->num bn/number))
         (update :auction-offering/bid-count bn/number))))

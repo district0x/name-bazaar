@@ -13,6 +13,7 @@
     [district.shared.async-helpers :refer [promise-> safe-go extend-promises-as-channels!]]
     [district.shared.error-handling :refer [try-catch]]
     [district0x.shared.utils :refer [prepend-address-zeros hex-to-utf8]]
+    [medley.core :as medley]
     [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.auction-offering :as auction-offering]
     [name-bazaar.server.contracts-api.ens :as ens]
@@ -34,7 +35,7 @@
                (registrar/registration-owner {:ens.record/label label})
                (ens/owner {:ens.record/node node}))
              (fn [owner]
-               (= owner offering-address))))
+               (= (string/lower-case owner) offering-address))))
 
 
 (defn get-offering [offering-address]
@@ -60,7 +61,7 @@
         (update :bid/bidder (comp prepend-address-zeros (partial web3-utils/number-to-hex @web3)))
         (update :bid/value bn/number)
         (update :bid/datetime bn/number)
-        (assoc :bid/offering (string/lower-case offering))
+        (assoc :bid/offering offering)
         (->> (db/insert-bid!)))))
 
 
@@ -117,6 +118,17 @@
         (db/set-offering-node-owner?! {:offering/address to
                                        :offering/node-owner? node-owner?})))))
 
+
+(defn dispatcher [callback]
+  (fn [err event]
+    (let [event (-> event
+                    (medley/update-existing-in [:args :offering] string/lower-case)
+                    (medley/update-existing-in [:args :owner] string/lower-case)
+                    (medley/update-existing-in [:args :from] string/lower-case)
+                    (medley/update-existing-in [:args :to] string/lower-case))]
+      (callback err event))))
+
+
 (defn start [opts]
   (safe-go
     (when-not (web3-eth/is-listening? @web3)
@@ -129,7 +141,7 @@
                            :offering-requests/round-changed on-round-changed
                            :registrar/transfer on-registrar-transfer}
           callback-ids (doall (for [[event-key callback] event-callbacks]
-                                (web3-events/register-callback! event-key callback)))]
+                                (web3-events/register-callback! event-key (dispatcher callback))))]
       (web3-events/register-after-past-events-dispatched-callback! (fn []
                                                                      (log/warn "Syncing past events finished")
                                                                      (ping-start {:ping-interval 10000})))
