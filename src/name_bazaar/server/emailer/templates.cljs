@@ -1,7 +1,8 @@
 (ns name-bazaar.server.emailer.templates
   (:require
     [bidi.bidi :as bidi]
-    [district0x.shared.utils :refer [wei->eth]]
+    [cljs-web3-next.utils :refer [from-wei]]
+    [district.server.web3 :refer [web3]]
     [goog.string :as gstring]
     [name-bazaar.shared.constants :refer [routes]]))
 
@@ -11,7 +12,7 @@
        "\""))
 
 (defn format-price [price]
-  (str (.toLocaleString (wei->eth price)) " ETH"))
+  (str (.toLocaleString (from-wei @web3 price :ether)) " ETH"))
 
 (defn on-offering-added [offering name]
   "Offering was created for name requested by user"
