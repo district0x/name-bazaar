@@ -155,14 +155,15 @@
 (def offering-request-props [:offering-request/name :offering-request/requesters-count :offering-request/latest-round])
 
 (defn parse-offering-request [node offering-request]
-  "TODO: Delete this and replace usages with parse-offering-request once migrating UI to cljs-web3-next."
   (when offering-request
-    (-> (select-keys (jsobj->clj offering-request :namespace "offering-request") offering-request-props)
-        (update :offering-request/requesters-count bn/number)
-        (update :offering-request/latest-round bn/number)
-        (assoc :offering-request/node node))))
+    (let [offering-request ((juxt :0 :1 :2) (jsobj->clj offering-request))]
+      (-> (zipmap offering-request-props offering-request)
+          (update :offering-request/requesters-count bn/number)
+          (update :offering-request/latest-round bn/number)
+          (assoc :offering-request/node node)))))
 
 (defn parse-offering-request-ui [node offering-request]
+  "TODO: Delete this and replace usages with parse-offering-request once migrating UI to cljs-web3-next."
   (when offering-request
     (-> (zipmap offering-request-props offering-request)
         (update :offering-request/requesters-count bn/number)

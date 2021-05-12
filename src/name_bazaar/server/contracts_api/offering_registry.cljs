@@ -2,8 +2,8 @@
   (:require
     [district.server.smart-contracts :refer [contract-call contract-send contract-event-in-tx]]))
 
-(defn on-offering-added-in-tx [tx-hash & args]
-  (apply contract-event-in-tx tx-hash :offering-registry :on-offering-added args))
+(defn on-offering-added-in-tx [receipt]
+  (contract-event-in-tx :offering-registry :on-offering-added receipt))
 
 (defn emergency-pause! [opts]
   (contract-send :offering-registry
