@@ -38,7 +38,7 @@
   []
   (let [opts (or (:generator @config)
                  {:total-accounts 1
-                  :offerings-per-account 1})]
+                  :offerings-per-account 10})]
     (log/info "Generating data, please be patient..." ::generate-date)
     (generator/generate opts)))
 
