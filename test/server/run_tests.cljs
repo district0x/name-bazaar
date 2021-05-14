@@ -12,6 +12,6 @@
 
 (set! (.-error js/console) (fn [x] (.log js/console x)))
 
-(doo-tests 'server.name-bazaar.smart-contract-tests
-           'server.name-bazaar.smart-contract-ext-tests
-           'server.name-bazaar.smart-contract-altering-tests)
+(doo-tests #_'server.name-bazaar.smart-contract-tests
+           #_'server.name-bazaar.smart-contract-ext-tests
+           #_'server.name-bazaar.smart-contract-altering-tests)

@@ -3,11 +3,13 @@
  :logging {:level :debug
            :console? true}
  :web3 {:url "wss://ropsten.infura.io/ws/v3/874e0519ba33487f89ef854b0179906c"}
+ :web3-events {:from-block "latest"}
  :endpoints {:port 6200}
 
  :smart-contracts
- ;; a working Ropsten testnet deployment
-   {:contracts-var
+   {:contracts-build-path "./resources/public/contracts-build/"
+    ;; a working Ropsten testnet deployment
+    :contracts-var
     {:auction-offering-factory {:name "AuctionOfferingFactory",
                                 :address "0x959113e1c88d7e866e168ded02bf5cf8aaba2e0f"},
      :buy-now-offering-factory {:name "BuyNowOfferingFactory",

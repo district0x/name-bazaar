@@ -48,17 +48,7 @@
                                  :etherscan-url "https://etherscan.io"
                                  :cryptocompare-api-key "INSERT-YOUR-API-KEY-HERE"}}}
          :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts}
-         :endpoints {:middlewares [logging-middlewares]}
-         :web3-watcher {:on-online (fn []
-                                     (log/warn "Ethereum node went online again")
-                                     (mount/stop #'name-bazaar.server.db/name-bazaar-db)
-                                     (mount/start #'name-bazaar.server.db/name-bazaar-db
-                                                  #'name-bazaar.server.syncer/syncer
-                                                  #'name-bazaar.server.emailer/emailer))
-                        :on-offline (fn []
-                                      (log/warn "Ethereum node went offline")
-                                      (mount/stop #'name-bazaar.server.syncer/syncer
-                                                  #'name-bazaar.server.emailer/emailer))}})
+         :endpoints {:middlewares [logging-middlewares]}})
       (mount/start))
   (log/warn "System started" {:config (medley/dissoc-in @config [:emailer :private-key])}))
 
