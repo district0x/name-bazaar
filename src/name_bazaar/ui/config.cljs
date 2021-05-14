@@ -23,7 +23,7 @@
    :pushroute-hosts "namebazaar.io"
    :infura-id "0ff2cb560e864d078290597a29e2505d"
    :fallback-web3-url "https://mainnet.infura.io/"
-   :load-node-addresses? false
+   :load-node-addresses? true
    :root-url "https://namebazaar.io"
    :server-url "https://api.namebazaar.io"})
 

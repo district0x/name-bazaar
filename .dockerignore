@@ -18,7 +18,7 @@ node_modules/
 /test-fig-compiled/
 /resources/public/js/compiled/
 /figwheel_server.log
-/resources/public/contracts/build/
+/resources/public/contracts-build/
 /dev-backend/
 /dev-server/
 /server/
