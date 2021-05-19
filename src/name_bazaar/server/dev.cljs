@@ -76,7 +76,8 @@
                                      :ui          {:public-key             "192eb918a8a9996cf0233023b4d6b8d8071b7df392535ef72622136569abd4b8c009f302d9884d4ea54fd4714764fb44387"
                                                    :use-instant-registrar? true
                                                    :reveal-period          {:hours 48}}}}
-         :smart-contracts {:contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
+         :smart-contracts {:contracts-build-path "./resources/public/contracts-build/"
+                           :contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
                            :auto-mining? true}})
       (mount/start)

@@ -71,13 +71,13 @@
 (defn all-contracts-loaded? [db]
   (every? #(and (:abi %) (if goog.DEBUG (:bin %) true)) (vals (:smart-contracts db))))
 
-(defn contract-xhrio [contract-name code-type version on-success on-failure]
+(defn contract-xhrio [contract-name version on-success on-failure]
   {:method :get
-   :uri (gstring/format "./contracts/build/%s.%s?v=%s" contract-name (name code-type) (if goog.DEBUG
-                                                                                        (.getTime (js/Date.))
-                                                                                        version))
+   :uri (gstring/format "./contracts-build/%s.json?v=%s" contract-name (if goog.DEBUG
+                                                                         (.getTime (js/Date.))
+                                                                         version))
    :timeout 6000
-   :response-format (if (= code-type :abi) (ajax/json-response-format) (ajax/text-response-format))
+   :response-format (ajax/json-response-format)
    :on-success on-success
    :on-failure on-failure})
 
@@ -234,13 +234,11 @@
     {:http-xhrio
      (flatten
        (for [[key {:keys [name]}] (:smart-contracts db)]
-         (for [code-type (if goog.DEBUG [:abi :bin] [:abi])]
-           (contract-xhrio name
-                           code-type
-                           version
-                           [:district0x/smart-contract-loaded key code-type]
-                           [::logging/error "Failed to load smart contract" {:key key :name name :code-type code-type}
-                            :district0x/load-smart-contracts]))))}))
+         (contract-xhrio name
+                         version
+                         [:district0x/smart-contract-loaded key]
+                         [::logging/error "Failed to load smart contract" {:key key :name name}
+                          :district0x/load-smart-contracts])))}))
 
 (reg-event-fx
   :district0x/clear-smart-contracts
@@ -253,18 +251,17 @@
 (reg-event-fx
   :district0x/smart-contract-loaded
   interceptors
-  (fn [{:keys [db]} [contract-key code-type code]]
-    (let [code (if (= code-type :abi) (clj->js code) (str "0x" code))
+  (fn [{:keys [db]} [contract-key contract-json]]
+    (let [abi (clj->js (contract-json "abi"))
+          bin (contract-json "bytecode")
           contract (get-contract db contract-key)
           contract-address (:address contract)]
-      (let [new-db (cond-> db
-                           true
-                           (assoc-in [:smart-contracts contract-key code-type] code)
-
-                           (= code-type :abi)
-                           (update-in [:smart-contracts contract-key] merge
-                                      (when contract-address
-                                        {:instance (web3-eth/contract-at (:web3 db) code contract-address)})))]
+      (let [new-db (-> db
+                       (assoc-in [:smart-contracts contract-key :abi] abi)
+                       (assoc-in [:smart-contracts contract-key :bin] bin)
+                       (update-in [:smart-contracts contract-key] merge
+                                  (when contract-address
+                                    {:instance (web3-eth/contract-at (:web3 db) abi contract-address)})))]
         (merge
           {:db new-db
            :district0x/dispatch-n [(when (all-contracts-loaded? new-db)
