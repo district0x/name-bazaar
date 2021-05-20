@@ -46,6 +46,7 @@ RUN lein build-prod-server
 FROM node:10-buster-slim
 # ENV variables
 ENV CONFIG /configs/namebazaar.config.edn
+ENV PORT=3000
 
 # get compiled JS
 COPY --from=builder /namebazaar/server /namebazaar/server
@@ -56,5 +57,6 @@ WORKDIR /namebazaar
 
 # expose server port
 EXPOSE 3000
+
 ENTRYPOINT ["node", "server/name-bazaar.js"]
 CMD ["--max-old-space-size=2048"]

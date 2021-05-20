@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
-COPY . /namebazaar/
-WORKDIR /namebazaar
+
 
 # install base dependencies
 RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
@@ -14,6 +13,9 @@ RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
 
 # https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+WORKDIR /namebazaar
+COPY . /namebazaar/
 
 # install nvm with node and npm
 ENV NODE_VERSION 10.23.1
@@ -43,40 +45,21 @@ RUN truffle compile
 RUN lein build-css && lein build-prod-ui
 
 
-FROM debian:buster-slim
-MAINTAINER "Filip Bielejec" <filip@district0x.io>
-
-RUN apt-get update -y \
-    && apt-get install --no-install-recommends -y \
-    -q wget unzip nginx
-
+FROM nginx:stable-alpine
 # replace nginx config
 COPY --from=builder /namebazaar/docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
 
 # replace default server
-COPY --from=builder /namebazaar/docker-builds/ui/default /etc/nginx/sites-available/default
+COPY --from=builder /namebazaar/docker-builds/ui/default /etc/nginx/conf.d/default.conf
 
-# nginx config
-COPY --from=builder /namebazaar/docker-builds/ui/namebazaar.io /etc/nginx/sites-available/namebazaar.io
-
-# setup error page
-RUN wget --no-check-certificate -O X0X.html https://raw.githubusercontent.com/district0x/X0X/master/X0X.html \
-  && mv X0X.html /usr/share/nginx/html/X0X.html
-
-# setup static server
-RUN ln -s -f /etc/nginx/sites-available/namebazaar.io /etc/nginx/sites-enabled/namebazaar.io
+# setup server config
+COPY --from=builder /namebazaar/docker-builds/ui/namebazaar.io.conf /etc/nginx/conf.d/namebazaar.io.conf
 
 # get compiled JS
 COPY --from=builder /namebazaar/resources/public /namebazaar/resources/public/
 
-## get MAINTENANCE page content
-#RUN wget --no-check-certificate -O master.zip https://github.com/district0x/name-bazaar-coming-soon/archive/master.zip \
-#        && unzip master.zip \
-#        && rm master.zip \
-#        && mkdir -p /namebazaar/resources/public/ \
-#        && mv -v name-bazaar-coming-soon-master/* /namebazaar/resources/public/
-
-RUN ls /namebazaar/resources/public/
+# test config
+RUN ls /namebazaar/resources/public/ \
+    && nginx -t
 
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
