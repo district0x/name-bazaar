@@ -26,7 +26,7 @@
    :fallback-web3-url "https://ropsten.infura.io/"
    :load-node-addresses? true
    :root-url "https://namebazaar.qa.district0x.io"
-   :server-url "qa_namebazaar-server:3000"})
+   :server-url "https://api.namebazaar.qa.district0x.io"})
 
 (def production-config
   {:logging {:level :warn
