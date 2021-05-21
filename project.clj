@@ -142,7 +142,9 @@
             "build-css" ["shell" "./semantic.sh" "build-css"]
             "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
+            "build-qa-ui" ["do" ["clean"] ["cljsbuild" "once" "qa-min"]]
             "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]
+            "build-qa" ["pdo" ["build-prod-server"] ["build-qa-ui"] ["build-css"]]
             "run-slither" ["shell" "./run-slither.sh"]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
@@ -194,6 +196,15 @@
                                    :source-map "server/name-bazaar.js.map"
                                    :closure-defines {goog.DEBUG false}
                                    :pretty-print false}}
+
+                       {:id "qa-min"
+                        :source-paths ["src"]
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :optimizations :advanced
+                                   :closure-defines {name-bazaar.ui.config.environment "qa"}
+                                   :pretty-print false
+                                   :pseudo-names false}}
 
                        ;; Production on client-side with mainnet
                        {:id "min"
