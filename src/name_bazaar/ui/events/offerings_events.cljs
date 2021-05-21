@@ -656,7 +656,7 @@
       (conj
         (if (top-level-name? name)
           [:eth-registrar/transfer {:ens.record/label (name-label name)
-                                            :ens.record/owner owner}]
+                                    :ens.record/owner owner}]
           [:ens/set-owner {:ens.record/name name
                            :ens.record/owner owner}])
         {:result-href (path-for :route.offerings/detail {:offering/address owner})

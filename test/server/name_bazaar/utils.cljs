@@ -1,5 +1,6 @@
 (ns server.name-bazaar.utils
   (:require
+    [bignumber.core :as bn]
     [cljs.core.async :refer [<! go]]
     [cljs.test :refer-macros [async]]
     [cljs-time.coerce :refer [from-long]]
@@ -23,6 +24,11 @@
              (fn [block]
                (let [block (web3-helpers/js->cljkk block)]
                  (from-long (* (:timestamp block) 1000))))))
+
+
+(defn get-balance [address]
+  (promise-> (web3-eth/get-balance @web3 address)
+             bn/number))
 
 
 (defn before-test []

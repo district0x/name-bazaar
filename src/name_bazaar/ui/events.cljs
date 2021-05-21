@@ -192,7 +192,7 @@
                         :ens.record/owner owner}]
        (if (top-level-name? name)
          [:eth-registrar/transfer {:ens.record/label (name-label name)
-                                           :ens.record/owner owner}
+                                   :ens.record/owner owner}
           {:result-href (path-for :route.ens-record/detail {:ens.record/name name})
            :on-tx-receipt-n [[:ens.records/load [(namehash name)]
                              {:load-resolver? true}]
