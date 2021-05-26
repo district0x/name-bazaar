@@ -146,12 +146,14 @@ module.exports = async function (deployer, network, accounts) {
       deploy(NamebazaarDevNameResolver)
     )
 
-    const [nameBazaarDevRegistrar] = await parallel(
+    const [nameBazaarDevRegistrar, _, namebazaarDevReverseRegistrar] = await parallel(
       deploy(NameBazaarDevRegistrar, ens.address, namehash('eth')),
       deploy(NamebazaarDevPublicResolver, ens.address),
       deploy(NamebazaarDevReverseRegistrar, ens.address, namebazaarDevNameResolver.address)
     )
     await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), nameBazaarDevRegistrar.address)
+    await ens.setSubnodeOwner(namehash(''), ensLabel('reverse'), accounts[0]);
+    await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), namebazaarDevReverseRegistrar.address);
   } else {
     const config = deployer.networks[network].deploymentConfig
     validateDeploymentConfig(config)
