@@ -44,10 +44,6 @@
                            {:text "Sold"
                             :href offerings-sold-url
                             :class "nested-item offerings-sold"}
-                           {:text "Requests"
-                            :route :route.offering-requests/search
-                            :class :offering-requests-search
-                            :icon "message-box"}
                            {:text "Watched Names"
                             :route :route/watched-names
                             :class :watched-names

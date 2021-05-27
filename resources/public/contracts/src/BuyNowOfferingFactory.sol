@@ -14,11 +14,10 @@ contract BuyNowOfferingFactory is OfferingFactory {
 
     constructor(
         ENSRegistry ens,
-        OfferingRegistry offeringRegistry,
-        OfferingRequestsAbstract offeringRequests
+        OfferingRegistry offeringRegistry
     )
         public
-        OfferingFactory(ens, offeringRegistry, offeringRequests)
+        OfferingFactory(ens, offeringRegistry)
     {
     }
 

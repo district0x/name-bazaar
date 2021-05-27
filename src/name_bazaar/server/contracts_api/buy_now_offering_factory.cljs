@@ -16,6 +16,3 @@
 
 (defn offering-registry []
   (contract-call :buy-now-offering-factory :offering-registry))
-
-(defn offering-requests []
-  (contract-call :buy-now-offering-factory :offering-requests))

@@ -30,9 +30,7 @@
                             :order-by-dir str-keyword->keyword
                             :order-by str-keyword->keyword
                             :sold? parse-boolean-string
-                            :offset parse-int-or-nil}
-   :route.offering-requests/search {:name-position keyword
-                                    :offset parse-int-or-nil}})
+                            :offset parse-int-or-nil}})
 
 (def routes shared-constants/routes)
 

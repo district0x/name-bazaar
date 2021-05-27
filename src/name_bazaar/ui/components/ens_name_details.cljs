@@ -14,19 +14,6 @@
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-(defn add-request-button [{:keys [:ens.record/name]}]
-  (let [has-requested? @(subscribe [:offering-request/active-address-has-requested? (namehash name)])
-        tx-pending? @(subscribe [:offering-requests.add-request/tx-pending? name])]
-    [transaction-button
-     {:primary true
-      :pending? tx-pending?
-      :pending-text "Requesting..."
-      :disabled (or has-requested?
-                    (and (top-level-name? name)
-                         (not (supported-tld-length? name))))
-      :on-click #(dispatch [:offering-requests/add-request {:ens.record/name name}])}
-     (if has-requested? "Requested" "Request")]))
-
 (defn name-detail-link [{:keys [:ens.record/name]}]
   [:div
    [:a.no-decor
@@ -64,7 +51,4 @@
      [add-to-watched-names-button
       {:ens.record/name name}]
      [create-offering-link
-      {:ens.record/name name}]]
-    [:div.button
-     [add-request-button
       {:ens.record/name name}]]]])

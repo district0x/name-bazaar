@@ -46,20 +46,8 @@
    [:bid/offering address not-nil]
    [(sql/call :foreign-key :bid/offering) (sql/call :references :offerings :offering/address)]])
 
-(def offering-requests-columns
-  [[:offering-request/node sha3-hash primary-key not-nil]
-   [:offering-request/name :varchar not-nil]
-   [:offering-request/latest-round :unsigned :integer not-nil default-zero]])
-
-(def offering-requests-rounds-columns
-  [[:offering-request/node sha3-hash primary-key not-nil]
-   [:offering-request/round :unsigned :integer not-nil default-zero]
-   [:offering-request/requesters-count :unsigned :integer not-nil default-zero]])
-
 (def offering-column-names (map first offering-columns))
 (def offering-bids-column-names (filter keyword? (map first offering-bids-columns)))
-(def offering-requests-column-names (map first offering-requests-columns))
-(def offering-requests-rounds-column-names (map first offering-requests-rounds-columns))
 
 
 (defn- index-name [col-name]
@@ -73,27 +61,14 @@
   (db/run! {:create-table [:offering/bids]
             :with-columns [offering-bids-columns]})
 
-  (db/run! {:create-table [:offering-requests]
-            :with-columns [offering-requests-columns]})
-
-  (db/run! {:create-table [:offering-request/rounds]
-            :with-columns [offering-requests-rounds-columns]})
-
   (doseq [column (rest offering-column-names)]
     (db/run! {:create-index (index-name column) :on [:offerings column]}))
 
   (doseq [column [:bid/bidder :bid/value]]
-    (db/run! {:create-index (index-name column) :on [:offering/bids column]}))
-
-  (db/run! {:create-index (index-name :offering-request/name) :on [:offering-requests :offering-request/name]})
-
-  (doseq [column [:offering-request/requesters-count :offering-request/round]]
-    (db/run! {:create-index (index-name column) :on [:offering-request/rounds column]})))
+    (db/run! {:create-index (index-name column) :on [:offering/bids column]})))
 
 
 (defn stop []
-  (db/run! {:drop-table [:offering-request/rounds]})
-  (db/run! {:drop-table [:offering-requests]})
   (db/run! {:drop-table [:offering/bids]})
   (db/run! {:drop-table [:offerings]}))
 
@@ -120,18 +95,6 @@
   (db/run! {:insert-into :offering/bids
             :columns offering-bids-column-names
             :values [((apply juxt offering-bids-column-names) values)]}))
-
-
-(defn upsert-offering-requests! [values]
-  (db/run! {:insert-or-replace-into :offering-requests
-            :columns offering-requests-column-names
-            :values [((apply juxt offering-requests-column-names) values)]}))
-
-
-(defn upsert-offering-requests-rounds! [values]
-  (db/run! {:insert-or-replace-into :offering-request/rounds
-            :columns offering-requests-rounds-column-names
-            :values [((apply juxt offering-requests-rounds-column-names) values)]}))
 
 
 (defn- name-pattern [name name-position]
@@ -207,26 +170,6 @@
                         nodes (merge-where [:in :offering/node nodes])
                         name (merge-where [:like :offering/name (str (name-pattern name name-position) "." root-name)])
                         order-by (merge-order-by (prepare-order-by order-by order-by-dir {:name name :root-name root-name})))]
-
-    (merge
-      {:items (db/all sql-map)}
-      (when total-count?
-        {:total-count (db/total-count sql-map)}))))
-
-
-(defn get-offering-requests [{:keys [:limit :offset :name :name-position
-                                     :order-by :order-by-dir :root-name :total-count?]
-                              :or {offset 0 limit -1 root-name "eth"}}]
-  (let [sql-map (cond-> {:select [:o.offering-request/node]
-                         :from [[:offering-requests :o]]
-                         :left-join [[:offering-request/rounds :r] [:and
-                                                                    [:= :offering-request/latest-round :offering-request/round]
-                                                                    [:= :r.offering-request/node :o.offering-request/node]]]
-                         :where [:< 0 :offering-request/requesters-count]
-                         :offset offset
-                         :limit limit}
-                        name (merge-where [:like :offering-request/name (str (name-pattern name name-position) "." root-name)])
-                        order-by (merge-order-by [order-by order-by-dir]))]
 
     (merge
       {:items (db/all sql-map)}

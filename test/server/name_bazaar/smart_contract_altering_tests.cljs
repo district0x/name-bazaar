@@ -19,7 +19,6 @@
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.shared.smart-contracts]
@@ -366,26 +365,3 @@
                                      :auction-offering/extension-duration 20000
                                      :auction-offering/min-bid-increase (web3/to-wei 0.3 :ether)}
                                     {:from addr1})))))))))
-
-(deftest offering-changing-register-and-requests
-  (let [[addr0 addr1 addr2 addr3] (web3-eth/accounts @web3)]
-
-    (testing "Registering name"
-      (is (registrar/register! {:ens.record/label "abc"}
-                               {:from addr1})))
-    (testing "user can successfully request ENS name"
-      (is (offering-requests/add-request! {:offering-request/name "abc.eth"}
-                                          {:form addr1})))
-
-    (testing "and it increase counter of requests."
-      (is (= 1 (:offering-request/requesters-count
-                 (offering-requests/get-request {:offering-request/node (namehash "abc.eth")})))))
-
-    (testing "Making an instant offer"
-      (is (buy-now-offering-factory/create-offering! {:offering/name "abc.eth"
-                                                      :offering/price (eth->wei 0.1)}
-                                                     {:from addr1})))
-
-    (testing "if offering is created after that, it zeroes requests counter"
-      (is (= 0 (:offering-request/requesters-count
-                 (offering-requests/get-request {:offering-request/node (namehash "abc.eth")})))))))

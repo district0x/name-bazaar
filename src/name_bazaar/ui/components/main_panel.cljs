@@ -13,7 +13,6 @@
     [name-bazaar.ui.pages.my-settings-page]
     [name-bazaar.ui.pages.offering-create-page]
     [name-bazaar.ui.pages.offering-detail-page]
-    [name-bazaar.ui.pages.offering-requests-search-page]
     [name-bazaar.ui.pages.offerings-search-page]
     [name-bazaar.ui.pages.user-bids-page]
     [name-bazaar.ui.pages.user-offerings-page]

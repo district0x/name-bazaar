@@ -25,7 +25,6 @@
         [["offerings/" :offering/address] :route.offerings/detail]
         [["offerings/" :offering/address "/edit"] :route.offerings/edit]
         ["offerings" :route.offerings/search]
-        ["offering-requests" :route.offering-requests/search]
         ["about" :route/about]
         ["how-it-works" :route/how-it-works]
         [true :route/home]]])

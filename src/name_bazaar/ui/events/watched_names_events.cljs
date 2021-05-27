@@ -66,17 +66,14 @@
 (defn- get-items-to-load [ens-records]
   (reduce (fn [acc [node {:keys [:ens.record/active-offering]}]]
             (if active-offering
-              (update acc :offerings-to-load conj active-offering)
-              (update acc :offering-requests-to-load conj node)))
-          {:offerings-to-load []
-           :offering-requests-to-load []}
+              (update acc :offerings-to-load conj active-offering)))
+          {:offerings-to-load []}
           ens-records))
 
 (reg-event-fx
   :watched-names.node-active-offerings/loaded
   interceptors
   (fn [{:keys [:db]} [nodes]]
-    (let [{:keys [:offerings-to-load :offering-requests-to-load]}
+    (let [{:keys [:offerings-to-load]}
           (get-items-to-load (select-keys (:ens/records db) nodes))]
-      {:dispatch-n [[:offerings/load offerings-to-load]
-                    [:offering-requests/load offering-requests-to-load]]})))
+      {:dispatch-n [[:offerings/load offerings-to-load]]})))

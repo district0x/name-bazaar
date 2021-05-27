@@ -13,7 +13,6 @@
     [name-bazaar.server.contracts-api.auction-offering-factory :as auction-offering-factory]
     [name-bazaar.server.contracts-api.buy-now-offering-factory :as buy-now-offering-factory]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.buy-now-offering :as buy-now-offering]))
 
@@ -30,17 +29,11 @@
           (let [owner (nth my-accounts address-index)
                 label (normalize (rand-str (+ (rand-int 7) 3)))
                 name (str label "." registrar/root-node)
-                node (namehash name)
                 offering-type (or type (rand-nth [:buy-now-offering :auction-offering]))
                 price (to-wei @web3 (/ (inc (rand-int 10)) 10) :ether)
-                buyer (rand-nth-except owner my-accounts)
-                request-name (if (zero? (rand-int 2)) name (normalize (str (rand-str 1)
-                                                                           "."
-                                                                           registrar/root-node)))]
+                buyer (rand-nth-except owner my-accounts)]
 
             (<! (registrar/register! {:ens.record/label label} {:from owner}))
-
-            (<! (offering-requests/add-request! {:offering-request/name request-name} {:from owner}))
 
             (let [receipt (if (= offering-type :buy-now-offering)
                             (<! (buy-now-offering-factory/create-offering! {:offering/name name

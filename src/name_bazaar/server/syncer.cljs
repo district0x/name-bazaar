@@ -19,7 +19,6 @@
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.db :as db]
     [name-bazaar.server.generator]
@@ -77,29 +76,6 @@
           (log/warn "Malformed name offering" offering ::on-offering-changed))))))
 
 
-(defn on-request-added [err {{:keys [:node :round :requesters-count] :as args} :args}]
-  (log/info info-text {:args args} ::on-request-added)
-  (safe-go
-    (db/upsert-offering-requests-rounds!
-      {:offering-request/node node
-       :offering-request/round (bn/number round)
-       :offering-request/requesters-count (bn/number requesters-count)})))
-
-
-(defn on-round-changed [err {{:keys [:node :latest-round] :as args} :args}]
-  (log/info info-text {:args args} ::on-round-changed)
-  (safe-go
-    (let [latest-round (bn/number latest-round)
-          request (<! (offering-requests/get-request {:offering-request/node node}))]
-      (db/upsert-offering-requests! (assoc request :offering-request/latest-round latest-round))
-      (when (= latest-round (:offering-request/latest-round request))
-        ;; This is optimisation so we don't have to go through all on-request-added from block 0
-        ;; We just save current count of latest round, because it's all we need. Don't need all history
-        (on-request-added nil {:args {:node node
-                                      :round latest-round
-                                      :requesters-count (:offering-request/requesters-count request)}})))))
-
-
 (defn on-ens-transfer [err {{:keys [:node :owner] :as args} :args}]
   (safe-go
     (when (db/offering-exists? owner)
@@ -137,8 +113,6 @@
                            :ens/transfer on-ens-transfer
                            :offering-registry/offering-added on-offering-changed
                            :offering-registry/offering-changed on-offering-changed
-                           :offering-requests/request-added on-request-added
-                           :offering-requests/round-changed on-round-changed
                            :registrar/transfer on-registrar-transfer}
           callback-ids (doall (for [[event-key callback] event-callbacks]
                                 (web3-events/register-callback! event-key (dispatcher callback))))]

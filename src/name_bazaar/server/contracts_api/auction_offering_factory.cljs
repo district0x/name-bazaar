@@ -22,6 +22,3 @@
 
 (defn offering-registry []
   (contract-call :auction-offering-factory :offering-registry))
-
-(defn offering-requests []
-  (contract-call :auction-offering-factory :offering-requests))

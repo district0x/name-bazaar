@@ -19,7 +19,6 @@
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.shared.smart-contracts]
@@ -66,12 +65,10 @@
   (is (= (contract-address :ens) (auction-offering-factory/ens)))
   (is (= (namehash "eth") (auction-offering-factory/root-node)))
   (is (= (contract-address :offering-registry) (auction-offering-factory/offering-registry)))
-  (is (= (contract-address :offering-requests) (auction-offering-factory/offering-requests)))
 
   (is (= (contract-address :ens) (buy-now-offering-factory/ens)))
   (is (= (namehash "eth") (buy-now-offering-factory/root-node)))
   (is (= (contract-address :offering-registry) (buy-now-offering-factory/offering-registry)))
-  (is (= (contract-address :offering-requests) (buy-now-offering-factory/offering-requests)))
 
   (is (= (first (web3-eth/accounts @web3)) (offering/emergency-multisig (contract-address :buy-now-offering))))
   (is (= (contract-address :ens) (offering/ens (contract-address :buy-now-offering))))

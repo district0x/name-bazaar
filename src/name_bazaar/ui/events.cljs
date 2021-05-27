@@ -30,14 +30,13 @@
     [name-bazaar.ui.db :refer [default-db]]
     [name-bazaar.ui.events.ens-events]
     [name-bazaar.ui.events.infinite-list-events]
-    [name-bazaar.ui.events.offering-requests-events]
     [name-bazaar.ui.events.offerings-events]
     [name-bazaar.ui.events.public-resolver-events]
     [name-bazaar.ui.events.registrar-events]
     [name-bazaar.ui.events.reverse-registrar-events]
     [name-bazaar.ui.events.watched-names-events]
     [name-bazaar.ui.spec]
-    [name-bazaar.ui.utils :as nb-ui-utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results get-offering-requests-search-results ensure-registrar-root-suffix path-for]]
+    [name-bazaar.ui.utils :as nb-ui-utils :refer [reverse-record-node namehash sha3 name->label-hash parse-query-params get-offering-search-results ensure-registrar-root-suffix path-for]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [taoensso.timbre :as log]
     ))
@@ -58,11 +57,6 @@
     :route.offerings/search
     {:dispatch [:offerings.main-search/set-params-and-search
                 (parse-query-params query-params :route.offerings/search)
-                {:reset-params? true}]}
-
-    :route.offering-requests/search
-    {:dispatch [:offering-requests.main-search/set-params-and-search
-                (parse-query-params query-params :route.offering-requests/search)
                 {:reset-params? true}]}
 
     :route.offerings/edit
@@ -181,8 +175,7 @@
   interceptors
   (fn [{:keys [:db]} [name]]
     (let [node (namehash name)]
-      (merge {:dispatch-n [[:offering-requests.has-requested/load node (:my-addresses db)]]
-              :async-flow {:first-dispatch [:ens.records/load [node] {:load-resolver? true}]
+      (merge {:async-flow {:first-dispatch [:ens.records/load [node] {:load-resolver? true}]
                            :rules [{:when :seen?
                                     :events [:ens.records.owner/loaded]
                                     :halt? true
