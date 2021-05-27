@@ -111,9 +111,6 @@
 (defn get-offering-search-results [db search-results-key]
   (get-in db [:search-results :offerings search-results-key]))
 
-(defn get-offering-requests-search-results [db search-results-key]
-  (get-in db [:search-results :offering-requests search-results-key]))
-
 (defn get-similar-offering-pattern [{:keys [:offering/label :offering/name :offering/node :offering/top-level-name?]}]
   (let [subnames (if top-level-name?
                    ""

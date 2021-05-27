@@ -33,7 +33,7 @@
      [:p "Any names already registered and owned by a MetaMask or Parity address can be listed for sale on the site through a simple " [:a {:href (path-for :route.offerings/create)} "Create Offering"] " page. When creating an auction, type the name you’d like to sell, the starting price, the “Minimum Bid Increase”, and the time you’d like the auction to end. You can also adjust the “Time Extension” slider, to allow the auction to continue in case any new bids roll in at the last minute."]
      [:p.centered [:span.flow-image.sell]]
      [:p "In addition to the auction feature, sellers can also utilize the “Buy Now” listing type, which is a firm set price to immediately buy the name."]
-     [:h1.ui.header "Watching and Requesting Names"]
+     [:h1.ui.header "Watching Names"]
      [:p.centered
       [youtube
        {:src "https://www.youtube.com/embed/CMKyiU2qco8"}]]

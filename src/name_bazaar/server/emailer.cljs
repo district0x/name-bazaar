@@ -12,7 +12,6 @@
     [mount.core :as mount :refer [defstate]]
     [name-bazaar.server.contracts-api.district0x-emails :refer [get-email]]
     [name-bazaar.server.contracts-api.offering :as offering]
-    [name-bazaar.server.contracts-api.offering-requests :refer [get-request get-requesters]]
     [name-bazaar.server.emailer.templates :as templates]
     [name-bazaar.server.generator]
     [taoensso.timbre :refer [info warn error]]))
@@ -36,32 +35,6 @@
 
 (def info-text "Emailer handling blockchain event")
 (def error-text "Error emailer handling blockchain event")
-
-
-(defn on-offering-added [{:keys [:offering :node :owner :version] :as args}]
-  (info info-text {:args args} ::on-offering-added)
-  (safe-go
-    (let [{:keys [:offering-request/name :offering-request/latest-round]} (<! (get-request {:offering-request/node node}))
-          round (dec latest-round)
-          requesters (<! (get-requesters {:offering-request/node node
-                                          :offering-request/round round}))]
-      (if (empty? requesters)
-        (info "No requesters found for offering" {:offering offering :name name :node node :round round} ::on-offering-added)
-        (doseq [requester requesters]
-          (let [base64-encrypted-email (<! (get-email {:district0x-emails/address requester}))]
-            (when-let [to (validate-email base64-encrypted-email)]
-              (send-email {:from from
-                           :to to
-                           :subject (str "Offering has been added: " name)
-                           :content (templates/on-offering-added offering name)
-                           :on-success #(info "Success sending email to requesting address" {:address requester} ::on-offering-added)
-                           :on-error #(error "Error sending email to requesting address" {:error %} ::on-offering-added)
-                           :substitutions {:header (str name " offering added")
-                                           :button-title "See offering details"
-                                           :button-href (templates/form-link offering)}
-                           :template-id template-id
-                           :api-key (:api-key @emailer)
-                           :print-mode? (:print-mode? @emailer)}))))))))
 
 
 (defn- on-auction-finalized [offering original-owner winning-bidder name price]
@@ -172,8 +145,7 @@
   (when-not private-key
     (throw (js/Error. ":private-key is required to start emailer")))
   (let [callback-ids
-        [(web3-events/register-callback! :offering-registry/offering-added (dispatcher on-offering-added))
-         (web3-events/register-callback! :offering-registry/offering-changed (dispatcher on-offering-changed))]]
+        [(web3-events/register-callback! :offering-registry/offering-changed (dispatcher on-offering-changed))]]
     (assoc opts :callback-ids callback-ids)))
 
 

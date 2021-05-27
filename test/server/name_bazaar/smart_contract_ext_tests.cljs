@@ -19,7 +19,6 @@
     [name-bazaar.server.contracts-api.ens :as ens]
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.contracts-api.offering-registry :as offering-registry]
-    [name-bazaar.server.contracts-api.offering-requests :as offering-requests]
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.shared.smart-contracts]

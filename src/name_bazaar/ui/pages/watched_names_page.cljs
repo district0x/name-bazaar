@@ -1,11 +1,9 @@
 (ns name-bazaar.ui.pages.watched-names-page
   (:require
     [district0x.ui.components.misc :refer [page]]
-    [medley.core :as medley]
     [name-bazaar.ui.components.app-layout :refer [app-layout]]
     [name-bazaar.ui.components.ens-record.ens-name-input :refer [ens-name-input]]
     [name-bazaar.ui.components.infinite-list :refer [infinite-list expandable-list-item]]
-    [name-bazaar.ui.components.offering-request.list-item :refer [offering-request-list-item]]
     [name-bazaar.ui.components.offering.list-header :refer [offering-list-header]]
     [name-bazaar.ui.components.offering.list-item :refer [offering-list-item]]
     [name-bazaar.ui.constants :as constants]
@@ -64,11 +62,6 @@
               [offering-list-item
                {:key node
                 :offering watched-item}]
-
-              (:offering-request/requesters-count watched-item)
-              [offering-request-list-item
-               {:key node
-                :offering-request watched-item}]
 
               :else
               [watch-item-placeholder

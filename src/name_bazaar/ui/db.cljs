@@ -27,7 +27,6 @@
      :offerings-main-search-drawer {:open? false}
 
      :offerings {}
-     :offering-requests {}
      :ens/records {}
      :eth-registrar/registrations {}
      :registration-bids {}
@@ -93,14 +92,7 @@
                                             :order-by-dir :desc
                                             :total-count? true
                                             :offset 0
-                                            :limit constants/infinite-lists-init-load-limit}}}
-      :offering-requests {:main-search {:ids []
-                                        :params {:name-position :any
-                                                 :order-by :offering-request/requesters-count
-                                                 :order-by-dir :desc
-                                                 :total-count? true
-                                                 :offset 0
-                                                 :limit constants/infinite-lists-init-load-limit}}}}
+                                            :limit constants/infinite-lists-init-load-limit}}}}
 
      :saved-searches {:offerings-search {}}
      :watched-names {:ens/records {} :order '()}

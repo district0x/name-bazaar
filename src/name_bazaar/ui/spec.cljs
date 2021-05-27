@@ -60,16 +60,6 @@
 
 (s/def ::offerings (s/map-of :offering/address ::offering))
 
-(s/def :offering-request/requesters (s/coll-of address? :kind set?))
-(s/def :offering-request/requesters-count not-neg?)
-(s/def :offering-request/latest-round not-neg?)
-
-(s/def :offering-requests/request (s/keys :opt [:offering-request/requesters-count
-                                                :offering-request/requesters
-                                                :offering-request/latest-round]))
-
-(s/def ::offering-requests (s/map-of :ens.record/node :offering-requests/request))
-
 (s/def :ens.record/node sha3?)
 (s/def :ens.record/label string?)
 (s/def :ens.record/label-hash sha3?)
@@ -152,7 +142,6 @@
                                              :public-resolver/records
                                              :public-resolver/reverse-records]
                                        :req-un [::offerings
-                                                ::offering-requests
                                                 ::infinite-list
                                                 ::watched-names
                                                 ::now

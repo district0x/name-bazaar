@@ -3,7 +3,6 @@ pragma solidity ^0.5.17;
 import "@ensdomains/ens/contracts/ENSRegistry.sol";
 import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
 import "./OfferingRegistry.sol";
-import "./OfferingRequestsAbstract.sol";
 import "./strings.sol";
 
 /**
@@ -16,23 +15,20 @@ contract OfferingFactory {
 
     ENSRegistry public ens;
     OfferingRegistry public offeringRegistry;
-    OfferingRequestsAbstract public offeringRequests;
 
     // Hardcoded namehash of "eth"
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
     constructor(
         ENSRegistry _ens,
-        OfferingRegistry _offeringRegistry,
-        OfferingRequestsAbstract _offeringRequests
+        OfferingRegistry _offeringRegistry
     ) public {
         ens = _ens;
         offeringRegistry = _offeringRegistry;
-        offeringRequests = _offeringRequests;
     }
 
     /**
-    * @dev Registers new offering to OfferingRegistry, clears offering requests for this ENS node
+    * @dev Registers new offering to OfferingRegistry
     * Must check if creator of offering is actual owner of ENS name and for top level names also registration owner
     * @param node bytes32 ENS node
     * @param labelHash bytes32 ENS labelhash
@@ -49,7 +45,6 @@ contract OfferingFactory {
         }
 
         offeringRegistry.addOffering(newOffering, node, msg.sender, version);
-        offeringRequests.clearRequests(node);
     }
 
     /**

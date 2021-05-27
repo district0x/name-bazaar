@@ -30,7 +30,5 @@
                        :address "0x501fa189c6ed1789cf6be5728c5e4b0a94d0c4b2"},
    :district0x-emails {:name "District0xEmails",
                        :address "0x1383405e11d179581ae3128c0c1698be29e40565"},
-   :offering-requests {:name "OfferingRequests",
-                       :address "0x80afaa1b9a5717731d0d874c37e2b535dc1502a9"},
    :auction-offering {:name "AuctionOffering",
                       :address "0x0fc5ae5770a8188e1dcf46777020c186884d44dc"}})

@@ -98,7 +98,6 @@ const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
   {kw: ':eth-registrar', name: 'NameBazaarDevRegistrar'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
-  {kw: ':offering-requests', name: 'OfferingRequests'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},
   {kw: ':buy-now-offering-factory', name: 'BuyNowOfferingFactory'},
   {kw: ':auction-offering', name: 'AuctionOffering'},
@@ -113,7 +112,6 @@ const {
   ENSRegistry,
   NameBazaarDevRegistrar,
   OfferingRegistry,
-  OfferingRequests,
   BuyNowOffering,
   BuyNowOfferingFactory,
   AuctionOffering,
@@ -152,8 +150,8 @@ module.exports = async function (deployer, network, accounts) {
       deploy(NamebazaarDevReverseRegistrar, ens.address, namebazaarDevNameResolver.address)
     )
     await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), nameBazaarDevRegistrar.address)
-    await ens.setSubnodeOwner(namehash(''), ensLabel('reverse'), accounts[0]);
-    await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), namebazaarDevReverseRegistrar.address);
+    await ens.setSubnodeOwner(namehash(''), ensLabel('reverse'), accounts[0])
+    await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), namebazaarDevReverseRegistrar.address)
   } else {
     const config = deployer.networks[network].deploymentConfig
     validateDeploymentConfig(config)
@@ -173,8 +171,7 @@ module.exports = async function (deployer, network, accounts) {
   linkBytecode(AuctionOffering, emergencyMultisigPlaceholder, emergencyMultisigAccount)
   linkBytecode(AuctionOffering, ensPlaceholder, ENSRegistry.address)
   linkBytecode(AuctionOffering, offeringRegistryPlaceholder, offeringRegistry.address)
-  const [offeringRequests, buyNowOffering, auctionOffering] = await parallel(
-    deploy(OfferingRequests),
+  const [buyNowOffering, auctionOffering] = await parallel(
     deploy(BuyNowOffering, emergencyMultisigAccount),
     deploy(AuctionOffering, emergencyMultisigAccount),
     deploy(District0xEmails)
@@ -186,21 +183,16 @@ module.exports = async function (deployer, network, accounts) {
     deploy(
       BuyNowOfferingFactory,
       ENSRegistry.address,
-      offeringRegistry.address,
-      offeringRequests.address
+      offeringRegistry.address
     ),
     deploy(
       AuctionOfferingFactory,
       ENSRegistry.address,
-      offeringRegistry.address,
-      offeringRequests.address
+      offeringRegistry.address
     )
   )
 
-  await parallel(
-    offeringRegistry.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true),
-    offeringRequests.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true)
-  )
+  await offeringRegistry.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true)
 
   writeSmartContracts(loadedArtifacts)
 };

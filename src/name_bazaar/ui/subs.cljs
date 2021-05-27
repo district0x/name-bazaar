@@ -15,7 +15,6 @@
     [name-bazaar.ui.constants :as constants]
     [name-bazaar.ui.subs.ens-subs]
     [name-bazaar.ui.subs.infinite-list-subs]
-    [name-bazaar.ui.subs.offering-requests-subs]
     [name-bazaar.ui.subs.offerings-subs]
     [name-bazaar.ui.subs.public-resolver-subs]
     [name-bazaar.ui.subs.registrar-subs]

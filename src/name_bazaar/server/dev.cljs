@@ -67,8 +67,6 @@
                                                             :ens/transfer                       [:ens :Transfer]
                                                             :offering-registry/offering-added   [:offering-registry :onOfferingAdded]
                                                             :offering-registry/offering-changed [:offering-registry :onOfferingChanged]
-                                                            :offering-requests/request-added    [:offering-requests :onRequestAdded]
-                                                            :offering-requests/round-changed    [:offering-requests :onRoundChanged]
                                                             :registrar/transfer                 [:eth-registrar :Transfer]}}
                                      :db          {:opts {:memory true}}
                                      :emailer     {:print-mode? true

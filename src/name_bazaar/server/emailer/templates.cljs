@@ -14,13 +14,6 @@
 (defn format-price [price]
   (str (.toLocaleString (from-wei @web3 price :ether)) " ETH"))
 
-(defn on-offering-added [offering name]
-  "Offering was created for name requested by user"
-  (gstring/format
-    "An <a class=\"link\" href=%s>offering</a> has just been created for a name <b>%s</b> requested by you."
-    (form-link offering)
-    (gstring/htmlEscape name)))
-
 (defn on-auction-finalized [k offering name price]
   "Auction was finalized. Both seller and buyer receive email."
   (case
