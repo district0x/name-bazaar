@@ -37,7 +37,7 @@ contract OfferingRegistry is UsedByFactories {
      * Only offering factory can run this function
      * @param offering address Address of newly created offering
      * @param node bytes32 ENS node associated with new offering
-     * @param owner address Owner of the ENS name and creator of the offering
+     * @param owner address Original owner of the ENS name and creator of the offering
      * @param version uint Version of offering contract
      */
     function addOffering(address offering, bytes32 node, address owner, uint version)

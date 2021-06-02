@@ -6,6 +6,7 @@
     [district0x.shared.utils :as d0x-shared-utils]
     [district0x.ui.history :as history]
     [district0x.ui.utils :refer [truncate path-with-query solidity-sha3]]
+    [goog.object]
     [goog.string :as gstring]
     [goog.string.format]
     [name-bazaar.shared.utils :refer [name-label valid-ens-name?]]
@@ -25,6 +26,13 @@
 
 (defn sha3 [x]
   (str "0x" (js/keccak_256 x)))
+
+;; TODO after migrating frontend to new web3, remove ethers and use web3.eth.abi
+(defn abi-encode-params [types params]
+  (js-invoke (reduce goog.object/get js/window ["ethers" "utils" "defaultAbiCoder"])
+             "encode"
+             (clj->js types)
+             (clj->js params)))
 
 (defn seal-bid [label-hash bidder-address bid-value-wei bid-hash]
   {:pre [number? bid-value-wei]}

@@ -54,7 +54,12 @@ contract AuctionOfferingFactory is OfferingFactory {
             minBidIncrease
         );
 
-        registerOffering(node, labelHash, forwarder, version);
+        registerSubnameOffering(node, labelHash, forwarder, version);
+    }
+
+    function onERC721Received(address from, address to, uint256 tokenId, bytes memory data) public returns (bytes4) {
+
+        return this.onERC721Received.selector;
     }
 }
 

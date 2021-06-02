@@ -15,7 +15,7 @@
     [goog.string.format]
     [name-bazaar.shared.utils :refer [parse-auction-offering-ui parse-offering-ui offering-supports-unregister? unregistered-price-wei top-level-name? name-label]]
     [name-bazaar.ui.constants :as constants :refer [default-gas-price interceptors]]
-    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address]]
+    [name-bazaar.ui.utils :refer [namehash sha3 normalize path-for get-offering-name get-offering update-search-results-params get-similar-offering-pattern debounce? resolve-address abi-encode-params]]
     [re-frame.core :as re-frame :refer [reg-event-fx inject-cofx path after dispatch trim-v console]]
     [taoensso.timbre :as log]
     ))
@@ -24,17 +24,30 @@
   :buy-now-offering-factory/create-offering
   [interceptors (validate-first-arg (s/keys :req [:offering/name :offering/price]))]
   (fn [{:keys [:db]} [form-data]]
-    {:dispatch [:district0x/make-transaction
-                {:name (gstring/format "Create %s offering" (:offering/name form-data))
-                 :contract-key :buy-now-offering-factory
-                 :contract-method :create-offering
-                 :form-data form-data
-                 :tx-opts {:gas 320000 :gas-price default-gas-price}
-                 :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
-                 :args-order [:offering/name
-                              :offering/price]
-                 :wei-keys #{:offering/price}
-                 :on-success [:offering/create-offering-sent form-data (:active-address db)]}]}))
+    (let [form-data (-> form-data
+                        (update :offering/name normalize)
+                        (update :offering/price d0x-shared-utils/eth->wei))
+          factory-address (get-in db [:smart-contracts :buy-now-offering-factory :address])
+          encoded-params (abi-encode-params ["string" "uint"]
+                                            ((juxt :offering/name :offering/price) form-data))
+          form-data (assoc form-data :from (:active-address db)
+                                     :to factory-address
+                                     :token-id (sha3 (name-label (:offering/name form-data)))
+                                     :data encoded-params)]
+      {:dispatch [:district0x/make-transaction
+                  (merge
+                    {:name (gstring/format "Create %s offering" (:offering/name form-data))
+                     :form-data form-data
+                     :tx-opts {:gas 450000 :gas-price default-gas-price}
+                     :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
+                     :on-success [:offering/create-offering-sent form-data (:active-address db)]}
+                    (if (top-level-name? (:offering/name form-data))
+                      {:contract-key :eth-registrar
+                       :contract-method :safe-transfer-from
+                       :args-order [:from :to :token-id :data]}
+                      {:contract-key :buy-now-offering-factory
+                       :contract-method :create-subname-offering
+                       :args-order [:offering/name :offering/price]}))]})))
 
 (reg-event-fx
   :auction-offering-factory/create-offering

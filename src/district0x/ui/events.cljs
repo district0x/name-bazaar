@@ -252,20 +252,30 @@
   :district0x/smart-contract-loaded
   interceptors
   (fn [{:keys [db]} [contract-key contract-json]]
-    (let [abi (clj->js (contract-json "abi"))
+    (let [;; TODO remove the filter when updating frontend web3 to 1.x
+          ;; In web3 0.19.0 calling of overloaded functions is wonky.
+          ;; It's not able to recognize that safeTransferFrom can take 4 arguments.
+          ;; In js, we can nudge it like this:
+          ;; web3.eth.contract(registrarAbi).at(registrarAddr).safeTransferFrom['address,address,uint256,bytes'](x, y, z, w)
+          ;; But this way of method calling is not supported by our cljs libs.
+          ;; So the least hair pulling fix is to hide the unused arity function.
+          abi (filter #(or (not= (% "name") "safeTransferFrom")
+                           (not= (count (% "inputs")) 3))
+                      (contract-json "abi"))
+          abi (clj->js abi)
           bin (contract-json "bytecode")
           contract (get-contract db contract-key)
-          contract-address (:address contract)]
-      (let [new-db (-> db
-                       (assoc-in [:smart-contracts contract-key :abi] abi)
-                       (assoc-in [:smart-contracts contract-key :bin] bin)
-                       (update-in [:smart-contracts contract-key] merge
-                                  (when contract-address
-                                    {:instance (web3-eth/contract-at (:web3 db) abi contract-address)})))]
-        (merge
-          {:db new-db
-           :district0x/dispatch-n [(when (all-contracts-loaded? new-db)
-                                     [:district0x/smart-contracts-loaded])]})))))
+          contract-address (:address contract)
+          new-db (-> db
+                     (assoc-in [:smart-contracts contract-key :abi] abi)
+                     (assoc-in [:smart-contracts contract-key :bin] bin)
+                     (update-in [:smart-contracts contract-key] merge
+                                (when contract-address
+                                  {:instance (web3-eth/contract-at (:web3 db) abi contract-address)})))]
+      (merge
+        {:db new-db
+         :district0x/dispatch-n [(when (all-contracts-loaded? new-db)
+                                   [:district0x/smart-contracts-loaded])]}))))
 
 (reg-empty-event-fx :district0x/smart-contracts-loaded)
 
