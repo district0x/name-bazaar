@@ -2,6 +2,7 @@ pragma solidity ^0.5.17;
 
 import "@ensdomains/ens/contracts/ENSRegistry.sol";
 import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
 import "./OfferingRegistry.sol";
 import "./strings.sol";
 
@@ -10,7 +11,7 @@ import "./strings.sol";
  * @dev Base contract factory for creating new offerings
  */
 
-contract OfferingFactory {
+contract OfferingFactory is IERC721Receiver {
     using strings for *;
 
     ENSRegistry public ens;
@@ -18,6 +19,14 @@ contract OfferingFactory {
 
     // Hardcoded namehash of "eth"
     bytes32 public constant rootNode = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+
+    /**
+     * @dev Modifier to make a function callable only by the ENS EthRegistrar
+     */
+    modifier onlyRegistrar {
+        require(msg.sender == ens.owner(rootNode));
+        _;
+    }
 
     constructor(
         ENSRegistry _ens,
@@ -28,23 +37,47 @@ contract OfferingFactory {
     }
 
     /**
-    * @dev Registers new offering to OfferingRegistry
-    * Must check if creator of offering is actual owner of ENS name and for top level names also registration owner
+    * @dev Registers new subname offering to OfferingRegistry
+    * Must check if creator of offering is actual owner of ENS name
     * @param node bytes32 ENS node
     * @param labelHash bytes32 ENS labelhash
     * @param newOffering address The address of new offering
     * @param version uint The version of offering contract
     */
-    function registerOffering(bytes32 node, bytes32 labelHash, address newOffering, uint version)
+    function registerSubnameOffering(bytes32 node, bytes32 labelHash, address newOffering, uint version)
         internal
     {
         require(ens.owner(node) == msg.sender);
-        if (node == keccak256(abi.encodePacked(rootNode, labelHash))) {
-            address owner = BaseRegistrar(ens.owner(rootNode)).ownerOf(uint256(labelHash));
-            require(owner == msg.sender);
-        }
-
         offeringRegistry.addOffering(newOffering, node, msg.sender, version);
+    }
+
+    /**
+    * @dev Registers new top level name offering to OfferingRegistry
+    * Checks we own the name already and passes it to the offering
+    * @param node bytes32 ENS node
+    * @param labelHash bytes32 ENS labelhash
+    * @param newOffering address The address of new offering
+    * @param version uint The version of offering contract
+    * @param originalOwner address The original owner of the name
+    */
+    function registerTLDOffering(
+        bytes32 node,
+        bytes32 labelHash,
+        address newOffering,
+        uint version,
+        address originalOwner
+    )
+        internal
+    {
+        require(node == keccak256(abi.encodePacked(rootNode, labelHash)));
+        BaseRegistrar registrar = BaseRegistrar(ens.owner(rootNode));
+        uint256 tokenId = uint256(labelHash);
+        address tokenOwner = registrar.ownerOf(tokenId);
+        require(msg.sender == address(registrar) && tokenOwner == address(this));
+
+        registrar.reclaim(tokenId, newOffering);
+        registrar.transferFrom(tokenOwner, newOffering, tokenId);
+        offeringRegistry.addOffering(newOffering, node, originalOwner, version);
     }
 
     /**
