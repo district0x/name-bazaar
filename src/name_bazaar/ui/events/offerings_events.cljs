@@ -59,21 +59,35 @@
   (fn [{:keys [:db]} [form-data]]
     (let [form-data (-> form-data
                         (update :offering/name normalize)
-                        (update :auction-offering/end-time to-epoch))]
+                        (update :offering/price d0x-shared-utils/eth->wei)
+                        (update :auction-offering/end-time to-epoch)
+                        (update :auction-offering/min-bid-increase d0x-shared-utils/eth->wei))
+          factory-address (get-in db [:smart-contracts :auction-offering-factory :address])
+          args-order [:offering/name
+                      :offering/price
+                      :auction-offering/end-time
+                      :auction-offering/extension-duration
+                      :auction-offering/min-bid-increase]
+          encoded-params (abi-encode-params ["string" "uint" "uint64" "uint64" "uint"]
+                                            ((apply juxt args-order) form-data))
+          form-data (assoc form-data :from (:active-address db)
+                                     :to factory-address
+                                     :token-id (sha3 (name-label (:offering/name form-data)))
+                                     :data encoded-params)]
       {:dispatch [:district0x/make-transaction
-                  {:name (gstring/format "Create %s auction" (:offering/name form-data))
-                   :contract-key :auction-offering-factory
-                   :contract-method :create-offering
-                   :form-data form-data
-                   :tx-opts {:gas 370000 :gas-price default-gas-price}
-                   :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
-                   :args-order [:offering/name
-                                :offering/price
-                                :auction-offering/end-time
-                                :auction-offering/extension-duration
-                                :auction-offering/min-bid-increase]
-                   :wei-keys #{:offering/price :auction-offering/min-bid-increase}
-                   :on-success [:offering/create-offering-sent form-data (:active-address db)]}]})))
+                  (merge
+                    {:name (gstring/format "Create %s auction" (:offering/name form-data))
+                     :form-data form-data
+                     :tx-opts {:gas 500000 :gas-price default-gas-price}
+                     :result-href (path-for :route.ens-record/detail {:ens.record/name (:offering/name form-data)})
+                     :on-success [:offering/create-offering-sent form-data (:active-address db)]}
+                    (if (top-level-name? (:offering/name form-data))
+                      {:contract-key :eth-registrar
+                       :contract-method :safe-transfer-from
+                       :args-order [:from :to :token-id :data]}
+                      {:contract-key :auction-offering-factory
+                       :contract-method :create-subname-offering
+                       :args-order args-order}))]})))
 
 (reg-event-fx
   :offering/create-offering-sent
