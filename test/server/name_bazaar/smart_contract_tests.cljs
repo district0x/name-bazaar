@@ -135,17 +135,9 @@
                         :offering/supports-unregister? true})
                      (offering-status-keys (<! (offering/get-offering offering))))))
 
-            (testing "Can't buy TLD if offering owns no registration"
-              (let [tx (<! (buy-now-offering/buy! {:offering/address offering}
-                                                  {:value (to-wei @web3 0.1 :ether)
-                                                   :from addr1}))]
-                (is (nil? tx))))
-
-            (testing "Transferring ownership to the offering"
-              (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                                 :ens.record/owner offering}
-                                                {:from addr0}))]
-                (is tx)))
+            (testing "Offering owns the name"
+              (is (= offering (<! (registrar/registration-owner {:ens.record/label "abc"}))))
+              (is (= offering (<! (ens/owner {:ens.record/node (namehash "abc.eth")})))))
 
             (testing "Making sure an offering isn't too greedy"
               (let [tx (<! (buy-now-offering/buy! {:offering/address offering}
@@ -225,12 +217,6 @@
 
           (testing "On-offering event should fire"
             (is (not (nil? offering))))
-
-          (testing "Transferring ownership to the offer"
-            (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                               :ens.record/owner offering}
-                                              {:from addr0}))]
-              (is tx)))
 
           (testing "Can't bid below the price"
             (let [tx (<! (auction-offering/bid! {:offering/address offering}
@@ -466,20 +452,14 @@
               log-tx! (fn [id {:keys [:transaction-hash]}]
                         (swap! transaction-log assoc id transaction-hash) transaction-hash)]
 
-          (testing "Transferring ownership to the offer"
-            (is (log-tx! :t1-transfer
-                         (<! (registrar/transfer! {:ens.record/label "abc"
-                                                   :ens.record/owner offering}
-                                                  {:from addr1})))))
-
           (testing "User 2 can place a proper bid"
-            (is (log-tx! :t2-user2-place-bid
+            (is (log-tx! :t1-user2-place-bid
                          (<! (auction-offering/bid! {:offering/address offering}
                                                     {:value bid-value-user-2
                                                      :from addr2})))))
 
           (testing "Ensure User 2 has made the appropriate bid transaction with gas costs."
-            (let [bid-tx (:t2-user2-place-bid @transaction-log)
+            (let [bid-tx (:t1-user2-place-bid @transaction-log)
                   tx-total-cost (<! (get-transaction-cost bid-tx))
                   expected-balance (bn/- balance-of-2 tx-total-cost)
                   expected-balance (bn/- expected-balance bid-value-user-2)
@@ -487,7 +467,7 @@
               (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 can place a proper bid too"
-            (is (log-tx! :t3-user3-place-bid
+            (is (log-tx! :t2-user3-place-bid
                          (<! (auction-offering/bid! {:offering/address offering}
                                                     {:value bid-value-user-3
                                                      :from addr3})))))
@@ -496,14 +476,14 @@
           ;; Issue # 131
           (testing "User 2, who was overbid, should have his funds back from auction offering."
             (let [;; The user will have his funds back, but he would still have paid a gas price
-                  bid-tx (:t2-user2-place-bid @transaction-log)
+                  bid-tx (:t1-user2-place-bid @transaction-log)
                   tx-total-cost (<! (get-transaction-cost bid-tx))
                   expected-balance (bn/- balance-of-2 tx-total-cost)
                   actual-balance(<! (get-balance addr2))]
               (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 funds are spent on the bid"
-            (let [bid-tx (:t3-user3-place-bid @transaction-log)
+            (let [bid-tx (:t2-user3-place-bid @transaction-log)
                   tx-total-cost (<! (get-transaction-cost bid-tx))
                   expected-balance (bn/- balance-of-3 tx-total-cost)
                   expected-balance (bn/- expected-balance bid-value-user-3)
@@ -511,7 +491,7 @@
               (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
           (testing "User 3 can overbid in order to afk himself"
-            (is (log-tx! :t4-user3-place-overbid
+            (is (log-tx! :t3-user3-place-overbid
                          (<! (auction-offering/bid! {:offering/address offering}
                                                     {:value bid-value-user-3-overbid
                                                      :from addr3})))))
@@ -519,10 +499,10 @@
           ;; FIXME: Compare to transaction receipt for original gas spent
           ;; Issue # 131
           (testing "User 3 who overbid himself, gets back only his own previous bids."
-            (let [bid-tx-3 (:t3-user3-place-bid @transaction-log)
-                  bid-tx-4 (:t4-user3-place-overbid @transaction-log)
-                  tx-total-cost (bn/+ (<! (get-transaction-cost bid-tx-3))
-                                      (<! (get-transaction-cost bid-tx-4)))
+            (let [bid-tx-2 (:t2-user3-place-bid @transaction-log)
+                  bid-tx-3 (:t3-user3-place-overbid @transaction-log)
+                  tx-total-cost (bn/+ (<! (get-transaction-cost bid-tx-2))
+                                      (<! (get-transaction-cost bid-tx-3)))
                   expected-balance (bn/- balance-of-3 tx-total-cost)
                   expected-balance (bn/- expected-balance (bn/number bid-value-user-3-overbid))
                   actual-balance (<! (get-balance addr3))]
@@ -540,7 +520,7 @@
                                  :auction-offering/bid-count]))))
 
           (testing "Finalizing works when it's time"
-            (is (log-tx! :t5-user1-finalize
+            (is (log-tx! :t4-user1-finalize
                          (<! (auction-offering/finalize! offering {:from addr0})))))
 
           (testing "Ensuring the new owner gets his name"
@@ -550,10 +530,7 @@
             (is (= addr3 (<! (registrar/registration-owner {:ens.record/label "abc"})))))
 
           (testing "Ensuring the previous owner gets the funds"
-            (let [bid-tx-1 (:t1-transfer @transaction-log)
-                  tx-total-cost (<! (get-transaction-cost bid-tx-1))
-                  expected-balance (bn/+ balance-of-1 (bn/number bid-value-user-3-overbid))
-                  expected-balance (bn/- expected-balance tx-total-cost)
+            (let [expected-balance (bn/+ balance-of-1 (bn/number bid-value-user-3-overbid))
                   actual-balance (<! (get-balance addr1))]
               (is (bn/zero? (bn/- expected-balance actual-balance)))))))
       (done))))

@@ -52,18 +52,6 @@
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
 
-        (testing "Can't place a bid before ownership transfer"
-          (let [tx (<! (auction-offering/bid! {:offering/address offering}
-                                              {:value (to-wei @web3 0.1 :ether)
-                                               :from addr1}))]
-            (is (nil? tx))))
-
-        (testing "Transferring ownership to the offer"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr0}))]
-            (is tx)))
-
         (testing "Can place a proper bid"
           (let [tx (<! (auction-offering/bid! {:offering/address offering}
                                               {:value (to-wei @web3 0.1 :ether)
@@ -275,12 +263,6 @@
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
 
-        (testing "Transferring ownership to the offer"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
-
         (testing "Emergency multisig can pause the registry"
           (let [tx (<! (offering-registry/emergency-pause! {:from addr0}))]
             (is tx)))
@@ -335,12 +317,6 @@
 
         (testing "Making an instant offer"
           (is create-offering-tx)
-
-        (testing "Transferring ownership to the offering"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
 
         (testing "Emergency multisig can pause the registry"
           (let [tx (<! (offering-registry/emergency-pause! {:from addr0}))]
