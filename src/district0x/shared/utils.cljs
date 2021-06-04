@@ -233,3 +233,7 @@
 
 ;; https://martinklepsch.org/posts/simple-debouncing-in-clojurescript.html
 (def debounce goog-functions/debounce)
+
+;; TODO this should be in cljs-web3-next
+(defn abi-encode-params [provider types params]
+  (js-invoke (aget provider "eth" "abi") "encodeParameters" (clj->js types) (clj->js params)))

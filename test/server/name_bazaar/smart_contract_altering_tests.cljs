@@ -45,12 +45,6 @@
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
 
-        (testing "Transferring ownership to the offering"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
-
         (testing "Ensuring offering gets the registration"
           (is (= offering (<! (registrar/registration-owner {:ens.record/label "abc"})))))
 
@@ -138,12 +132,6 @@
           (is (not (nil? offering))))
 
         (when offering
-          (testing "Transferring ownership to the offering"
-            (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                               :ens.record/owner offering}
-                                              {:from addr1}))]
-              (is tx)))
-
           (testing "Ensuring offering gets the registration"
             (is (= offering (<! (registrar/registration-owner {:ens.record/label "abc"})))))
 
@@ -235,12 +223,6 @@
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
 
-        (testing "Transferring ownership to the offering"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
-
         (testing "Ensuring offering gets the registration"
           (is (= offering (<! (registrar/registration-owner {:ens.record/label "abc"})))))
 
@@ -293,12 +275,6 @@
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
 
-        (testing "Transferring ownership to the offering"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
-
         (testing "Offering can be successfully edited by original owner, throws error if different address tries to edit"
           (let [tx (<! (buy-now-offering/set-settings! {:offering/address offering
                                                         :offering/price (to-wei @web3 0.2 :ether)}
@@ -339,12 +315,6 @@
 
         (testing "On-offering event should fire"
           (is (not (nil? offering))))
-
-        (testing "Transferring ownership to the offering"
-          (let [tx (<! (registrar/transfer! {:ens.record/label "abc"
-                                             :ens.record/owner offering}
-                                            {:from addr1}))]
-            (is tx)))
 
         (let [t0 (to-epoch (t/plus (<! (now)) (t/weeks 4)))]
           (testing "Auction offering can be edited"
