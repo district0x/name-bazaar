@@ -102,7 +102,7 @@
 @user-question: "\e91a";
 @check-circle: "\e91d";
 @hammer-down: "\e91e";
-@twitter: "\e91f";
+@twitter: "\f099";
 @fb: "\e920";
 @user: "\e921";
 @magnifier2: "\e922";
