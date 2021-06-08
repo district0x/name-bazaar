@@ -252,16 +252,20 @@
   :district0x/smart-contract-loaded
   interceptors
   (fn [{:keys [db]} [contract-key contract-json]]
-    (let [;; TODO remove the filter when updating frontend web3 to 1.x
-          ;; In web3 0.19.0 calling of overloaded functions is wonky.
-          ;; It's not able to recognize that safeTransferFrom can take 4 arguments.
-          ;; In js, we can nudge it like this:
+    (let [;; TODO REMOVE THESE FILTERS WHEN UPDATING FRONTEND WEB3 TO 1.x
+          ;; In web3 0.19.0 calling of overloaded functions doesn't work properly. It only
+          ;; recognizes one signature per function name and will throw on non-matching calls.
+          ;; In js, we can force correct behavior by providing explicit signature like this:
           ;; web3.eth.contract(registrarAbi).at(registrarAddr).safeTransferFrom['address,address,uint256,bytes'](x, y, z, w)
           ;; But this way of method calling is not supported by our cljs libs.
-          ;; So the least hair pulling fix is to hide the unused arity function.
+          ;; So we use a hacky fix of hiding unwanted nowhere needed functions from abis.
+          ;; As a result web3 always settles on a correct signature (has no other choice).
           abi (filter #(or (not= (% "name") "safeTransferFrom")
-                           (not= (count (% "inputs")) 3))
+                           (= (count (% "inputs")) 4))
                       (contract-json "abi"))
+          abi (filter #(or (not= (% "name") "setAddr")
+                           (= (count (% "inputs")) 2))
+                      abi)
           abi (clj->js abi)
           bin (contract-json "bytecode")
           contract (get-contract db contract-key)
