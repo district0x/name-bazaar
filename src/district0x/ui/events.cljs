@@ -76,7 +76,7 @@
    :uri (gstring/format "./contracts-build/%s.json?v=%s" contract-name (if goog.DEBUG
                                                                          (.getTime (js/Date.))
                                                                          version))
-   :timeout 6000
+   :timeout 60000
    :response-format (ajax/json-response-format)
    :on-success on-success
    :on-failure on-failure})
