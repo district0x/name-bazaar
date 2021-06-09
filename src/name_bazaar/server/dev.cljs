@@ -65,8 +65,8 @@
                                                                              #'name-bazaar.server.emailer/emailer))}
                                      :web3-events {:events {:ens/new-owner                      [:ens :NewOwner]
                                                             :ens/transfer                       [:ens :Transfer]
-                                                            :offering-registry/offering-added   [:offering-registry :onOfferingAdded]
-                                                            :offering-registry/offering-changed [:offering-registry :onOfferingChanged]
+                                                            :offering-registry/offering-added   [:offering-registry :on-offering-added]
+                                                            :offering-registry/offering-changed [:offering-registry :on-offering-changed]
                                                             :registrar/transfer                 [:eth-registrar :Transfer]}}
                                      :db          {:opts {:memory true}}
                                      :emailer     {:print-mode? true
