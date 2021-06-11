@@ -40,7 +40,9 @@
   (/ seconds 3600))
 
 (defn- max-extension-duration-hours [now end-time]
-  (min 24 (/ (quot (t/in-minutes (t/interval now (from-date (.toDate (js/moment end-time))))) 15) 4)))
+  (let [end-time (from-date (.toDate (js/moment end-time)))
+        now (if (<= (.getTime now) (.getTime end-time)) now end-time)]
+    (min 24 (/ (quot (t/in-minutes (t/interval now end-time)) 15) 4))))
 
 (defn offering-extension-duration-slider [max-value {:keys [:value] :as props}]
   (let [duration-formatted (format-time-duration-units (hours->milis value))]
