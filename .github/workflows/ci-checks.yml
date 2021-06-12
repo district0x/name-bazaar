@@ -58,7 +58,7 @@ jobs:
           ECR_REPOSITORY: "namebazaar"
         run: |
           echo "Building on ${GITHUB_REF} branch"
-          docker build -t ${{ matrix.image }}:${{ github.sha }} -f docker-builds/${{ matrix.image }}/Dockerfile .
+          DOCKER_BUILDKIT=1 docker build -t ${{ matrix.image }}:${{ github.sha }} -f docker-builds/${{ matrix.image }}/Dockerfile .
           if [[ ${GITHUB_REF} == "refs/heads/add_ci" ]]; then
             echo "On the default branch will push to the registry with latest and ${{ github.sha }} tags"
             docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
