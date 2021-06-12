@@ -34,7 +34,7 @@ RUN --mount=type=ssh,id=github lein deps
 RUN lein npm install
 
 ENV PYTHON /usr/bin/python3
-RUN pip3 install solc-select
+RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.5.17 && solc-select use 0.5.17
 RUN touch config.edn
 # https://stackoverflow.com/questions/38323880/error-eacces-permission-denied
