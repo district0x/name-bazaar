@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
+ARG BUILD_ENV="prod"
+ARG BUILD_ENV=${BUILD_ENV}
+
 COPY . /namebazaar/
 WORKDIR /namebazaar
 
@@ -40,7 +43,7 @@ RUN npm install -g truffle --unsafe-perm=true --allow-root
 RUN truffle compile
 
 # build
-RUN lein build-prod-server
+RUN lein build-${BUILD_ENV}-server
 
 
 FROM node:10-buster-slim

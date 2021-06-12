@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
-
+ARG BUILD_ENV="prod"
+ARG BUILD_ENV=${BUILD_ENV}
 
 # install base dependencies
 RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
@@ -42,7 +43,7 @@ RUN npm install -g truffle --unsafe-perm=true --allow-root
 RUN truffle compile
 
 # build
-RUN lein build-css && lein build-prod-ui
+RUN lein build-css && lein build-${BUILD_ENV}-ui
 
 
 FROM nginx:stable-alpine
