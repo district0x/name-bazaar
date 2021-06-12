@@ -58,13 +58,8 @@ jobs:
           ECR_REPOSITORY: "namebazaar"
         run: |
           echo "Building on ${GITHUB_REF} branch"
-          DOCKER_BUILDKIT=1 docker build -t ${{ matrix.image }}:${{ github.sha }} -f docker-builds/${{ matrix.image }}/Dockerfile .
-          if [[ ${GITHUB_REF} == "refs/heads/add_ci" ]]; then
-            echo "On the default branch will push to the registry with latest and ${{ github.sha }} tags"
-            docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
-            docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest
+          DOCKER_BUILDKIT=1 docker build --build-arg BUILD_ENV=qa -t ${{ matrix.image }}:${{ github.sha }} -f docker-builds/${{ matrix.image }}/Dockerfile .
+          echo "Successfully built docker image"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -75,3 +70,17 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
+
+      - name: Build an image from Dockerfile
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: "namebazaar"
+        run: |
+          echo "Pushing docker images"
+          if [[ ${GITHUB_REF} == "refs/heads/add_ci" ]]; then
+            echo "On the default branch will push to the registry with latest and ${{ github.sha }} tags"
+            docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
+            docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest
+          fi
