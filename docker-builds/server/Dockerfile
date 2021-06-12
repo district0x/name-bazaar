@@ -32,7 +32,7 @@ RUN --mount=type=ssh,id=github lein deps
 RUN lein npm install
 
 ENV PYTHON /usr/bin/python3
-RUN pip3 install solc-select
+RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.5.17 && solc-select use 0.5.17
 RUN touch config.edn
 # https://stackoverflow.com/questions/38323880/error-eacces-permission-denied
@@ -46,7 +46,7 @@ RUN lein build-prod-server
 FROM node:10-buster-slim
 # ENV variables
 ENV CONFIG /configs/namebazaar.config.edn
-ENV PORT=3000
+ENV PORT=6200
 
 # get compiled JS
 COPY --from=builder /namebazaar/server /namebazaar/server
@@ -56,7 +56,7 @@ COPY --from=builder /namebazaar/resources /namebazaar/resources
 WORKDIR /namebazaar
 
 # expose server port
-EXPOSE 3000
+EXPOSE 6200
 
 ENTRYPOINT ["node", "server/name-bazaar.js"]
 CMD ["--max-old-space-size=2048"]

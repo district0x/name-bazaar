@@ -1,0 +1,9 @@
+# ignored checks:
+ignored:
+  - DL4000 # MAINTAINER is deprecated
+  - DL3008 # Pin versions in apt get install. Instead of `apt-get install <package>` use `apt-get install <package>=<version>`
+  - DL3007 # Using latest is prone to errors if the image will ever update. Pin the version explicitly to a release tag
+  - DL3013 # Pin versions in pip.
+  - DL3016 # Pin versions in npm.
+  - SC2174 # When used with -p, -m only applies to the deepest directory.
+  - DL4006 # Set the SHELL option -o pipefail before RUN with a pipe in it.
