@@ -43,7 +43,7 @@ RUN npm install -g truffle --unsafe-perm=true --allow-root
 RUN truffle compile
 
 # build
-RUN lein build-${BUILD_ENV}-server
+RUN lein build-prod-server
 
 
 FROM node:10-buster-slim
