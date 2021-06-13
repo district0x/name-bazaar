@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-          dockerfile: ["docker-builds/ui/Dockerfile", "docker-builds/server/Dockerfile"]
+          image: ["server", "ui", "base"]
     steps:
       - uses: actions/checkout@v2
       - uses: hadolint/hadolint-action@v1.5.0
         with:
-          dockerfile: ${{ matrix.dockerfile }}
+          dockerfile: docker-builds/${{ matrix.image }}/Dockerfile
 
   Code_security:
     name: Code security
