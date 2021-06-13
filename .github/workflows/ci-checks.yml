@@ -3,11 +3,7 @@ on:
   push:
     branches:
       - master
-      - add_ci
   pull_request:
-    branches:
-      - master
-      - add_ci
 
 name: Standard CI checks
 
@@ -81,7 +77,7 @@ jobs:
           ECR_REPOSITORY: "namebazaar"
         run: |
           echo "Pushing docker images"
-          if [[ ${GITHUB_REF} == "refs/heads/add_ci" ]]; then
+          if [[ ${GITHUB_REF} == "refs/heads/master" ]]; then
             echo "On the default branch will push to the registry with latest and ${{ github.sha }} tags"
             docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}
             docker tag ${{ matrix.image }}:${{ github.sha }} ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest
