@@ -51,12 +51,18 @@ FROM node:10-buster-slim
 ENV CONFIG /configs/namebazaar.config.edn
 ENV PORT=6200
 
+# update and install security patches
+RUN apt update && apt-get upgrade -yqq \
+    && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
 # get compiled JS
 COPY --from=builder /namebazaar/server /namebazaar/server
 COPY --from=builder /namebazaar/node_modules /namebazaar/node_modules
 COPY --from=builder /namebazaar/resources /namebazaar/resources
 
 WORKDIR /namebazaar
+
 
 # expose server port
 EXPOSE 6200
