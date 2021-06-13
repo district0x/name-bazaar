@@ -20,7 +20,7 @@ help: ## Print help
 dev-image: ## Builds dev image
 	docker build -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
 
-dev-image-no-cache: ## Builds dev image
+dev-image-no-cache: ## Builds dev image (no cache)
 	docker build --no-cache -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
 
 # All images
@@ -31,33 +31,33 @@ build-images-no-cache: # Build base docker image with node11.14, yarn, clojure, 
 	COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -p ${PROJECT_NAME} build --parallel --pull --no-cache
 
 # RUN CONTAINERS
-init:  ## Initiate volumes and networks
+init:  ## Initiate volumes, networks build containers
 	docker-compose -p ${PROJECT_NAME} up --no-start
 
-start-containers: dev-image ## Build and start containers ((ipfs, ganache, dev container)
+start-containers: ## (Re)Build and start containers
 	docker-compose -p ${PROJECT_NAME} up -d
 
-run-dev-shell: ## Start container in interactive mode
+run-dev-shell: dev-image ## Start dev container in interactive mode
 	docker run -ti --rm --entrypoint="" ${DOCKER_NET_PARAMS} ${DOCKER_VOL_PARAMS} ${DEV_IMAGE} bash
 
 check-containers: ## Show docker-compose ps for given project
 	docker-compose -p ${PROJECT_NAME} ps
 
-clear-all: ## Remove containers, networks and volumes
+clear-all: ## Remove containers, networks and volumes for this project
 	docker-compose -p ${PROJECT_NAME} down
 
 # TEST CODE SERVER
 deps-npm: dev-image ## Install/update npm deps
 	docker run -t --rm ${DOCKER_NET_PARAMS} ${DOCKER_VOL_PARAMS} ${DEV_IMAGE} bash -c "lein npm install"
 
-trunnfle-compile: deps-npm ## Compile contracts
+truffle-compile: deps-npm ## Compile contracts
 	docker run -t --rm ${DOCKER_NET_PARAMS} ${DOCKER_VOL_PARAMS} ${DEV_IMAGE} bash -c "truffle compile"
 
-server-test: deps-npm  ## Run Backend (server) tests
+test-server: deps-npm  ## Run Backend (server) tests
 	docker run -t --rm ${DOCKER_NET_PARAMS} ${DOCKER_VOL_PARAMS} ${DEV_IMAGE}  bash -c "lein cljsbuild once server-tests"
 
 # TEST CODE UI
-frontend-tests: deps-npm ## Run Frontend (browser) tests
+tests-frontend: deps-npm ## Run Frontend (browser) tests
 	docker run -t --rm ${DOCKER_NET_PARAMS} ${DOCKER_VOL_PARAMS} ${DEV_IMAGE}  bash -c "lein npm run cypress-open"
 
 # SHORTCUTS
