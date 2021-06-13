@@ -52,7 +52,7 @@ ENV CONFIG /configs/namebazaar.config.edn
 ENV PORT=6200
 
 # update and install security patches
-RUN apt update && apt-get upgrade -yqq \
+RUN apt-get update && apt-get upgrade -yqq \
     && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
