@@ -1,6 +1,11 @@
-# Name Bazaar
+<div align="left">
+    <a href="https://discord.com/invite/sS2AWYm"><img alt="District0x Discord server" src="https://img.shields.io/discord/356854079022039062?label=district0x&logo=discord"></a>
+    <a href="LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/district0x/name-bazaar"></a>
+    <a href="http://makeapullrequest.com"><img alt="pull requests welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat"></a>
+    <a href="(https://travis-ci.org/district0x/name-bazaar"><img alt="Build Status" src="https://travis-ci.org/district0x/name-bazaar.svg?branch=master"></a></p>
+</div>
 
-[![Build Status](https://travis-ci.org/district0x/name-bazaar.svg?branch=master)](https://travis-ci.org/district0x/name-bazaar)
+# Name Bazaar
 
 A peer-to-peer marketplace for the exchange of names registered via the Ethereum Name Service.
 
