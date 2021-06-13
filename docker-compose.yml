@@ -1,24 +1,51 @@
-parity:
-  image: parity/parity:v1.7.0
-  ports:
-    - "8180"
-    - "8545"
-    - "8546"
-    - "30303"
-    - "30303/udp"
 
-namebazaar:
-  build: .
-  ports:
-    - "6200"
-  links:
-    - parity
+version: '3'
+services:
+  # parity:
+  #   image: parity/parity:v1.7.0
+  #   ports:
+  # networks:
+    # - dev_network
+  #     - "8180"
+  #     - "8545"
+  #     - "8546"
+  #     - "30303"
+  #     - "30303/udp"
 
-nginx:
-  build: builds/nginx
-  ports:
-    - "3001:80"
-  volumes:
-    - "./resources/public:/usr/share/nginx/html/ipns/QmaxtM46eQBdpQq6TKDSAHoarB1Qx9SDrZkag7RbpDbdJx"
-#  links:
-#    - namebazaar *
+  ui:
+    image: namebazaar-ui:local
+    build:
+      context: .
+      dockerfile: "docker-builds/ui/Dockerfile"
+      args:
+          BUILD_ENV: "dev"
+    networks:
+      - dev_network
+    environment:
+      - PORT=80
+
+  server:
+    image: namebazaar-server:local
+    build:
+      context: .
+      dockerfile: "docker-builds/server/Dockerfile"
+      args:
+          BUILD_ENV: "dev"
+    volumes:
+      - /home/$USER/logs:/logs
+      - /home/$USER/configs:/configs
+    networks:
+      - dev_network
+    environment:
+      - CONFIG=/configs/namebazaar-server.config.qa.edn
+      - PORT=6200
+
+networks:
+  dev_network:
+
+volumes:
+  vol_node_modules:
+  vol_m2_cache:
+  vol_ipfs_data:
+  vol_server_tests:
+  vol_target:
