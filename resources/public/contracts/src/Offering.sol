@@ -1,12 +1,13 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title Offering
  * @dev Contains base logic for an offering and is meant to be extended.
  */
 
-import "@ensdomains/ens/contracts/ENSRegistry.sol";
-import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
+import "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import "@ensdomains/ens-contracts/contracts/ethregistrar/BaseRegistrar.sol";
 import "./OfferingRegistry.sol";
 
 contract Offering {
@@ -109,7 +110,7 @@ contract Offering {
         offering.labelHash = _labelHash;
         offering.originalOwner = _originalOwner;
         offering.version = _version;
-        offering.createdOn = uint64(now);
+        offering.createdOn = uint64(block.timestamp);
         offering.price = _price;
     }
 
@@ -135,6 +136,7 @@ contract Offering {
     * Sets newOwner to special address 0xdead
     */
     function reclaimOwnership()
+        virtual
         public
         onlyWithoutNewOwner
     {
@@ -163,7 +165,7 @@ contract Offering {
         onlyWithoutNewOwner
     {
         offering.newOwner = _newOwner;
-        offering.finalizedOn = uint64(now);
+        offering.finalizedOn = uint64(block.timestamp);
         doTransferOwnership(_newOwner);
         fireOnChanged("finalize");
     }

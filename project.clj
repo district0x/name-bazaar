@@ -81,11 +81,8 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@ensdomains/buffer" "0.0.10"]
-                       ["@ensdomains/dnssec-oracle" "0.1.2"]
-                       ["@ensdomains/ens" "0.4.5"]
-                       ["@ensdomains/ethregistrar" "2.0.4"]
-                       ["@ensdomains/resolver" "0.2.4"]
+  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.4"]
+                       ["@openzeppelin/contracts" "4.1.0"]
                        ["@sentry/node" "4.2.1"]
                        ["@ungap/global-this" "0.4.4"]
                        ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12

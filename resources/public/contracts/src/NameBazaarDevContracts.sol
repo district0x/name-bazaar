@@ -1,28 +1,27 @@
+// SPDX-License-Identifier: MIT
 /**
  * All contracts in this file are only used for development only.
  */
-pragma solidity ^0.5.17;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.4;
 
-import {PublicResolver} from "@ensdomains/resolver/contracts/PublicResolver.sol";
-import {ReverseRegistrar, NameResolver} from "@ensdomains/ens/contracts/ReverseRegistrar.sol";
-import {ENS} from "@ensdomains/ens/contracts/ENS.sol";
-import {BaseRegistrarImplementation} from "@ensdomains/ethregistrar/contracts/BaseRegistrarImplementation.sol";
+import {BaseRegistrarImplementation} from "@ensdomains/ens-contracts/contracts/ethregistrar/BaseRegistrarImplementation.sol";
+import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {NameResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/NameResolver.sol";
+import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
+import {ReverseRegistrar, NameResolver as INameResolver} from "@ensdomains/ens-contracts/contracts/registry/ReverseRegistrar.sol";
 
 contract NamebazaarDevPublicResolver is PublicResolver {
-    constructor(ENS ens) PublicResolver(ens) public {}
+    constructor(ENS ens) PublicResolver(ens) {}
 }
 
 contract NamebazaarDevNameResolver is NameResolver {
-    mapping (bytes32 => string) public name;
-
-    function setName(bytes32 node, string memory _name) public {
-        name[node] = _name;
+    function isAuthorised(bytes32 node) internal view override returns(bool) {
+        return true;
     }
 }
 
 contract NamebazaarDevReverseRegistrar is ReverseRegistrar {
-    constructor(ENS ens, NamebazaarDevNameResolver resolver) ReverseRegistrar(ens, resolver) public {}
+    constructor(ENS ens, INameResolver resolver) ReverseRegistrar(ens, resolver) {}
 }
 
 contract NameBazaarDevRegistrar is BaseRegistrarImplementation {
@@ -32,7 +31,7 @@ contract NameBazaarDevRegistrar is BaseRegistrarImplementation {
      * @param ens The address of the ENS
      * @param rootNode The hash of the root node.
      */
-    constructor(ENS ens, bytes32 rootNode) BaseRegistrarImplementation(ens, rootNode) public {}
+    constructor(ENS ens, bytes32 rootNode) BaseRegistrarImplementation(ens, rootNode) {}
 
     /**
      * @dev Convenience function added by NameBazaar for instant registration

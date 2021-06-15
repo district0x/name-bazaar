@@ -1,8 +1,9 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "@ensdomains/ens/contracts/ENSRegistry.sol";
-import "@ensdomains/ethregistrar/contracts/BaseRegistrar.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
+import "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import "@ensdomains/ens-contracts/contracts/ethregistrar/BaseRegistrar.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./OfferingRegistry.sol";
 import "./strings.sol";
 
@@ -11,7 +12,7 @@ import "./strings.sol";
  * @dev Base contract factory for creating new offerings
  */
 
-contract OfferingFactory is IERC721Receiver {
+abstract contract OfferingFactory is IERC721Receiver {
     using strings for *;
 
     ENSRegistry public ens;
@@ -31,7 +32,7 @@ contract OfferingFactory is IERC721Receiver {
     constructor(
         ENSRegistry _ens,
         OfferingRegistry _offeringRegistry
-    ) public {
+    ) {
         ens = _ens;
         offeringRegistry = _offeringRegistry;
     }
@@ -88,12 +89,13 @@ contract OfferingFactory is IERC721Receiver {
     function namehash(string memory name) internal returns(bytes32) {
         strings.slice memory nameSlice = name.toSlice();
 
-        if (nameSlice.len() == 0) {
-            return bytes32(0);
+        bytes32 result = bytes32(0);
+        while (nameSlice.len() > 0) {
+            bytes memory label = abi.encodePacked(nameSlice.rsplit(".".toSlice()).toString());
+            result = keccak256(abi.encodePacked(result, keccak256(label)));
         }
 
-        bytes memory label = abi.encodePacked(nameSlice.split(".".toSlice()).toString());
-        return keccak256(abi.encodePacked(namehash(nameSlice.toString()), keccak256(label)));
+        return result;
     }
 
     /**
@@ -101,7 +103,7 @@ contract OfferingFactory is IERC721Receiver {
     * @param name string Plaintext ENS name
     * @return bytes32 ENS labelHash, hashed label of the name
     */
-    function getLabelHash(string memory name) internal returns(bytes32) {
+    function getLabelHash(string memory name) internal pure returns(bytes32) {
         return keccak256(abi.encodePacked(name.toSlice().split(".".toSlice()).toString()));
     }
 }
