@@ -1,4 +1,5 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title BuyNowOffering
@@ -21,7 +22,7 @@ contract BuyNowOffering is Offering {
     {
         require(msg.value == offering.price);
         offering.originalOwner.transfer(offering.price);
-        transferOwnership(msg.sender);
+        transferOwnership(payable(msg.sender));
     }
 
     /**
@@ -39,7 +40,7 @@ contract BuyNowOffering is Offering {
         fireOnChanged("setSettings");
     }
 
-    function() external payable {
+    receive() external payable {
         buy();
     }
 }

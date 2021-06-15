@@ -1,4 +1,5 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title AuctionOfferingFactory
@@ -12,14 +13,7 @@ import "./Forwarder.sol";
 
 contract AuctionOfferingFactory is OfferingFactory {
 
-    constructor(
-        ENSRegistry ens,
-        OfferingRegistry offeringRegistry
-    )
-        public
-        OfferingFactory(ens, offeringRegistry)
-    {
-    }
+    constructor(ENSRegistry ens, OfferingRegistry offeringRegistry) OfferingFactory(ens, offeringRegistry) {}
 
     /**
     * @dev Deploys new auction offering and registers it to OfferingRegistry
@@ -37,7 +31,7 @@ contract AuctionOfferingFactory is OfferingFactory {
         uint64 extensionDuration,
         uint minBidIncrease
     ) external {
-        address payable forwarder = address(new Forwarder());
+        address payable forwarder = payable(address(new Forwarder()));
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
         uint128 version = 100001;                   // versioning for Auction offerings starts at number 100000
@@ -46,7 +40,7 @@ contract AuctionOfferingFactory is OfferingFactory {
             node,
             name,
             labelHash,
-            msg.sender,
+            payable(msg.sender),
             version,
             startPrice,
             endTime,
@@ -75,7 +69,7 @@ contract AuctionOfferingFactory is OfferingFactory {
         uint minBidIncrease,
         address payable originalOwner
     ) internal {
-        address payable forwarder = address(new Forwarder());
+        address payable forwarder = payable(address(new Forwarder()));
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
         uint128 version = 100001;                   // versioning for Auction offerings starts at number 100000
@@ -104,6 +98,7 @@ contract AuctionOfferingFactory is OfferingFactory {
     */
     function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data)
         public
+        override
         onlyRegistrar
         returns (bytes4)
     {
@@ -112,8 +107,7 @@ contract AuctionOfferingFactory is OfferingFactory {
          uint64 endTime,
          uint64 extensionDuration,
          uint minBidIncrease) = abi.decode(data, (string, uint, uint64, uint64, uint));
-        address payable originalOwner = address(uint160(from));  // address to address payable in Solidity 0.5.x
-        createTLDOffering(name, startPrice, endTime, extensionDuration, minBidIncrease, originalOwner);
+        createTLDOffering(name, startPrice, endTime, extensionDuration, minBidIncrease, payable(from));
         return this.onERC721Received.selector;
     }
 }

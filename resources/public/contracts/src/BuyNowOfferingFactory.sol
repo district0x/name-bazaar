@@ -1,4 +1,5 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title BuyNowOfferingFactory
@@ -12,14 +13,7 @@ import "./Forwarder.sol";
 
 contract BuyNowOfferingFactory is OfferingFactory {
 
-    constructor(
-        ENSRegistry ens,
-        OfferingRegistry offeringRegistry
-    )
-        public
-        OfferingFactory(ens, offeringRegistry)
-    {
-    }
+    constructor(ENSRegistry ens, OfferingRegistry offeringRegistry) OfferingFactory(ens, offeringRegistry) {}
 
     /**
     * @dev Deploys new BuyNow offering and registers it to OfferingRegistry
@@ -33,14 +27,14 @@ contract BuyNowOfferingFactory is OfferingFactory {
     ) external {
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
-        address payable forwarder = address(new Forwarder());
+        address payable forwarder = payable(address(new Forwarder()));
         uint128 version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
             node,
             name,
             labelHash,
-            msg.sender,
+            payable(msg.sender),
             version,
             price
         );
@@ -62,7 +56,7 @@ contract BuyNowOfferingFactory is OfferingFactory {
     ) internal {
         bytes32 node = namehash(name);
         bytes32 labelHash = getLabelHash(name);
-        address payable forwarder = address(new Forwarder());
+        address payable forwarder = payable(address(new Forwarder()));
         uint128 version = 2; // versioning for BuyNow offerings starts at number 1
 
         BuyNowOffering(forwarder).construct(
@@ -86,12 +80,12 @@ contract BuyNowOfferingFactory is OfferingFactory {
     */
     function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data)
         public
+        override
         onlyRegistrar
         returns (bytes4)
     {
         (string memory name, uint price) = abi.decode(data, (string, uint));
-        address payable originalOwner = address(uint160(from));  // address to address payable in Solidity 0.5.x
-        createTLDOffering(name, price, originalOwner);
+        createTLDOffering(name, price, payable(from));
         return this.onERC721Received.selector;
     }
 }

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 
 import "./UsedByFactories.sol";
@@ -28,7 +29,7 @@ contract OfferingRegistry is UsedByFactories {
         _;
     }
 
-    constructor(address _emergencyMultisig) public {
+    constructor(address _emergencyMultisig) {
         emergencyMultisig = _emergencyMultisig;
     }
 

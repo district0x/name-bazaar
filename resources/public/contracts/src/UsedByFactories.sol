@@ -1,11 +1,12 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title UsedByFactories
  * @dev Provides modifiers to allow only offering factory contracts to execute method
  */
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UsedByFactories is Ownable {
 

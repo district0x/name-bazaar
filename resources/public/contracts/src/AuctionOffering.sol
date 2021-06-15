@@ -1,4 +1,5 @@
-pragma solidity ^0.5.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 /**
  * @title AuctionOffering
@@ -7,11 +8,9 @@ pragma solidity ^0.5.17;
  * This way code logic for this offering won't be duplicated on blockchain.
  */
 
-import "./SafeMath.sol";
 import "./Offering.sol";
 
 contract AuctionOffering is Offering {
-    using SafeMath for uint;
 
     struct AuctionOffering {
         // Order here is important for gas optimisations. Must be fitting into uint265 slots.
@@ -46,7 +45,7 @@ contract AuctionOffering is Offering {
      * @dev Modifier to make a function callable only when auction end time is over
      */
     modifier onlyAfterEndTime() {
-        require(now > auctionOffering.endTime);
+        require(block.timestamp > auctionOffering.endTime);
         _;
     }
 
@@ -54,7 +53,7 @@ contract AuctionOffering is Offering {
      * @dev Modifier to make a function callable only when auction end time is not over yet
      */
     modifier onlyBeforeEndTime() {
-        require(now < auctionOffering.endTime);
+        require(block.timestamp < auctionOffering.endTime);
         _;
     }
 
@@ -103,8 +102,8 @@ contract AuctionOffering is Offering {
         if (auctionOffering.winningBidder == address(0x0)) {
             require(msg.value >= offering.price);
         } else {
-            require(msg.value >= offering.price.add(auctionOffering.minBidIncrease));
-            uint previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder].add(offering.price);
+            require(msg.value >= offering.price + auctionOffering.minBidIncrease);
+            uint previousWinnerRefund = auctionOffering.pendingReturns[auctionOffering.winningBidder] + offering.price;
             if (auctionOffering.winningBidder.send(previousWinnerRefund)) {
                 auctionOffering.pendingReturns[auctionOffering.winningBidder] = 0;
             } else {
@@ -112,18 +111,18 @@ contract AuctionOffering is Offering {
             }
         }
 
-        auctionOffering.winningBidder = msg.sender;
+        auctionOffering.winningBidder = payable(msg.sender);
         auctionOffering.bidCount += 1;
         offering.price = msg.value;
 
-        if (uint(auctionOffering.endTime - auctionOffering.extensionDuration) <= now) {
-            auctionOffering.endTime = uint64(now.add(uint(auctionOffering.extensionDuration)));
+        if (uint(auctionOffering.endTime - auctionOffering.extensionDuration) <= block.timestamp) {
+            auctionOffering.endTime = uint64(block.timestamp + uint(auctionOffering.extensionDuration));
         }
 
         uint[] memory extraEventData = new uint[](3);
-        extraEventData[0] = uint(msg.sender);
+        extraEventData[0] = uint(uint160(msg.sender));
         extraEventData[1] = offering.price;
-        extraEventData[2] = now;
+        extraEventData[2] = block.timestamp;
         fireOnChanged("bid", extraEventData);
     }
 
@@ -158,7 +157,7 @@ contract AuctionOffering is Offering {
 
         if (!offering.originalOwner.send(offering.price)){
             auctionOffering.pendingReturns[offering.originalOwner] =
-                auctionOffering.pendingReturns[offering.originalOwner].add(offering.price);
+                auctionOffering.pendingReturns[offering.originalOwner] + offering.price;
         }
     }
 
@@ -167,7 +166,7 @@ contract AuctionOffering is Offering {
     * Can be done only if auction has no bids
     * Emergency multisig can do this even for auction with bids and it puts winner bidder funds for withdrawal
     */
-    function reclaimOwnership() public {
+    function reclaimOwnership() public override {
         if (isSenderEmergencyMultisig()) {
             if (!hasNoBids() && !wasEmergencyCancelled()) {
                 auctionOffering.pendingReturns[auctionOffering.winningBidder] = offering.price;
@@ -214,9 +213,9 @@ contract AuctionOffering is Offering {
     )
         internal
     {
-        require(_endTime <= now + 4 * 30 days);
-        require(_extensionDuration <= _endTime - now);
-        require(_endTime > now);
+        require(_endTime <= block.timestamp + 4 * 30 days);
+        require(_extensionDuration <= _endTime - block.timestamp);
+        require(_endTime > block.timestamp);
         auctionOffering.endTime = _endTime;
         auctionOffering.extensionDuration = _extensionDuration;
         require(_minBidIncrease > 0);
@@ -240,7 +239,7 @@ contract AuctionOffering is Offering {
         return auctionOffering.pendingReturns[bidder];
     }
 
-    function() external payable {
+    receive() external payable {
         bid();
     }
 }
