@@ -12,6 +12,11 @@ import "./UsedByFactories.sol";
  */
 
 contract OfferingRegistry is UsedByFactories {
+    // We need to keep the storage layout here compatible with MutableForwarder!
+    // https://mixbytes.io/blog/collisions-solidity-storage-layouts
+    // TODO replace MutableForwarder with a mature Proxy implementation that
+    // hides storage matching concerns, maybe openzeppelin's ERC1967Proxy
+    address private dummyTarget;
 
     event onOfferingAdded(address indexed offering, bytes32 indexed node, address indexed owner, uint version);
     event onOfferingChanged(address indexed offering, uint version, bytes32 indexed eventType, uint[] extraData);
@@ -20,6 +25,7 @@ contract OfferingRegistry is UsedByFactories {
     bool public isEmergencyPaused = false;                      // Variable to pause buying activity on all offerings
     mapping (address => bool) public isOffering;                // Stores whether given address of namebazaar offering
 
+    bool private wasConstructed;
 
     /**
      * @dev Modifier to make a function callable only by Namebazaar Multisig wallet
@@ -29,8 +35,17 @@ contract OfferingRegistry is UsedByFactories {
         _;
     }
 
-    constructor(address _emergencyMultisig) {
+    /**
+     * @dev Constructor for this contract.
+     * Native constructor is not used, because this contract is only used via MutableForwarder.
+     */
+    function construct(address _emergencyMultisig)
+        external
+    {
+        require(!wasConstructed);
+        require(_emergencyMultisig != address(0x0));
         emergencyMultisig = _emergencyMultisig;
+        wasConstructed = true;
     }
 
     /**

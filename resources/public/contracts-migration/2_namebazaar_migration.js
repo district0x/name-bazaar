@@ -98,6 +98,7 @@ const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
   {kw: ':eth-registrar', name: 'NameBazaarDevRegistrar'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
+  {kw: ':mutable-forwarder', name: 'MutableForwarder'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},
   {kw: ':buy-now-offering-factory', name: 'BuyNowOfferingFactory'},
   {kw: ':auction-offering', name: 'AuctionOffering'},
@@ -112,6 +113,7 @@ const {
   ENSRegistry,
   NameBazaarDevRegistrar,
   OfferingRegistry,
+  MutableForwarder,
   BuyNowOffering,
   BuyNowOfferingFactory,
   AuctionOffering,
@@ -124,6 +126,7 @@ const {
 
 const emergencyMultisigPlaceholder = "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed".toLowerCase()
 const offeringPlaceholder = "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef".toLowerCase()
+const forwarderTargetPlaceholder = "beefbeefbeefbeefbeefbeefbeefbeefbeefbeef".toLowerCase()
 const ensPlaceholder = "314159265dD8dbb310642f98f50C066173C1259b".toLowerCase()
 const offeringRegistryPlaceholder = "fEEDFEEDfeEDFEedFEEdFEEDFeEdfEEdFeEdFEEd".toLowerCase()
 
@@ -164,7 +167,12 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   const emergencyMultisigAccount = accounts[0]
-  const offeringRegistry = await deploy(OfferingRegistry, emergencyMultisigAccount)
+  const offeringRegistryImplementation = await deploy(OfferingRegistry)
+  linkBytecode(MutableForwarder, forwarderTargetPlaceholder, offeringRegistryImplementation.address)
+  const offeringRegistryForwarder = await deploy(MutableForwarder)
+  const offeringRegistry = await OfferingRegistry.at(offeringRegistryForwarder.address)
+  await offeringRegistry.construct(emergencyMultisigAccount)
+
   linkBytecode(BuyNowOffering, emergencyMultisigPlaceholder, emergencyMultisigAccount)
   linkBytecode(BuyNowOffering, ensPlaceholder, ENSRegistry.address)
   linkBytecode(BuyNowOffering, offeringRegistryPlaceholder, offeringRegistry.address)
@@ -194,5 +202,7 @@ module.exports = async function (deployer, network, accounts) {
 
   await offeringRegistry.setFactories([buyNowOfferingFactory.address, auctionOfferingFactory.address], true)
 
+  loadedArtifacts.OfferingRegistry.address = offeringRegistryForwarder.address
+  delete loadedArtifacts.MutableForwarder
   writeSmartContracts(loadedArtifacts)
 };
