@@ -9,7 +9,7 @@ pragma solidity ^0.8.4;
 import "./OfferingRegistry.sol";
 import "./OfferingFactory.sol";
 import "./AuctionOffering.sol";
-import "./Forwarder.sol";
+import "./proxy/Forwarder.sol";
 
 contract AuctionOfferingFactory is OfferingFactory {
 

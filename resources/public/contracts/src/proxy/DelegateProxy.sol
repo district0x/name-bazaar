@@ -1,8 +1,5 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-
-/**
- * @dev This file is stripped version of Aragon's ForwarderFactory.sol (https://github.com/aragon/apm-contracts/blob/master/contracts/ForwarderFactory.sol)
- */
 
 contract DelegateProxy {
     /**
@@ -18,17 +15,5 @@ contract DelegateProxy {
         switch result case 0 { invalid() }
         return (0, len)
         }
-    }
-}
-
-contract Forwarder is DelegateProxy {
-    // After compiling contract, `beefbeef...` is replaced in the bytecode by the real target address
-    address constant target = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; // checksumed to silence warning
-
-    /*
-    * @dev Forwards all calls to target
-    */
-    fallback() external payable {
-        delegatedFwd(target, msg.data);
     }
 }
