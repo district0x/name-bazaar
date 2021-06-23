@@ -155,9 +155,11 @@ contract AuctionOffering is Offering {
     {
         transferOwnership(auctionOffering.winningBidder);
 
-        if (!offering.originalOwner.send(offering.price)){
+        uint256 fee = offering.price * offeringRegistry.offeringFee() / 1000000;
+        offeringRegistry.emergencyMultisig().transfer(fee);
+        if (!offering.originalOwner.send(offering.price - fee)){
             auctionOffering.pendingReturns[offering.originalOwner] =
-                auctionOffering.pendingReturns[offering.originalOwner] + offering.price;
+                auctionOffering.pendingReturns[offering.originalOwner] + offering.price - fee;
         }
     }
 

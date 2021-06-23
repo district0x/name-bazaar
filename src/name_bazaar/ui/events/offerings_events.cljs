@@ -125,7 +125,7 @@
                    :form-data form-data
                    :contract-address (:offering/address form-data)
                    :result-href (path-for :route.offerings/detail form-data)
-                   :tx-opts {:gas 200000
+                   :tx-opts {:gas 250000
                              :gas-price default-gas-price
                              :value (eth->wei (:offering/price form-data))}
                    :form-id (select-keys form-data [:offering/address])

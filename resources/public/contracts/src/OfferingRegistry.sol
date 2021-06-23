@@ -21,11 +21,12 @@ contract OfferingRegistry is UsedByFactories {
     event onOfferingAdded(address indexed offering, bytes32 indexed node, address indexed owner, uint version);
     event onOfferingChanged(address indexed offering, uint version, bytes32 indexed eventType, uint[] extraData);
 
-    address public emergencyMultisig;                           // Emergency Multisig wallet of Namebazaar
-    bool public isEmergencyPaused = false;                      // Variable to pause buying activity on all offerings
-    mapping (address => bool) public isOffering;                // Stores whether given address of namebazaar offering
+    address payable public emergencyMultisig;       // Emergency Multisig wallet of Namebazaar
+    bool public isEmergencyPaused = false;          // Variable to pause buying activity on all offerings
+    mapping (address => bool) public isOffering;    // Stores whether given address of namebazaar offering
+    uint32 public offeringFee = 0;                  // Variable to determine percentage fee on each offering sale
 
-    bool private wasConstructed;
+    bool private wasConstructed = false;
 
     /**
      * @dev Modifier to make a function callable only by Namebazaar Multisig wallet
@@ -39,12 +40,13 @@ contract OfferingRegistry is UsedByFactories {
      * @dev Constructor for this contract.
      * Native constructor is not used, because this contract is only used via MutableForwarder.
      */
-    function construct(address _emergencyMultisig)
+    function construct(address payable _emergencyMultisig)
         external
     {
         require(!wasConstructed);
         require(_emergencyMultisig != address(0x0));
         emergencyMultisig = _emergencyMultisig;
+        offeringFee = 0;
         wasConstructed = true;
     }
 
@@ -91,5 +93,14 @@ contract OfferingRegistry is UsedByFactories {
      */
     function emergencyRelease() external onlyEmergencyMultisig {
         isEmergencyPaused = false;
+    }
+
+    /**
+     * @dev Function to change fee paid to Emergency Multisig on each offering sale
+     * 10 = 0.001% of offering price, 100 = 0.01% etc.
+     * Only Emergency Multisig wallet should be able to call this
+     */
+    function changeOfferingFee(uint32 fee) external onlyEmergencyMultisig {
+        offeringFee = fee;
     }
 }
