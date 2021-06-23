@@ -16,3 +16,9 @@
                  :emergency-release
                  []
                  (merge {:gas 300000} opts)))
+
+(defn change-offering-fees! [fee opts]
+  (contract-send :offering-registry
+                 :change-offering-fee
+                 [fee]
+                 (merge {:gas 300000} opts)))

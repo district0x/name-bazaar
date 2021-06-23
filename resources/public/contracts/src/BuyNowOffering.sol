@@ -21,7 +21,9 @@ contract BuyNowOffering is Offering {
         payable
     {
         require(msg.value == offering.price);
-        offering.originalOwner.transfer(offering.price);
+        uint256 fee = offering.price * offeringRegistry.offeringFee() / 1000000;
+        offeringRegistry.emergencyMultisig().transfer(fee);
+        offering.originalOwner.transfer(offering.price - fee);
         transferOwnership(payable(msg.sender));
     }
 
