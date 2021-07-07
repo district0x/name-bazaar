@@ -3,7 +3,9 @@
  :logging {:level :debug
            :console? true}
  :web3 {:url "wss://ropsten.infura.io/ws/v3/874e0519ba33487f89ef854b0179906c"}
- :web3-events {:from-block "latest"}
+ :web3-events {:from-block "latest"
+               ;; for replaying past events
+               :block-step 1000}
  :endpoints {:port 6200}
 
  :smart-contracts
