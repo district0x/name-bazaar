@@ -41,7 +41,9 @@
                                                    :ens/transfer                       [:ens :Transfer]
                                                    :offering-registry/offering-added   [:offering-registry :on-offering-added]
                                                    :offering-registry/offering-changed [:offering-registry :on-offering-changed]
-                                                   :registrar/transfer                 [:eth-registrar :Transfer]}}
+                                                   :registrar/transfer                 [:eth-registrar :Transfer]}
+                                          :from-block "latest"
+                                          :block-step 1000}
                             :ui {:reveal-period {:hours 48}
                                  :etherscan-url "https://etherscan.io"
                                  :cryptocompare-api-key "INSERT-YOUR-API-KEY-HERE"}}}

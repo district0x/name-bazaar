@@ -67,7 +67,9 @@
                                                             :ens/transfer                       [:ens :Transfer]
                                                             :offering-registry/offering-added   [:offering-registry :on-offering-added]
                                                             :offering-registry/offering-changed [:offering-registry :on-offering-changed]
-                                                            :registrar/transfer                 [:eth-registrar :Transfer]}}
+                                                            :registrar/transfer                 [:eth-registrar :Transfer]}
+                                                   :from-block "latest"
+                                                   :block-step 1000}
                                      :db          {:opts {:memory true}}
                                      :emailer     {:print-mode? true
                                                    :private-key "1925a0d3085e4d43a577b1adcaed60c08ece1570a151988dc41"}
