@@ -36,7 +36,7 @@ RUN lein npm install
 
 ENV PYTHON /usr/bin/python3
 RUN pip3 install --no-cache-dir solc-select
-RUN solc-select install 0.5.17 && solc-select use 0.5.17
+RUN solc-select install 0.8.4 && solc-select use 0.8.4
 RUN touch config.edn
 # https://stackoverflow.com/questions/38323880/error-eacces-permission-denied
 RUN npm install -g truffle --unsafe-perm=true --allow-root
