@@ -198,8 +198,10 @@
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
+                                   :output-dir "resources/public/js/compiled"
                                    :optimizations :advanced
                                    :closure-defines {name-bazaar.ui.config.environment "qa"}
+                                   :source-map "resources/public/js/compiled/app.js.map"
                                    :pretty-print false
                                    :pseudo-names false}}
 
