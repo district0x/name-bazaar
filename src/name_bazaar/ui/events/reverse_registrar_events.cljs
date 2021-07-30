@@ -22,7 +22,7 @@
                    :form-data (select-keys form-data [:ens.record/addr :public-resolver])
                    :args-order [:ens.record/addr :public-resolver]
                    :form-id (select-keys form-data [:ens.record/addr])
-                   :tx-opts {:gas 100000 :gas-price default-gas-price}
+                   :tx-opts {:gas 120000 :gas-price default-gas-price}
                    :on-tx-receipt-n [[:ens.records.resolver/load [(reverse-record-node (:ens.record/addr form-data))]]
                                      [:district0x.snackbar/show-message
                                       (gstring/format
