@@ -6,7 +6,7 @@
       {:ens {:name "ENSRegistry" :address "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"}
        ;; Ropsten BaseRegistrarImplementation
        ;; https://ropsten.etherscan.io/address/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
-       :eth-registrar {:name "NameBazaarDevRegistrar" :address "0x283af0b28c62c092c9727f1ee09c02ca627eb7f5"}
+       :eth-registrar {:name "NamebazaarDevRegistrar" :address "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85"}
        :offering-registry {:name "OfferingRegistry" :address "0xa3634fE2E2973d5d0cB7f2a1b2b0327A0B6e2d0D"}
        :buy-now-offering {:name "BuyNowOffering" :address "0xfF58F3De9319f37BF9b6F355694fe4431b58E6a4"}
        :buy-now-offering-factory {:name "BuyNowOfferingFactory" :address "0x8dD4F32663771D73b387A983D1c40BdB431241fd"}
@@ -16,8 +16,8 @@
        :reverse-name-resolver {:name "NamebazaarDevNameResolver" :address "0x0000000000000000000000000000000000000000"}
        ;; Ropsten PublicResolver
        ;; https://ropsten.etherscan.io/address/0x42d63ae25990889e35f215bc95884039ba354115
-       :public-resolver {:name "NamebazaarDevPublicResolver" :address "0x42D63ae25990889E35F215bC95884039Ba354115"}
+       :public-resolver {:name "PublicResolver" :address "0x42D63ae25990889E35F215bC95884039Ba354115"}
        ;; Ropsten ReverseRegistrar
        ;; https://ropsten.etherscan.io/address/0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c
-       :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c"}
+       :reverse-registrar {:name "ReverseRegistrar" :address "0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c"}
        })

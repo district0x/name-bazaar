@@ -8,11 +8,7 @@ import {BaseRegistrarImplementation} from "@ensdomains/ens-contracts/contracts/e
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {NameResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/NameResolver.sol";
 import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
-import {ReverseRegistrar, NameResolver as INameResolver} from "@ensdomains/ens-contracts/contracts/registry/ReverseRegistrar.sol";
-
-contract NamebazaarDevPublicResolver is PublicResolver {
-    constructor(ENS ens) PublicResolver(ens) {}
-}
+import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/registry/ReverseRegistrar.sol";
 
 contract NamebazaarDevNameResolver is NameResolver {
     function isAuthorised(bytes32 node) internal view override returns(bool) {
@@ -20,11 +16,7 @@ contract NamebazaarDevNameResolver is NameResolver {
     }
 }
 
-contract NamebazaarDevReverseRegistrar is ReverseRegistrar {
-    constructor(ENS ens, INameResolver resolver) ReverseRegistrar(ens, resolver) {}
-}
-
-contract NameBazaarDevRegistrar is BaseRegistrarImplementation {
+contract NamebazaarDevRegistrar is BaseRegistrarImplementation {
     /**
      * @dev Constructs a new Registrar, with the provided address as the owner of the root node.
      *

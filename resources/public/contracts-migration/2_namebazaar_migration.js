@@ -96,7 +96,7 @@ const validateDeploymentConfig = (config = {}) => {
 
 const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
-  {kw: ':eth-registrar', name: 'NameBazaarDevRegistrar'},
+  {kw: ':eth-registrar', name: 'NamebazaarDevRegistrar'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
   {kw: ':mutable-forwarder', name: 'MutableForwarder'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},
@@ -105,13 +105,13 @@ const loadedArtifacts = loadArtifacts([
   {kw: ':auction-offering-factory', name: 'AuctionOfferingFactory'},
   {kw: ':district0x-emails', name: 'District0xEmails'},
   {kw: ':reverse-name-resolver', name: 'NamebazaarDevNameResolver'},
-  {kw: ':public-resolver', name: 'NamebazaarDevPublicResolver'},
-  {kw: ':reverse-registrar', name: 'NamebazaarDevReverseRegistrar'},
+  {kw: ':public-resolver', name: 'PublicResolver'},
+  {kw: ':reverse-registrar', name: 'ReverseRegistrar'},
 ])
 
 const {
   ENSRegistry,
-  NameBazaarDevRegistrar,
+  NamebazaarDevRegistrar,
   OfferingRegistry,
   MutableForwarder,
   BuyNowOffering,
@@ -120,8 +120,8 @@ const {
   AuctionOfferingFactory,
   District0xEmails,
   NamebazaarDevNameResolver,
-  NamebazaarDevPublicResolver,
-  NamebazaarDevReverseRegistrar
+  PublicResolver,
+  ReverseRegistrar
 } = loadedArtifacts
 
 const emergencyMultisigPlaceholder = "DeEDdeeDDEeDDEEdDEedDEEdDEeDdEeDDEEDDeed".toLowerCase()
@@ -142,19 +142,19 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   if (network === 'development') {
-    const [ens, namebazaarDevNameResolver] = await parallel(
+    const [ens, nameResolver] = await parallel(
       deploy(ENSRegistry),
       deploy(NamebazaarDevNameResolver)
     )
 
-    const [nameBazaarDevRegistrar, _, namebazaarDevReverseRegistrar] = await parallel(
-      deploy(NameBazaarDevRegistrar, ens.address, namehash('eth')),
-      deploy(NamebazaarDevPublicResolver, ens.address),
-      deploy(NamebazaarDevReverseRegistrar, ens.address, namebazaarDevNameResolver.address)
+    const [ethRegistrar, _, reverseRegistrar] = await parallel(
+      deploy(NamebazaarDevRegistrar, ens.address, namehash('eth')),
+      deploy(PublicResolver, ens.address),
+      deploy(ReverseRegistrar, ens.address, nameResolver.address)
     )
-    await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), nameBazaarDevRegistrar.address)
+    await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), ethRegistrar.address)
     await ens.setSubnodeOwner(namehash(''), ensLabel('reverse'), accounts[0])
-    await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), namebazaarDevReverseRegistrar.address)
+    await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), reverseRegistrar.address)
   } else {
     const config = deployer.networks[network].deploymentConfig
     validateDeploymentConfig(config)
@@ -162,8 +162,8 @@ module.exports = async function (deployer, network, accounts) {
     skipDeploy(ENSRegistry, config.ensAddress)
     skipDeploy(NamebazaarDevNameResolver, "0x0000000000000000000000000000000000000000") // this address is not important
     skipDeploy(NameBazaarDevRegistrar, config.registrarAddress)
-    skipDeploy(NamebazaarDevPublicResolver, config.publicResolverAddress)
-    skipDeploy(NamebazaarDevReverseRegistrar, config.reverseRegistrarAddress)
+    skipDeploy(PublicResolver, config.publicResolverAddress)
+    skipDeploy(ReverseRegistrar, config.reverseRegistrarAddress)
   }
 
   const emergencyMultisigAccount = accounts[0]
