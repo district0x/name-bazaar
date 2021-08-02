@@ -8,7 +8,9 @@ RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
         git \
         python2.7 python-pip \
         python3.7 python3-pip \
-        ssh
+        ssh \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -27,5 +29,5 @@ ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 # install truffle
 ENV PYTHON /usr/bin/python3
 RUN PYTHON=/usr/bin/python3 pip3 install --no-cache-dir solc-select
-RUN solc-select install 0.5.17 && solc-select use 0.5.17
+RUN solc-select install 0.8.4 && solc-select use 0.8.4
 RUN npm install -g truffle --unsafe-perm=true --allow-root
