@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
 ARG BUILD_ENV="prod"
-ARG BUILD_ENV=${BUILD_ENV}
+ENV BUILD_ENV=${BUILD_ENV}
 
 COPY . /namebazaar/
 WORKDIR /namebazaar
@@ -47,8 +47,10 @@ RUN lein build-prod-server
 
 
 FROM node:10-buster-slim
+ARG BUILD_ENV="prod"
+ENV BUILD_ENV=${BUILD_ENV}
 # ENV variables
-ENV CONFIG /configs/namebazaar.config.edn
+ENV CONFIG="/configs/namebazaar.config.${BUILD_ENV}.edn"
 ENV PORT=6200
 
 # update and install security patches
