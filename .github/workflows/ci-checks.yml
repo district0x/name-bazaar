@@ -87,4 +87,5 @@ jobs:
           else
             docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-qa
             docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-qa
+
           fi
