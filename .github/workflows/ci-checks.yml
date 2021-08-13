@@ -79,12 +79,11 @@ jobs:
           ECR_REPOSITORY: "namebazaar"
         run: |
           echo "Pushing docker images"
-          echo "Pushing docker images"
-          if [[ ${GITHUB_REF} == "refs/heads/master" ]]; then
+          if [[ ${{ matrix.environment }} == "prod" && ${GITHUB_REF} == "refs/heads/master" ]]; then
             echo "On the default branch will push to the registry with latest and ${{ github.sha }} tags"
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-prod
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-prod
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{  matrix.environment }}
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{  matrix.environment }}
           else
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-qa
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-qa
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{  matrix.environment }}
+            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{  matrix.environment }}
           fi
