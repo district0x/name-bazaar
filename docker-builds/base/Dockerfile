@@ -8,7 +8,9 @@ RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
         git \
         python2.7 python-pip \
         python3.7 python3-pip \
-        ssh
+        ssh \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
 
 # https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts

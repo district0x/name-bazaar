@@ -46,7 +46,7 @@ RUN truffle compile
 RUN lein build-css && lein build-${BUILD_ENV}-ui
 
 
-FROM nginx:stable-alpine
+FROM nginx:alpine
 # replace nginx config
 COPY --from=builder /namebazaar/docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
 
