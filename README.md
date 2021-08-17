@@ -205,6 +205,8 @@ First, you need to specify deployments secrets in `config.edn`. For example:
                      :privateKeys ["0508d5f96e139a0c18ee97a92d890c55707c77b90916395ff7849efafffbd810"]
                      :ensAddress "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
                      :registrarAddress "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"
+                     :nameWrapperAddress "TODO fill when ENS Ropsten deployment exists"
+                     :metadataServiceAddress "TODO fill when ENS Ropsten deployment exists"
                      :publicResolverAddress "0x42D63ae25990889E35F215bC95884039Ba354115"
                      :reverseRegistrarAddress "0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c"}}}
 ```

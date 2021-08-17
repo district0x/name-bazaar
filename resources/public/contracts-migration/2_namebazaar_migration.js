@@ -97,6 +97,8 @@ const validateDeploymentConfig = (config = {}) => {
 const loadedArtifacts = loadArtifacts([
   {kw: ':ens', name: 'ENSRegistry'},
   {kw: ':eth-registrar', name: 'NamebazaarDevRegistrar'},
+  {kw: ':name-wrapper', name: 'NameWrapper'},
+  {kw: ':metadata-service', name: 'StaticMetadataService'},
   {kw: ':offering-registry', name: 'OfferingRegistry'},
   {kw: ':mutable-forwarder', name: 'MutableForwarder'},
   {kw: ':buy-now-offering', name: 'BuyNowOffering'},
@@ -112,6 +114,8 @@ const loadedArtifacts = loadArtifacts([
 const {
   ENSRegistry,
   NamebazaarDevRegistrar,
+  NameWrapper,
+  StaticMetadataService,
   OfferingRegistry,
   MutableForwarder,
   BuyNowOffering,
@@ -142,19 +146,24 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   if (network === 'development') {
-    const [ens, nameResolver] = await parallel(
+    metadataUrl = 'We don\'t care about metadata service currently'
+    const [ens, nameResolver, metadataService] = await parallel(
       deploy(ENSRegistry),
-      deploy(NamebazaarDevNameResolver)
+      deploy(NamebazaarDevNameResolver),
+      deploy(StaticMetadataService, metadataUrl)
     )
 
-    const [ethRegistrar, _, reverseRegistrar] = await parallel(
+    const [ethRegistrar, reverseRegistrar] = await parallel(
       deploy(NamebazaarDevRegistrar, ens.address, namehash('eth')),
-      deploy(PublicResolver, ens.address),
       deploy(ReverseRegistrar, ens.address, nameResolver.address)
     )
     await ens.setSubnodeOwner(namehash(''), ensLabel('eth'), ethRegistrar.address)
     await ens.setSubnodeOwner(namehash(''), ensLabel('reverse'), accounts[0])
     await ens.setSubnodeOwner(namehash('reverse'), ensLabel('addr'), reverseRegistrar.address)
+
+    // the contract's bytecode is too large to be deployed. Keep watching ENS for news.
+    // const nameWrapper = await deploy(NameWrapper, ens.address, ethRegistrar.address, metadataService.address)
+    const publicResolver = await deploy(PublicResolver, ens.address, nameWrapper.address)
   } else {
     const config = deployer.networks[network].deploymentConfig
     validateDeploymentConfig(config)
@@ -162,6 +171,8 @@ module.exports = async function (deployer, network, accounts) {
     skipDeploy(ENSRegistry, config.ensAddress)
     skipDeploy(NamebazaarDevNameResolver, "0x0000000000000000000000000000000000000000") // this address is not important
     skipDeploy(NameBazaarDevRegistrar, config.registrarAddress)
+    skipDeploy(NameWrapper, config.nameWrapperAddress)
+    skipDeploy(MetadataService, config.metadataServiceAddress)
     skipDeploy(PublicResolver, config.publicResolverAddress)
     skipDeploy(ReverseRegistrar, config.reverseRegistrarAddress)
   }

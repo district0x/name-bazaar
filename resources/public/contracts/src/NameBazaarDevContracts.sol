@@ -9,6 +9,8 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {NameResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/NameResolver.sol";
 import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
 import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/registry/ReverseRegistrar.sol";
+import {NameWrapper} from "@ensdomains/name-wrapper/contracts/NameWrapper.sol";
+import {StaticMetadataService} from "@ensdomains/name-wrapper/contracts/StaticMetadataService.sol";
 
 contract NamebazaarDevNameResolver is NameResolver {
     function isAuthorised(bytes32 node) internal view override returns(bool) {

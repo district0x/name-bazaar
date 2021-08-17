@@ -81,7 +81,8 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.4"]
+  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.7"]
+                       ["@ensdomains/name-wrapper" "1.0.0"]
                        ["@openzeppelin/contracts" "4.1.0"]
                        ["@sentry/node" "4.2.1"]
                        ["@ungap/global-this" "0.4.4"]
