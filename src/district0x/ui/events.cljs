@@ -442,7 +442,11 @@
   (fn [{:keys [db]} [{:keys [:form-data :form-id :args-order :contract-key :wei-keys
                              :contract-key :contract-method :contract-address :on-success] :as props}]]
     (let [{:keys [:web3 :active-address]} db
-          props (update props :tx-opts (partial merge {:from active-address}))
+          ;; if MetaMask is used, remove our gas limit and gas price suggestions and let it supply its own
+          is-metamask (goog.object/get (goog.object/get web3 "currentProvider") "isMetaMask")
+          props (update props :tx-opts (comp
+                                         (partial merge {:from active-address})
+                                         #(if is-metamask (dissoc % :gas :gas-price) %)))
           args (-> (d0x-shared-utils/update-multi form-data wei-keys d0x-shared-utils/eth->wei)
                    (d0x-shared-utils/map->vec args-order))]
       {:web3-fx.contract/state-fns
