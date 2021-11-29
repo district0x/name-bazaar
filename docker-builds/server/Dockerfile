@@ -70,4 +70,4 @@ WORKDIR /namebazaar
 EXPOSE 6200
 
 ENTRYPOINT ["node", "server/name-bazaar.js"]
-CMD ["--max-old-space-size=2048"]
+CMD ["--max-old-space-size=4096"]

@@ -61,7 +61,6 @@ jobs:
           ECR_REPOSITORY: "namebazaar"
         run: |
           echo "Building on ${GITHUB_REF} branch"
-          DOCKER_BUILDKIT=1 docker build --build-arg BUILD_ENV=prod -t ${{ matrix.image }}:${{ github.sha }} -f docker-builds/${{ matrix.image }}/Dockerfile .
           DOCKER_BUILDKIT=1 docker build --build-arg BUILD_ENV=${{ matrix.environment }} -t ${{ matrix.image }}:${{ github.sha }}-${{ matrix.environment }} -t ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{ matrix.environment }} -t ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{ matrix.environment }}  -f docker-builds/${{ matrix.image }}/Dockerfile .
           echo "Successfully built docker image"
 
