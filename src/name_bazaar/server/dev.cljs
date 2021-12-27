@@ -1,28 +1,28 @@
 (ns name-bazaar.server.dev
   (:require
-    [cljs-time.coerce :refer [to-epoch]]
-    [cljs.nodejs :as nodejs]
-    [cljs.pprint :as pprint]
-    [cljs-web3-next.core :as web3-core]
-    [district.server.config :refer [config]]
-    [district.server.db :refer [db]]
-    [district.server.endpoints]
-    [district.server.endpoints.middleware.logging :refer [logging-middlewares]]
-    [district.server.logging]
-    [district.server.smart-contracts]
-    [district.server.web3 :refer [web3]]
-    [district.server.web3-events]
-    [district.shared.async-helpers :as async-helpers]
-    [goog.date.Date]
-    [mount.core :as mount]
-    [name-bazaar.server.api]
-    [name-bazaar.server.db]
-    [name-bazaar.server.emailer]
-    [name-bazaar.server.generator :as generator]
-    [name-bazaar.server.syncer]
-    [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
-    [print.foo :include-macros true]
-    [taoensso.timbre :as log]))
+   [cljs-time.coerce :refer [to-epoch]]
+   [cljs.nodejs :as nodejs]
+   [cljs.pprint :as pprint]
+   [cljs-web3-next.core :as web3-core]
+   [district.server.config :refer [config]]
+   [district.server.db :refer [db]]
+   [district.server.endpoints]
+   [district.server.endpoints.middleware.logging :refer [logging-middlewares]]
+   [district.server.logging]
+   [district.server.smart-contracts]
+   [district.server.web3 :refer [web3]]
+   [district.server.web3-events]
+   [district.shared.async-helpers :as async-helpers]
+   [goog.date.Date]
+   [mount.core :as mount]
+   [name-bazaar.server.api]
+   [name-bazaar.server.db]
+   [name-bazaar.server.emailer]
+   [name-bazaar.server.generator :as generator]
+   [name-bazaar.server.syncer]
+   [name-bazaar.shared.smart-contracts :refer [smart-contracts]]
+   [print.foo :include-macros true]
+   [taoensso.timbre :as log]))
 
 (nodejs/enable-util-print!)
 
@@ -51,6 +51,8 @@
                                      :endpoints   {:port        6200
                                                    :middlewares [logging-middlewares]}
                                      :web3        {:url "ws://127.0.0.1:8549"
+                                                   :client-config {:max-received-frame-size 10000000000
+                                                                   :max-received-message-size 10000000000}
                                                    :on-online (fn []
                                                                 (log/warn "Ethereum node went online again")
                                                                 (mount/start #'name-bazaar.server.db/name-bazaar-db

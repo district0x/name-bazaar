@@ -18,17 +18,17 @@ help: ## Print help
 
 # DEV image
 dev-image: ## Builds dev image
-	docker build -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
 
 dev-image-no-cache: ## Builds dev image (no cache)
-	docker build --no-cache -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build --no-cache -t ${DEV_IMAGE} -f docker-builds/base/Dockerfile .
 
 # All images
 build-images: dev-image ## Build all containers in docker-compose file
-	COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -p ${PROJECT_NAME} build --parallel
+	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -p ${PROJECT_NAME} build --parallel
 
 build-images-no-cache: # Build base docker image with node11.14, yarn, clojure, lein, truffle
-	COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -p ${PROJECT_NAME} build --parallel --pull --no-cache
+	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -p ${PROJECT_NAME} build --parallel --pull --no-cache
 
 # RUN CONTAINERS
 init:  ## Initiate volumes, networks build containers

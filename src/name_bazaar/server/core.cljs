@@ -25,6 +25,8 @@
                                       :sentry {:dsn "https://597ef71a10a240b0949c3b482fe4b9a4@sentry.io/1364232"
                                                :min-level :warn}}
                             :web3 {:url "ws://127.0.0.1:8549"
+                                   :client-config {:max-received-frame-size 10000000000
+                                                   :max-received-message-size 10000000000}
                                    :on-online (fn []
                                                 (log/warn "Ethereum node went online again")
                                                 (mount/start #'name-bazaar.server.db/name-bazaar-db
