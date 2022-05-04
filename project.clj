@@ -7,7 +7,7 @@
                  ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
                  ;; only when the latter contains all so far missing functionality
                  [cljs-web3 "0.19.0-0-11"]
-                 [cljs-web3-next "0.1.3"]
+                 ;[cljs-web3-next "0.1.3"]
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "16.4.1-0"]
@@ -17,8 +17,8 @@
                  [cljsjs/react-meta-tags "0.3.0-1"]
                  [com.rpl/specter "1.1.1"]
                  [compojure "1.6.2"]
-                 [day8.re-frame/async-flow-fx "0.0.8"]
-                 [day8.re-frame/forward-events-fx "0.0.5"]
+                 ;[day8.re-frame/async-flow-fx "0.0.8"]
+                 ;[day8.re-frame/forward-events-fx "0.0.5"]
                  [honeysql "0.9.3"]
                  [medley "1.3.0"]
                  [org.clojure/clojurescript "1.10.439"]
@@ -39,11 +39,11 @@
                  [district0x/district-server-db "1.0.4"]
                  ;; TODO: Update to latest version.
                  ;; Version 1.0.2 splits the package into two separate modules.
-                 [district0x/district-server-endpoints "1.0.1"]
+                 ;[district0x/district-server-endpoints "1.0.1"]
                  [district0x/district-server-logging "1.0.6"]
-                 [district0x/district-server-smart-contracts "1.2.6"]
-                 [district0x/district-server-web3 "1.2.6"]
-                 [district0x/district-server-web3-events "1.1.10"]
+                 ;[district0x/district-server-smart-contracts "1.2.6"]
+                 ;[district0x/district-server-web3 "1.2.6"]
+                 ;[district0x/district-server-web3-events "1.1.10"]
                  [district0x/district-ui-logging "1.1.0"]
                  [district0x/district-ui-mobile "1.0.0"]
                  [district0x/error-handling "1.0.4"]
@@ -63,11 +63,12 @@
                  [com.cognitect/transit-cljs "0.8.243"]
                  [com.taoensso/timbre "4.10.0"]
                  [com.taoensso/encore "2.92.0"]
-                 [day8.re-frame/http-fx "0.1.4"]
+                 ;[day8.re-frame/http-fx "0.1.4"]
                  [kibu/pushy "0.3.8"]
-                 [madvas.re-frame/google-analytics-fx "0.1.0"]
+                 ;[madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 [madvas.re-frame/web3-fx "0.2.3"]]
+                 ;[madvas.re-frame/web3-fx "0.2.3"]
+                 ]
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
@@ -81,35 +82,38 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.4"]
-                       ["@openzeppelin/contracts" "4.1.0"]
-                       ["@sentry/node" "4.2.1"]
-                       ["@ungap/global-this" "0.4.4"]
+  :npm {:dependencies [
+                       ;["@ensdomains/ens-contracts" "0.0.4"]
+                       ;["@openzeppelin/contracts" "4.1.0"]
+                       ;["@sentry/node" "4.2.1"]
+                       ;["@ungap/global-this" "0.4.4"]
                        ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
                        ;; TODO: remove, they should be installed automatically
-                       [better-sqlite3 "5.4.0"]
-                       [chalk "2.3.0"]
+                       ;[better-sqlite3 "5.4.0"]
+                       ;[chalk "2.3.0"]
                        ;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
                        ;; TODO: remove, they should be installed automatically
-                       [deasync "0.1.11"]
+                       ;[deasync "0.1.11"]
                        ;; https://github.com/district0x/district-encryption/blob/d8ff0f/project.clj#L9
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
                        ;; TODO: remove, they should be installed automatically
-                       [eccjs "0.3.1"]
-                       [chalk "2.3.0"]
-                       [eth-ens-namehash "2.0.0"]
-                       [semantic-ui "2.4.1"]
-                       [source-map-support "0.4.0"]
-                       [ws "2.3.1"]
-                       [xhr2 "0.1.4"]]
-        :devDependencies [["@testing-library/cypress" "7.0.3"]
-                          ["@truffle/hdwallet-provider" "1.2.2"]
-                          [ethlint "1.2.5"]
-                          [cypress "6.4.0"]
-                          [jsedn "0.4.1"]
-                          [truffle "5.2.3"]]
+                       ;[eccjs "0.3.1"]
+                       ;[eth-ens-namehash "2.0.0"]
+                       ;[semantic-ui "2.4.1"]
+                       ;[source-map-support "0.4.0"]
+                       ;[ws "2.3.1"]
+                       ;[xhr2 "0.1.4"]
+                       ]
+        :devDependencies [
+                          ;["@testing-library/cypress" "7.0.3"]
+                          ;["@truffle/hdwallet-provider" "1.2.2"]
+                          ;[ethlint "1.2.5"]
+                          ;[cypress "6.4.0"]
+                          ;[jsedn "0.4.1"]
+                          ;[truffle "5.2.3"]
+                          ]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             :cypress-open " ./node_modules/cypress/bin/cypress open"
