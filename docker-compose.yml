@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: "docker-builds/ui/Dockerfile"
       args:
-          BUILD_ENV: "dev"
+          BUILD_ENV: "prod"
     networks:
       - dev_network
     environment:
@@ -30,7 +30,7 @@ services:
       context: .
       dockerfile: "docker-builds/server/Dockerfile"
       args:
-          BUILD_ENV: "dev"
+          BUILD_ENV: "prod"
     volumes:
       - /home/$USER/logs:/logs
       - /home/$USER/configs:/configs
