@@ -37,13 +37,6 @@ RUN . /root/.nvm/nvm.sh \
     nvm use ${NODE_VERSION}
 RUN lein build-prod-server
 
-FROM nginx:alpine
-EXPOSE 80
-COPY --from=builder /app/docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
-COPY --from=builder /app/docker-builds/ui/default /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/docker-builds/ui/namebazaar.io.conf /etc/nginx/conf.d/namebazaar.io.conf
-COPY --from=builder /app/resources/public /namebazaar/resources/public
-
 FROM node:10-buster-slim
 ARG BUILD_ENV="prod"
 EXPOSE 6200
