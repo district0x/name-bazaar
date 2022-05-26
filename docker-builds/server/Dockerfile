@@ -38,6 +38,7 @@ RUN . /root/.nvm/nvm.sh \
 RUN lein build-prod-server
 
 FROM node:10-buster-slim
+WORKDIR /namebazaar
 ARG BUILD_ENV="prod"
 EXPOSE 6200
 ENV CONFIG="/configs/namebazaar.config.${BUILD_ENV}.edn"
