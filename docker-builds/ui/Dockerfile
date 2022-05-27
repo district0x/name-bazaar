@@ -13,9 +13,9 @@ ENV NODE_VERSION 10.23.1
 ENV NODE_VERSION_FOR_TRUFFLE v18.1.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 RUN . /root/.nvm/nvm.sh \
-    nvm install ${NODE_VERSION} \
-    nvm install ${NODE_VERSION_FOR_TRUFFLE} \
-    nvm alias default v${NODE_VERSION}
+    nvm install "${NODE_VERSION}" \
+    nvm install "${NODE_VERSION_FOR_TRUFFLE}" \
+    nvm alias default "v${NODE_VERSION}"
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.8.4 && solc-select use 0.8.4
@@ -31,11 +31,11 @@ FROM env-with-clj-deps AS builder
 ARG BUILD_ENV="prod"
 # COPY . .
 RUN . /root/.nvm/nvm.sh \
-    nvm use ${NODE_VERSION_FOR_TRUFFLE} \
+    nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     npm install -g truffle \
     truffle compile \
-    nvm use ${NODE_VERSION}
-RUN lein build-css && lein build-${BUILD_ENV}-ui
+    nvm use "${NODE_VERSION}"
+RUN lein build-css && lein "build-${BUILD_ENV}-ui"
 
 FROM builder AS tests
 RUN nginx -t

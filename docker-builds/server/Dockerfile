@@ -1,73 +1,55 @@
-# syntax=docker/dockerfile:1.0.0-experimental
-FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
-ARG BUILD_ENV="prod"
-ENV BUILD_ENV=${BUILD_ENV}
-
-COPY . /namebazaar/
-WORKDIR /namebazaar
-
-# install base dependencies
-RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
+FROM clojure:openjdk-11-lein-2.9.8-slim-buster AS env
+WORKDIR /app
+RUN apt-get update && \
+    apt-get -yq update && apt-get install -yqq --no-install-recommends \
         build-essential \
         curl \
         git \
-        python2.7 python-pip \
-        python3.7 python3-pip \
-        ssh
+        python3.7 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
-# https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
-RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-# install nvm with node and npm
+FROM env AS env-with-extra-deps
 ENV NODE_VERSION 10.23.1
-ENV NVM_DIR /root/.nvm
-RUN mkdir $NVM_DIR
-RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.38.0/install.sh | bash
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
-ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-
-# install dependencies and build contracts
-### python2 because of packages using old node-gyp
-ENV PYTHON /usr/bin/python2
-RUN --mount=type=ssh,id=github lein deps
-RUN lein npm install
-
-ENV PYTHON /usr/bin/python3
+ENV NODE_VERSION_FOR_TRUFFLE v18.1.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+RUN . /root/.nvm/nvm.sh \
+    nvm install "${NODE_VERSION}" \
+    nvm install "${NODE_VERSION_FOR_TRUFFLE}" \
+    nvm alias default "v${NODE_VERSION}"
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.8.4 && solc-select use 0.8.4
-RUN touch config.edn
-# https://stackoverflow.com/questions/38323880/error-eacces-permission-denied
-RUN npm install -g truffle --unsafe-perm=true --allow-root
-RUN truffle compile
 
-# build
+FROM env-with-extra-deps AS env-with-clj-deps
+# here instead of "COPY . ." should be "COPY semantic.json ." for each file
+# without this whole point about cache and speed up build is lost
+COPY . .
+RUN lein deps
+RUN lein npm i
+
+FROM env-with-clj-deps AS builder
+ARG BUILD_ENV="prod"
+# COPY . .
+RUN . /root/.nvm/nvm.sh \
+    nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
+    npm install -g truffle \
+    truffle compile \
+    nvm use "${NODE_VERSION}"
 RUN lein build-prod-server
 
-
 FROM node:10-buster-slim
+WORKDIR /namebazaar
 ARG BUILD_ENV="prod"
-ENV BUILD_ENV=${BUILD_ENV}
-# ENV variables
+EXPOSE 6200
 ENV CONFIG="/configs/namebazaar.config.${BUILD_ENV}.edn"
 ENV PORT=6200
+RUN apt-get update && \
+    apt-get upgrade -yqq && \
+    rm -rf /var/lib/apt/lists/*
 
-# update and install security patches
-RUN apt-get update && apt-get upgrade -yqq \
-    && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
-
-# get compiled JS
-COPY --from=builder /namebazaar/server /namebazaar/server
-COPY --from=builder /namebazaar/node_modules /namebazaar/node_modules
-COPY --from=builder /namebazaar/resources /namebazaar/resources
-
-WORKDIR /namebazaar
-
-
-# expose server port
-EXPOSE 6200
+COPY --from=builder /app/server /namebazaar/server
+COPY --from=builder /app/node_modules /namebazaar/node_modules
+COPY --from=builder /app/resources /namebazaar/resources
 
 ENTRYPOINT ["node", "server/name-bazaar.js"]
 CMD ["--max-old-space-size=2048"]

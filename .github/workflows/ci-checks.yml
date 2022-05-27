@@ -17,7 +17,7 @@ jobs:
           image: ["server", "ui", "base"]
     steps:
       - uses: actions/checkout@v2
-      - uses: hadolint/hadolint-action@v1.5.0
+      - uses: hadolint/hadolint-action@v2.0.0
         with:
           dockerfile: docker-builds/${{ matrix.image }}/Dockerfile
 
@@ -65,16 +65,6 @@ jobs:
           DOCKER_BUILDKIT=1 docker build --build-arg BUILD_ENV=${{ matrix.environment }} -t ${{ matrix.image }}:${{ github.sha }}-${{ matrix.environment }} -t ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{ matrix.environment }} -t ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{ matrix.environment }}  -f docker-builds/${{ matrix.image }}/Dockerfile .
           echo "Successfully built docker image"
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${{ matrix.image }}:${{ github.sha }}-${{ matrix.environment }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-
       - name: Push docker images
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
@@ -82,10 +72,5 @@ jobs:
         run: |
           echo "Pushing docker images"
           echo "Will push to the registry image with latest-${{  matrix.environment }} and ${{ github.sha }}-${{  matrix.environment }} tags"
-          if [[ ${{ matrix.environment }} == "prod" && ${GITHUB_REF} == "refs/heads/master" ]]; then
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{  matrix.environment }}
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{  matrix.environment }}
-          else
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{  matrix.environment }}
-            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{  matrix.environment }}
-          fi
+          docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:${{ github.sha }}-${{  matrix.environment }}
+          docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}-${{matrix.image}}:latest-${{  matrix.environment }}

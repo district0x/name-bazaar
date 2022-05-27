@@ -8,3 +8,5 @@ ignored:
   - DL4000 # MAINTAINER is deprecated
   - DL4006 # Set the SHELL option -o pipefail before RUN with a pipe in it.
   - SC2174 # When used with -p, -m only applies to the deepest directory.
+  - SC1091 # Not following: File not included in mock. // RUN . /root/.nvm/nvm.sh
+  - SC2240 # warning: The dot command does not support arguments in sh/dash. Set them as variables.
