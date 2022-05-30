@@ -24,18 +24,18 @@ jobs:
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     name: Build
     runs-on: "ubuntu-18.04"
+    strategy:
+      matrix:
+        image: [ 'server', 'ui']
+        environment: ['qa', 'prod']
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Build an image from Dockerfile
-        run: |
-          docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
-
+        
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
         with:
-          image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+          image-ref: '${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ github.sha }}-${{ matrix.environment }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
