@@ -24,6 +24,7 @@ jobs:
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     runs-on: "ubuntu-18.04"
     strategy:
+      fail-fast: false
       matrix:
         image: [ 'server', 'ui']
         environment: ['qa', 'prod']
