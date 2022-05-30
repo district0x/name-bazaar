@@ -18,11 +18,10 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  scan:
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-    name: Build
     runs-on: "ubuntu-18.04"
     strategy:
       matrix:
@@ -45,15 +44,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Base environment image
-        uses: docker/build-push-action@v3
-        with:
-          push: ${{ github.event_name == 'push' }}
-          file: docker-builds/base/Dockerfile
-          tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
