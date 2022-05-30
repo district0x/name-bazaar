@@ -1,33 +1,32 @@
-# syntax=docker/dockerfile:1.0.0-experimental
-FROM clojure:openjdk-11-lein-2.9.6-slim-buster AS builder
-
-# install base dependencies
-RUN apt-get -yq update && apt-get install -yqq --no-install-recommends \
+FROM clojure:openjdk-11-lein-2.9.8-slim-buster AS env
+WORKDIR /app
+RUN apt-get update && \
+    apt-get -yq update && apt-get install -yqq --no-install-recommends \
         build-essential \
         curl \
         git \
-        python2.7 python-pip \
-        python3.7 python3-pip \
-        ssh \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/*
+        python3.7 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
-# https://sanderknape.com/2019/06/installing-private-git-repositories-npm-install-docker/
-RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-# install nvm with node and npm
+FROM env AS env-with-extra-deps
 ENV NODE_VERSION 10.23.1
-ENV NVM_DIR /root/.nvm
+ENV NODE_VERSION_FOR_TRUFFLE v18.1.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+RUN . /root/.nvm/nvm.sh \
+    nvm install "${NODE_VERSION}" \
+    nvm install "${NODE_VERSION_FOR_TRUFFLE}" \
+    nvm alias default "v${NODE_VERSION}"
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+RUN pip3 install --no-cache-dir solc-select
+RUN solc-select install 0.8.4 && solc-select use 0.8.4
+RUN . /root/.nvm/nvm.sh \
+    nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
+    npm install -g truffle \
+    nvm use "${NODE_VERSION}"
 
-RUN mkdir $NVM_DIR
-RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.38.0/install.sh | bash
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
-ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-
-# install truffle
-ENV PYTHON /usr/bin/python3
-RUN PYTHON=/usr/bin/python3 pip3 install --no-cache-dir solc-select
-RUN solc-select install 0.5.17 && solc-select use 0.5.17
-RUN npm install -g truffle --unsafe-perm=true --allow-root
+FROM env-with-extra-deps AS env-with-clj-deps
+# here instead of "COPY . ." should be "COPY project.clj ." etc. for each file
+# without this big part about cache and speed up build is lost
+COPY . .
+RUN lein deps
+RUN lein npm i
