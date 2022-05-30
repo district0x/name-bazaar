@@ -29,14 +29,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Base environment image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          file: docker-builds/base/Dockerfile
-          tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ steps.version.outputs.git_tag }}-prod
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest-prod
+# this use 'base' image from QA workflow. This is not perfect, but first line from Dockerfile should tell you why:
+# FROM namebazaar-base:latest AS builder
+# it can't dynamically point to QA / prod
+# the only one right solution is to not use BUILD_ENV in the project
 
       - name: Build and push Server
         uses: docker/build-push-action@v3

@@ -32,8 +32,8 @@ jobs:
           push: true
           file: docker-builds/base/Dockerfile
           tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}-qa
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest
 
       - name: Build and push Server
         uses: docker/build-push-action@v3
