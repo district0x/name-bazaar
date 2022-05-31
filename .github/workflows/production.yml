@@ -35,7 +35,7 @@ jobs:
 # the only one right solution is to not use BUILD_ENV in the project
 # then this workflow will not build any image, but instead add new tag to existing one
 
-      - name: Build and push Server
+      - name: Server image
         uses: docker/build-push-action@v3
         with:
           push: true
@@ -46,7 +46,7 @@ jobs:
           build-args: |
             BUILD_ENV=prod
 
-      - name: Build and push UI
+      - name: UI image
         uses: docker/build-push-action@v3
         with:
           push: true

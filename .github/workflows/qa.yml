@@ -13,6 +13,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -21,19 +24,9 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Login to ECR
-        id: ecr-login
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ steps.ecr-login.outputs.registry }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Base environment image
+      - name: Base image
         uses: docker/build-push-action@v3
         with:
           push: true
@@ -42,7 +35,7 @@ jobs:
             ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}
             ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest
 
-      - name: Build and push Server
+      - name: Server image
         uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name == 'push' }}
@@ -53,7 +46,7 @@ jobs:
           build-args: |
             BUILD_ENV=qa
 
-      - name: Build and push UI
+      - name: UI image
         uses: docker/build-push-action@v3
         with:
           push: true
