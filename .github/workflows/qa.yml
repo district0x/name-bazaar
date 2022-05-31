@@ -30,7 +30,7 @@ jobs:
       - name: Build and push Base environment image
         uses: docker/build-push-action@v3
         with:
-          push: ${{ github.event_name == 'push' }}
+          push: true
           file: docker-builds/base/Dockerfile
           tags: |
             ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}
@@ -50,7 +50,7 @@ jobs:
       - name: Build and push UI
         uses: docker/build-push-action@v3
         with:
-          push: ${{ github.event_name == 'push' }}
+          push: true
           file: docker-builds/base/Dockerfile
           tags: |
             ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:${{ github.sha }}-qa
