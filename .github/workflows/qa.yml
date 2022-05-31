@@ -64,7 +64,6 @@ jobs:
       fail-fast: false
       matrix:
         image: [ 'server', 'ui' ]
-        environment: ['qa', 'prod']
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -80,7 +79,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
         with:
-          image-ref: '${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ github.sha }}-${{ matrix.environment }}'
+          image-ref: '${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ github.sha }}-qa'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
