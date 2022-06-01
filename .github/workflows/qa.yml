@@ -25,41 +25,37 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
 
       - name: Base image
         uses: docker/build-push-action@v3
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         with:
           push: true
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ECR_REGISTRY}/namebazaar-base:${{ github.sha }}
-            ${ECR_REGISTRY}/namebazaar-base:latest
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:${{ github.sha }}
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-base:latest
 
       - name: Server image
         uses: docker/build-push-action@v3
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         with:
           push: ${{ github.event_name == 'push' }}
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ECR_REGISTRY}/namebazaar-server:${{ github.sha }}-qa
-            ${ECR_REGISTRY}/namebazaar-server:latest-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:${{ github.sha }}-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:latest-qa
           build-args: |
             BUILD_ENV=qa
 
       - name: UI image
         uses: docker/build-push-action@v3
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         with:
           push: true
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ECR_REGISTRY}/namebazaar-ui:${{ github.sha }}-qa
-            ${ECR_REGISTRY}/namebazaar-ui:latest-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:${{ github.sha }}-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:latest-qa
           build-args: |
             BUILD_ENV=qa
   trivy:
