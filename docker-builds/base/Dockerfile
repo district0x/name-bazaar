@@ -25,8 +25,8 @@ RUN . /root/.nvm/nvm.sh \
     nvm use "${NODE_VERSION}"
 
 FROM env-with-extra-deps AS env-with-clj-deps
-here instead of "COPY . ." should be "COPY project.clj ." etc. for each file
-without this big part about cache and speed up build is lost
+# here instead of "COPY . ." should be "COPY project.clj ." etc. for each file
+# without this big part about cache and speed up build is lost
 COPY . .
 RUN lein deps
 RUN lein npm i
