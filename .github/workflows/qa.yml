@@ -34,8 +34,8 @@ jobs:
           push: true
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ ECR_REGISTRY }/namebazaar-base:${{ github.sha }}
-            ${ ECR_REGISTRY }/namebazaar-base:latest
+            ${ECR_REGISTRY}/namebazaar-base:${{ github.sha }}
+            ${ECR_REGISTRY}/namebazaar-base:latest
 
       - name: Server image
         uses: docker/build-push-action@v3
@@ -45,8 +45,8 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ ECR_REGISTRY }/namebazaar-server:${{ github.sha }}-qa
-            ${ ECR_REGISTRY }/namebazaar-server:latest-qa
+            ${ECR_REGISTRY}/namebazaar-server:${{ github.sha }}-qa
+            ${ECR_REGISTRY}/namebazaar-server:latest-qa
           build-args: |
             BUILD_ENV=qa
 
@@ -58,8 +58,8 @@ jobs:
           push: true
           file: docker-builds/base/Dockerfile
           tags: |
-            ${ ECR_REGISTRY }/namebazaar-ui:${{ github.sha }}-qa
-            ${ ECR_REGISTRY }/namebazaar-ui:latest-qa
+            ${ECR_REGISTRY}/namebazaar-ui:${{ github.sha }}-qa
+            ${ECR_REGISTRY}/namebazaar-ui:latest-qa
           build-args: |
             BUILD_ENV=qa
   trivy:
