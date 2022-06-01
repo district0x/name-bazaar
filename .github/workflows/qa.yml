@@ -46,7 +46,7 @@ jobs:
       - name: Server image
         uses: docker/build-push-action@v3
         with:
-          push: ${{ github.event_name == 'push' }}
+          push: true
           file: docker-builds/base/Dockerfile
           tags: |
             ${{ secrets.ECR_REGISTRY }}/namebazaar-server:${{ github.sha }}-qa
