@@ -35,6 +35,16 @@ jobs:
 # the only one right solution is to not use BUILD_ENV in the project
 # then this workflow will not build any image, but instead add new tag to existing one
 
+# base registry doesn't exist
+      - name: Base image
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          file: docker-builds/base/Dockerfile
+          tags: |
+            namebazaar-base:${{ github.sha }}
+            namebazaar-base:latest
+
       - name: Server image
         uses: docker/build-push-action@v3
         with:
@@ -50,7 +60,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: docker-builds/base/Dockerfile
+          file: docker-builds/ui/Dockerfile
           tags: |
             ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:${{ steps.version.outputs.git_tag }}-prod
             ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:latest-prod
