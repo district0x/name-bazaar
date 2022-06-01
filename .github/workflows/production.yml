@@ -36,14 +36,14 @@ jobs:
 # then this workflow will not build any image, but instead add new tag to existing one
 
 # base registry doesn't exist
-      - name: Base image
-        uses: docker/build-push-action@v3
-        with:
-          push: false
-          file: docker-builds/base/Dockerfile
-          tags: |
-            namebazaar-base:${{ github.sha }}
-            namebazaar-base:latest
+#      - name: Base image
+#        uses: docker/build-push-action@v3
+#        with:
+#          push: false
+#          file: docker-builds/base/Dockerfile
+#          tags: |
+#            namebazaar-base:${{ github.sha }}
+#            namebazaar-base:latest
 
       - name: Server image
         uses: docker/build-push-action@v3
