@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [ 'server', 'ui' ]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -29,24 +32,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Server image
+      - name: ${{ matrix.image }} image
         uses: docker/build-push-action@v3
         with:
           push: true
           file: docker-builds/server/Dockerfile
           tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:${{ steps.version.outputs.git_tag }}-prod
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:latest-prod
-          build-args: |
-            BUILD_ENV=prod
-
-      - name: UI image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          file: docker-builds/ui/Dockerfile
-          tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:${{ steps.version.outputs.git_tag }}-prod
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:latest-prod
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ steps.version.outputs.git_tag }}-prod
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:latest-prod
           build-args: |
             BUILD_ENV=prod

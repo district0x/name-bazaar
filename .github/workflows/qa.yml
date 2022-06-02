@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [ 'server', 'ui' ]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -26,25 +30,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Server image
+      - name: ${{ matrix.image }} image
         uses: docker/build-push-action@v3
         with:
           push: true
           file: docker-builds/server/Dockerfile
           tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:${{ github.sha }}-qa
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-server:latest-qa
-          build-args: |
-            BUILD_ENV=qa
-
-      - name: UI image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          file: docker-builds/ui/Dockerfile
-          tags: |
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:${{ github.sha }}-qa
-            ${{ secrets.ECR_REGISTRY }}/namebazaar-ui:latest-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ github.sha }}-qa
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:latest-qa
           build-args: |
             BUILD_ENV=qa
   trivy:
