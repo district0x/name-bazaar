@@ -26,16 +26,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-# base registry doesn't exist
-#      - name: Base image
-#        uses: docker/build-push-action@v3
-#        with:
-#          push: true
-#          file: docker-builds/base/Dockerfile
-#          tags: |
-#            namebazaar-base:${{ github.sha }}
-#            namebazaar-base:latest
-
       - name: Server image
         uses: docker/build-push-action@v3
         with:
