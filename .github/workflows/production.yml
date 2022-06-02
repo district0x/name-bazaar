@@ -32,6 +32,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+# TODO
+# this workflow should not build image, but add tag to already existing image.
+# we can't do it right now, because of BUILD_ENV=prod. It needs change in the project first.
+
       - name: ${{ matrix.image }} image
         uses: docker/build-push-action@v3
         with:
