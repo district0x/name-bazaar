@@ -183,19 +183,6 @@ docker run --name=namebazaar-ui \
 
 Note that there is no passing of config file for UI: currently for any change of UI config you need to build a new image (see the next section). The hardcoded configuration is at `src/name_bazaar/ui/config.cljs`.
 
-### Updating docker images
-
-If you want to build new docker images locally and push them to district0x dockerhub (if you're authorised to do so), run:
-
-```bash
-./docker-push.sh env sshkey
-```
-
-where
-
-* `env` is `dev`,`qa` or `prod` (the only difference is in how the images will be tagged)
-* `sshkey` is path to your private github ssh key, which will be used to download dependencies in a secure manner, not persisting in any build layer
-
 ### Deploying Name Bazaar smart contracts
 
 First, you need to specify deployments secrets in `config.edn`. For example:

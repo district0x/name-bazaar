@@ -19,20 +19,22 @@ RUN . /root/.nvm/nvm.sh \
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.8.4 && solc-select use 0.8.4
+RUN . /root/.nvm/nvm.sh \
+    nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
+    npm install -g truffle \
+    nvm use "${NODE_VERSION}"
 
 FROM env-with-extra-deps AS env-with-clj-deps
-# here instead of "COPY . ." should be "COPY semantic.json ." for each file
-# without this whole point about cache and speed up build is lost
+# here instead of "COPY . ." should be "COPY project.clj ." etc. for each file
+# without this big part about cache and speed up build is lost
 COPY . .
 RUN lein deps
 RUN lein npm i
 
 FROM env-with-clj-deps AS builder
-ARG BUILD_ENV="prod"
 # COPY . .
 RUN . /root/.nvm/nvm.sh \
     nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
-    npm install -g truffle \
     truffle compile \
     nvm use "${NODE_VERSION}"
 RUN lein build-prod-server

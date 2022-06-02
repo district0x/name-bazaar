@@ -1,0 +1,50 @@
+name: "production"
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [ 'server', 'ui' ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: version
+        id: version
+        run: echo ::set-output name=git_tag::${GITHUB_REF#refs/tags/}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+# TODO
+# this workflow should not build image, but add tag to already existing image.
+# we can't do it right now, because of BUILD_ENV=prod. It needs to be change in the project first.
+
+      - name: ${{ matrix.image }} image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          file: docker-builds/${{ matrix.image }}/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ steps.version.outputs.git_tag }}-prod
+            ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:latest-prod
+          build-args: |
+            BUILD_ENV=prod
