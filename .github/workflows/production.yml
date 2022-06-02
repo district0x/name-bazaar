@@ -36,7 +36,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: docker-builds/server/Dockerfile
+          file: docker-builds/${{ matrix.image }}/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:${{ steps.version.outputs.git_tag }}-prod
             ${{ secrets.ECR_REGISTRY }}/namebazaar-${{ matrix.image }}:latest-prod
