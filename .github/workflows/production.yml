@@ -34,7 +34,7 @@ jobs:
 
 # TODO
 # this workflow should not build image, but add tag to already existing image.
-# we can't do it right now, because of BUILD_ENV=prod. It needs change in the project first.
+# we can't do it right now, because of BUILD_ENV=prod. It needs to be change in the project first.
 
       - name: ${{ matrix.image }} image
         uses: docker/build-push-action@v3
