@@ -83,14 +83,14 @@
             [lein-pdo "0.1.1"]]
 
   :npm {:dependencies [
-                       ;["@ensdomains/ens-contracts" "0.0.4"]
+                       ["@ensdomains/ens-contracts" "0.0.11"]
                        ["@openzeppelin/contracts" "4.1.0"]
                        ["@sentry/node" "4.2.1"]
                        ["@ungap/global-this" "0.4.4"]
                        ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
                        ;; TODO: remove, they should be installed automatically
-                       ;[better-sqlite3 "5.4.0"]
+                       [better-sqlite3 "7.5.3"]
                        [chalk "2.3.0"]
                        ;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
                        ;; After deployment changes, (transitive) dependencies are not installed automatically
@@ -101,7 +101,7 @@
                        ;; TODO: remove, they should be installed automatically
                        [eccjs "0.3.1"]
                        [eth-ens-namehash "2.0.0"]
-                       ;[semantic-ui "2.4.1"]
+                       [semantic-ui "2.4.2"]
                        [source-map-support "0.4.0"]
                        [ws "2.3.1"]
                        [xhr2 "0.1.4"]
@@ -148,12 +148,12 @@
             "build-qa" ["pdo" ["build-prod-server"] ["build-qa-ui"] ["build-css"]]
             "run-slither" ["shell" "./run-slither.sh"]}
 
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
-                                  [binaryage/devtools "0.9.10"]
-                                  [cider/piggieback "0.4.0"]
-                                  [figwheel-sidecar "0.5.18"]
-                                  [day8.re-frame/re-frame-10x "0.3.6"]
-                                  [day8.re-frame/tracing "0.5.1"]]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.11.1"]
+                                  [binaryage/devtools "1.0.6"]
+                                  [cider/piggieback "0.5.3"]
+                                  [figwheel-sidecar "0.5.20"]
+                                  [day8.re-frame/re-frame-10x "1.2.7"]
+                                  [day8.re-frame/tracing "0.6.2"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
