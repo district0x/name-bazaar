@@ -6,8 +6,8 @@
   :dependencies [[cljs-http "0.1.46"]
                  ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
                  ;; only when the latter contains all so far missing functionality
-                 [cljs-web3 "0.19.0-0-11"]
-                 ;[cljs-web3-next "0.1.4"]
+                 ;[cljs-web3 "0.19.0-0-11"]
+                 [cljs-web3-next "0.1.4"]
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.7.2-0"]
                  [cljsjs/react "17.0.2-0"]
@@ -67,8 +67,7 @@
                  [kibu/pushy "0.3.8"]
                  [madvas.re-frame/google-analytics-fx "0.1.0"]
                  [madvas/cemerick-url-patched "0.1.2-SNAPSHOT"] ;; Temporary until cemerick merges PR26
-                 [madvas.re-frame/web3-fx "0.2.3"]
-                 ]
+                 [madvas.re-frame/web3-fx "0.2.3"]]
 
   :exclusions [[com.taoensso/encore]
                [org.clojure/clojure]
@@ -82,8 +81,7 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [
-                       ["@ensdomains/ens-contracts" "0.0.11"]
+  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.11"]
                        ["@openzeppelin/contracts" "4.1.0"]
                        ["@sentry/node" "4.2.1"]
                        ["@ungap/global-this" "0.4.4"]
@@ -104,21 +102,17 @@
                        [semantic-ui "2.4.2"]
                        [source-map-support "0.4.0"]
                        [ws "2.3.1"]
-                       [xhr2 "0.1.4"]
-                       ]
-        :devDependencies [
-                          ["@testing-library/cypress" "8.0.3"]
+                       [xhr2 "0.1.4"]]
+        :devDependencies [["@testing-library/cypress" "8.0.3"]
                           ["@truffle/hdwallet-provider" "2.0.9"]
                           [ethlint "1.2.5"]
                           [cypress "10.1.0"]
                           [jsedn "0.4.1"]
-                          [truffle "5.5.18"]
-                          ]
+                          [truffle "5.5.19"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
                             :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             :cypress-open " ./node_modules/cypress/bin/cypress open"
-                            :cypress-run " ./node_modules/cypress/bin/cypress run"
-                            }}}
+                            :cypress-run " ./node_modules/cypress/bin/cypress run"}}}
 
   :min-lein-version "2.5.3"
 
