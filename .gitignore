@@ -36,3 +36,4 @@ node_modules/
 /cypress/videos
 .gradle
 /resources/public/contracts-build
+/.python-version
