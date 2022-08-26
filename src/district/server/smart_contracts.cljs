@@ -230,11 +230,12 @@
     (throw (js/Error. "replay-past-events-in-order: Can't specify skip-log-indexes without specifying :from-block")))
 
   (let [log-order-triplet (juxt :block-number :transaction-index :log-index)
-        next-chunk (fn [chunk-range]
-                     (-> (mapv (comp #(+ block-step %) inc) chunk-range)
+        next-chunk (fn [[from to]]
+                     (-> [(inc to) (+ to block-step)]
                          (update 1 #(min % to-block))))
         chunks (take-while (fn [[from to]] (<= from to-block))
-                           (iterate next-chunk [from-block (+ from-block block-step)]))
+                           (iterate next-chunk
+                                    [from-block (min to-block (+ from-block (dec block-step)))]))
         ch-from-blocks (async/to-chan! chunks)
         ch-ordered-logs (async/chan 1)
         sort-logs (fn [logs]
