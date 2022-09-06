@@ -10,5 +10,4 @@
        :district0x-emails {:name "District0xEmails" :address "0x7364f83085A2c20263830cB6EEc5901C6EdDaA46"}
        :reverse-name-resolver {:name "NamebazaarDevNameResolver" :address "0x0FDB292129057eeA228B235f5E5c19d59a007404"}
        :public-resolver {:name "NamebazaarDevPublicResolver" :address "0xF9Ee67479FEDBE5601B8Af4237962d6eF7d58DEC"}
-       :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x7F2703aB51261651f00Fe51E2A65F2F9bFa564C1"}
-       :contracts-build-path "./resources/public/contracts-build/"})
+       :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x7F2703aB51261651f00Fe51E2A65F2F9bFa564C1"}})
