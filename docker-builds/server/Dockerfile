@@ -37,7 +37,6 @@ RUN . /root/.nvm/nvm.sh \
     && nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     && truffle compile \
     && nvm use "${NODE_VERSION}"
-RUN ls ./resources/public/
 RUN lein build-prod-server
 
 FROM node:10-buster-slim
