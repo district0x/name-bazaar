@@ -37,7 +37,11 @@ RUN . /root/.nvm/nvm.sh \
     nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     truffle compile \
     nvm use "${NODE_VERSION}"
+RUN ls ./resources/public/
+RUN ls ./resources/public/contracts-build/
 RUN lein build-prod-server
+RUN ls ./resources/public/
+RUN ls ./resources/public/contracts-build/
 
 FROM node:10-buster-slim
 WORKDIR /namebazaar
@@ -52,6 +56,7 @@ RUN apt-get update && \
 COPY --from=builder /app/server /namebazaar/server
 COPY --from=builder /app/node_modules /namebazaar/node_modules
 COPY --from=builder /app/resources /namebazaar/resources
+RUN ls ./resources/public/
 RUN ls ./resources/public/contracts-build/
 
 ENTRYPOINT ["node", "server/name-bazaar.js"]
