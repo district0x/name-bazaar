@@ -66,6 +66,10 @@
   tries .abi .bin files for the name.
   Returns a map with :abi and :bin keys."
   [file-name & [{:keys [:path]}]]
+
+  (println 111 "path" path)
+  (println 222 "(str path file-name \".json\")" (str path file-name ".json"))
+
   (let [path (or path (str (.cwd process) "/resources/public/contracts/build/"))
         json-file-path (str path file-name ".json")
         abi-file-path (str path file-name ".abi")
