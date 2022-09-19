@@ -49,3 +49,4 @@ COPY --from=builder /app/docker-builds/ui/nginx.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/docker-builds/ui/default /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/docker-builds/ui/namebazaar.io.conf /etc/nginx/conf.d/namebazaar.io.conf
 COPY --from=builder /app/resources/public /namebazaar/resources/public
+RUN ls /app/resources/public/contracts-build/
