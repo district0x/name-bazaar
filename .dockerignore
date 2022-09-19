@@ -29,8 +29,6 @@ node_modules/
 /npm-debug.log
 /resources/public/css/
 /resources/semantic/dist/
-/config.edn
-/config-beta.edn
 /.node-xmlhttprequest-sync-*
 /cypress/screenshots
 /cypress/videos
