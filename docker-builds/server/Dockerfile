@@ -52,6 +52,7 @@ RUN apt-get update && \
 COPY --from=builder /app/server /namebazaar/server
 COPY --from=builder /app/node_modules /namebazaar/node_modules
 COPY --from=builder /app/resources /namebazaar/resources
+RUN ls ./resources/public/contracts-build/
 
 ENTRYPOINT ["node", "server/name-bazaar.js"]
 CMD ["--max-old-space-size=2048"]
