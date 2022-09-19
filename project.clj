@@ -27,7 +27,7 @@
                  [re-frame "0.10.6"]
                  [re-promise "0.1.1"]
                  [ring/ring-defaults "0.3.2"]
-                 ;; Can be removed when re-frame vbump includes reagent 8.0.1+
+                 ;; Can be removed when re-frame bump includes reagent 8.0.1+
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
 
