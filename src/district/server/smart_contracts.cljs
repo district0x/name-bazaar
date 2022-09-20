@@ -66,10 +66,6 @@
   tries .abi .bin files for the name.
   Returns a map with :abi and :bin keys."
   [file-name & [{:keys [:path]}]]
-
-  (println 111 "path" path)
-  (println 222 "(str path file-name \".json\")" (str path file-name ".json"))
-
   (let [path (or path (str (.cwd process) "/resources/public/contracts/build/"))
         json-file-path (str path file-name ".json")
         abi-file-path (str path file-name ".abi")
@@ -230,8 +226,12 @@
                     :or {transform-fn identity}
                     :as opts}]
 
+  (println 11111)
+
   (when (and skip-log-indexes (not from-block ))
     (throw (js/Error. "replay-past-events-in-order: Can't specify skip-log-indexes without specifying :from-block")))
+
+  (println 22222)
 
   (let [log-order-triplet (juxt :block-number :transaction-index :log-index)
         next-chunk (fn [[from to]]
@@ -254,11 +254,12 @@
                                             :let [contract-instance (instance-from-arg contract {:ignore-forward? ignore-forward?})
                                                   ch-logs (async/chan 1)]]
                                         (do
+                                          (println "x11111")
                                           (log/debug "1) Add to queue processing chunk of blocks" {:contract contract
                                                                                                    :event event
                                                                                                    :from from
                                                                                                    :to to})
-
+                                          (println "x22222")
                                           (web3-eth/get-past-events contract-instance
                                                                     event
                                                                     {:from-block from
@@ -274,14 +275,16 @@
                                                                         (async/put! ch-logs (or logs [(with-meta {:err error} {:error? true})]))
                                                                         (async/close! ch-logs))))
                                           ch-logs))
+                                      (println "x44444")
                                       (async/merge)
                                       (async/reduce into [])
                                       (async/<!)
                                       (sort-logs)
                                       (async/>! ch))
                                  (async/close! ch)))]
-
+    (println 33333)
     (async/pipeline-async 10 ch-ordered-logs chunk-for-all-events ch-from-blocks)
+    (println 44444)
 
     (go-loop [chunk-logs (async/<! ch-ordered-logs)]
       (if chunk-logs
