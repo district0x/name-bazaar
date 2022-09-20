@@ -47,7 +47,7 @@
                             :ui {:reveal-period {:hours 48}
                                  :etherscan-url "https://etherscan.io"
                                  :cryptocompare-api-key "INSERT-YOUR-API-KEY-HERE"}}}
-         :smart-contracts {:contracts-build-path {:path "./resources/public/contracts-build/"}
+         :smart-contracts {:contracts-build-path "./resources/public/contracts-build/"
                            :contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts}
          :endpoints {:middlewares [logging-middlewares]}})
       (mount/start))
