@@ -1,6 +1,6 @@
 (ns name-bazaar.shared.smart-contracts)
     (def smart-contracts
-      {:ens {:name "ENSRegistry" :address "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"}
+      {:ens {:name "ENSRegistry" :address "0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"}
        :eth-registrar {:name "NameBazaarDevRegistrar" :address "0x252b9609781923b58C9e44C22b49160A3F503Af3"}
        :offering-registry {:name "OfferingRegistry" :address "0xDe143e7eE5CD9488EFF68D386304335bc2806269"}
        :buy-now-offering {:name "BuyNowOffering" :address "0x369952536Bd65A096755D1494038d6074A816943"}
