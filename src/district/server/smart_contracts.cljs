@@ -229,28 +229,21 @@
   (when (and skip-log-indexes (not from-block ))
     (throw (js/Error. "replay-past-events-in-order: Can't specify skip-log-indexes without specifying :from-block")))
 
-  (println 111)
-
   (let [log-order-triplet (juxt :block-number :transaction-index :log-index)
         next-chunk (fn [[from to]]
                      (-> [(inc to) (+ to block-step)]
                          (update 1 #(min % to-block))))
-        _ (println 2222)
         chunks (take-while (fn [[from to]] (<= from to-block))
                            (iterate next-chunk
                                     [from-block (min to-block (+ from-block (dec block-step)))]))
-        _ (println 33333)
         ch-from-blocks (async/to-chan! chunks)
-        _ (println 44444)
         ch-ordered-logs (async/chan 1)
-        _ (println 5555)
         sort-logs (fn [logs]
                     (cond->> (sort-by log-order-triplet logs)
                              skip-log-indexes (remove (fn [l]
                                                         (and (= (:block-number l) from-block)
                                                              (skip-log-indexes [(:transaction-index l) (:log-index l)]))))
                              true transform-fn))
-        _ (println 66666)
         chunk-for-all-events (fn [[from to] ch]
                                (async/go
                                  (->> (for [[k [contract event]] events
@@ -285,7 +278,6 @@
                                       (sort-logs)
                                       (async/>! ch))
                                  (async/close! ch)))]
-    (println "00000")
     (async/pipeline-async 10 ch-ordered-logs chunk-for-all-events ch-from-blocks)
 
     (go-loop [chunk-logs (async/<! ch-ordered-logs)]
