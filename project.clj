@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[cljs-http "0.1.46"]
+                 [org.clojure/core.async "1.5.648"]
                  ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
                  ;; only when the latter contains all so far missing functionality
                  [cljs-web3 "0.19.0-0-11"]
