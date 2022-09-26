@@ -1,9 +1,9 @@
 (ns name-bazaar.shared.smart-contracts)
     (def smart-contracts
       {:ens {:name "ENSRegistry" :address "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"}
-       :eth-registrar {:name "NameBazaarDevRegistrar" :address "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"}
-       :public-resolver {:name "NamebazaarDevPublicResolver" :address "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41"}
-       :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x084b1c3C81545d370f3634392De611CaaBFf8148"}
+       :eth-registrar {:name "NameBazaarDevRegistrar" :address "0x252b9609781923b58C9e44C22b49160A3F503Af3"}
+       :public-resolver {:name "NamebazaarDevPublicResolver" :address "0xF9Ee67479FEDBE5601B8Af4237962d6eF7d58DEC"}
+       :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x7F2703aB51261651f00Fe51E2A65F2F9bFa564C1"}
        :offering-registry {:name "OfferingRegistry" :address "0xDe143e7eE5CD9488EFF68D386304335bc2806269"}
        :buy-now-offering {:name "BuyNowOffering" :address "0x369952536Bd65A096755D1494038d6074A816943"}
        :buy-now-offering-factory {:name "BuyNowOfferingFactory" :address "0xE49b5Ca05310d21EDB1A57C5b9B6695E77903508"}
