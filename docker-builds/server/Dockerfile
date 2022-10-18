@@ -11,7 +11,7 @@ RUN apt-get update && \
 FROM env AS env-with-extra-deps
 ENV NODE_VERSION 10.23.1
 ENV NODE_VERSION_FOR_TRUFFLE v18.1.0
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
 RUN . /root/.nvm/nvm.sh \
     && nvm install "${NODE_VERSION}" \
     && nvm install "${NODE_VERSION_FOR_TRUFFLE}" \
