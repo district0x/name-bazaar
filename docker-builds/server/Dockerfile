@@ -5,7 +5,7 @@ RUN apt-get update && \
         build-essential \
         curl \
         git \
-        python3 python3-pip && \
+        python3.7 python3-pip python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
 FROM env AS env-with-extra-deps
@@ -17,7 +17,7 @@ RUN . /root/.nvm/nvm.sh \
     && nvm install "${NODE_VERSION_FOR_TRUFFLE}" \
     && nvm alias default "v${NODE_VERSION}"
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-# RUN pip3 install -U --no-cache-dir pip setuptools pysha3
+RUN pip3 install -U --no-cache-dir pip setuptools
 RUN pip3 install --no-cache-dir solc-select
 RUN solc-select install 0.8.4 && solc-select use 0.8.4
 RUN . /root/.nvm/nvm.sh \
