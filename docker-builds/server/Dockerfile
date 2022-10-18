@@ -5,7 +5,7 @@ RUN apt-get update && \
         build-essential \
         curl \
         git \
-        python3.7 python3-pip && \
+        python3.7 python3-pip python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
 FROM env AS env-with-extra-deps
