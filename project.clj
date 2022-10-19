@@ -8,7 +8,7 @@
                  ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
                  ;; only when the latter contains all so far missing functionality
                  [cljs-web3 "0.19.0-0-11"]
-                 [cljs-web3-next "0.1.3"]
+                 [cljs-web3-next "0.1.3"]   ; TODO after upgrade to "0.2.0-SNAPSHOT" remove district.server.smart-contracts in this project
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "16.4.1-0"]
