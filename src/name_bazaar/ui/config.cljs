@@ -28,6 +28,15 @@
    :root-url "https://namebazaar.qa.district0x.io"
    :server-url "https://api.namebazaar.qa.district0x.io"})
 
+(def preprod-config
+  {:logging {:level :debug}
+   :pushroute-hosts "namebazaar.io"
+   :infura-id "0ff2cb560e864d078290597a29e2505d"
+   :fallback-web3-url "https://mainnet.infura.io/"
+   :load-node-addresses? true
+   :root-url "https://namebazaar.preprd.district0x.io"
+   :server-url "https://api.namebazaar.preprd.district0x.io"})
+
 (def production-config
   {:logging {:level :warn
             ;;  :sentry {:dsn "https://597ef71a10a240b0949c3b482fe4b9a4@sentry.io/1364232"}
@@ -45,5 +54,6 @@
 (def config
   (condp = environment
     "prod" production-config
+    "preprod" preprod-config
     "qa"  qa-config
     "dev" development-config))
