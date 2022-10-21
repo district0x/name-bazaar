@@ -34,8 +34,8 @@
    :infura-id "0ff2cb560e864d078290597a29e2505d"
    :fallback-web3-url "https://mainnet.infura.io/"
    :load-node-addresses? true
-   :root-url "https://namebazaar.preprd.district0x.io"
-   :server-url "https://api.namebazaar.preprd.district0x.io"})
+   :root-url "https://namebazaar.preprod.district0x.io"
+   :server-url "https://api.namebazaar.preprod.district0x.io"})
 
 (def production-config
   {:logging {:level :warn
