@@ -332,6 +332,7 @@
           (on-chunk chunk-logs)
           (recur (async/<! ch-final-logs)))
 
+        (log/info "(replay-past-events-in-order ...) call (on-finish)")
         (on-finish)
         (log/info "(replay-past-events-in-order ...) finish")))))
 
