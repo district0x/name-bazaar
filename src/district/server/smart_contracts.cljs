@@ -331,10 +331,10 @@
                   (<! (async-helpers/promise->chan res))))))
           (on-chunk chunk-logs)
           (recur (async/<! ch-final-logs)))
-
-        (log/info "(replay-past-events-in-order ...) call (on-finish)")
-        (on-finish)
-        (log/info "(replay-past-events-in-order ...) finish")))))
+        (do
+          (log/info "(replay-past-events-in-order ...) call (on-finish)")
+          (on-finish)
+          (log/info "(replay-past-events-in-order ...) finish"))))))
 
 (defn start [{:keys [:contracts-var] :as opts}]
   (merge
