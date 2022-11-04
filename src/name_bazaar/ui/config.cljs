@@ -22,11 +22,20 @@
    :logging {:level :warn
              :console? true}
    :pushroute-hosts "namebazaar.qa.district0x.io"
-   :infura-id "874e0519ba33487f89ef854b0179906c" ;; this is for wallet-connect only, which will not work when running with ganache
+   :infura-id "fd0074468fd64e36b495c846a26a3f9d" ;; this is for wallet-connect only, which will not work when running with ganache
    :fallback-web3-url "https://ropsten.infura.io/"
    :load-node-addresses? true
    :root-url "https://namebazaar.qa.district0x.io"
    :server-url "https://api.namebazaar.qa.district0x.io"})
+
+(def preprod-config
+  {:logging {:level :debug}
+   :pushroute-hosts "namebazaar.io"
+   :infura-id "0ff2cb560e864d078290597a29e2505d"
+   :fallback-web3-url "https://mainnet.infura.io/"
+   :load-node-addresses? true
+   :root-url "https://namebazaar.preprod.district0x.io"
+   :server-url "https://api.namebazaar.preprod.district0x.io"})
 
 (def production-config
   {:logging {:level :warn
@@ -45,5 +54,6 @@
 (def config
   (condp = environment
     "prod" production-config
+    "preprod" preprod-config
     "qa"  qa-config
     "dev" development-config))

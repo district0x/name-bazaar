@@ -35,12 +35,12 @@
   (async done
     (go
       (-> (mount/with-args
-            {:web3            {:url        "ws://127.0.0.1:8549"
-                               :on-online  #(log/warn "Ethereum node went online")
-                               :on-offline #(log/warn "Ethereum node went offline")}
+            {:web3 {:url "ws://127.0.0.1:8549"
+                    :on-online #(log/warn "Ethereum node went online")
+                    :on-offline #(log/warn "Ethereum node went offline")}
              :smart-contracts {:contracts-build-path "./resources/public/contracts-build/"
-                               :contracts-var        #'name-bazaar.shared.smart-contracts/smart-contracts
-                               :auto-mining?         true}})
+                               :contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
+                               :auto-mining? true}})
           (mount/only [#'district.server.web3
                        #'district.server.smart-contracts/smart-contracts])
           (mount/start))

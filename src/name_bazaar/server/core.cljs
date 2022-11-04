@@ -37,11 +37,11 @@
                                                              #'district.server.web3-events/web3-events
                                                              #'name-bazaar.server.syncer/syncer
                                                              #'name-bazaar.server.emailer/emailer))}
-                            :web3-events {:events {:ens/new-owner                      [:ens :NewOwner]
-                                                   :ens/transfer                       [:ens :Transfer]
-                                                   :offering-registry/offering-added   [:offering-registry :on-offering-added]
+                            :web3-events {:events {:ens/new-owner [:ens :NewOwner]
+                                                   :ens/transfer [:ens :Transfer]
+                                                   :offering-registry/offering-added [:offering-registry :on-offering-added]
                                                    :offering-registry/offering-changed [:offering-registry :on-offering-changed]
-                                                   :registrar/transfer                 [:eth-registrar :Transfer]}
+                                                   :registrar/transfer [:eth-registrar :Transfer]}
                                           :from-block "latest"
                                           :block-step 1000}
                             :ui {:reveal-period {:hours 48}

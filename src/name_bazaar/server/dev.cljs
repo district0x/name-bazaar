@@ -46,36 +46,36 @@
 (defn -main [& _]
   (async-helpers/extend-promises-as-channels!)
   (-> (mount/with-args
-        {:config          {:default {:logging     {:level    "info"
-                                                   :console? true}
-                                     :endpoints   {:port        6200
-                                                   :middlewares [logging-middlewares]}
-                                     :web3        {:url "ws://127.0.0.1:8549"
-                                                   :on-online (fn []
-                                                                (log/warn "Ethereum node went online again")
-                                                                (mount/start #'name-bazaar.server.db/name-bazaar-db
-                                                                             #'district.server.web3-events/web3-events
-                                                                             #'name-bazaar.server.syncer/syncer
-                                                                             #'name-bazaar.server.emailer/emailer))
-                                                   :on-offline (fn []
-                                                                 (log/warn "Ethereum node went offline")
-                                                                 (mount/stop #'name-bazaar.server.db/name-bazaar-db
-                                                                             #'district.server.web3-events/web3-events
-                                                                             #'name-bazaar.server.syncer/syncer
-                                                                             #'name-bazaar.server.emailer/emailer))}
-                                     :web3-events {:events {:ens/new-owner                      [:ens :NewOwner]
-                                                            :ens/transfer                       [:ens :Transfer]
-                                                            :offering-registry/offering-added   [:offering-registry :on-offering-added]
-                                                            :offering-registry/offering-changed [:offering-registry :on-offering-changed]
-                                                            :registrar/transfer                 [:eth-registrar :Transfer]}
-                                                   :from-block "latest"
-                                                   :block-step 1000}
-                                     :db          {:opts {:memory true}}
-                                     :emailer     {:print-mode? true
-                                                   :private-key "1925a0d3085e4d43a577b1adcaed60c08ece1570a151988dc41"}
-                                     :ui          {:public-key             "192eb918a8a9996cf0233023b4d6b8d8071b7df392535ef72622136569abd4b8c009f302d9884d4ea54fd4714764fb44387"
-                                                   :use-instant-registrar? true
-                                                   :reveal-period          {:hours 48}}}}
+        {:config {:default {:logging {:level "info"
+                                      :console? true}
+                            :endpoints {:port 6200
+                                        :middlewares [logging-middlewares]}
+                            :web3 {:url "ws://127.0.0.1:8549"
+                                   :on-online (fn []
+                                                (log/warn "Ethereum node went online again")
+                                                (mount/start #'name-bazaar.server.db/name-bazaar-db
+                                                             #'district.server.web3-events/web3-events
+                                                             #'name-bazaar.server.syncer/syncer
+                                                             #'name-bazaar.server.emailer/emailer))
+                                   :on-offline (fn []
+                                                 (log/warn "Ethereum node went offline")
+                                                 (mount/stop #'name-bazaar.server.db/name-bazaar-db
+                                                             #'district.server.web3-events/web3-events
+                                                             #'name-bazaar.server.syncer/syncer
+                                                             #'name-bazaar.server.emailer/emailer))}
+                            :web3-events {:events {:ens/new-owner [:ens :NewOwner]
+                                                   :ens/transfer [:ens :Transfer]
+                                                   :offering-registry/offering-added [:offering-registry :on-offering-added]
+                                                   :offering-registry/offering-changed [:offering-registry :on-offering-changed]
+                                                   :registrar/transfer [:eth-registrar :Transfer]}
+                                          :from-block "latest"
+                                          :block-step 1000}
+                            :db {:opts {:memory true}}
+                            :emailer {:print-mode? true
+                                      :private-key "1925a0d3085e4d43a577b1adcaed60c08ece1570a151988dc41"}
+                            :ui {:public-key "192eb918a8a9996cf0233023b4d6b8d8071b7df392535ef72622136569abd4b8c009f302d9884d4ea54fd4714764fb44387"
+                                 :use-instant-registrar? true
+                                 :reveal-period {:hours 48}}}}
          :smart-contracts {:contracts-build-path "./resources/public/contracts-build/"
                            :contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts
                            :print-gas-usage? true
