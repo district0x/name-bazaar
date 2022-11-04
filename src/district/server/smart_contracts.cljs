@@ -263,7 +263,6 @@
 
 (defn chunk->logs [transform-fn from-block skip-log-indexes events ignore-forward? [from to] ch-output]
   "async/>! to ch-output for chunk [from to]: final sorted, skipped and transformed logs as async/ch."
-  (log/debug "(chunk->logs ...)" {:from-block from :to-block to})
   (let [sort-and-skip-logs' (partial sort-and-skip-logs transform-fn from-block skip-log-indexes)]
     (async/go
       (->> (for [[k [contract event]] events
@@ -303,8 +302,6 @@
   (when (and skip-log-indexes (not from-block ))
     (throw (js/Error. "replay-past-events-in-order: Can't specify skip-log-indexes without specifying :from-block")))
 
-  (log/info "(replay-past-events-in-order ...) start")
-
   (let [ch-chunks-to-process (async/to-chan! (all-chunks from-block to-block block-step))
         ch-final-logs (async/chan 1)
         chunk->logs' (partial chunk->logs transform-fn from-block skip-log-indexes events ignore-forward?)]
@@ -314,14 +311,14 @@
         (do
           (when (fn? callback)
             (doseq [log chunk-logs]
-              (let [res (try
-                          (if-let [?error (:error? (meta log))]
-                            (callback ?error nil)
-                            (callback nil log))
-                          (catch js/Error e
-                            (when crash-on-event-fail?
-                              (log/error e "Server crash. Caused by event processing error with :crash-on-event-fail? true. Disable this flag to skip and continue.")
-                              (.exit js/process 1))))]
+              (doseq [res (try
+                            (if-let [?error (:error? (meta log))]
+                              (callback ?error nil)
+                              (callback nil log))
+                            (catch js/Error e
+                              (when crash-on-event-fail?
+                                (log/error e "Server crash. Caused by event processing error with :crash-on-event-fail? true. Disable this flag to skip and continue.")
+                                (.exit js/process 1))))]
                 ;; if callback returns a promise or chan we block until it resolves
                 (cond
                   (satisfies? cljs.core.async.impl.protocols/ReadPort res)
@@ -331,10 +328,8 @@
                   (<! (async-helpers/promise->chan res))))))
           (on-chunk chunk-logs)
           (recur (async/<! ch-final-logs)))
-        (do
-          (log/info "(replay-past-events-in-order ...) call (on-finish)")
-          (on-finish)
-          (log/info "(replay-past-events-in-order ...) finish"))))))
+
+        (on-finish)))))
 
 (defn start [{:keys [:contracts-var] :as opts}]
   (merge
