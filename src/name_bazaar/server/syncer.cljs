@@ -117,7 +117,7 @@
           callback-ids (doall (for [[event-key callback] event-callbacks]
                                 (web3-events/register-callback! event-key (dispatcher callback))))]
       (web3-events/register-after-past-events-dispatched-callback! (fn []
-                                                                     (log/warn "Syncing past events finished")
+                                                                     (log/info "Syncing past events finished")
                                                                      (ping-start {:ping-interval 10000})))
       (assoc opts :callback-ids callback-ids))))
 
