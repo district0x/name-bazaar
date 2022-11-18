@@ -18,6 +18,8 @@
   :eth-registrar/registration
   :<- [:eth-registrar/registrations]
   (fn [registrations [_ label-hash]]
+    (pprint {:debug :eth-registrar/registration
+             :registrations registrations})
     (get registrations label-hash)))
 
 (reg-sub
@@ -34,7 +36,6 @@
   (fn [[active-address registrar-registration]]
     (pprint {:debug :eth-registrar.registration/active-address-owner?
              :active-address active-address
-             :owner (:eth-registrar.registration/owner registrar-registration)
              :registrar-registration registrar-registration})
     (and active-address (= active-address (:eth-registrar.registration/owner registrar-registration)))))
 
