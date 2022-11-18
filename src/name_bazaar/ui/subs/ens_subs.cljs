@@ -56,7 +56,7 @@
        (subscribe [:ens.record/active-address-owner? node])
        (subscribe [:eth-registrar.registration/active-address-owner? label-hash])]))
   (fn [[ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?] [_ name]]
-    (log/info "reg-sub" "name" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?])
+    (js/console.log "reg-sub" "name" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?])
     (cond
       (empty? name)
       :ens.ownership-status/empty-name
