@@ -99,7 +99,7 @@ module.exports = {
           providerOrUrl: `wss://goerli.infura.io/ws/v3/${fromConfig(":truffle :goerli :infuraKey")}`
         }),
       network_id: '5',
-      networkCheckTimeout: 10000,
+      networkCheckTimeout: 999999,
       confirmations: 2,
       timeoutBlocks: 200,
       skipDryRun: true,
