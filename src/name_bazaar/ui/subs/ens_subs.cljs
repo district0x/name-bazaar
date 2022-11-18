@@ -4,7 +4,8 @@
     [name-bazaar.shared.utils :refer [top-level-name? name-label normalize]]
     [name-bazaar.ui.utils :refer [namehash sha3 registrar-registration-loaded? ens-record-loaded?]]
     [re-frame.core :refer [reg-sub subscribe]]
-    [taoensso.timbre :as log]))
+    [cljs.pprint :refer [pprint]]
+    ))
 
 (reg-sub
   :ens/records
@@ -56,7 +57,7 @@
        (subscribe [:ens.record/active-address-owner? node])
        (subscribe [:eth-registrar.registration/active-address-owner? label-hash])]))
   (fn [[ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?] [_ name]]
-    (js/console.log "reg-sub" "name" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?])
+    (pprint ["reg-sub" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?]])
     (cond
       (empty? name)
       :ens.ownership-status/empty-name
