@@ -4,10 +4,19 @@
 ;; you need to rebuild UI for each new configuration
 ;; (e.g. change this file then build new docker UI image)
 ;; we should make UI configurable on the fly
-(goog-define environment "qa")
+(goog-define environment "dev")
 
 (def development-config
   {:debug? true
+   :logging {:level :debug
+             :console? true}
+   :pushroute-hosts "localhost"
+   :infura-id "fd0074468fd64e36b495c846a26a3f9d" #_"f4a8677a0eef4d47a038531d4674aba1" ;; this is for wallet-connect only, which will not work when running with ganache
+   :fallback-web3-url "https://goerli.infura.io/"
+   :load-node-addresses? true
+   :root-url "http://0.0.0.0:4544"
+   :server-url "http://localhost:6200"}
+  #_{:debug? true
    :logging {:level :debug
              :console? true}
    :pushroute-hosts "localhost"
@@ -22,7 +31,7 @@
    :logging {:level :warn
              :console? true}
    :pushroute-hosts "namebazaar.qa.district0x.io"
-   :infura-id "fd0074468fd64e36b495c846a26a3f9d" ;; this is for wallet-connect only, which will not work when running with ganache
+   :infura-id "fd0074468fd64e36b495c846a26a3f9d" #_"f4a8677a0eef4d47a038531d4674aba1" ;; this is for wallet-connect only, which will not work when running with ganache
    :fallback-web3-url "https://goerli.infura.io/"
    :load-node-addresses? true
    :root-url "https://namebazaar.qa.district0x.io"
