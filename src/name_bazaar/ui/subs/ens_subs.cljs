@@ -57,7 +57,7 @@
        (subscribe [:ens.record/active-address-owner? node])
        (subscribe [:eth-registrar.registration/active-address-owner? label-hash])]))
   (fn [[ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?] [_ name]]
-    (pprint ["reg-sub" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?]])
+    #_(pprint ["reg-sub" name [ens-record-loaded? registration-loaded? active-address-ens-owner? active-address-registration-owner?]])
     (cond
       (empty? name)
       :ens.ownership-status/empty-name

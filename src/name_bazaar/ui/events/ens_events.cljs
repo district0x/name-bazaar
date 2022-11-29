@@ -74,6 +74,8 @@
   :ens.records.owner/loaded
   interceptors
   (fn [{:keys [:db]} [node owner]]
+    (cljs.pprint/pprint {:debug :ens.records.owner/loaded
+                         :owner owner})
     {:db (assoc-in db [:ens/records node :ens.record/owner] (if (= owner "0x")
                                                               d0x-shared-utils/zero-address
                                                               owner))}))

@@ -6,8 +6,7 @@
     [medley.core :as medley]
     [name-bazaar.shared.constants :as constants]
     [name-bazaar.ui.utils :refer [registrar-registration-loaded? seal-bid]]
-    [re-frame.core :refer [reg-sub subscribe]]
-    [cljs.pprint :refer [pprint]]))
+    [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub
   :eth-registrar/registrations
@@ -18,8 +17,6 @@
   :eth-registrar/registration
   :<- [:eth-registrar/registrations]
   (fn [registrations [_ label-hash]]
-    (pprint {:debug :eth-registrar/registration
-             :registrations registrations})
     (get registrations label-hash)))
 
 (reg-sub
@@ -34,9 +31,9 @@
     [(subscribe [:district0x/active-address])
      (subscribe [:eth-registrar/registration label-hash])])
   (fn [[active-address registrar-registration]]
-    (pprint {:debug :eth-registrar.registration/active-address-owner?
-             :active-address active-address
-             :registrar-registration registrar-registration})
+    (cljs.pprint/pprint {:debug :eth-registrar.registration/active-address-owner?
+                         :active-address active-address
+                         :registrar-registration registrar-registration})
     (and active-address (= active-address (:eth-registrar.registration/owner registrar-registration)))))
 
 (reg-sub
