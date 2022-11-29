@@ -102,7 +102,7 @@
   :eth-registrar.registration/owner-loaded
   interceptors
   (fn [_ [label-hash value]]
-    #_(cljs.pprint/pprint {:debug :eth-registrar.registration/owner-loaded
+    (cljs.pprint/pprint {:debug :eth-registrar.registration/owner-loaded
                          :label-hash label-hash
                          :value value})
     {:dispatch [:eth-registrar.registration/loaded
