@@ -191,7 +191,7 @@ First, you need to specify deployments secrets in `config.edn`. For example:
 {:truffle {:goerli {:privateKeys ["0x0000..."]
                     :infuraKey "0000...."
                     :ensAddress "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
-                    :registrarAddress "0x9C51161bA2FB02Cc0a403332B607117685f34831"
+                    :registrarAddress "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"
                     :publicResolverAddress "0xE264d5bb84bA3b8061ADC38D3D76e6674aB91852"
                     :reverseRegistrarAddress "0xD5610A08E370051a01fdfe4bB3ddf5270af1aA48"}}}
 ```
