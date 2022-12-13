@@ -31,9 +31,6 @@
     [(subscribe [:district0x/active-address])
      (subscribe [:eth-registrar/registration label-hash])])
   (fn [[active-address registrar-registration]]
-    (cljs.pprint/pprint {:debug :eth-registrar.registration/active-address-owner?
-                         :active-address active-address
-                         :registrar-registration registrar-registration})
     (and active-address (= active-address (:eth-registrar.registration/owner registrar-registration)))))
 
 (reg-sub

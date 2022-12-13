@@ -274,13 +274,6 @@
                                          {:from-block from
                                           :to-block to}
                                          (fn [error events]
-                                           (when (or (not-empty events)
-                                                     (not-empty error))
-                                             (log/debug {:from-block from
-                                                         :to-block to
-                                                         :event event
-                                                         :events events
-                                                         :error error}))
                                            (let [logs (->> events
                                                            web3-helpers/js->cljkk
                                                            (map (partial enrich-event-log contract contract-instance)))]
