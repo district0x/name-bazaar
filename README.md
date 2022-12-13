@@ -23,7 +23,7 @@ In a terminal, start a ganache blockchain
 
 Note that this uses docker and will try to pull `trufflesuite/ganache-cli:v6.12.1` image if you don't have it.
 
-Alternatively, you can connect directly to one of ethereum testnet networks - e.g. ropsten. In order to do this, specify correct smart contract addresses and `:web3` properties in the `./config.edn` file. Example config file can be found in `docker-builds/server/config.example.edn`.
+Alternatively, you can connect directly to one of ethereum testnet networks - e.g. goerli. In order to do this, specify correct smart contract addresses and `:web3` properties in the `./config.edn` file. Example config file can be found in `docker-builds/server/config.example.edn`.
 
 Open another terminal, start a repl and build the dev server (with
 figwheel repl)
@@ -188,18 +188,20 @@ Note that there is no passing of config file for UI: currently for any change of
 First, you need to specify deployments secrets in `config.edn`. For example:
 
 ```clojure
-{:truffle {:ropsten {:infuraKey "0ff2cb560e864d078290597a29e2505d"
-                     :privateKeys ["0508d5f96e139a0c18ee97a92d890c55707c77b90916395ff7849efafffbd810"]
-                     :ensAddress "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
-                     :registrarAddress "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"
-                     :publicResolverAddress "0x42D63ae25990889E35F215bC95884039Ba354115"
-                     :reverseRegistrarAddress "0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c"}}}
+{:truffle {:goerli {:privateKeys ["0x0000..."]
+                    :infuraKey "0000...."
+                    :ensAddress "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
+                    :registrarAddress "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"
+                    :publicResolverAddress "0xE264d5bb84bA3b8061ADC38D3D76e6674aB91852"
+                    :reverseRegistrarAddress "0xD5610A08E370051a01fdfe4bB3ddf5270af1aA48"}}}
 ```
+
+ENS address are not in documentation, but in some random post on forum https://discuss.ens.domains/t/deployment-of-new-contracts-inc-namewrapper-to-testnet-goerli/14505
 
 Then, you can use `truffle` to deploy the contracts just by running the following command in bash:
 ```bash
 # you can also use `--network mainnet` - see truffle-config.js for deployment details for more information.
-truffle migrate --network ropsten
+truffle migrate --network goerli
 ```
 
 ## Linting and formatting smart contracts

@@ -11,8 +11,19 @@
    :logging {:level :debug
              :console? true}
    :pushroute-hosts "localhost"
-   :infura-id "0ff2cb560e864d078290597a29e2505d" ;; this is for wallet-connect only, which will not work when running with ganache
-   :fallback-web3-url "http://localhost:8549"
+   :infura-id "fd0074468fd64e36b495c846a26a3f9d" ;; this is for wallet-connect only, which will not work when running with ganache
+   :fallback-web3-url "https://goerli.infura.io/"
+   :load-node-addresses? true
+   :root-url "http://0.0.0.0:4544"
+   :server-url "http://localhost:6200"})
+
+(def qa-development-config
+  {:debug? true
+   :logging {:level :debug
+             :console? true}
+   :pushroute-hosts "localhost"
+   :infura-id "fd0074468fd64e36b495c846a26a3f9d" ;; this is for wallet-connect only, which will not work when running with ganache
+   :fallback-web3-url "https://goerli.infura.io/"
    :load-node-addresses? true
    :root-url "http://0.0.0.0:4544"
    :server-url "http://localhost:6200"})
@@ -23,7 +34,7 @@
              :console? true}
    :pushroute-hosts "namebazaar.qa.district0x.io"
    :infura-id "fd0074468fd64e36b495c846a26a3f9d" ;; this is for wallet-connect only, which will not work when running with ganache
-   :fallback-web3-url "https://ropsten.infura.io/"
+   :fallback-web3-url "https://goerli.infura.io/"
    :load-node-addresses? true
    :root-url "https://namebazaar.qa.district0x.io"
    :server-url "https://api.namebazaar.qa.district0x.io"})

@@ -92,19 +92,18 @@ module.exports = {
      port: 8549,            // Standard Ethereum port (default: none)
      network_id: "*",       // Any network (default: none)
     },
-    ropsten: {
-      // must be a thunk, otherwise truffle commands may hang in CI
+    goerli: {
       provider: () =>
         new HDWalletProvider({
-          privateKeys: fromConfig(":truffle :ropsten :privateKeys"),
-          providerOrUrl: `wss://ropsten.infura.io/ws/v3/${fromConfig(":truffle :ropsten :infuraKey")}`,
+          privateKeys: fromConfig(":truffle :goerli :privateKeys"),
+          providerOrUrl: `wss://goerli.infura.io/ws/v3/${fromConfig(":truffle :goerli :infuraKey")}`
         }),
-      network_id: '3',
-      networkCheckTimeout: 10000, // https://github.com/trufflesuite/truffle/issues/3356
-      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      network_id: '5',
+      networkCheckTimeout: 999999,
+      confirmations: 2,
+      timeoutBlocks: 200,
       skipDryRun: true,
-      deploymentConfig: removeColonFromConfigKeys(fromConfig(":truffle :ropsten"))
+      deploymentConfig: removeColonFromConfigKeys(fromConfig(":truffle :goerli"))
     },
     mainnet: {
       provider: () =>
