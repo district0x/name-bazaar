@@ -154,7 +154,43 @@
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
-  :cljsbuild {:builds [;; Development on client-side UI, which uses a testnet
+  :cljsbuild {:builds [;; server mainnet
+                       {:id "server"
+                        :source-paths ["src"]
+                        :compiler {:main "name-bazaar.server.core"
+                                   :output-to "server/name-bazaar.js",
+                                   :output-dir "server",
+                                   :target :nodejs,
+                                   :optimizations :simple,
+                                   :source-map "server/name-bazaar.js.map"
+                                   :closure-defines {goog.DEBUG false}
+                                   :pretty-print false}}
+
+                       ;; server testnet
+                       {:id "dev-server"
+                        :source-paths ["src" "dev"]
+                        :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
+                        :compiler {:main "cljs.user"
+                                   :output-to "dev-server/name-bazaar.js",
+                                   :output-dir "dev-server",
+                                   :target :nodejs,
+                                   :optimizations :none,
+                                   :closure-defines {goog.DEBUG true}
+                                   :source-map true}}
+
+                       ;; server testing testnet
+                       {:id "server-tests"
+                        :source-paths ["src" "test"]
+                        :figwheel true
+                        :compiler {:main "server.run-tests"
+                                   :output-to "server-tests/server-tests.js",
+                                   :output-dir "server-tests",
+                                   :target :nodejs,
+                                   :optimizations :none,
+                                   :verbose false
+                                   :source-map true}}
+
+                       ;; UI testnet
                        {:id "dev-ui"
                         :source-paths ["src"]
                         :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
@@ -170,30 +206,8 @@
                                                      "re_frame.trace.trace_enabled_QMARK_" true}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
-                       ;; Development on server-side with testnet
-                       {:id "dev-server"
-                        :source-paths ["src" "dev"]
-                        :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
-                        :compiler {:main "cljs.user"
-                                   :output-to "dev-server/name-bazaar.js",
-                                   :output-dir "dev-server",
-                                   :target :nodejs,
-                                   :optimizations :none,
-                                   :closure-defines {goog.DEBUG true}
-                                   :source-map true}}
 
-                       ;; Production on server-side with mainnet
-                       {:id "server"
-                        :source-paths ["src"]
-                        :compiler {:main "name-bazaar.server.core"
-                                   :output-to "server/name-bazaar.js",
-                                   :output-dir "server",
-                                   :target :nodejs,
-                                   :optimizations :simple,
-                                   :source-map "server/name-bazaar.js.map"
-                                   :closure-defines {goog.DEBUG false}
-                                   :pretty-print false}}
-
+                       ;; UI goerli
                        {:id "qa-min"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
@@ -205,7 +219,7 @@
                                    :pretty-print false
                                    :pseudo-names false}}
 
-                       ;; Production on client-side with mainnet
+                       ;; UI mainnet
                        {:id "min"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.ui.core"
@@ -213,17 +227,5 @@
                                    :optimizations :advanced
                                    :closure-defines {name-bazaar.ui.config.environment "prod"}
                                    :pretty-print false
-                                   :pseudo-names false}}
-
-                       ;; Testing on server-side
-                       {:id "server-tests"
-                        :source-paths ["src" "test"]
-                        :figwheel true
-                        :compiler {:main "server.run-tests"
-                                   :output-to "server-tests/server-tests.js",
-                                   :output-dir "server-tests",
-                                   :target :nodejs,
-                                   :optimizations :none,
-                                   :verbose false
-                                   :source-map true}}]})
+                                   :pseudo-names false}}]})
 
