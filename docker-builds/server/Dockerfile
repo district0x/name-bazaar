@@ -38,11 +38,10 @@ RUN . /root/.nvm/nvm.sh \
     && nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     && truffle compile \
     && nvm use "${NODE_VERSION}"
-RUN lein build-prod-server
+RUN lein build-server
 
 FROM node:10-buster-slim
 WORKDIR /namebazaar
-ARG BUILD_ENV="prod"
 EXPOSE 6200
 ENV CONFIG="/configs/namebazaar.config.${BUILD_ENV}.edn"
 ENV PORT=6200

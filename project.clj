@@ -134,15 +134,14 @@
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
 
-  :aliases {"compile-solidity" ["shell" "./compile-solidity.sh"]
-            "clean-prod-server" ["shell" "rm" "-rf" "server"]
-            "watch-css" ["shell" "./semantic.sh" "watch"]
+  :aliases {"watch-css" ["shell" "./semantic.sh" "watch"]
             "build-css" ["shell" "./semantic.sh" "build-css"]
-            "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
+            "clean-server" ["shell" "rm" "-rf" "server"]
+            "build-server" ["do" ["clean-server"] ["cljsbuild" "once" "server"]]
             "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
             "build-qa-ui" ["do" ["clean"] ["cljsbuild" "once" "qa-min"]]
-            "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]
-            "build-qa" ["pdo" ["build-prod-server"] ["build-qa-ui"] ["build-css"]]
+            "build-prod" ["pdo" ["build-server"] ["build-prod-ui"] ["build-css"]]
+            "build-qa" ["pdo" ["build-server"] ["build-qa-ui"] ["build-css"]]
             "run-slither" ["shell" "./run-slither.sh"]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
