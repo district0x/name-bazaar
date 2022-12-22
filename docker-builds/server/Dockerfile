@@ -44,8 +44,7 @@ RUN lein build-server
 FROM node:10-buster-slim
 WORKDIR /namebazaar
 EXPOSE 6200
-# TODO remove this line after finish testing QA !!!!!!!!!!!
-ENV CONFIG="/configs/namebazaar.config.qa.edn"
+
 ENV PORT=6200
 RUN apt-get update && \
     apt-get upgrade -yqq && \
