@@ -524,7 +524,7 @@
                           (load-bid-state new-name)))]
     (fn []
       (add-watch label :label-watcher (watch-fn))
-      (if (and name (nb-ui-utils/valid-ens-name? name))
+      (if (and name (nb-shared-utils/valid-ens-name? name))
         (reset! label (nb-ui-utils/strip-root-registrar-suffix (nb-ui-utils/normalize name)))
         (reset! label ""))
       [app-layout/app-layout {:meta {:title "NameBazaar - Register ENS Name"
