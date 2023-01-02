@@ -33,13 +33,12 @@ RUN lein deps
 RUN lein npm i
 
 FROM env-with-clj-deps AS builder
-ARG BUILD_ENV="prod"
 # COPY . .
 RUN . /root/.nvm/nvm.sh \
     && nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     && truffle compile \
     && nvm use "${NODE_VERSION}"
-RUN lein build-css && lein "build-${BUILD_ENV}-ui"
+RUN lein build-css && lein "build-ui"
 
 FROM builder AS tests
 RUN nginx -t
