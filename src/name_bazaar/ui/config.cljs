@@ -1,10 +1,19 @@
-(ns name-bazaar.ui.config)
+(ns name-bazaar.ui.config
+  #_(:require [mount.core :as mount]
+            [district.ui.server-config]))
+
+#_(-> (mount/with-args
+      {:server-config {:default {:debug? true
+                                 :logging {:level :debug
+                                           :console? true}
+                                 :load-node-addresses? true}}})
+    (mount/start))
 
 ;; TODO currently this is configuration in source code
 ;; you need to rebuild UI for each new configuration
 ;; (e.g. change this file then build new docker UI image)
 ;; we should make UI configurable on the fly
-(goog-define environment "qa")
+;(goog-define environment "qa")
 
 (def development-config
   {:debug? true
@@ -61,10 +70,14 @@
   ;;  :server-url "prod_namebazaar-server:3000"}
    )
 
+#_(def default-config
+  {:pushroute-hosts "localhost,namebazaar.qa.district0x.io,namebazaar.io"
+   :load-node-addresses? true
+   })
 
 (def config
-  (condp = environment
-    "prod" production-config
-    "preprod" preprod-config
-    "qa"  qa-config
-    "dev" development-config))
+  (case (.-hostname (.-location js/window))
+    "localhost" #_development-config qa-config
+    "namebazaar.qa.district0x.io" qa-config
+    "namebazaar.preprod.district0x.io" preprod-config
+    "namebazaar.io" production-config))

@@ -36,6 +36,7 @@
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-encryption "1.0.1"]
                  [district0x/district-sendgrid "1.0.1"]
+                 [district0x/district-ui-server-config "1.0.0"]
                  [district0x/district-server-config "1.0.1"]
                  [district0x/district-server-db "1.0.4"]
                  ;; TODO: Update to latest version.
@@ -202,7 +203,7 @@
                                    :optimizations :none
                                    :preloads [print.foo.preloads.devtools
                                               day8.re-frame-10x.preload]
-                                   :closure-defines {name-bazaar.ui.config.environment "dev"
+                                   :closure-defines {#_#_name-bazaar.ui.config.environment "dev"
                                                      "re_frame.trace.trace_enabled_QMARK_" true}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
 
@@ -214,7 +215,7 @@
                                    :output-to "resources/public/js/compiled/app.js"
                                    :output-dir "resources/public/js/compiled"
                                    :optimizations :advanced
-                                   :closure-defines {name-bazaar.ui.config.environment "qa"}
+                                   :closure-defines {#_#_name-bazaar.ui.config.environment "qa"}
                                    :source-map "resources/public/js/compiled/app.js.map"
                                    :pretty-print false
                                    :pseudo-names false}}
@@ -225,7 +226,7 @@
                         :compiler {:main "name-bazaar.ui.core"
                                    :output-to "resources/public/js/compiled/app.js"
                                    :optimizations :advanced
-                                   :closure-defines {name-bazaar.ui.config.environment "prod"}
+                                   :closure-defines {#_#_name-bazaar.ui.config.environment "prod"}
                                    :pretty-print false
                                    :pseudo-names false}}]})
 
