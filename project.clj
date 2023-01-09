@@ -36,6 +36,7 @@
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-encryption "1.0.1"]
                  [district0x/district-sendgrid "1.0.1"]
+                 [district0x/district-ui-server-config "1.0.0"]
                  [district0x/district-server-config "1.0.1"]
                  [district0x/district-server-db "1.0.4"]
                  ;; TODO: Update to latest version.
@@ -134,15 +135,11 @@
   :auto {"compile-solidity" {:file-pattern #"\.(sol)$"
                              :paths ["resources/public/contracts/src"]}}
 
-  :aliases {"compile-solidity" ["shell" "./compile-solidity.sh"]
-            "clean-prod-server" ["shell" "rm" "-rf" "server"]
-            "watch-css" ["shell" "./semantic.sh" "watch"]
+  :aliases {"watch-css" ["shell" "./semantic.sh" "watch"]
             "build-css" ["shell" "./semantic.sh" "build-css"]
-            "build-prod-server" ["do" ["clean-prod-server"] ["cljsbuild" "once" "server"]]
-            "build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
-            "build-qa-ui" ["do" ["clean"] ["cljsbuild" "once" "qa-min"]]
-            "build-prod" ["pdo" ["build-prod-server"] ["build-prod-ui"] ["build-css"]]
-            "build-qa" ["pdo" ["build-prod-server"] ["build-qa-ui"] ["build-css"]]
+            "clean-server" ["shell" "rm" "-rf" "server"]
+            "build-server" ["do" ["clean-server"] ["cljsbuild" "once" "server"]]
+            "build-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
             "run-slither" ["shell" "./run-slither.sh"]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
@@ -155,35 +152,7 @@
                    :source-paths ["dev" "src"]
                    :resource-paths ["resources"]}}
 
-  :cljsbuild {:builds [;; Development on client-side UI, which uses a testnet
-                       {:id "dev-ui"
-                        :source-paths ["src"]
-                        :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
-                        :compiler {:main "name-bazaar.ui.core"
-                                   :output-to "resources/public/js/compiled/app.js"
-                                   :output-dir "resources/public/js/compiled/out"
-                                   :asset-path "/js/compiled/out"
-                                   :source-map-timestamp true
-                                   :optimizations :none
-                                   :preloads [print.foo.preloads.devtools
-                                              day8.re-frame-10x.preload]
-                                   :closure-defines {name-bazaar.ui.config.environment "dev"
-                                                     "re_frame.trace.trace_enabled_QMARK_" true}
-                                   :external-config {:devtools/config {:features-to-install :all}}}}
-
-                       ;; Development on server-side with testnet
-                       {:id "dev-server"
-                        :source-paths ["src" "dev"]
-                        :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
-                        :compiler {:main "cljs.user"
-                                   :output-to "dev-server/name-bazaar.js",
-                                   :output-dir "dev-server",
-                                   :target :nodejs,
-                                   :optimizations :none,
-                                   :closure-defines {goog.DEBUG true}
-                                   :source-map true}}
-
-                       ;; Production on server-side with mainnet
+  :cljsbuild {:builds [;; server mainnet
                        {:id "server"
                         :source-paths ["src"]
                         :compiler {:main "name-bazaar.server.core"
@@ -195,28 +164,19 @@
                                    :closure-defines {goog.DEBUG false}
                                    :pretty-print false}}
 
-                       {:id "qa-min"
-                        :source-paths ["src"]
-                        :compiler {:main "name-bazaar.ui.core"
-                                   :output-to "resources/public/js/compiled/app.js"
-                                   :output-dir "resources/public/js/compiled"
-                                   :optimizations :advanced
-                                   :closure-defines {name-bazaar.ui.config.environment "qa"}
-                                   :source-map "resources/public/js/compiled/app.js.map"
-                                   :pretty-print false
-                                   :pseudo-names false}}
+                       ;; server testnet
+                       {:id "dev-server"
+                        :source-paths ["src" "dev"]
+                        :figwheel {:on-jsload "name-bazaar.server.dev/on-jsload"}
+                        :compiler {:main "cljs.user"
+                                   :output-to "dev-server/name-bazaar.js",
+                                   :output-dir "dev-server",
+                                   :target :nodejs,
+                                   :optimizations :none,
+                                   :closure-defines {goog.DEBUG true}
+                                   :source-map true}}
 
-                       ;; Production on client-side with mainnet
-                       {:id "min"
-                        :source-paths ["src"]
-                        :compiler {:main "name-bazaar.ui.core"
-                                   :output-to "resources/public/js/compiled/app.js"
-                                   :optimizations :advanced
-                                   :closure-defines {name-bazaar.ui.config.environment "prod"}
-                                   :pretty-print false
-                                   :pseudo-names false}}
-
-                       ;; Testing on server-side
+                       ;; server testing testnet
                        {:id "server-tests"
                         :source-paths ["src" "test"]
                         :figwheel true
@@ -226,5 +186,31 @@
                                    :target :nodejs,
                                    :optimizations :none,
                                    :verbose false
-                                   :source-map true}}]})
+                                   :source-map true}}
+
+                       ;; UI testnet
+                       {:id "dev-ui"
+                        :source-paths ["src"]
+                        :figwheel {:on-jsload "name-bazaar.ui.core/mount-root"}
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :output-dir "resources/public/js/compiled/out"
+                                   :asset-path "/js/compiled/out"
+                                   :source-map-timestamp true
+                                   :optimizations :none
+                                   :preloads [print.foo.preloads.devtools
+                                              day8.re-frame-10x.preload]
+                                   :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
+                                   :external-config {:devtools/config {:features-to-install :all}}}}
+
+                       ;; UI mainnet
+                       {:id "min"
+                        :source-paths ["src"]
+                        :compiler {:main "name-bazaar.ui.core"
+                                   :output-to "resources/public/js/compiled/app.js"
+                                   :output-dir "resources/public/js/compiled"
+                                   :optimizations :advanced
+                                   :source-map "resources/public/js/compiled/app.js.map"
+                                   :pretty-print false
+                                   :pseudo-names false}}]})
 

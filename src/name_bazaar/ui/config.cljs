@@ -4,7 +4,6 @@
 ;; you need to rebuild UI for each new configuration
 ;; (e.g. change this file then build new docker UI image)
 ;; we should make UI configurable on the fly
-(goog-define environment "qa")
 
 (def development-config
   {:debug? true
@@ -61,10 +60,9 @@
   ;;  :server-url "prod_namebazaar-server:3000"}
    )
 
-
 (def config
-  (condp = environment
-    "prod" production-config
-    "preprod" preprod-config
-    "qa"  qa-config
-    "dev" development-config))
+  (case (.-hostname (.-location js/window))
+    "localhost" development-config
+    "namebazaar.qa.district0x.io" qa-config
+    "namebazaar.preprod.district0x.io" preprod-config
+    "namebazaar.io" production-config))

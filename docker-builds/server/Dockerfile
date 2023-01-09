@@ -28,6 +28,7 @@ RUN . /root/.nvm/nvm.sh \
 FROM env-with-extra-deps AS env-with-clj-deps
 # here instead of "COPY . ." should be "COPY project.clj ." etc. for each file
 # without this big part about cache and speed up build is lost
+# COPY project.clj .
 COPY . .
 RUN lein deps
 RUN lein npm i
@@ -38,13 +39,12 @@ RUN . /root/.nvm/nvm.sh \
     && nvm use "${NODE_VERSION_FOR_TRUFFLE}" \
     && truffle compile \
     && nvm use "${NODE_VERSION}"
-RUN lein build-prod-server
+RUN lein build-server
 
 FROM node:10-buster-slim
 WORKDIR /namebazaar
-ARG BUILD_ENV="prod"
 EXPOSE 6200
-ENV CONFIG="/configs/namebazaar.config.${BUILD_ENV}.edn"
+
 ENV PORT=6200
 RUN apt-get update && \
     apt-get upgrade -yqq && \

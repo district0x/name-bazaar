@@ -2,7 +2,7 @@
   (:require [cljs-web3-next.core :as web3-core]
             [cljs-web3-next.eth :as web3-eth]
             [cljs-web3-next.helpers :as web3-helpers]
-            [cljs.core.async :refer [<! timeout] :as async]
+            [cljs.core.async :refer [<! >! timeout] :as async]
             [cljs.core.async.impl.protocols]
             [cljs.nodejs :as nodejs]
             [clojure.set :as clojure-set]
@@ -261,59 +261,86 @@
                              identity)]
     (transform-fn (remove-log-indexes sorted-logs))))
 
-(defn chunk->logs [transform-fn from-block skip-log-indexes events ignore-forward? [from to] ch-output]
-  "async/>! to ch-output for chunk [from to]: final sorted, skipped and transformed logs as async/ch."
-  (let [sort-and-skip-logs' (partial sort-and-skip-logs transform-fn from-block skip-log-indexes)]
-    (async/go
-      (->> (for [[k [contract event]] events
-                 :let [contract-instance (instance-from-arg contract {:ignore-forward? ignore-forward?})
-                       ch-logs (async/chan 1)]]
-             (do
-               (web3-eth/get-past-events contract-instance
-                                         event
-                                         {:from-block from
-                                          :to-block to}
-                                         (fn [error events]
-                                           (let [logs (->> events
-                                                           web3-helpers/js->cljkk
-                                                           (map (partial enrich-event-log contract contract-instance)))]
-                                             (async/put! ch-logs (or logs [(with-meta {:err error} {:error? true})]))
-                                             (async/close! ch-logs))))
-               ch-logs))
-           (async/merge)
-           (async/reduce into [])
-           (async/<!)
-           (sort-and-skip-logs')
-           (async/>! ch-output))
-      (async/close! ch-output))))
+(defn chunk->logs [transform-fn from-block skip-log-indexes events ignore-forward? re-try [from to] ch-output]
+  ">! to ch-output for chunk [from to]: final sorted, skipped and transformed logs as async/ch."
+  (let [sort-and-skip-logs' (partial sort-and-skip-logs transform-fn from-block skip-log-indexes)
+        ch-logs (async/chan 1)
+        event->logs (fn [[k [contract event]] ch-logs-output]
+                      (let [contract-instance (instance-from-arg contract {:ignore-forward? ignore-forward?})]
+                        (web3-eth/get-past-events contract-instance
+                                                  event
+                                                  {:from-block from
+                                                   :to-block to}
+                                                  (fn [error events]
+                                                    (let [logs (map (partial enrich-event-log contract contract-instance)
+                                                                    (web3-helpers/js->cljkk events))]
+                                                      (async/put! ch-logs-output (or logs [(with-meta {:err error} {:error? true})])))))))
+        re-try-event->logs (fn [event ch-output]
+                             (let [buf (async/chan 1)]
+                               (go-loop [re-try-iteration re-try]
+                                 (event->logs event buf)
+                                 (let [log (<! buf)]
+                                   (if (and (:error? (meta log))
+                                            (< 0 re-try-iteration))
+                                     (do (<! (async/timeout 1000))
+                                         (recur (dec re-try-iteration)))
+                                     (>! ch-output log))))))]
+    (go-loop [all-logs []
+              [event & rest-events] events]
+      (if event
+        (do
+          (re-try-event->logs event ch-logs)
+          (recur (into all-logs (<! ch-logs))
+                 rest-events))
+        (do
+          (async/close! ch-logs)
+          (>! ch-output (sort-and-skip-logs' all-logs))
+          (async/close! ch-output))))))
 
 (defn replay-past-events-in-order
   "Replay all past events in order.
   :from-block specifies the first block number events should be dispatched.
   :skip-log-indexes, a set of tuples like [tx log-index] for the :from-block block that should be skipped."
-  [events callback {:keys [from-block skip-log-indexes to-block block-step
-                           ignore-forward? crash-on-event-fail?
+  [events callback {:keys [from-block skip-log-indexes to-block block-step chunks-parallelism
+                           ignore-forward? crash-on-event-fail? re-try
                            transform-fn on-chunk on-finish]
-                    :or {transform-fn identity
+                    :or {chunks-parallelism 1
+                         re-try 3
+                         transform-fn identity
                          on-chunk :do-nothing
                          on-finish :do-nothing}
                     :as opts}]
 
-  (when (and skip-log-indexes (not from-block ))
+  (when (and skip-log-indexes (not from-block))
     (throw (js/Error. "replay-past-events-in-order: Can't specify skip-log-indexes without specifying :from-block")))
 
   (let [ch-chunks-to-process (async/to-chan! (all-chunks from-block to-block block-step))
         ch-final-logs (async/chan 1)
-        chunk->logs' (partial chunk->logs transform-fn from-block skip-log-indexes events ignore-forward?)]
-    (async/pipeline-async 10 ch-final-logs chunk->logs' ch-chunks-to-process)
-    (go-loop [chunk-logs (async/<! ch-final-logs)]
-      (if chunk-logs
+        chunk->logs' (partial chunk->logs transform-fn from-block skip-log-indexes events ignore-forward? re-try)
+        chs-await-for-workers (for [n (range chunks-parallelism)]
+                                (async/chan 1))
+        workers (dotimes [n chunks-parallelism]
+                  (go-loop []
+                    (try
+                      (if-let [chunk (<! ch-chunks-to-process)]
+                        (let [ch-wait (async/chan 1)]
+                          (chunk->logs' chunk ch-wait)
+                          (>! ch-final-logs (<! ch-wait))
+                          (recur))
+                        (async/close! (nth chs-await-for-workers n)))
+                      (catch ExceptionInfo e
+                        (log/error e)))))
+        all-workers-finished (go-loop []
+                               (<! (async/merge chs-await-for-workers))
+                               (async/close! ch-final-logs))]
+    (go-loop []
+      (if-let [chunk-logs (<! ch-final-logs)]
         (do
           (when (fn? callback)
             (doseq [log chunk-logs]
               (doseq [res (try
-                            (if-let [?error (:error? (meta log))]
-                              (callback ?error nil)
+                            (if (:error? (meta log))
+                              (callback log nil)
                               (callback nil log))
                             (catch js/Error e
                               (when crash-on-event-fail?
@@ -327,7 +354,7 @@
                   (async-helpers/promise? res)
                   (<! (async-helpers/promise->chan res))))))
           (on-chunk chunk-logs)
-          (recur (async/<! ch-final-logs)))
+          (recur))
 
         (on-finish)))))
 

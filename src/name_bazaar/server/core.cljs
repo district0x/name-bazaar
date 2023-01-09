@@ -43,6 +43,7 @@
                                                    :offering-registry/offering-changed [:offering-registry :on-offering-changed]
                                                    :registrar/transfer [:eth-registrar :Transfer]}
                                           :from-block "latest"
+                                          :chunks-parallelism 10
                                           :block-step 1000}
                             :ui {:reveal-period {:hours 48}
                                  :etherscan-url "https://etherscan.io"
