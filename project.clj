@@ -140,10 +140,6 @@
             "clean-server" ["shell" "rm" "-rf" "server"]
             "build-server" ["do" ["clean-server"] ["cljsbuild" "once" "server"]]
             "build-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
-            ;"build-prod-ui" ["do" ["clean"] ["cljsbuild" "once" "min"]]
-            ;"build-qa-ui" ["do" ["clean"] ["cljsbuild" "once" "qa-min"]]
-            ;"build-prod" ["pdo" ["build-server"] ["build-prod-ui"] ["build-css"]]
-            ;"build-qa" ["pdo" ["build-server"] ["build-qa-ui"] ["build-css"]]
             "run-slither" ["shell" "./run-slither.sh"]}
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
@@ -204,22 +200,8 @@
                                    :optimizations :none
                                    :preloads [print.foo.preloads.devtools
                                               day8.re-frame-10x.preload]
-                                   :closure-defines {#_#_name-bazaar.ui.config.environment "dev"
-                                                     "re_frame.trace.trace_enabled_QMARK_" true}
+                                   :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
                                    :external-config {:devtools/config {:features-to-install :all}}}}
-
-
-                       ;; UI goerli
-                       ;{:id "qa-min"
-                       ; :source-paths ["src"]
-                       ; :compiler {:main "name-bazaar.ui.core"
-                       ;            :output-to "resources/public/js/compiled/app.js"
-                       ;            :output-dir "resources/public/js/compiled"
-                       ;            :optimizations :advanced
-                       ;            :closure-defines {#_#_name-bazaar.ui.config.environment "qa"}
-                       ;            :source-map "resources/public/js/compiled/app.js.map"
-                       ;            :pretty-print false
-                       ;            :pseudo-names false}}
 
                        ;; UI mainnet
                        {:id "min"
@@ -228,7 +210,6 @@
                                    :output-to "resources/public/js/compiled/app.js"
                                    :output-dir "resources/public/js/compiled"
                                    :optimizations :advanced
-                                   :closure-defines {#_#_name-bazaar.ui.config.environment "prod"}
                                    :source-map "resources/public/js/compiled/app.js.map"
                                    :pretty-print false
                                    :pseudo-names false}}]})
