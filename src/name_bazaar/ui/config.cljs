@@ -77,7 +77,7 @@
 
 (def config
   (case (.-hostname (.-location js/window))
-    "localhost" #_development-config qa-config
+    "localhost" development-config
     "namebazaar.qa.district0x.io" qa-config
     "namebazaar.preprod.district0x.io" preprod-config
     "namebazaar.io" production-config))
