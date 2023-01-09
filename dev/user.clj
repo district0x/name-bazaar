@@ -53,13 +53,9 @@
 (defn start-ui!
   "Start the client build.
   Passing {:prod-config? true} points the client to the production server and logging service!"
-  [& {:keys [:prod-config?]}]
-  (let [environment (if prod-config? "prod" "dev")
-        fig-config  (fw-config/fetch-config)]
-    (when prod-config? (log/info "Performing ui-only build..."))
-    (fw-repl/start-figwheel!
-     (set-closure-define fig-config "dev-ui" 'name-bazaar.ui.config.environment environment)
-     "dev-ui")
+  [& {:keys [prod-config?]}]
+  (let [fig-config  (fw-config/fetch-config)]
+    (fw-repl/start-figwheel! "dev-ui")
     (fw-repl/cljs-repl "dev-ui")))
 
 
