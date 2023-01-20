@@ -28,7 +28,6 @@
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
 
-                 [cljs-web3 "0.19.0-0-11"]                  ; needed ?
                  [is.d0x/district-server-bundle "22.12.12-SNAPSHOT"]
                  [is.d0x/district-ui-bundle "22.12.12-SNAPSHOT"]
                  [is.d0x/district-shared-bundle "23.1.20-SNAPSHOT"]
