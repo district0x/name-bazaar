@@ -28,9 +28,9 @@
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
 
-                 [is.d0x/district-server-bundle "22.12.12-SNAPSHOT"]
-                 [is.d0x/district-ui-bundle "22.12.12-SNAPSHOT"]
-                 [is.d0x/district-shared-bundle "23.1.20-SNAPSHOT"]
+                 [is.d0x/district-server-bundle "23.1.25-SNAPSHOT"]
+                 [is.d0x/district-ui-bundle "23.1.25-SNAPSHOT"]
+                 [is.d0x/district-shared-bundle "23.1.25-SNAPSHOT"]
                  [district0x/async-helpers "0.1.3"]
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-encryption "1.0.1"]
