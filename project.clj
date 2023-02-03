@@ -5,10 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[cljs-http "0.1.46"]
                  [org.clojure/core.async "1.5.648"]
-                 ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
-                 ;; only when the latter contains all so far missing functionality
-                 [cljs-web3 "0.19.0-0-11"]
-                 [cljs-web3-next "0.1.3"]   ; TODO after upgrade to "0.2.0-SNAPSHOT" remove district.server.smart-contracts in this project
                  [cljsjs/filesaverjs "1.3.3-0"]
                  [cljsjs/prop-types "15.6.0-0"]
                  [cljsjs/react "16.4.1-0"]
@@ -32,19 +28,69 @@
                  [reagent "0.8.1"]
                  [soda-ash "0.76.0"]
 
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TODO
+                 [is.d0x/district-server-bundle "23.1.25-SNAPSHOT"] ; break
+                 [is.d0x/district-ui-bundle "23.1.25-SNAPSHOT"]
+                 [is.d0x/district-shared-bundle "23.1.25-SNAPSHOT"] ; break
+                 ;;; LEGACY BELOW
+                 ;[district0x/district-server-db "1.0.4"]
+                 ;[district0x/district-server-smart-contracts "1.2.9"]
+                 ;[district0x/district-server-web3 "1.2.6"]
+                 ;[district0x/district-server-web3-events "1.1.10"]
+                 ;[cljs-web3 "0.19.0-0-11"]
+                 ;[cljs-web3-next "0.1.3"]
+                 ;;;; <<<<<<
+
+                 ;[is.d0x/district-server-bundle "23.1.25-20230125.203337-1" :exclusions [[org.clojure/clojurescript] [org.clojure/clojure] [com.taoensso/encore]]]
+                 ;[is.d0x/district-server-db "0.0.1"]
+                 ;[nilenso/honeysql-postgres "0.4.112"]
+                 ;[is.d0x/district-server-smart-contracts "0.0.1"]
+                 ;[is.d0x/district-server-web3-events "0.0.1"]
+                 ;[is.mad/district-server-smart-contracts "22.12.9"]
+                 ;[is.mad/district-server-web3 "22.12.9"]
+                 ;[is.d0x/district-server-web3-watcher "0.0.1"]
+                 ;[thheller/shadow-cljs "2.19.8"]
+                 ;[com.bhauman/cljs-test-display "0.1.1"]
+                 ;[expound "0.9.0"]
+                 ;[fipp "0.6.26"]
+                 ;[org.clojure/core.rrb-vector "0.1.2"]
+                 ;[io.methvin/directory-watcher "0.15.1"]
+                 ;[org.slf4j/slf4j-api "1.7.30"]
+                 ;[org.clojure/tools.cli "1.0.206"]
+                 ;[thheller/shadow-client "1.3.3"]
+                 ;[thheller/shadow-cljsjs "0.0.22"]
+                 ;[thheller/shadow-undertow "0.2.1"]
+                 ;[io.undertow/undertow-core "2.2.4.Final"]
+                 ;[org.jboss.logging/jboss-logging "3.4.1.Final"]
+                 ;[org.jboss.threads/jboss-threads "3.1.0.Final" :exclusions [[org.wildfly.common/wildfly-common]]]
+                 ;[org.jboss.xnio/xnio-api "3.8.0.Final" :exclusions [[org.jboss.threads/jboss-threads]]]
+                 ;[org.wildfly.client/wildfly-client-config "1.0.1.Final"]
+                 ;[org.wildfly.common/wildfly-common "1.5.2.Final"]
+                 ;[org.jboss.xnio/xnio-nio "3.8.0.Final" :scope "runtime" :exclusions [[org.wildfly.common/wildfly-common]]]
+                 ;[thheller/shadow-util "0.7.0"]
+                 ;[is.d0x/district-server-web3 "0.0.1"]
+                 ;[is.mad/cljs-web3-next "22.12.9"]
+
+                 ;[is.d0x/district-shared-bundle "23.1.25-20230125.203215-1" :exclusions [[org.clojure/clojurescript] [org.clojure/clojure] [com.taoensso/encore]]]
+                 ;[is.d0x/cljs-ipfs-http-client "0.0.1"]
+                 ;[is.d0x/cljs-solidity-sha3 "0.0.1"]
+                 ;[is.d0x/cljs-web3-next "0.0.1"]
+                 ;[binaryage/oops "0.7.2"]
+                 ;[is.d0x/district-parsers "0.0.1"]
+                 ;[is.d0x/district-validation "0.0.1"]
+                 ;[is.d0x/district-web3-utils "0.0.1"]
+
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
                  [district0x/async-helpers "0.1.3"]
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-encryption "1.0.1"]
                  [district0x/district-sendgrid "1.0.1"]
                  [district0x/district-server-config "1.0.1"]
-                 [district0x/district-server-db "1.0.4"]
                  ;; TODO: Update to latest version.
                  ;; Version 1.0.2 splits the package into two separate modules.
                  [district0x/district-server-endpoints "1.0.1"]
                  [district0x/district-server-logging "1.0.6"]
-                 [district0x/district-server-smart-contracts "1.2.9"]
-                 [district0x/district-server-web3 "1.2.6"]
-                 [district0x/district-server-web3-events "1.1.10"]
                  [district0x/district-ui-logging "1.1.0"]
                  [district0x/district-ui-mobile "1.0.0"]
                  [district0x/error-handling "1.0.4"]
@@ -82,29 +128,31 @@
             [lein-npm "0.6.2"]
             [lein-pdo "0.1.1"]]
 
-  :npm {:dependencies [["@ensdomains/ens-contracts" "0.0.4"]
-                       ["@openzeppelin/contracts" "4.1.0"]
-                       ["@sentry/node" "4.2.1"]
-                       ["@ungap/global-this" "0.4.4"]
-                       ;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [better-sqlite3 "5.4.0"]
-                       [chalk "2.3.0"]
-                       ;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [deasync "0.1.11"]
-                       ;; https://github.com/district0x/district-encryption/blob/d8ff0f/project.clj#L9
-                       ;; After deployment changes, (transitive) dependencies are not installed automatically
-                       ;; TODO: remove, they should be installed automatically
-                       [eccjs "0.3.1"]
-                       [chalk "2.3.0"]
-                       [eth-ens-namehash "2.0.0"]
-                       [semantic-ui "2.4.1"]
-                       [source-map-support "0.4.0"]
-                       [ws "2.3.1"]
-                       [xhr2 "0.1.4"]]
+  :npm {:dependencies [
+                       ["web3" "1.7.3"]
+                       ;["@ensdomains/ens-contracts" "0.0.4"]
+                       ;["@openzeppelin/contracts" "4.1.0"]
+                       ;["@sentry/node" "4.2.1"]
+                       ;["@ungap/global-this" "0.4.4"]
+                       ;;; https://github.com/district0x/district-server-db/blob/3839edd/project.clj#L12
+                       ;;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;;; TODO: remove, they should be installed automatically
+                       ;[better-sqlite3 "5.4.0"]
+                       ;[chalk "2.3.0"]
+                       ;;; https://github.com/district0x/district-server-smart-contracts/blob/682e649/project.clj#L17
+                       ;;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;;; TODO: remove, they should be installed automatically
+                       ;[deasync "0.1.11"]
+                       ;;; https://github.com/district0x/district-encryption/blob/d8ff0f/project.clj#L9
+                       ;;; After deployment changes, (transitive) dependencies are not installed automatically
+                       ;;; TODO: remove, they should be installed automatically
+                       ;[eccjs "0.3.1"]
+                       ;[eth-ens-namehash "2.0.0"]
+                       ;[semantic-ui "2.4.1"]
+                       ;[source-map-support "0.4.0"]
+                       ;[ws "2.3.1"]
+                       ;[xhr2 "0.1.4"]
+                       ]
         :devDependencies [["@testing-library/cypress" "7.0.3"]
                           ["@truffle/hdwallet-provider" "1.2.2"]
                           [ethlint "1.2.5"]
@@ -112,7 +160,7 @@
                           [jsedn "0.4.1"]
                           [truffle "5.2.3"]]
         :package {:scripts {:ethlint "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/"
-                            :ethlint-fix"./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
+                            :ethlint-fix "./node_modules/ethlint/bin/solium.js --dir resources/public/contracts/src/ --fix"
                             :cypress-open " ./node_modules/cypress/bin/cypress open"
                             :cypress-run " ./node_modules/cypress/bin/cypress run"
                             }}}
