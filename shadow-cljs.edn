@@ -1,6 +1,8 @@
 {:deps true
  :dev-http {8080 "public"}
- :builds {:dev-server {:target :node-script
-                       :main name-bazaar.server.dev/-main
-                       :output-to "dev-server/name-bazaar.js",
-                       }}}
+ :builds {:dev-server
+          {:target :node-script
+           :main name-bazaar.server.dev/-main
+           :output-dir "out/"
+           :output-to "out/dev-server.js"
+           :optimizations :none}}}

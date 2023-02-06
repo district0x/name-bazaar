@@ -6,7 +6,6 @@ pom.xml.asc
 *.jar
 *.class
 /package-lock.json
-/package.json
 /.lein-*
 /.nrepl-port
 .hgignore
@@ -38,3 +37,8 @@ node_modules/
 /resources/public/contracts-build
 /.python-version
 /.cpcache
+
+# Shadow migration related folders
+out
+yarn-error.log
+.shadow-cljs

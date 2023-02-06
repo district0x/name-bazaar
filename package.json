@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@sentry/node": "7.31.1",
+    "chalk": "2.3.0",
+    "xmlhttprequest": "1.8.0",
+    "axios": "0.27.2",
+    "better-sqlite3": "8.0.1",
+    "buffer": "6.0.3",
+    "eccjs": "0.3.1",
+    "shadow-cljs": "2.19.8",
+    "web3": "1.7.3"
+  }
+}
