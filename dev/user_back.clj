@@ -1,4 +1,4 @@
-(ns user
+(ns user-bacl
   (:require
    [com.rpl.specter :as s]
    [figwheel-sidecar.repl-api :as fw-repl]
@@ -8,6 +8,14 @@
    [compojure.route :as route]
    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
    [clojure.string :refer [starts-with?]]))
+
+;(ns user)
+;
+;(comment
+;  (shadow.user/repl :spa)
+;  (shadow/repl :spa)
+;  ;:cljs/quit
+;  )
 
 (defn- wrap-default-index [next-handler]
   (fn [request]

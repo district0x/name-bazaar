@@ -37,3 +37,4 @@ node_modules/
 .gradle
 /resources/public/contracts-build
 /.python-version
+/.cpcache
