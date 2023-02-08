@@ -2,7 +2,6 @@
   (:require
     [bidi.bidi :as bidi]
     [cemerick.url :as url]
-    [cljsjs.filesaverjs]
     [cljs.pprint :refer [cl-format]]
     [cljs-time.coerce :refer [to-date-time to-long to-epoch to-local-date-time]]
     [cljs-time.core :as t :refer [date-time to-default-time-zone]]
@@ -16,7 +15,8 @@
     [goog.string.format]
     [medley.core :as medley]
     [re-frame.core :refer [reg-sub]]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    ["file-saver" :refer [saveAs]]))
 
 (defn get-window-size [width]
   (cond
@@ -292,7 +292,7 @@
     (.readAsText reader file)))
 
 (defn file-write [filename content & [mime-type]]
-  (js/saveAs (new js/Blob
+  (saveAs (new js/Blob
                   (clj->js [content])
                   (clj->js {:type (or mime-type (str "application/json;charset=UTF-8"))}))
              filename))

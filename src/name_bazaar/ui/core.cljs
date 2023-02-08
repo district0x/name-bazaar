@@ -2,7 +2,6 @@
   (:require
     [cljs-time.extend]
     [cljs.spec.alpha :as s]
-    [cljsjs.web3]
     [district.ui.mobile]
     [district.ui.logging]
     [district0x.ui.events]
@@ -20,6 +19,7 @@
     [print.foo :include-macros true]
     [re-frame.core :refer [dispatch dispatch-sync clear-subscription-cache!]]
     [reagent.core :as r]
+    [reagent.dom :as r-dom]
     [taoensso.timbre :as logging :refer-macros [info warn error]]
     [name-bazaar.ui.utils :refer [run-ignoring-errors]]))
 
@@ -35,7 +35,7 @@
   (-> (mount/with-args config)
       (mount/start #'district.ui.mobile/mobile
                    #'district.ui.logging/logging))
-  (r/render [main-panel] (.getElementById js/document "app")))
+  (r-dom/render [main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []
   (s/check-asserts goog.DEBUG)

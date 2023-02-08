@@ -1,9 +1,9 @@
 (ns name-bazaar.ui.components.date-picker
   (:require
-    [cljsjs.react-datepicker]
+    ["react-datepicker" :as DatePicker]
     [reagent.core :as r]))
 
-(def date-picker* (r/adapt-react-class (aget js/DatePicker "default")))
+(def date-picker* (r/adapt-react-class (.-default DatePicker)))
 
 (defn date-picker [{:keys [:selected] :as props}]
   [date-picker*
