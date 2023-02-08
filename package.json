@@ -16,11 +16,28 @@
     "xhr2": "0.1.4",
     "@ensdomains/ens-contracts": "0.0.4",
     "@openzeppelin/contracts": "4.1.0",
-    "@ungap/global-this": "0.4.4"
+    "@ungap/global-this": "0.4.4",
+
+
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "create-react-class": "15.7.0",
+    "@sentry/browser": "7.36.0",
+    "file-saver": "2.0.4",
+    "semantic-ui": "2.5.0",
+    "semantic-ui-react": "2.1.4",
+    "react-meta-tags": "1.0.1",
+    "react-infinite": "0.13.0",
+    "react-datepicker": "4.10.0"
+
   },
   "devDependencies": {
     "source-map-support": "^0.5.21",
     "@truffle/hdwallet-provider": "2.1.6",
-    "jsedn": "0.4.1"
+    "jsedn": "0.4.1",
+    "gulp": "4.0.2"
+  },
+  "resolutions": {
+    "del": "6.1"
   }
 }

@@ -4,29 +4,20 @@
         ;; TODO migration from cljs-web3 to cljs-web3-next can be completed
         ;; only when the latter contains all so far missing functionality
         ; cljs-web3 {:mvn/version "0.19.0-0-11"}
+        binaryage/devtools {:mvn/version "1.0.6"}
         org.clojure/core.match {:mvn/version "1.0.1"}
         is.d0x/cljs-web3-next {:mvn/version "LATEST"}
-        ; cljsjs/filesaverjs {:mvn/version "1.3.3-0"}
-        ; cljsjs/prop-types {:mvn/version "15.6.0-0"}
-        ; cljsjs/react {:mvn/version "16.4.1-0"}
-        ; cljsjs/react-datepicker {:mvn/version "1.5.0-0"}
-        ; cljsjs/react-dom {:mvn/version "16.4.1-0"}
-        ; cljsjs/react-infinite {:mvn/version "0.13.0-0"}
-        ; cljsjs/react-meta-tags {:mvn/version "0.3.0-1"}
         com.rpl/specter {:mvn/version "1.1.1"}
-        compojure {:mvn/version "1.6.2"}
+        compojure/compojure {:mvn/version "1.6.2"}
         day8.re-frame/async-flow-fx {:mvn/version "0.0.8"}
-        day8.re-frame/forward-events-fx {:mvn/version "0.0.5"}
-        medley {:mvn/version "1.3.0"}
+        day8.re-frame/forward-events-fx {:mvn/version "0.0.6"}
+        medley/medley {:mvn/version "1.4.0"}
         org.clojure/clojure {:mvn/version "1.10.3"}
         org.clojure/clojurescript {:mvn/version "1.11.60"}
         print-foo-cljs {:mvn/version "2.0.3"}
-        re-frame {:mvn/version "0.10.6"}
-        re-promise {:mvn/version "0.1.1"}
+        re-frame/re-frame {:mvn/version "1.3.0"}
+        re-promise/re-promise {:mvn/version "0.1.1"}
         ring/ring-defaults {:mvn/version "0.3.2"}
-        ;; Can be removed when re-frame bump includes reagent 8.0.1+
-        reagent {:mvn/version "0.8.1"}
-        soda-ash {:mvn/version "0.76.0"}
 
         district0x/async-helpers {:mvn/version "0.1.3"}
         district0x/bignumber {:mvn/version "1.0.3"}
@@ -47,10 +38,9 @@
 
         ;; d0xINFRA temporary here
         akiroz.re-frame/storage {:mvn/version "0.1.2"}
-        bidi {:mvn/version "2.1.2"}
-        mount {:mvn/version "0.1.11"}
-        camel-snake-kebab {:mvn/version "0.4.0"}
-        ; cljs-ajax {:mvn/version "0.7.2"}
+        bidi/bidi {:mvn/version "2.1.6"}
+        mount/mount {:mvn/version "0.1.11"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
         cljsjs/bignumber {:mvn/version "2.1.4-1"}
         cljsjs/react-flexbox-grid {:mvn/version "1.0.0-0"}
         cljsjs/react-highlight {:mvn/version "1.0.7-2"}
@@ -66,7 +56,23 @@
         madvas/cemerick-url-patched {:mvn/version "0.1.2-SNAPSHOT"} ;; Temporary until cemerick merges PR26
         madvas.re-frame/web3-fx {:mvn/version "0.2.3"}
         }
- :aliases {:shadow-cljs {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
-                         :main-opts ["-m" "shadow.cljs.devtools.cli"]}
-           :dev {:extra-paths ["dev"]}}}
+ :aliases {:shadow-cljs
+           {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
+            :main-opts ["-m" "shadow.cljs.devtools.cli"]}
+           :dev
+           {:extra-paths ["dev"]}
+           :ui-deps
+           {:extra-deps
+            {cljsjs/sentry-browser {:mvn/version "5.4.3-0"}
+             ;; Can be removed when re-frame bump includes reagent 8.0.1+
+             reagent {:mvn/version "1.1.1"}
+             soda-ash/soda-ash {:mvn/version "0.83.0"}
+             ; cljsjs/filesaverjs {:mvn/version "1.3.3-0"}
+             ; cljsjs/prop-types {:mvn/version "15.6.0-0"}
+             ; cljsjs/react {:mvn/version "16.4.1-0"}
+             ; cljsjs/react-datepicker {:mvn/version "1.5.0-0"}
+             ; cljsjs/react-dom {:mvn/version "16.4.1-0"}
+             ; cljsjs/react-infinite {:mvn/version "0.13.0-0"}
+             ; cljsjs/react-meta-tags {:mvn/version "0.3.0-1"}
+             }}}}
 
