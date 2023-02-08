@@ -69,9 +69,9 @@ const deleteFolder = function (directoryPath) {
 deleteFolder(CONTRACTS_BUILD_DIR)
 
 module.exports = {
-  contracts_directory: './resources/public/contracts',
+  contracts_directory: './contracts',
   contracts_build_directory: CONTRACTS_BUILD_DIR,
-  migrations_directory: './resources/public/contracts-migration',
+  migrations_directory: './migrations',
   /**
    * Networks define how you connect to your ethereum client and let you set the
    * defaults web3 uses to send transactions. If you don't specify one truffle

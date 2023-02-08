@@ -6,6 +6,7 @@
     [district.server.logging]
     [district.server.web3-events]
     [district.shared.async-helpers :as async-helpers]
+    [clojure.core.async :as async]
     [medley.core :as medley]
     [mount.core :as mount]
     [name-bazaar.server.api]
@@ -19,8 +20,10 @@
 
 (defn -main [& _]
   (async-helpers/extend-promises-as-channels!)
+  (async/go
   (-> (mount/with-args
-        {:config {:default {:logging {:level "info"
+        {:config {:file-path "config/dev_config.edn"
+                  :default {:logging {:level "info"
                                       :console? true
                                       :sentry {:dsn "https://597ef71a10a240b0949c3b482fe4b9a4@sentry.io/1364232"
                                                :min-level :warn}}
@@ -51,6 +54,6 @@
                            :contracts-var #'name-bazaar.shared.smart-contracts/smart-contracts}
          :endpoints {:middlewares [logging-middlewares]}})
       (mount/start))
-  (log/warn "System started" {:config (medley/dissoc-in @config [:emailer :private-key])}))
+  (log/warn "System started" {:config (medley/dissoc-in @config [:emailer :private-key])})))
 
 (set! *main-cli-fn* -main)

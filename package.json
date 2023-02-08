@@ -7,7 +7,20 @@
     "better-sqlite3": "8.0.1",
     "buffer": "6.0.3",
     "eccjs": "0.3.1",
-    "shadow-cljs": "2.19.8",
-    "web3": "1.7.3"
+    "shadow-cljs": "2.20.20",
+    "web3": "1.7.3",
+    "xhr2": "0.2.1",
+    "chalk": "2.3.0",
+    "eth-ens-namehash": "2.0.0",
+    "ws": "2.3.1",
+    "xhr2": "0.1.4",
+    "@ensdomains/ens-contracts": "0.0.4",
+    "@openzeppelin/contracts": "4.1.0",
+    "@ungap/global-this": "0.4.4"
+  },
+  "devDependencies": {
+    "source-map-support": "^0.5.21",
+    "@truffle/hdwallet-provider": "2.1.6",
+    "jsedn": "0.4.1"
   }
 }

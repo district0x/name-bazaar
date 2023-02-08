@@ -2,7 +2,7 @@
  :dev-http {8080 "public"}
  :builds {:dev-server
           {:target :node-script
-           :main name-bazaar.server.dev/-main
+           :main name-bazaar.server.core/-main
            :output-dir "out/"
            :output-to "out/dev-server.js"
            :optimizations :none}}}
