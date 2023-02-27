@@ -49,16 +49,12 @@
         kibu/pushy {:mvn/version "0.3.8"}
         madvas.re-frame/google-analytics-fx {:mvn/version "0.1.0"}
         madvas/cemerick-url-patched {:mvn/version "0.1.2-SNAPSHOT"} ;; Temporary until cemerick merges PR26
-        madvas.re-frame/web3-fx {:mvn/version "0.2.3"}
-        }
- :aliases {:shadow-cljs
-           {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
-            :main-opts ["-m" "shadow.cljs.devtools.cli"]}
-           :dev
-           {:extra-paths ["dev"]}
-           :ui-deps
-           {:extra-deps
-            {cljsjs/sentry-browser {:mvn/version "5.4.3-0"}
-             reagent {:mvn/version "1.1.1"}
-             soda-ash/soda-ash {:mvn/version "0.83.0"}}}}}
+        madvas.re-frame/web3-fx {:mvn/version "0.2.3"}}
+ :aliases {:shadow-cljs {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
+                         :main-opts ["-m" "shadow.cljs.devtools.cli"]}
+           :dev {:extra-paths ["dev"]}
+           :ui-deps {:extra-deps
+                     {cljsjs/sentry-browser {:mvn/version "5.4.3-0"}
+                      reagent {:mvn/version "1.1.1"}
+                      soda-ash/soda-ash {:mvn/version "0.83.0"}}}}}
 

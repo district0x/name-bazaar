@@ -14,9 +14,7 @@
     [name-bazaar.server.contracts-api.offering :as offering]
     [name-bazaar.server.emailer.templates :as templates]
     [name-bazaar.server.generator]
-    [taoensso.timbre :refer [info warn error]]
-
-    ))
+    [taoensso.timbre :refer [info warn error]]))
 
 (declare start)
 (declare stop)

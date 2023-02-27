@@ -8,3 +8,4 @@ node_modules
 resources/public/js
 resources/public/css
 Session.vim
+/resources/semantic/dist/

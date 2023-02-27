@@ -1,3 +1,13 @@
 (ns name-bazaar.shared.smart-contracts)
-    (def smart-contracts
-      {:ens {:name "ENSRegistry" :address "0x555384605D2B6c71bE931B6e649baE1c4981AAad"} :eth-registrar {:name "NameBazaarDevRegistrar" :address "0xE13fD5Ed78f1306B4C7C9c3C96FDB99CFc943C5B"} :offering-registry {:name "OfferingRegistry" :address "0x89A587f9dA816DdFe01438BF72285CdA936522DC"} :buy-now-offering {:name "BuyNowOffering" :address "0xFE68Dd56B12E7f943C3BB0C07cad600979c6CD5b"} :buy-now-offering-factory {:name "BuyNowOfferingFactory" :address "0xFC1F46A5a9c391841C434Ac90eAFd64B94ace2a8"} :auction-offering {:name "AuctionOffering" :address "0x55862C43FC0D3f5ed12e0b0E1595D4c974674A26"} :auction-offering-factory {:name "AuctionOfferingFactory" :address "0x148bC20c67E79A3AB37B1Fe5A1659c877f2ecf4B"} :district0x-emails {:name "District0xEmails" :address "0x00E04A9888479B9dAD29EfFA55F54aAC70c85788"} :reverse-name-resolver {:name "NamebazaarDevNameResolver" :address "0xbdd338A8C6b2b3A7F1439f67fdfDbfa914170A74"} :public-resolver {:name "NamebazaarDevPublicResolver" :address "0xa3Cf505C08C7b29f6437BD178ECcD9f758c60ae0"} :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0xe2F33C5DDDaC08f52359Af823fcB5F93FE85680E"}})
+(def smart-contracts
+  {:ens {:name "ENSRegistry" :address "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"}
+   :eth-registrar {:name "NameBazaarDevRegistrar" :address "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"}
+   :offering-registry {:name "OfferingRegistry" :address "0x5B5B2B386a84546Fa75E9472e3096C26576B6d24"}
+   :buy-now-offering {:name "BuyNowOffering" :address "0x45141Ef2E09412eAd94793617507A0F487249fB0"}
+   :buy-now-offering-factory {:name "BuyNowOfferingFactory" :address "0xF9Bc1b1bBC9C91864e68D861038282ebdcf2449A"}
+   :auction-offering {:name "AuctionOffering" :address "0x9cf308c1d04AeD7eEA994f029cA2E39517C6372f"}
+   :auction-offering-factory {:name "AuctionOfferingFactory" :address "0xF787200012f8d3EA6Ee686577aA73Ed4a3e3ee0C"}
+   :district0x-emails {:name "District0xEmails" :address "0x02441d5dd828CccB3F81ae702eeEccc2142a192e"}
+   :reverse-name-resolver {:name "NamebazaarDevNameResolver" :address "0xA2C122BE93b0074270ebeE7f6b7292C7deB45047"}
+   :public-resolver {:name "NamebazaarDevPublicResolver" :address "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41"}
+   :reverse-registrar {:name "NamebazaarDevReverseRegistrar" :address "0x084b1c3C81545d370f3634392De611CaaBFf8148"}})
