@@ -1,7 +1,8 @@
 (ns name-bazaar.ui.components.date-picker
   (:require
     ["react-datepicker" :as DatePicker]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    ["moment" :as moment]))
 
 (def date-picker* (r/adapt-react-class (.-default DatePicker)))
 
@@ -9,5 +10,4 @@
   [date-picker*
    (r/merge-props
      props
-     {:selected (js/moment selected)})])
-
+     {:selected (.toDate (moment selected))})])
