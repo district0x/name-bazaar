@@ -17,7 +17,7 @@
 /* Standard */
 .ui.header {
   border: none;
-  margin: calc(2rem -  0.14285714em ) 0em 25px;
+  margin: calc(2rem -  0.28571429em / 2 ) 0em 25px;
   padding: 0em 0em;
   font-family: 'filson-soft', 'sans-serif';
   font-weight: 300;
@@ -72,7 +72,7 @@
 .ui.header > .image:not(.icon),
 .ui.header > img {
   display: inline-block;
-  margin-top: 0.14285714em;
+  margin-top: 0.28571429em / 2;
   width: 2.5em;
   height: auto;
   vertical-align: middle;

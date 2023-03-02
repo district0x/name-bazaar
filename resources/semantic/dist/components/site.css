@@ -45,7 +45,7 @@ h4,
 h5 {
   font-family: 'filson-soft', 'sans-serif';
   line-height: 1.28571429em;
-  margin: calc(2rem -  0.14285714em ) 0em 25px;
+  margin: calc(2rem -  0.28571429em / 2 ) 0em 25px;
   font-weight: 300;
   padding: 0em;
 }
