@@ -1832,6 +1832,9 @@ input[type="range"] {
   .react-datepicker__triangle {
     border-bottom-color: @brown !important;
   }
+  .react-datepicker__aria-live {
+    display: none;
+  }
 }
 
 .transaction-log-sticky {

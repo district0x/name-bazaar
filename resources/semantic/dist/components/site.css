@@ -2104,6 +2104,9 @@ input[type="range"]::-moz-range-thumb {
 .react-datepicker .react-datepicker__triangle {
   border-bottom-color: #2e1f37 !important;
 }
+.react-datepicker .react-datepicker__aria-live {
+  display: none;
+}
 .transaction-log-sticky > * {
   z-index: 9999;
 }

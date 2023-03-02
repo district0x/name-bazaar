@@ -10,4 +10,6 @@
   [date-picker*
    (r/merge-props
      props
-     {:selected (.toDate (moment selected))})])
+     {:selected (.toDate (moment selected))
+      :previousMonthButtonLabel nil
+      :nextMonthButtonLabel nil})])
