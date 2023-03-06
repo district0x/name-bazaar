@@ -1,5 +1,6 @@
 {:deps true
  :dev-http {8080 "resources/public"}
+ :nrepl {:port 54100}
  :builds {:dev-ui {:target :browser
                    :modules {:main {:init-fn name-bazaar.ui.core/init}}
                    :main name-bazaar.ui.core
