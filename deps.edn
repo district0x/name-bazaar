@@ -1,7 +1,7 @@
 {:paths ["src"]
  :deps {binaryage/devtools {:mvn/version "1.0.6"}
         org.clojure/core.match {:mvn/version "1.0.1"}
-        is.d0x/cljs-web3-next {:mvn/version "LATEST"}
+        ;is.d0x/cljs-web3-next {:mvn/version "LATEST"}
         com.rpl/specter {:mvn/version "1.1.1"}
         compojure/compojure {:mvn/version "1.6.2"}
         day8.re-frame/async-flow-fx {:mvn/version "0.0.8"}
@@ -14,19 +14,23 @@
         re-promise/re-promise {:mvn/version "0.1.1"}
         ring/ring-defaults {:mvn/version "0.3.2"}
 
+        is.d0x/district-server-bundle {:mvn/version "23.1.26"}
+        is.d0x/district-ui-bundle {:mvn/version "23.1.26"}
+        is.d0x/district-shared-bundle {:mvn/version "23.1.26"}
+
         district0x/async-helpers {:mvn/version "0.1.3"}
         district0x/bignumber {:mvn/version "1.0.3"}
         district0x/district-encryption {:mvn/version "1.0.2"}
         district0x/district-sendgrid {:mvn/version "1.1.0-SNAPSHOT"}
         district0x/district-server-config {:mvn/version "1.0.1"}
-        is.d0x/district-server-db {:mvn/version "LATEST"}
+        ;is.d0x/district-server-db {:mvn/version "LATEST"}
         ;; TODO: Update to latest version.
         ;; Version 1.0.2 splits the package into two separate modules.
         district0x/district-server-endpoints {:mvn/version "1.0.1"}
         district0x/district-server-logging {:mvn/version "1.0.6"}
-        district0x/district-server-smart-contracts {:mvn/version "1.2.9"}
-        is.d0x/district-server-web3 {:mvn/version "LATEST"}
-        is.d0x/district-server-web3-events {:mvn/version "LATEST"}
+        ;district0x/district-server-smart-contracts {:mvn/version "1.2.9"}
+        ;is.d0x/district-server-web3 {:mvn/version "LATEST"}
+        ;is.d0x/district-server-web3-events {:mvn/version "LATEST"}
         district0x/district-ui-logging {:mvn/version "1.1.0"}
         district0x/district-ui-mobile {:mvn/version "1.0.0"}
         district0x/error-handling {:mvn/version "1.0.4"}
