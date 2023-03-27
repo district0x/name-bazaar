@@ -15,8 +15,8 @@
         ring/ring-defaults {:mvn/version "0.3.2"}
 
         is.d0x/district-server-bundle {:mvn/version "23.1.26"}
-        is.d0x/district-ui-bundle {:mvn/version "23.1.26"}
-        is.d0x/district-shared-bundle {:mvn/version "23.1.26"}
+        is.d0x/district-ui-bundle {:mvn/version "23.2.9"}
+        is.d0x/district-shared-bundle {:mvn/version "23.2.9"}
 
         district0x/async-helpers {:mvn/version "0.1.3"}
         district0x/bignumber {:mvn/version "1.0.3"}
@@ -55,6 +55,7 @@
         madvas/cemerick-url-patched {:mvn/version "0.1.2-SNAPSHOT"} ;; Temporary until cemerick merges PR26
         madvas.re-frame/web3-fx {:mvn/version "0.2.3"}}
  :aliases {:shadow-cljs {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
+                         :extra-paths ["test"]
                          :main-opts ["-m" "shadow.cljs.devtools.cli"]}
            :dev {:extra-paths ["dev"]}
            :ui-deps {:extra-deps

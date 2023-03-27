@@ -14,4 +14,8 @@
                        :main name-bazaar.server.core/-main
                        :output-dir "out/"
                        :output-to "out/dev-server.js"
-                       :optimizations :none}}}
+                       :optimizations :none}
+          :test {:target :node-test
+                 :output-to "out/node-tests.js"
+                 :ns-regexp "-tests$"
+                 :autorun true}}}
