@@ -44,7 +44,7 @@
           (mount/only [#'district.server.web3
                        #'district.server.smart-contracts/smart-contracts])
           (mount/start))
-      (let [id (<! (web3-evm/snapshot @web3))]
+      (let [id (<! (web3-evm/snapshot! @web3))]
         (swap! snapshot-id (fn [_] id)))
       (done))))
 
