@@ -44,9 +44,13 @@
           (mount/only [#'district.server.web3
                        #'district.server.smart-contracts/smart-contracts])
           (mount/start))
-      (let [id (<! (web3-evm/snapshot! @web3))]
-        (swap! snapshot-id (fn [_] id)))
-      (done))))
+
+      (web3-evm/snapshot! @web3
+                          (fn [err res]
+                            (if err
+                              (log/error "can't create snapshoot: " err res)
+                              (reset! snapshot-id res))
+                            (done))))))
 
 
 (defn after-test []
