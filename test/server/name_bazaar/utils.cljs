@@ -62,7 +62,11 @@
       ;; 2. evm_revert is a non-standard method not explicitly supported in web3js
       ;; 3. there's a validator expecting by default any non-standard method to have 0 args
       ;; so we need to go more low level
-      (js-invoke (aget @web3 "currentProvider")
+      (web3-evm/revert! @web3 @snapshot-id (fn [err _]
+                                             (when err (throw (js/Error. "Error evm_revert-ing to snapshot" err)))
+                                             (mount/stop)
+                                             (js/setTimeout #(done) 500)))
+      #_(js-invoke (aget @web3 "currentProvider")
                  "send"
                  (clj->js {:jsonrpc "2.0",
                            :method "evm_revert",

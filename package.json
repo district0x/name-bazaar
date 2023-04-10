@@ -13,6 +13,10 @@
     "eccjs": "0.3.1",
     "eth-ens-namehash": "2.0.0",
     "file-saver": "2.0.4",
+    "karma": "6.3.0",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-cli": "2.0.0",
+    "karma-cljs-test": "0.1.0",
     "moment": "^2.29.4",
     "react": "17.0.2",
     "react-datepicker": "4.10.0",
@@ -25,13 +29,15 @@
     "web3": "1.7.3",
     "ws": "2.3.1",
     "xhr2": "0.1.4",
-    "xmlhttprequest": "1.8.0"
+    "xmlhttprequest": "1.8.0",
+    "xregexp": "5.1.1"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "2.1.6",
     "gulp": "4.0.2",
     "jsedn": "0.4.1",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "truffle": "^5.8.1"
   },
   "resolutions": {
     "del": "6.1"
