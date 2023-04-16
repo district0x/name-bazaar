@@ -129,7 +129,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 13))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -202,7 +202,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 13))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -282,7 +282,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 15))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 15)))
 
         (testing "Emergency multisig can pause the registry"
           (let [tx (<! (offering-registry/emergency-pause! {:from addr0}))]
