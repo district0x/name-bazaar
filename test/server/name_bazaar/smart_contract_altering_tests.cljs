@@ -20,7 +20,7 @@
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.shared.smart-contracts]
     [print.foo :include-macros true]
-    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3 increase-time!]]))
+    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3]]))
 
 (use-fixtures
   :each {:before before-test
@@ -412,7 +412,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (increase-time! (t/in-seconds (t/days 15))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 15)))
 
         (let [balance-of-multisig (<! (get-balance addr0))
               balance-of-1 (<! (get-balance addr1))]

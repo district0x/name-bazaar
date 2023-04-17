@@ -23,7 +23,7 @@
     [name-bazaar.server.contracts-api.registrar :as registrar]
     [name-bazaar.shared.smart-contracts]
     [print.foo :include-macros true]
-    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3 increase-time!]]))
+    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3]]))
 
 ;; ganache-cli default value
 (def gas-price 2e10)
@@ -262,7 +262,7 @@
               (let [tx (<! (auction-offering/finalize! offering {:from addr0}))]
                 (is (nil? tx))))
 
-            (<! (increase-time! (time/in-seconds (time/days 15))))
+            (web3-evm/increase-time! @web3 (time/in-seconds (time/days 15)))
 
             (testing "User who was overbid, can successfully withdraw funds from auction offering."
               (let [tx (<! (auction-offering/withdraw! {:address addr1
@@ -508,7 +508,7 @@
                   actual-balance (<! (get-balance addr3))]
               (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
-          (<! (increase-time! (time/in-seconds (time/days 15))))
+          (web3-evm/increase-time! @web3 (time/in-seconds (time/days 15)))
 
           (testing "State of the auction offering is correct"
             (is (= {:auction-offering/min-bid-increase 100000000000000000

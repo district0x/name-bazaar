@@ -1,7 +1,7 @@
 (ns server.name-bazaar.utils
   (:require
     [bignumber.core :as bn]
-    [cljs.core.async :refer [<! go chan close!]]
+    [cljs.core.async :refer [<! go]]
     [cljs.test :refer-macros [async]]
     [cljs-time.coerce :refer [from-long]]
     [cljs-web3-next.eth :as web3-eth]
@@ -30,11 +30,6 @@
   (promise-> (web3-eth/get-balance @web3 address)
              bn/number))
 
-(defn increase-time! [args]
-  (go
-    (let [ch (chan)]
-      (web3-evm/increase-time! @web3 args (fn [] (close! ch)))
-      (<! ch))))
 
 (defn before-test []
   (async done
