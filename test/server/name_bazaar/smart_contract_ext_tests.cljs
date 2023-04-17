@@ -22,7 +22,7 @@
     [name-bazaar.server.contracts-api.used-by-factories :as used-by-factories]
     [name-bazaar.shared.smart-contracts]
     [print.foo :include-macros true]
-    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3]]))
+    [server.name-bazaar.utils :refer [after-test before-test get-balance namehash now sha3 increase-time!]]))
 
 (use-fixtures
   :each {:before before-test
@@ -129,7 +129,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
+        (<! (increase-time! (t/in-seconds (t/days 13))))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -202,7 +202,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
+        (<! (increase-time! (t/in-seconds (t/days 13))))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -282,7 +282,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 15)))
+        (<! (increase-time! (t/in-seconds (t/days 15))))
 
         (testing "Emergency multisig can pause the registry"
           (let [tx (<! (offering-registry/emergency-pause! {:from addr0}))]
