@@ -84,6 +84,8 @@
 (deftest create-subdomain-auction-offering
   (async done
     (go
+      (web3-evm/increase-time! @web3 0)
+      (web3-evm/mine-block! @web3)
       (let [[addr0 addr1 addr2 addr3] (<! (web3-eth/accounts @web3))
             t0 (to-epoch (t/plus (<! (now)) (t/weeks 2)))
             register-tx (<! (registrar/register! {:ens.record/label "tld"}
@@ -164,6 +166,8 @@
 (deftest subdomain-auction-withdraw
   (async done
     (go
+      (web3-evm/increase-time! @web3 0)
+      (web3-evm/mine-block! @web3)
       (let [[addr0 addr1 addr2 addr3] (<! (web3-eth/accounts @web3))
             t0 (to-epoch (t/plus (<! (now)) (t/weeks 2)))
             register-tx (<! (registrar/register! {:ens.record/label "tld"}
