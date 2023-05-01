@@ -17,7 +17,8 @@
     [name-bazaar.ui.utils :refer [namehash sha3 normalize strip-root-registrar-suffix path-for]]
     [re-frame.core :refer [subscribe dispatch]]
     [reagent.core :as r]
-    [soda-ash.core :as ui]))
+    [soda-ash.core :as ui]
+    ["moment" :as moment]))
 
 (defn offering-default-form-data [name]
   (let [end-time (doto (to-date (t/plus (t/now) (t/days 3) (t/hours 1)))
@@ -40,7 +41,7 @@
   (/ seconds 3600))
 
 (defn- max-extension-duration-hours [now end-time]
-  (let [end-time (from-date (.toDate (js/moment end-time)))
+  (let [end-time (from-date (.toDate (moment end-time)))
         now (if (<= (.getTime now) (.getTime end-time)) now end-time)]
     (min 24 (/ (quot (t/in-minutes (t/interval now end-time)) 15) 4))))
 
@@ -71,14 +72,14 @@
        :time-intervals 15
        :date-format "LLLL"
        :should-close-on-select false
-       :max-date (.add (js/moment) (* 4 30) "days")
-       :min-date (js/moment)}
+       :max-date (.add (moment) (* 4 30) "days")
+       :min-date (moment)}
       props)]])
 
 (defn- form-data->transaction-data [{:keys [:offering/type] :as offering}]
   (-> offering
       (update :offering/name str constants/registrar-root)
-      (update :auction-offering/end-time (comp from-date #(.toDate (js/moment %))))
+      (update :auction-offering/end-time (comp from-date #(.toDate (moment %))))
       (update :auction-offering/extension-duration hours->seconds)))
 
 (defn- transaction-data->form-data [{:keys [:offering/auction?] :as offering}]
@@ -106,7 +107,7 @@
                                           valid-min-bid-increase?))
                                  (and auction?
                                       (t/after? (t/plus- @now (t/seconds (hours->seconds extension-duration)))
-                                                (from-date (.toDate (js/moment end-time))))))]
+                                                (from-date (.toDate (moment end-time))))))]
         [:div
          [:div.grid.offering-form.submit-footer
           [:div.name

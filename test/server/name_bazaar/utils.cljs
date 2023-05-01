@@ -44,27 +44,19 @@
           (mount/only [#'district.server.web3
                        #'district.server.smart-contracts/smart-contracts])
           (mount/start))
-      (let [id (<! (web3-evm/snapshot @web3))]
-        (swap! snapshot-id (fn [_] id)))
-      (done))))
+
+      (web3-evm/snapshot! @web3
+                          (fn [err res]
+                            (if err
+                              (log/error "can't create snapshoot: " err res)
+                              (reset! snapshot-id res))
+                            (done))))))
 
 
 (defn after-test []
   (async done
     (go
-      ;; we'd like to use cljs-web3-next.evm/revert here, but it's broken now as:
-      ;; 1. evm_revert doesn't accept 0 arguments even if it should:
-      ;;    https://github.com/trufflesuite/ganache-cli/issues/672
-      ;; 2. evm_revert is a non-standard method not explicitly supported in web3js
-      ;; 3. there's a validator expecting by default any non-standard method to have 0 args
-      ;; so we need to go more low level
-      (js-invoke (aget @web3 "currentProvider")
-                 "send"
-                 (clj->js {:jsonrpc "2.0",
-                           :method "evm_revert",
-                           :params [@snapshot-id],
-                           :id 1})
-                 (fn [err _]
-                   (if err (throw (js/Error. "Error evm_revert-ing to snapshot" err)))
-                   (mount/stop)
-                   (js/setTimeout #(done) 500))))))
+      (web3-evm/revert! @web3 @snapshot-id (fn [err _]
+                                             (when err (throw (js/Error. "Error evm_revert-ing to snapshot" err)))
+                                             (mount/stop)
+                                             (js/setTimeout #(done) 500))))))

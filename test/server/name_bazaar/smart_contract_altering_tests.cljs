@@ -355,7 +355,6 @@
             (is (nil? tx)))))
       (done))))
 
-
 (deftest set-offering-fees-buy-now
   (async done
     (go
@@ -369,7 +368,6 @@
                                       :offering/price price}
                                      {:from addr1}))
             {offering :offering} (<! (offering-registry/on-offering-added-in-tx create-offering-tx))]
-
         (testing "Fees are set up by emergency multisig"
           (is set-fees-tx))
 
@@ -414,7 +412,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 15))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 15)))
 
         (let [balance-of-multisig (<! (get-balance addr0))
               balance-of-1 (<! (get-balance addr1))]

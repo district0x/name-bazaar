@@ -19,5 +19,5 @@
   "autoInstall": false,
   "rtl": false,
   "components": ["reset", "site", "button", "header", "icon", "input", "label", "segment", "menu", "item", "checkbox", "dropdown", "modal", "search", "sidebar", "sticky", "transition"],
-  "version": "2.4.1"
+  "version": "2.5.0"
 }

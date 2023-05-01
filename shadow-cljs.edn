@@ -1,0 +1,21 @@
+{:deps true
+ :dev-http {8080 "resources/public"}
+ :nrepl {:port 54100}
+ :builds {:dev-ui {:target :browser
+                   :modules {:main {:init-fn name-bazaar.ui.core/init}}
+                   :main name-bazaar.ui.core
+                   :infer-externs :auto
+                   :npm-deps false
+                   :output-dir "resources/public/js/"
+                   :optimizations :none
+                   :source-map true
+                   :source-map-timestamp true}
+          :dev-server {:target :node-script
+                       :main name-bazaar.server.core/-main
+                       :output-dir "out/"
+                       :output-to "out/dev-server.js"
+                       :optimizations :none}
+          :test {:target :node-test
+                 :output-to "out/node-tests.js"
+                 :ns-regexp "-tests$"
+                 :autorun true}}}

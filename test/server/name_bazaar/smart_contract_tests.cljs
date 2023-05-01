@@ -262,7 +262,7 @@
               (let [tx (<! (auction-offering/finalize! offering {:from addr0}))]
                 (is (nil? tx))))
 
-            (<! (web3-evm/increase-time @web3 (time/in-seconds (time/days 15))))
+            (web3-evm/increase-time! @web3 (time/in-seconds (time/days 15)))
 
             (testing "User who was overbid, can successfully withdraw funds from auction offering."
               (let [tx (<! (auction-offering/withdraw! {:address addr1
@@ -508,7 +508,7 @@
                   actual-balance (<! (get-balance addr3))]
               (is (bn/zero? (bn/- expected-balance actual-balance)))))
 
-          (<! (web3-evm/increase-time @web3 (time/in-seconds (time/days 15))))
+          (web3-evm/increase-time! @web3 (time/in-seconds (time/days 15)))
 
           (testing "State of the auction offering is correct"
             (is (= {:auction-offering/min-bid-increase 100000000000000000

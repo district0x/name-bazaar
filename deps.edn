@@ -1,0 +1,65 @@
+{:paths ["src"]
+ :deps {binaryage/devtools {:mvn/version "1.0.6"}
+        org.clojure/core.match {:mvn/version "1.0.1"}
+        ;is.d0x/cljs-web3-next {:mvn/version "LATEST"}
+        com.rpl/specter {:mvn/version "1.1.1"}
+        compojure/compojure {:mvn/version "1.6.2"}
+        day8.re-frame/async-flow-fx {:mvn/version "0.0.8"}
+        day8.re-frame/forward-events-fx {:mvn/version "0.0.6"}
+        medley/medley {:mvn/version "1.4.0"}
+        org.clojure/clojure {:mvn/version "1.10.3"}
+        org.clojure/clojurescript {:mvn/version "1.11.60"}
+        print-foo-cljs {:mvn/version "2.0.3"}
+        re-frame/re-frame {:mvn/version "1.3.0"}
+        re-promise/re-promise {:mvn/version "0.1.1"}
+        ring/ring-defaults {:mvn/version "0.3.2"}
+
+        is.d0x/district-server-bundle {:mvn/version "23.1.26"}
+        is.d0x/district-ui-bundle {:mvn/version "23.2.9"}
+        is.d0x/district-shared-bundle {:mvn/version "23.2.9"}
+
+        district0x/async-helpers {:mvn/version "0.1.3"}
+        district0x/bignumber {:mvn/version "1.0.3"}
+        district0x/district-encryption {:mvn/version "1.0.2"}
+        district0x/district-sendgrid {:mvn/version "1.1.0-SNAPSHOT"}
+        district0x/district-server-config {:mvn/version "1.0.1"}
+        ;is.d0x/district-server-db {:mvn/version "LATEST"}
+        ;; TODO: Update to latest version.
+        ;; Version 1.0.2 splits the package into two separate modules.
+        district0x/district-server-endpoints {:mvn/version "1.0.1"}
+        district0x/district-server-logging {:mvn/version "1.0.6"}
+        ;district0x/district-server-smart-contracts {:mvn/version "1.2.9"}
+        ;is.d0x/district-server-web3 {:mvn/version "LATEST"}
+        ;is.d0x/district-server-web3-events {:mvn/version "LATEST"}
+        district0x/district-ui-logging {:mvn/version "1.1.0"}
+        district0x/district-ui-mobile {:mvn/version "1.0.0"}
+        district0x/error-handling {:mvn/version "1.0.4"}
+
+        ;; d0xINFRA temporary here
+        akiroz.re-frame/storage {:mvn/version "0.1.2"}
+        bidi/bidi {:mvn/version "2.1.6"}
+        mount/mount {:mvn/version "0.1.11"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+        cljsjs/bignumber {:mvn/version "2.1.4-1"}
+        cljsjs/react-flexbox-grid {:mvn/version "1.0.0-0"}
+        cljsjs/react-highlight {:mvn/version "1.0.7-2"}
+        cljsjs/react-truncate {:mvn/version "2.0.3-0"}
+        cljsjs/react-ultimate-pagination {:mvn/version "0.8.0-0"}
+        com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}
+        com.cognitect/transit-cljs {:mvn/version "0.8.243"}
+        com.taoensso/timbre {:mvn/version "4.10.0"}
+        com.taoensso/encore {:mvn/version "2.92.0"}
+        day8.re-frame/http-fx {:mvn/version "0.1.4"}
+        kibu/pushy {:mvn/version "0.3.8"}
+        madvas.re-frame/google-analytics-fx {:mvn/version "0.1.0"}
+        madvas/cemerick-url-patched {:mvn/version "0.1.2-SNAPSHOT"} ;; Temporary until cemerick merges PR26
+        madvas.re-frame/web3-fx {:mvn/version "0.2.3"}}
+ :aliases {:shadow-cljs {:extra-deps {thheller/shadow-cljs {:mvn/version "2.20.20"}}
+                         :extra-paths ["test"]
+                         :main-opts ["-m" "shadow.cljs.devtools.cli"]}
+           :dev {:extra-paths ["dev"]}
+           :ui-deps {:extra-deps
+                     {cljsjs/sentry-browser {:mvn/version "5.4.3-0"}
+                      reagent {:mvn/version "1.1.1"}
+                      soda-ash/soda-ash {:mvn/version "0.83.0"}}}}}
+

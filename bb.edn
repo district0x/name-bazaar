@@ -1,0 +1,39 @@
+{:paths []
+ :deps {org.babashka/cli {:mvn/version "0.4.39"}}
+ :tasks
+ {testnet {:doc "Start testnet"
+           :task (let [seed "easy leave proof verb wait patient fringe laptop intact opera slab shine"
+                       host "0.0.0.0"
+                       port "8549"
+                       block-time "0" ; Seconds (could be fractional). 0 means instamine https://trufflesuite.com/docs/ganache/reference/cli-options/#miner
+                       args (format "ganache --logging.verbose --wallet.mnemonic \"%s\" --server.host %s --server.port %s --miner.blockGasLimit 8000000 --chain.allowUnlimitedContractSize true --miner.blockTime=%s --chain.vmErrorsOnRPCResponse --chain.chainId 1337" seed host port block-time)]
+                   (println "Starting testnet")
+                   (shell args))}
+  compile-css {:doc "Compile LESS to CSS on file changes"
+             :task (do
+                     (println "Compiling CSS/LESS under resources/semantic")
+                     (shell {:dir "resources/semantic"} "../../node_modules/.bin/gulp build"))}
+  watch-css {:doc "Watch & recompile LESS to CSS on file changes"
+             :task (do
+                     (println "Watching CSS/LESS under resources/semantic")
+                     (shell {:dir "resources/semantic"} "../../node_modules/.bin/gulp watch"))}
+  ; Currently watch-ui runs via clojure command and watch-server via npx
+  ; This is to avoid the both of them binding to 9630 port (and the last one failing)
+  ; By starting server via npx, it connects to the existing shadow-cljs server process
+  watch-ui {:doc "Watch and compile ui code changes CLJS -> JS in ui/src/**"
+            :requires ([babashka.cli :as cli])
+            :task (let [aliases (or *command-line-args* [])
+                        command-args (format "-A:dev:shadow-cljs:ui-deps%s watch dev-ui" (clojure.string.join "" aliases))]
+                    (println "Starting watch-ui. args:" command-args)
+                    (clojure command-args))}
+  watch-server {:doc "Watch and compile server code changes CLJS -> JS in server/src/**"
+                :requires ([babashka.cli :as cli])
+                :task (let [aliases (or *command-line-args* [])
+                            ; command-args (format "-A:dev:shadow-cljs%s watch dev-server" (clojure.string.join "" aliases))
+                            command-args "npx shadow-cljs watch dev-server"]
+                         (println "Starting watch dev-server args:" command-args)
+                         (shell command-args))}
+  run-server {:doc "Start Node.js API server process"
+               :task (do
+                       (println "Starting name-bazaar API server")
+                       (shell "node out/dev-server.js"))}}}

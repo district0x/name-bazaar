@@ -84,6 +84,8 @@
 (deftest create-subdomain-auction-offering
   (async done
     (go
+      (web3-evm/increase-time! @web3 0)
+      (web3-evm/mine-block! @web3)
       (let [[addr0 addr1 addr2 addr3] (<! (web3-eth/accounts @web3))
             t0 (to-epoch (t/plus (<! (now)) (t/weeks 2)))
             register-tx (<! (registrar/register! {:ens.record/label "tld"}
@@ -129,7 +131,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 13))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -164,6 +166,8 @@
 (deftest subdomain-auction-withdraw
   (async done
     (go
+      (web3-evm/increase-time! @web3 0)
+      (web3-evm/mine-block! @web3)
       (let [[addr0 addr1 addr2 addr3] (<! (web3-eth/accounts @web3))
             t0 (to-epoch (t/plus (<! (now)) (t/weeks 2)))
             register-tx (<! (registrar/register! {:ens.record/label "tld"}
@@ -202,7 +206,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 13))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 13)))
 
         (let [balance-of-2 (<! (get-balance addr2))]
           (testing "Can place a bid"
@@ -282,7 +286,7 @@
                                                :from addr2}))]
             (is tx)))
 
-        (<! (web3-evm/increase-time @web3 (t/in-seconds (t/days 15))))
+        (web3-evm/increase-time! @web3 (t/in-seconds (t/days 15)))
 
         (testing "Emergency multisig can pause the registry"
           (let [tx (<! (offering-registry/emergency-pause! {:from addr0}))]

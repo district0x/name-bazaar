@@ -2,11 +2,11 @@
   (:require
     [medley.core :as medley]
     [re-frame.core :refer [subscribe dispatch]]
-    [react-infinite]
+    ["react-infinite" :as Infinite]
     [reagent.core :as r]
     [soda-ash.core :as ui]))
 
-(def react-infinite (r/adapt-react-class js/Infinite))
+(def react-infinite (r/adapt-react-class Infinite))
 
 (defn expandable-list-item-body []
   (let [visible? (r/atom false)]

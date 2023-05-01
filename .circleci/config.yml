@@ -1,0 +1,59 @@
+version: 2.1
+jobs:
+
+  test:
+    working_directory: ~/ci
+    docker:
+      # Primary container image where all steps run.
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:node-16.15.1
+      # Secondary container images on common network.
+      - image: trufflesuite/ganache:v7.6.0
+        command: [-v -m "easy leave proof verb wait patient fringe laptop intact opera slab shine", -p 8549, -l 8000000, -b 0, --chain.allowUnlimitedContractSize=true]
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore npm package cache
+          keys:
+            - npm-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install node modules
+          command: yarn install
+      - save_cache:
+          name: Save npm package cache
+          key: npm-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules/
+      - run: npx truffle migrate --network development --reset
+      - run: npx shadow-cljs compile test-node
+      - run: node out/node-tests.js
+
+  deploy:
+    working_directory: ~/ci
+
+    docker:
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:latest
+        aws_auth:
+            aws_access_key_id: $AWS_ACCESS_KEY_ID
+            aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    steps:
+      - checkout
+      - run:
+          name: Build JAR
+          command: clojure -T:build jar
+      - run:
+          name: Release to clojars
+          command: clojure -T:build deploy
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test:
+          context: district0x
+      - deploy:
+          context: district0x
+          requires:
+            - test
+          filters:
+            branches:
+              only: master

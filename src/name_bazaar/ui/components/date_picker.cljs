@@ -1,13 +1,15 @@
 (ns name-bazaar.ui.components.date-picker
   (:require
-    [cljsjs.react-datepicker]
-    [reagent.core :as r]))
+    ["react-datepicker" :as DatePicker]
+    [reagent.core :as r]
+    ["moment" :as moment]))
 
-(def date-picker* (r/adapt-react-class (aget js/DatePicker "default")))
+(def date-picker* (r/adapt-react-class (.-default DatePicker)))
 
 (defn date-picker [{:keys [:selected] :as props}]
   [date-picker*
    (r/merge-props
      props
-     {:selected (js/moment selected)})])
-
+     {:selected (.toDate (moment selected))
+      :previousMonthButtonLabel nil
+      :nextMonthButtonLabel nil})])

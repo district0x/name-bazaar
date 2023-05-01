@@ -6,6 +6,7 @@
     [district.server.logging]
     [district.server.web3-events]
     [district.shared.async-helpers :as async-helpers]
+    [clojure.core.async :as async]
     [medley.core :as medley]
     [mount.core :as mount]
     [name-bazaar.server.api]
@@ -20,7 +21,8 @@
 (defn -main [& _]
   (async-helpers/extend-promises-as-channels!)
   (-> (mount/with-args
-        {:config {:default {:logging {:level "info"
+        {:config {:file-path "config.edn"
+                  :default {:logging {:level "info"
                                       :console? true
                                       :sentry {:dsn "https://597ef71a10a240b0949c3b482fe4b9a4@sentry.io/1364232"
                                                :min-level :warn}}
